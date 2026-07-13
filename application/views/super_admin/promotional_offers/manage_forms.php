@@ -78,8 +78,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label>Department <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="department_id" name="department_id">
                         <option value="">Select Department</option>
@@ -89,12 +89,12 @@
                     </select>
                     <span class="validation text-danger" id="department_id_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Offer Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="offer_name" name="offer_name">
                     <span class="validation text-danger" id="offer_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1">Active</option>

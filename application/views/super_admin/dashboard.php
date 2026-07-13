@@ -107,7 +107,7 @@
 				<div class="col-xxl-12 col-12">
 
 
-					<div class="box">
+					<div class="box_supar_admin">
 						<div class="box-header no-border pb-0">
 						</div>
 						<div class="box-body">
@@ -117,14 +117,14 @@
 									<style>
 										/* ===== Professional Filter Panel UI ===== */
 
-										#filter_lead_stats_count {
+										/* #filter_lead_stats_count {
 											background: #ffffff;
 											border: 1px solid #e9eef5;
 											border-radius: 18px;
 											padding: 18px;
 											box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
 											margin-bottom: 20px;
-										}
+										} */
 
 										#filter_lead_stats_count .form-label {
 											font-size: 13px;
@@ -134,14 +134,14 @@
 											display: block;
 										}
 
-										#filter_lead_stats_count .form-control,
+										/* #filter_lead_stats_count .form-control,
 										#filter_lead_stats_count .form-select {
 											border-radius: 12px;
 											border: 1px solid #dbe3ee;
 											font-size: 14px;
 											box-shadow: none !important;
 											transition: .25s ease;
-										}
+										} */
 
 										#filter_lead_stats_count .form-control:focus,
 										#filter_lead_stats_count .form-select:focus {
@@ -457,6 +457,7 @@
 									height: 100%;
 									position: relative;
 									overflow: hidden;
+									box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
 								}
 
 								.stage-card:hover {
@@ -854,7 +855,7 @@
 						border-radius: 12px;
 						border: 1px solid #dbe3ee;
 						font-size: 14px;
-						box-shadow: none !important;
+						/* box-shadow: none !important; */
 						transition: .25s ease;
 					}
 

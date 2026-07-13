@@ -88,7 +88,7 @@
          </div>
          <div class="modal-body ps-3 pe-3">
             <div class="row">
-               <div class="col-md-6 mb-3">
+               <div class="col-md-4 mb-3">
                   <label class="form-label">Select Country <span class="required-asterisk">*</span></label>
                   <select class="form-control" id="country_id">
                      <option value="">Select Country</option>
@@ -98,14 +98,14 @@
                   </select>
                   <span id="country_id_error" class="validation text-danger"></span>
                </div>
-               <div class="col-md-6 mb-3">
+               <div class="col-md-4 mb-3">
                   <label class="form-label">Select State <span class="required-asterisk">*</span></label>
                   <select class="form-control" id="state_id" disabled>
                      <option value="">Select State</option>
                   </select>
                   <span id="state_id_error" class="validation text-danger"></span>
                </div>
-               <div class="col-md-6 mb-3">
+               <div class="col-md-4 mb-3">
                   <label class="form-label">Select City <span class="required-asterisk">*</span></label>
                   <select class="form-control" id="city_id" disabled>
                      <option value="">Select City</option>
@@ -126,9 +126,9 @@
                   <label class="form-label">Hotel Image</label>
                   <input type="file" class="form-control" id="hotel_image" accept="image/*">
                </div>
-               <div class="col-md-4 mb-3">
+               <!-- <div class="col-md-4 mb-3">
                   <img id="hotel_image_preview" src="" style="width:100px;display:none;">
-               </div>
+               </div> -->
                <div class="col-md-4 mb-3">
                   <label class="form-label">Phone <span class="required-asterisk">*</span></label>
                   <input class="form-control" type="number" id="hotel_contact" placeholder="Phone">
@@ -145,7 +145,7 @@
                <textarea class="form-control" rows="4" id="hotel_address"></textarea>
             </div>
          </div>
-         <div class="modal-footer">
+         <div class="modal-footer d-flex justify-content-start">
             <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
             <button type="button" id="action-btn" class="btn btn-primary" data-key="">Save changes</button>
          </div>

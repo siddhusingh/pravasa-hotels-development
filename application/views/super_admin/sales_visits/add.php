@@ -158,19 +158,19 @@
 
 
                                     <!-- Agenda -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-4">
                                         <label>Agenda</label>
                                         <textarea name="agenda" class="form-control" rows="2" id="agenda"></textarea>
                                     </div>
 
                                     <!-- Discussion Summary -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-4">
                                         <label>Discussion Summary *</label>
                                         <textarea name="discussion_summary" class="form-control" rows="3" required id="discussion_summary"></textarea>
                                     </div>
 
                                     <!-- Conclusion -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-4">
                                         <label>Conclusion</label>
                                         <textarea name="conclusion" class="form-control" rows="2" id="conclusion"></textarea>
                                     </div>
@@ -180,13 +180,13 @@
                                     <h5 class="mt-3">Conveyance Details</h5>
 
                                     <!-- Area Covered -->
-                                    <div class="col-md-4">
+                                    <div class="col-sm-4">
                                         <label>Area Covered</label>
                                         <textarea name="area_covered" class="form-control" rows="2" id="area_covered"></textarea>
                                     </div>
 
                                     <!-- Travel Mode -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Travel Mode </label>
 
                                         <select name="travel_mode" class="form-control" id="travel_mode">
@@ -203,49 +203,49 @@
                                     </div>
 
                                     <!-- KMS -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Kms Run</label>
                                         <input type="number" step="0.01" name="kms_run" class="form-control" id="kms_run">
                                     </div>
 
                                     <!-- Rate -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Rate / Km</label>
                                         <input type="number" step="0.01" name="rate_per_km" class="form-control" id="rate_per_km">
                                     </div>
 
                                     <!-- Parking -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Parking / Toll</label>
                                         <input type="number" step="0.01" name="parking_charges" class="form-control" id="parking_charges">
                                     </div>
 
                                     <!-- Lunch -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Lunch</label>
                                         <input type="number" step="0.01" name="lunch" class="form-control" id="lunch">
                                     </div>
 
                                     <!-- Entertainment -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Entertainment</label>
                                         <input type="number" step="0.01" name="entertainment" class="form-control" id="entertainment">
                                     </div>
 
                                     <!-- Total -->
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Total Amount</label>
                                         <input type="number" step="0.01" name="total_amount" class="form-control" id="total_amount" readonly>
                                     </div>
 
                                     <!-- Remarks -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-12">
                                         <label>Remarks</label>
                                         <textarea name="remarks" class="form-control" rows="2"></textarea>
                                     </div>
 
                                     <!-- Submit -->
-                                    <div class="col-md-12 text-end mt-3">
+                                    <div class="col-sm-12 text-end mt-3">
                                         <button type="button" class="btn btn-secondary"
                                             onclick="window.history.back();">
                                             Back

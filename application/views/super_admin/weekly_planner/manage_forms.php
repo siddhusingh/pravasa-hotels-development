@@ -236,8 +236,8 @@
 
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer d-flex justify-content-start">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
                 </div>
 
@@ -361,7 +361,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer justify-content-start">
                     <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="updateBtn">Update Planner</button>
                 </div>

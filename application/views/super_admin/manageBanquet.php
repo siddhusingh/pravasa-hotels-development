@@ -83,8 +83,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label>Parent Hotel <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="hotel_id">
                         <option value="">Select Hotel</option>
@@ -94,23 +94,23 @@
                     </select>
                     <span class="text-danger validation" id="hotel_id_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Banquet Code <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="banquet_code" placeholder="Enter Banquet Code">
                     <span class="text-danger validation" id="banquet_code_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Banquet Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="banquet_name" placeholder="Enter Banquet Name">
                     <span class="text-danger validation" id="banquet_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Capacity <span class="required-asterisk">*</span></label>
                     <input type="number" class="form-control" id="capacity" placeholder="Enter Capacity">
                     <span class="text-danger validation" id="capacity_error"></span>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex justify-content-start">
                 <button class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
                 <button class="btn btn-primary" id="action-btn" data-key="">Save</button>
             </div>

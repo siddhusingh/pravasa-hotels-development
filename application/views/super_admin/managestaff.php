@@ -206,13 +206,15 @@
                                     <span class="validation text-danger"></span>
                                 </div>
                             </div>
-
-                            <!-- No remove button for the first row -->
-                            <div class="col-md-1 d-flex align-items-end">
-                                <button class="btn btn-primary btn sm" id="add__ver_seq" type="button">
+                            <div class="col-md-1">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button class="btn btn-primary btn sm" id="add__ver_seq" type="button">
                                     +
-                                </button>
+                                </button>   
+                                </div>
                             </div>
+
 
                         </div>
                     </div>
@@ -224,8 +226,8 @@
 
 
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer" d-flex justify-content-start>
+                <button type="button" class="btn btn-primary " data-bs-dismiss="modal">Close</button>
                 <button type="button" id="SaveBtn" class="btn btn-primary">Save changes</button>
             </div>
         </div>
@@ -363,8 +365,8 @@
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 <button type="button" id="updateBtn" class="btn btn-primary">Update Staff</button>
             </div>
         </div>

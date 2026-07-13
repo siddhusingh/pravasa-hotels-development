@@ -169,7 +169,7 @@
                 <div class="row">
 
                     <!-- Full Name -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="full_name" class="form-label">Full Name <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="text" id="full_name" name="full_name" placeholder="Enter Full Name">
@@ -178,7 +178,7 @@
                     </div>
 
                     <!-- Email -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="email" id="email" name="email" placeholder="Enter Email">
@@ -187,7 +187,7 @@
                     </div>
 
                     <!-- Password -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="password" class="form-label">Password <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="password" id="password" name="password" placeholder="Enter Password">
@@ -196,7 +196,7 @@
                     </div>
 
                     <!-- Phone -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="number" id="phone" name="phone" placeholder="Enter Phone Number">
@@ -205,7 +205,7 @@
                     </div>
 
                     <!-- User Role -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="user_role" class="form-label">User Role <span class="required-asterisk">*</span></label>
                             <select class="form-control" name="user_role" id="user_role">
@@ -219,8 +219,8 @@
                     </div>
 
                     <!-- Team Group -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
+                    <div class="col-md-4">
+                        <div class="">
                             <label for="team_group" class="form-label">Team Group</label>
                             <select class="form-control" name="team_group[]" id="team_group" multiple>
                                 <option disabled>Select Team Group</option>
@@ -235,7 +235,7 @@
                     </div>
 
                     <!-- Hotels -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="hotel_id" class="form-label">Select Hotels (Multiple)</label>
                             <select class="form-control" name="hotel_id[]" id="hotel_id" multiple>
@@ -251,7 +251,7 @@
                     </div>
 
                     <!-- City -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="city" class="form-label">City</label>
                             <select class="form-control" name="city" id="city">
@@ -267,7 +267,7 @@
                     </div>
 
                     <!-- State -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="state_id" class="form-label">State</label>
                             <select class="form-control" name="state_id" id="state_id">
@@ -283,11 +283,21 @@
                     </div>
 
                     <!-- Zip Code -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="zipcode" class="form-label">Zip Code</label>
                             <input class="form-control" type="number" id="zipcode" name="zipcode" placeholder="Enter Zip Code">
                             <span id="zipcode_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+                    <!-- Status -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
                         </div>
                     </div>
 
@@ -300,30 +310,21 @@
                     </div>
 
                     <!-- Address -->
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label for="address" class="form-label">Address</label>
                             <textarea class="form-control" id="address" name="address" rows="3"></textarea>
                         </div>
                     </div>
 
-                    <!-- Status -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="1" selected>Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
+                    
 
                 </div>
 
 
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer d-flex justify-content-start ">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 <button type="button" id="SaveBtn" class="btn btn-primary">Save changes</button>
             </div>
         </div>

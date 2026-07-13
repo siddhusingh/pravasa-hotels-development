@@ -83,23 +83,23 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label for="slot_name" class="form-label">Slot Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="slot_name" name="slot_name" placeholder="Enter slot name">
                     <span class="validation text-danger" id="slot_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="start_time" class="form-label">Start Time <span class="required-asterisk">*</span></label>
                     <input type="time" class="form-control" id="start_time" name="start_time">
                     <span class="validation text-danger" id="start_time_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="end_time" class="form-label">End Time <span class="required-asterisk">*</span></label>
                     <input type="time" class="form-control" id="end_time" name="end_time">
                     <span class="validation text-danger" id="end_time_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>

@@ -156,7 +156,7 @@
                         <span class="text-danger validation" id="phone_error"></span>
                     </div>
 
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label>Select Hotel <span class="required-asterisk">*</span></label>
                         <select id="hotel_id" class="form-control">
                             <option value="">Select Hotel</option>
@@ -167,7 +167,7 @@
                         <span class="text-danger validation" id="hotel_id_error"></span>
                     </div>
 
-                    <div class="col-md-12 mb-3" id="status-wrapper">
+                    <div class="col-md-6 mb-3" id="status-wrapper">
                         <label>Status</label>
                         <select id="status" class="form-control">
                             <option value="1">Active</option>
@@ -178,8 +178,8 @@
                 </div>
             </div>
 
-            <div class="modal-footer d-flex justify-content-start align-items-center gap-2">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer d-flex justify-content-start gap-2">
+                <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 <div id="action-btn-container" class="d-inline-flex">
                     <button class="btn btn-primary" id="action-btn" data-key="">Save</button>
                 </div>

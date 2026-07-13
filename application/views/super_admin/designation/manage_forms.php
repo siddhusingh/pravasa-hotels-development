@@ -80,13 +80,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label for="designation_name" class="form-label">Designation Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="designation_name" name="designation_name" placeholder="Enter designation name">
                     <span class="validation text-danger" id="designation_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>

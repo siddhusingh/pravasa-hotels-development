@@ -82,13 +82,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">Ratetype Code <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="ratetype_code" placeholder="Please Enter Ratetype Code">
                     <span id="ratetype_code_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">Ratetype Name <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="ratetype_name" placeholder="Please Enter Rate Type Name">
                     <span id="ratetype_name_error" class="validation text-danger"></span>

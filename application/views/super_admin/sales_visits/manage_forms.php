@@ -94,19 +94,19 @@
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box new_table_box">
                         <div class="box-header d-flex justify-content-between align-items-center">
 
                             <h4 class="box-title mb-0">
-                                <i class="fa-solid fa-chart-line me-2 text-primary"></i>
+                                <i class="fa fa-history"></i>
                                 Manage Sales History
                             </h4>
 
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 " >
 
                                 <!-- View Toggle -->
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" id="btnTableView" class="btn btn-primary active" title="Table View">
+                                    <button type="button" id="btnTableView" class="btn btn-primary active " title="Table View">
                                         <i class="fa fa-table" aria-hidden="true"></i>
                                     </button>
                                     <button type="button" id="btnCalendarView" class="btn btn-outline-primary" title="Calendar View">
@@ -116,8 +116,8 @@
 
                                 <!-- Add Button -->
                                 <a href="<?= base_url('superAdmin/SalesVisits/add'); ?>"
-                                    class="btn btn-primary-light btn-sm">
-                                    <i class="fa-solid fa-plus me-1"></i> Add
+                                    class="btn btn-primary-light btn-sm new_button">
+                                    <i class="fa fa-plus" aria-hidden="true"></i> Add
                                 </a>
 
 
@@ -130,7 +130,7 @@
 
                         <div class="box-body">
                             <div class="table-responsive">
-                                <div class="box-body table-responsive">
+                                <div class="box-body ">
 
                                     <div class="table-responsive">
                                         <div id="tableViewWrapper">

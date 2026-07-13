@@ -12,6 +12,9 @@
     .dataTables_scrollHeadInner {
         width: 100%important;
     }
+    .new_table_box table tbody td:first-child {
+    text-align: left!important;
+}
 </style>
 <div class="content-wrapper">
     <div class="container-full">

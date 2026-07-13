@@ -82,8 +82,8 @@
                 </div>
             </div>
 
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-4 mb-3">
                     <label>Restaurant <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="restaurant_id" name="restaurant_id">
                         <option value="">Select Restaurant</option>
@@ -94,18 +94,12 @@
                     <span class="validation text-danger" id="restaurant_id_error"></span>
                 </div>
 
-                <div class="mb-3">
+                <div class="col-sm-4 mb-3">
                     <label>Category Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="category_name" name="category_name">
                     <span class="validation text-danger" id="category_name_error"></span>
                 </div>
-
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea class="form-control" id="description" name="description"></textarea>
-                </div>
-
-                <div class="mb-3">
+                <div class="col-sm-4 mb-3">
                     <label>Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="active">Active</option>
@@ -113,6 +107,13 @@
                     </select>
                     <span class="validation text-danger" id="status_error"></span>
                 </div>
+
+                <div class="col-sm-12 mb-3">
+                    <label>Description</label>
+                    <textarea class="form-control" id="description" name="description"></textarea>
+                </div>
+
+                
             </div>
 
             <div class="modal-footer d-flex justify-content-start">

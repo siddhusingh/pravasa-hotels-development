@@ -24,14 +24,7 @@
           <div class="col-xl-12 col-lg-12">
             <div class="card">
               <div class="card-body">
-                <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
-
-                  <li class="nav-item">
-                    <a href="#settings" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 active">
-                      Settings
-                    </a>
-                  </li>
-                </ul>
+                
                 <div class="tab-content">
 
 
