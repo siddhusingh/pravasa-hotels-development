@@ -1,0 +1,264 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class MealPlan extends MY_Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->load->model('Comman_model');
+        $this->load->model('Common_model');
+        $this->load->model('Datatables', 'objdt');
+        date_default_timezone_set('Asia/Kolkata');
+
+        if (empty($this->session->userdata('super_admin_session')) || ($this->session->userdata('role_as') != 'super_admin') || ($this->session->userdata('user_role') != 1)) {
+            return redirect('super-admin-login');
+        }
+    }
+
+    private function getCurrentActor()
+    {
+        $actor = $this->session->userdata('super_admin_session');
+        return [
+            'id' => $actor['id'] ?? null,
+            'name' => $actor['user_name'] ?? $actor['full_name'] ?? '',
+            'email' => $actor['email'] ?? '',
+            'role' => $this->session->userdata('role_as') ?? 'super_admin'
+        ];
+    }
+
+    private function logActivity($action, $record_id, $details = '')
+    {
+        $actor = $this->getCurrentActor();
+        $this->Common_model->insertActivityLog([
+            'module' => 'meal_plans',
+            'record_id' => $record_id,
+            'action' => $action,
+            'details' => $details,
+            'actor_id' => $actor['id'],
+            'actor_name' => $actor['name'],
+            'actor_email' => $actor['email'],
+            'actor_role' => $actor['role'],
+            'ip_address' => $this->input->ip_address(),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    private function jsonResponse($response)
+    {
+        $response['csrfHash'] = $this->security->get_csrf_hash();
+        echo json_encode($response);
+    }
+
+    private function mealPlanPayload($includeCreated = false)
+    {
+        $data = [
+            'plan' => trim($this->input->post('plan_name')),
+            'plan_code' => trim($this->input->post('plan_code')),
+            'status' => $this->input->post('status'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($includeCreated) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+        }
+
+        return $data;
+    }
+
+    private function validateMealPlanPayload($data)
+    {
+        if ($data['plan'] === '' || $data['plan_code'] === '') {
+            return 'Please fill all required meal plan details';
+        }
+
+        if (!in_array((string) $data['status'], ['0', '1'])) {
+            return 'Invalid meal plan status';
+        }
+
+        return '';
+    }
+
+    public function manage()
+    {
+        $this->load->view('super_admin/include/header');
+        $this->load->view('super_admin/include/sidebar');
+        $this->load->view('super_admin/meal_plan/manage_forms');
+        $this->load->view('super_admin/include/footer');
+    }
+
+    public function get_mealplans_table()
+    {
+        $inputs = $this->input->post();
+        $draw = $inputs['draw'];
+        $start = $inputs['start'];
+        $length = $inputs['length'];
+        $search = $inputs['search']['value'];
+
+        $columns = [
+            0 => 'id',
+            1 => 'plan',
+            2 => 'plan_code',
+            3 => 'status',
+            4 => 'created_at',
+            5 => 'updated_at'
+        ];
+
+        $order = $columns[$inputs['order'][0]['column']] ?? 'id';
+        $dir = $inputs['order'][0]['dir'] ?? 'DESC';
+
+        $list = $this->objdt->DTMealPlans($length, $start, $search, $order, $dir);
+        $data = [];
+        $i = $start + 1;
+
+        foreach ($list as $row) {
+            $encrypted = encrypt_id($row->id);
+            $status = ((string) $row->status === '1')
+                ? '<span class="badge badge-success">Active</span>'
+                : '<span class="badge badge-danger">Inactive</span>';
+
+            $data[] = [
+                $i++,
+                htmlspecialchars($row->plan ?? '-'),
+                htmlspecialchars($row->plan_code ?? '-'),
+                $status,
+                !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
+                !empty($row->updated_at) ? date('d M Y', strtotime($row->updated_at)) : '-',
+                '<a href="javascript:void(0)" class="text-fade hover-primary edit-meal-plan" data-record_id="'.$encrypted.'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle">
+                        <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
+                    </svg>
+                </a>
+                <a href="javascript:void(0)" class="text-fade hover-primary delete-meal-plan" data-record_id="'.$encrypted.'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash align-middle">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </a>'
+            ];
+        }
+
+        echo json_encode([
+            'draw' => intval($draw),
+            'recordsTotal' => $this->objdt->DTMealPlansAll(),
+            'recordsFiltered' => $this->objdt->DTMealPlansFiltered($search),
+            'data' => $data,
+            'csrfHash' => $this->security->get_csrf_hash()
+        ]);
+    }
+
+    public function add()
+    {
+        $data = $this->mealPlanPayload(true);
+        $validationError = $this->validateMealPlanPayload($data);
+
+        if ($validationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $validationError]);
+            return;
+        }
+
+        $record_id = $this->Comman_model->insertData('meal_plans', $data);
+
+        if ($record_id) {
+            $this->logActivity('create', $record_id, 'Created meal plan '.$data['plan'].' ('.$data['plan_code'].')');
+        }
+
+        $this->jsonResponse([
+            'status' => (bool) $record_id,
+            'message' => $record_id ? 'Meal Plan added successfully' : 'Failed to add meal plan',
+            'record_id' => $record_id ? encrypt_id($record_id) : ''
+        ]);
+    }
+
+    public function getDetails()
+    {
+        $id = decrypt_id($this->input->post('id'));
+        $data = $this->Common_model->getdata('meal_plans', ['id' => $id]);
+
+        if (empty($id) || empty($data)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found']);
+            return;
+        }
+
+        $this->jsonResponse([
+            'status' => true,
+            'data' => [
+                'plan' => $data->plan,
+                'plan_code' => $data->plan_code,
+                'status' => $data->status
+            ],
+            'id' => encrypt_id($data->id)
+        ]);
+    }
+
+    public function getAll()
+    {
+        $plans = $this->db
+            ->where('status', 1)
+            ->order_by('plan', 'ASC')
+            ->get('meal_plans')
+            ->result();
+
+        $this->jsonResponse([
+            'status' => true,
+            'data' => $plans
+        ]);
+    }
+
+    public function update()
+    {
+        $id = decrypt_id($this->input->post('id'));
+
+        if (empty($id)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Invalid meal plan record']);
+            return;
+        }
+
+        $data = $this->mealPlanPayload();
+        $validationError = $this->validateMealPlanPayload($data);
+
+        if ($validationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $validationError]);
+            return;
+        }
+
+        $updated = $this->Comman_model->UpdateRecord('meal_plans', $data, ['id' => $id]);
+
+        if ($updated) {
+            $this->logActivity('update', $id, 'Updated meal plan '.$data['plan'].' ('.$data['plan_code'].')');
+        }
+
+        $this->jsonResponse([
+            'status' => true,
+            'message' => 'Meal Plan updated successfully',
+            'record_id' => encrypt_id($id)
+        ]);
+    }
+
+    public function delete()
+    {
+        $id = decrypt_id($this->input->post('id'));
+
+        if (empty($id)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Invalid meal plan record']);
+            return;
+        }
+
+        $mealPlan = $this->Common_model->getdata('meal_plans', ['id' => $id]);
+        $deleted = $this->Comman_model->Deletedata('meal_plans', ['id' => $id]);
+
+        if ($deleted) {
+            $this->logActivity(
+                'delete',
+                $id,
+                isset($mealPlan->plan) ? 'Deleted meal plan '.$mealPlan->plan.' ('.$mealPlan->plan_code.')' : 'Deleted meal plan ID '.$id
+            );
+        }
+
+        $this->jsonResponse([
+            'status' => (bool) $deleted,
+            'message' => $deleted ? 'Meal Plan deleted successfully' : 'Failed to delete meal plan'
+        ]);
+    }
+}

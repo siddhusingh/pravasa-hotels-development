@@ -1,0 +1,1 @@
+ <?php  if(!empty($_GET['phone'])){ echo $_GET['phone'];} ?>
