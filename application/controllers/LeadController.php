@@ -1072,6 +1072,7 @@ class LeadController extends CI_Controller
             $disposition = $this->input->post('disposition', true);
             $department = $this->input->post('leadDepartment', true);
             $tableIds = $this->input->post('table_id');
+            $table_reservation_status = $this->input->post('table_reservation_status', true) ?: '';
 
 
 
@@ -1086,12 +1087,14 @@ class LeadController extends CI_Controller
             }
 
             $department  = $department_data->department_name;
+            $normalized_department = strtolower(trim($department));
 
             $leadData['promotional_offers'] =  $this->input->post('promotional_offers');
 
             $leadData['reason'] =  $this->input->post('reason');
 
             $leadData['purpose'] =  $this->input->post('purpose');
+            $myCloudBookingResponse = null;
 
 
 
@@ -1252,15 +1255,15 @@ class LeadController extends CI_Controller
 
                             $leadData['confirmation_number'] = $myCloudResponse['bookings'][0]['pms_confirmation_number'];
 
-
-                            $savebooking = $this->saveLeadBookings($id, $myCloudResponse);
+                            $myCloudBookingResponse = $myCloudResponse;
                             $leadData['booking_id'] = $myCloudResponse['bookings'][0]['booking_id'];
                         } else {
 
                             echo json_encode([
                                 'status' => false,
                                 'error_code' => $myCloudResponse['error']['ErrorCode'],
-                                'error_message' => $myCloudResponse['error']['ErrorDescription']
+                                'error_message' => $myCloudResponse['error']['ErrorDescription'],
+                                'csrfHash' => $this->security->get_csrf_hash()
                             ]);
                             return;
                         }
@@ -1326,8 +1329,6 @@ class LeadController extends CI_Controller
                 if ($department === 'restaurants') {
                     $leadData['booking_date'] = $this->input->post('booking_date');
                     $leadData['booking_month']  = $this->input->post('booking_month');
-
-                    $table_reservation_status = $this->input->post('table_reservation_status');
 
                     $leadData['pax']          = $this->input->post('pax');
                     $leadData['amount']       = $this->input->post('amount');
@@ -1431,7 +1432,8 @@ class LeadController extends CI_Controller
                 $response = [
                     'status'    => true,
                     'message'   => 'Duplicate detected: Existing lead updated successfully.',
-                    'duplicate' => true
+                    'duplicate' => true,
+                    'csrfHash'  => $this->security->get_csrf_hash()
                 ];
 
                 // Send JSON safely in CI3
@@ -1497,8 +1499,13 @@ class LeadController extends CI_Controller
             if ($insert_id) {
 
 
+                if (!empty($myCloudBookingResponse)) {
+                    $this->saveLeadBookings($insert_id, $myCloudBookingResponse);
+                }
 
-                if ($table_reservation_status == 'Reserved') {
+                $isRestaurantLead = in_array($normalized_department, ['restaurant', 'restaurants'], true);
+
+                if ($isRestaurantLead && $table_reservation_status == 'Reserved') {
                     $this->send_restaurant_booking_confirmation($insert_id);
                 }
 
@@ -1508,7 +1515,7 @@ class LeadController extends CI_Controller
     |--------------------------------------------------------------------------
     */
 
-                if ($table_reservation_status == 'Completed') {
+                if ($isRestaurantLead && $table_reservation_status == 'Completed') {
                     $this->send_restaurant_feedback_link($insert_id);
                 }
 
@@ -1530,6 +1537,15 @@ class LeadController extends CI_Controller
                 curl_setopt($ch, CURLOPT_NOSIGNAL, 1); // For timeout under 1s (only on Unix)
                 curl_exec($ch);
                 curl_close($ch);
+            } else {
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(200)
+                    ->set_output(json_encode([
+                        'status'  => false,
+                        'message' => 'Failed to insert lead.',
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ]));
             }
 
             return $this->output
@@ -1537,7 +1553,8 @@ class LeadController extends CI_Controller
                 ->set_status_header(200)
                 ->set_output(json_encode([
                     'status'  => true,
-                    'message' => 'Lead created successfully.'
+                    'message' => 'Lead created successfully.',
+                    'csrfHash' => $this->security->get_csrf_hash()
                 ]));
         } else {
             show_404();
@@ -3813,7 +3830,8 @@ class LeadController extends CI_Controller
 
         $response = [
             "status" => true,
-            "data"   => $responseArray
+            "data"   => $responseArray,
+            "csrfHash" => $this->security->get_csrf_hash()
         ];
 
         // Send JSON safely in CI3
@@ -4029,7 +4047,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $restaurants
+            'data' => $restaurants,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4040,7 +4059,8 @@ class LeadController extends CI_Controller
         if (empty($hotel_id)) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Hotel ID missing'
+                'message' => 'Hotel ID missing',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4052,7 +4072,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $banquets
+            'data' => $banquets,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4064,7 +4085,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $meal_plans
+            'data' => $meal_plans,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4075,7 +4097,8 @@ class LeadController extends CI_Controller
         if (empty($department_id)) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Department ID missing'
+                'message' => 'Department ID missing',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4087,7 +4110,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $promotional_offers
+            'data' => $promotional_offers,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4098,7 +4122,8 @@ class LeadController extends CI_Controller
         if (empty($hotel_id)) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Hotel ID missing'
+                'message' => 'Hotel ID missing',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4110,7 +4135,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $roomtypes
+            'data' => $roomtypes,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4124,7 +4150,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $slots
+            'data' => $slots,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4135,7 +4162,8 @@ class LeadController extends CI_Controller
         if (!$slot_type_id) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Slot Type ID missing'
+                'message' => 'Slot Type ID missing',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4149,7 +4177,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $slots
+            'data' => $slots,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4160,7 +4189,8 @@ class LeadController extends CI_Controller
         if (!$restaurant_id) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Restaurant ID missing'
+                'message' => 'Restaurant ID missing',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4174,7 +4204,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $categories
+            'data' => $categories,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 
@@ -4188,7 +4219,8 @@ class LeadController extends CI_Controller
         if (!$restaurant_id || !$category_id) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Missing parameters'
+                'message' => 'Missing parameters',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4203,7 +4235,8 @@ class LeadController extends CI_Controller
 
         echo json_encode([
             'status' => 'success',
-            'data' => $tables
+            'data' => $tables,
+            'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }
 }

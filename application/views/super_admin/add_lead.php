@@ -43,7 +43,7 @@
                                                 <input type="number" name="phone_number" id="phone_number" class="form-control" placeholder="Enter phone number" required
                                                     value="<?php if (!empty($_GET['phone'])) {
                                                                 echo $_GET['phone'];
-                                                            } ?>"
+                                                            } ?>">
                                                     <span id="phone_number_error" class="text-danger small"></span>
                                             </div>
                                         </div>
@@ -519,12 +519,119 @@
 
     });
 
+    if (window.CSRF) {
+        window.CSRF.cookie = "<?= $this->config->item('csrf_cookie_name') ?>";
+    }
+
+    function readCookie(name) {
+        var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+        for (var i = 0; i < cookies.length; i++) {
+            var parts = cookies[i].split('=');
+            var cookieName = decodeURIComponent(parts.shift());
+
+            if (cookieName === name) {
+                return decodeURIComponent(parts.join('='));
+            }
+        }
+
+        return '';
+    }
+
+    function currentCsrfHash() {
+        if (!window.CSRF) {
+            return '';
+        }
+
+        return readCookie(window.CSRF.cookie) || window.CSRF.hash;
+    }
+
+    function csrfData(data) {
+        data = data || {};
+
+        if (window.CSRF) {
+            data[window.CSRF.name] = currentCsrfHash();
+        }
+
+        return data;
+    }
+
+    function csrfFormData(formData) {
+        if (window.CSRF) {
+            if (typeof formData.set === 'function') {
+                formData.set(window.CSRF.name, currentCsrfHash());
+            } else {
+                formData.append(window.CSRF.name, currentCsrfHash());
+            }
+        }
+
+        return formData;
+    }
+
+    function refreshCsrf(response) {
+        if (response && response.csrfHash && window.CSRF) {
+            window.CSRF.hash = response.csrfHash;
+        }
+    }
+
+    $(document).ajaxComplete(function(event, xhr) {
+        refreshCsrf(xhr.responseJSON);
+    });
+
+    var csrfAjaxQueue = $.Deferred().resolve().promise();
+
+    function csrfAjax(options) {
+        var method = (options.type || options.method || 'GET').toUpperCase();
+
+        if (method !== 'POST') {
+            return $.ajax(options);
+        }
+
+        var runRequest = function() {
+            if (options.data instanceof FormData) {
+                csrfFormData(options.data);
+            } else {
+                options.data = csrfData(options.data);
+            }
+
+            return $.ajax(options);
+        };
+
+        csrfAjaxQueue = csrfAjaxQueue.then(runRequest, runRequest);
+
+        return csrfAjaxQueue;
+    }
+
+
+    function normalizeDepartmentName(name) {
+        name = (name || '').toString().trim().toLowerCase();
+
+        if (name === 'restaurants') {
+            return 'restaurant';
+        }
+
+        if (name === 'banquets') {
+            return 'banquet';
+        }
+
+        return name;
+    }
+
+    function resetDynamicFields() {
+        if ($('#table_id').length && $('#table_id').hasClass('select2-hidden-accessible')) {
+            $('#table_id').select2('destroy');
+        }
+
+        $('#dynamicFields').empty();
+        $('#dynamicFields .error-label, #dynamicFields .error-text').html('');
+        $('#lead_status').val('Open');
+    }
 
     function updateDynamicFields(data = "") {
 
         const disposition = $("#disposition").val();
         let property = $("#property").val();
-        let department = $('#type').find(':selected').data('name')?.toLowerCase();
+        let department = normalizeDepartmentName($('#type').find(':selected').data('name'));
         let department_id = $('#type').val();
 
         $('#leadDepartment').val(department);
@@ -533,11 +640,7 @@
         console.log(existingLeadData);
 
         const container = $("#dynamicFields");
-        container.empty();
-
-
-        // Reset previous fields
-        container.html("");
+        resetDynamicFields();
 
         var today = new Date().toISOString().split('T')[0];
 
@@ -717,7 +820,7 @@
                 loadMealPlan(existingLeadData);
 
 
-            } else if (department === "restaurants") {
+            } else if (department === "restaurant") {
 
                 container.append(`
 
@@ -828,7 +931,7 @@
 
 
             /* BANQUETS */
-            else if (department === "banquets") {
+            else if (department === "banquet") {
 
                 container.append(`
 
@@ -1112,12 +1215,12 @@
 
         $('#restaurant_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-restaurants') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 hotel_id: hotel_id
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1142,12 +1245,12 @@
 
         $('#banquet_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-banquets') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 hotel_id: hotel_id
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1174,12 +1277,12 @@
 
         $('#meal_plan').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-meal-plans') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
 
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1204,12 +1307,12 @@
 
         $('#promotional_offers').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-promotional-offers') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 department_id: department
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1233,12 +1336,12 @@
 
         $('#roomtype').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-room-types') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 hotel_id: hotel_id
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1302,12 +1405,12 @@
 
         $('#time_slot_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-time-slots') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 slot_type_id: slotTypeId
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1349,12 +1452,12 @@
 
         $('#table_category_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-table-categories') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 restaurant_id: restaurantId
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1485,13 +1588,13 @@
 
         $('#table_id').html('<option value="">Select Table</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-tables') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 restaurant_id: restaurantId,
                 category_id: categoryId
-            },
+            }),
             dataType: "json",
             success: function(res) {
 
@@ -1602,8 +1705,8 @@
         let promotional_offers = $('#promotional_offers').val();
         let assigned_to = $('select[name="assigned_to"]').val();
 
-        leadDepartment = $('#leadDepartment').val();
-        disposition = $('#disposition').val();
+        let leadDepartment = normalizeDepartmentName($('#leadDepartment').val());
+        let disposition = $('#disposition').val();
 
         if (disposition == null) {
             disposition = "";
@@ -1681,8 +1784,9 @@
                 let tableReservationStatus = $('#table_reservation_status').val();
                 formData.append('table_reservation_status', tableReservationStatus);
             }
+            csrfFormData(formData);
 
-            $.ajax({
+            csrfAjax({
                 url: '<?php echo base_url("LeadController/insert_lead"); ?>',
                 type: 'POST',
                 data: formData,
@@ -1703,6 +1807,20 @@
                     } else {
                         alert('Failed to create lead: ' + response.message);
                     }
+                },
+                error: function(xhr) {
+                    let message = 'Unable to submit lead. Please try again.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        message = xhr.responseText;
+                    }
+
+                    alert(message);
+                },
+                complete: function() {
+                    $('#submitBtn').prop('disabled', false).text('Submit');
                 }
             });
         } else {
@@ -1722,12 +1840,12 @@
             if (/^\d{10}$/.test(cli)) {
                 typingTimer = setTimeout(function() {
                     // Perform AJAX call only for valid 10-digit numbers
-                    $.ajax({
+                    csrfAjax({
                         url: '<?= base_url('LeadController/get_last_lead_by_cli') ?>',
                         type: 'POST',
-                        data: {
+                        data: csrfData({
                             cli: cli
-                        },
+                        }),
                         dataType: 'json',
                         success: function(response) {
                             if (response.status === 'success') {
@@ -1824,10 +1942,10 @@
             return;
         }
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
             type: "POST",
-            data: {
+            data: csrfData({
                 chain_code: "00051",
                 hotel_code: "E0701",
                 date_arrive: checkin,
@@ -1839,7 +1957,7 @@
                 price_from: 0,
                 price_to: 0,
                 room_type_code: ''
-            },
+            }),
             dataType: "json",
             beforeSend: function() {
                 $("#processingLoader").show(); // Show loader
