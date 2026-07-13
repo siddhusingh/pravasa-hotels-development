@@ -1142,6 +1142,24 @@ class LeadModel extends CI_Model
     }
 
 
+    private function apply_due_followup_filter()
+    {
+        $today = date('Y-m-d');
+
+        $this->db->group_start();
+        $this->db->group_start();
+        $this->db->where('leads.followup_date IS NOT NULL', null, false);
+        $this->db->where('leads.followup_date !=', '');
+        $this->db->where('DATE(leads.followup_date) <=', $today);
+        $this->db->group_end();
+        $this->db->or_group_start();
+        $this->db->where('leads.second_followup_date IS NOT NULL', null, false);
+        $this->db->where('leads.second_followup_date !=', '');
+        $this->db->where('DATE(leads.second_followup_date) <=', $today);
+        $this->db->group_end();
+        $this->db->group_end();
+    }
+
     function get_filtered_leads($filters = [], $limit = 50, $offset = 0)
     {
         $this->db->select('
@@ -1245,12 +1263,7 @@ class LeadModel extends CI_Model
 
 
         if (!empty($filters['showfollowupleads']) && $filters['showfollowupleads'] === 'yes') {
-            $this->db->group_start();
-            $this->db->where('DATE(leads.followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.second_followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.second_followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->group_end();
+            $this->apply_due_followup_filter();
         }
 
 
@@ -1297,10 +1310,10 @@ class LeadModel extends CI_Model
     {
         $this->db->select('
         COUNT(*) AS total,
-SUM(CASE WHEN leads.status = "Open" THEN 1 ELSE 0 END) AS open,
-SUM(CASE WHEN leads.status = "In Progress" THEN 1 ELSE 0 END) AS in_progress,
-SUM(CASE WHEN leads.status = "Closed" THEN 1 ELSE 0 END) AS closed,
-SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END) AS not_assigned
+COALESCE(SUM(CASE WHEN leads.status = "Open" THEN 1 ELSE 0 END), 0) AS open,
+COALESCE(SUM(CASE WHEN leads.status = "In Progress" THEN 1 ELSE 0 END), 0) AS in_progress,
+COALESCE(SUM(CASE WHEN leads.status = "Closed" THEN 1 ELSE 0 END), 0) AS closed,
+COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assigned
     ');
         $this->db->from('leads');
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
@@ -1321,12 +1334,7 @@ SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END) AS not_assigned
 
 
         if (!empty($filters['showfollowupleads']) && $filters['showfollowupleads'] === 'yes') {
-            $this->db->group_start();
-            $this->db->where('DATE(leads.followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.second_followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->or_where('DATE(leads.second_followup_date) = CURDATE()', NULL, FALSE);
-            $this->db->group_end();
+            $this->apply_due_followup_filter();
         }
 
 
@@ -1450,8 +1458,8 @@ SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END) AS not_assigned
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
 
-        // Main filter: Today's follow-up dates
-        $this->db->where('(DATE(leads.followup_date) = CURDATE() OR DATE(leads.second_followup_date) = CURDATE() OR DATE(leads.followup_date) = CURDATE() OR DATE(leads.second_followup_date) = CURDATE())', NULL, FALSE);
+        // Main filter: due follow-up dates
+        $this->apply_due_followup_filter();
 
         if (!empty($filters['city'])) {
             $this->db->where('leads.city', $filters['city']);
