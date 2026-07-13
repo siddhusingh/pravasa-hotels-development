@@ -81,13 +81,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label for="company_group_name" class="form-label">Company Group Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="company_group_name" name="company_group_name" placeholder="Enter company group name">
                     <span class="validation text-danger" id="company_group_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>
