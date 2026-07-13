@@ -2008,7 +2008,11 @@ class LeadController extends CI_Controller
         $leadId = $this->input->post('lead_id');
 
         if (!$leadId) {
-            echo json_encode(['status' => 'error', 'message' => 'Missing lead_id']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Missing lead_id',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
             return;
         }
 
@@ -2036,7 +2040,11 @@ class LeadController extends CI_Controller
         $leadId = $this->input->post('lead_id');
 
         if (!$leadId) {
-            echo json_encode(['status' => 'error', 'message' => 'Missing lead_id']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Missing lead_id',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
             return;
         }
 
@@ -2052,7 +2060,11 @@ class LeadController extends CI_Controller
         $lead = $query->row();
 
         if (!$lead) {
-            echo json_encode(['status' => 'error', 'message' => 'Lead not found']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lead not found',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
             return;
         }
 
@@ -2077,7 +2089,8 @@ class LeadController extends CI_Controller
             } else {
                 $response = [
                     'status'  => 'error',
-                    'message' => 'User session not found.'
+                    'message' => 'User session not found.',
+                    'csrfHash' => $this->security->get_csrf_hash()
                 ];
 
                 $this->output
@@ -2094,7 +2107,8 @@ class LeadController extends CI_Controller
             ) {
                 $response = [
                     'status'  => 'error',
-                    'message' => 'This lead is already assigned to another Person. You do not have access to update details.'
+                    'message' => 'This lead is already assigned to another Person. You do not have access to update details.',
+                    'csrfHash' => $this->security->get_csrf_hash()
                 ];
 
                 $this->output
@@ -2114,7 +2128,8 @@ class LeadController extends CI_Controller
             ->set_status_header(200)
             ->set_output(json_encode([
                 'status' => 'success',
-                'data'   => $lead
+                'data'   => $lead,
+                'csrfHash' => $this->security->get_csrf_hash()
             ]));
 
         return;
@@ -2126,7 +2141,11 @@ class LeadController extends CI_Controller
         $leadId = $this->input->post('lead_id');
 
         if (!$leadId) {
-            echo json_encode(['status' => 'error', 'message' => 'Missing lead_id']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Missing lead_id',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
             return;
         }
 
@@ -2151,7 +2170,8 @@ class LeadController extends CI_Controller
                 ->set_status_header(200)
                 ->set_output(json_encode([
                     'status' => 'success',
-                    'data'   => $leadData
+                    'data'   => $leadData,
+                    'csrfHash' => $this->security->get_csrf_hash()
                 ], JSON_UNESCAPED_UNICODE));
         } else {
 
@@ -2160,7 +2180,8 @@ class LeadController extends CI_Controller
                 ->set_status_header(404)
                 ->set_output(json_encode([
                     'status'  => 'error',
-                    'message' => 'Lead not found'
+                    'message' => 'Lead not found',
+                    'csrfHash' => $this->security->get_csrf_hash()
                 ]));
         }
 
@@ -2473,12 +2494,23 @@ class LeadController extends CI_Controller
             $updated = $this->LeadModel->append_correlation_id($leadId, $newCorrelationId);
 
             if ($updated) {
-                echo json_encode(['status' => 'success']);
+                echo json_encode([
+                    'status' => 'success',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]);
             } else {
-                echo json_encode(['status' => 'fail', 'message' => 'Update failed']);
+                echo json_encode([
+                    'status' => 'fail',
+                    'message' => 'Update failed',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]);
             }
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Missing parameters']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Missing parameters',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
         }
     }
 
@@ -2767,7 +2799,11 @@ class LeadController extends CI_Controller
         $lead = $this->Comman_model->getData('leads', ['id' => $id]);
 
         if (!$lead) {
-            echo json_encode(['status' => false, 'message' => 'Lead not found']);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Lead not found',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
             return;
         }
 
@@ -3026,7 +3062,8 @@ class LeadController extends CI_Controller
                         echo json_encode([
                             'status' => false,
                             'error_code' => $myCloudResponse['error']['ErrorCode'],
-                            'error_message' => $myCloudResponse['error']['ErrorDescription']
+                            'error_message' => $myCloudResponse['error']['ErrorDescription'],
+                            'csrfHash' => $this->security->get_csrf_hash()
                         ]);
                         return;
                     }
@@ -3348,7 +3385,12 @@ class LeadController extends CI_Controller
         $updatedLead = $this->db->get()->row();
 
 
-        echo json_encode(['status' => true, 'message' => 'Lead updated successfully.', 'data' => $updatedLead]);
+        echo json_encode([
+            'status' => true,
+            'message' => 'Lead updated successfully.',
+            'data' => $updatedLead,
+            'csrfHash' => $this->security->get_csrf_hash()
+        ]);
     }
 
     function generateConfirmationNumber()
@@ -3533,7 +3575,8 @@ class LeadController extends CI_Controller
         if (!$lead_id || !$property_id || !$department_id || !$agent_id || $remark == "") {
             echo json_encode([
                 'status'  => 'error',
-                'message' => 'All fields are required.'
+                'message' => 'All fields are required.',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -3570,12 +3613,14 @@ class LeadController extends CI_Controller
 
             $response = [
                 'status'  => 'success',
-                'message' => 'Lead transferred successfully.'
+                'message' => 'Lead transferred successfully.',
+                'csrfHash' => $this->security->get_csrf_hash()
             ];
         } else {
             $response = [
                 'status'  => 'error',
-                'message' => 'Unable to transfer lead. Please try again.'
+                'message' => 'Unable to transfer lead. Please try again.',
+                'csrfHash' => $this->security->get_csrf_hash()
             ];
         }
 
@@ -3595,9 +3640,15 @@ class LeadController extends CI_Controller
         if ($id) {
             $this->db->where('id', $id)->delete('leads');
 
-            $response = ['status' => true];
+            $response = [
+                'status' => true,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ];
         } else {
-            $response = ['status' => false];
+            $response = [
+                'status' => false,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ];
         }
 
         // Send JSON response safely in CI3
@@ -3904,7 +3955,8 @@ class LeadController extends CI_Controller
             ->set_status_header(200)
             ->set_output(json_encode([
                 'status' => 'success',
-                'data'   => is_object($templates) ? (array) $templates : $templates
+                'data'   => is_object($templates) ? (array) $templates : $templates,
+                'csrfHash' => $this->security->get_csrf_hash()
             ], JSON_UNESCAPED_UNICODE));
 
         return;
@@ -3922,7 +3974,8 @@ class LeadController extends CI_Controller
         if (!$template_id || !$phone_number) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Invalid request'
+                'message' => 'Invalid request',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -3939,7 +3992,8 @@ class LeadController extends CI_Controller
         if (!$template) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Template not found'
+                'message' => 'Template not found',
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4007,7 +4061,8 @@ class LeadController extends CI_Controller
         if ($curlErr) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'cURL Error: ' . $curlErr
+                'message' => 'cURL Error: ' . $curlErr,
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4018,7 +4073,8 @@ class LeadController extends CI_Controller
             echo json_encode([
                 'status' => 'error',
                 'message' => 'WhatsApp API failed',
-                'response' => $apiResponse
+                'response' => $apiResponse,
+                'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
@@ -4028,7 +4084,8 @@ class LeadController extends CI_Controller
             ->set_status_header(200)
             ->set_output(json_encode([
                 'status'  => 'success',
-                'message' => 'WhatsApp message sent successfully'
+                'message' => 'WhatsApp message sent successfully',
+                'csrfHash' => $this->security->get_csrf_hash()
             ], JSON_UNESCAPED_UNICODE));
 
         return;
