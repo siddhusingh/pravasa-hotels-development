@@ -83,8 +83,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label for="property_id" class="form-label">Property <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="property_id" name="property_id">
                         <option value="">Select Property</option>
@@ -94,27 +94,27 @@
                     </select>
                     <span class="validation text-danger" id="property_id_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="template_name" class="form-label">Template Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="template_name" name="template_name" placeholder="Enter template name">
                     <span class="validation text-danger" id="template_name_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="orai_template_code" class="form-label">ORAI Template Code <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="orai_template_code" name="orai_template_code" placeholder="Enter ORAI template code">
                     <span class="validation text-danger" id="orai_template_code_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="api_key" class="form-label">API Key <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Enter API key">
                     <span class="validation text-danger" id="api_key_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="api_endpoint" class="form-label">API EndPoint <span class="required-asterisk">*</span></label>
                     <input type="url" class="form-control" id="api_endpoint" name="api_endpoint" placeholder="Enter API endpoint">
                     <span class="validation text-danger" id="api_endpoint_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>

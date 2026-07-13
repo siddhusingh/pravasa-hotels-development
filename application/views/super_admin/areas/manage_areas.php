@@ -84,17 +84,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label for="area_name" class="form-label">Area Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="area_name" name="area_name" placeholder="Enter area name">
                     <span class="validation text-danger" id="area_name_error"></span>
                 </div>
-                <div class="mb-3">
-                    <label for="area_description" class="form-label">Area Description</label>
-                    <textarea class="form-control" id="area_description" name="area_description" placeholder="Enter area description"></textarea>
-                </div>
-                <div class="mb-3">
+               
+                <div class="col-sm-6 mb-3">
                     <label for="state" class="form-label">State <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="state" name="state">
                         <option value="">Select State</option>
@@ -104,7 +101,7 @@
                     </select>
                     <span class="validation text-danger" id="state_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="primary_user" class="form-label">Primary User <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="primary_user" name="primary_user">
                         <option value="">Select User</option>
@@ -114,7 +111,7 @@
                     </select>
                     <span class="validation text-danger" id="primary_user_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="secondary_user" class="form-label">Secondary User</label>
                     <select class="form-select" id="secondary_user" name="secondary_user">
                         <option value="">Select User</option>
@@ -123,12 +120,16 @@
                         <?php } ?>
                     </select>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="Active" selected>Active</option>
                         <option value="Inactive">Inactive</option>
                     </select>
+                </div>
+                 <div class="col-sm-12 mb-3">
+                    <label for="area_description" class="form-label">Area Description</label>
+                    <textarea class="form-control" id="area_description" name="area_description" placeholder="Enter area description"></textarea>
                 </div>
             </div>
             <div class="modal-footer d-flex justify-content-start">

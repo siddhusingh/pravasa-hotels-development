@@ -79,20 +79,20 @@
                 </div>
             </div>
 
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label>Plan Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="plan_name" name="plan_name">
                     <span class="validation text-danger" id="plan_name_error"></span>
                 </div>
 
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Plan Code <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="plan_code" name="plan_code">
                     <span class="validation text-danger" id="plan_code_error"></span>
                 </div>
 
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label>Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1">Active</option>

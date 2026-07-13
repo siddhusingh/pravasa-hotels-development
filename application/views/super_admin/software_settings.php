@@ -18,17 +18,14 @@
 
         <!-- Main content -->
         <section class="content">
-            <div class="row">
+            <div class="row settings_card">
                 <div class="col-12">
-                    <div class="box new_table_box">
-                        <div class="box-header">
-                            <h4 class="box-title">Software Settings</h4>
-
-                        </div>
+                    <div class="  software_settings_page">
+                    
                         <div class="box-body">
                             <form id="softwareSettingsForm" enctype="multipart/form-data">
 
-                                <h5>Basic Information</h5>
+                                <h5 class="section_title">Basic Information</h5>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label>Site Title</label>
@@ -44,9 +41,8 @@
                                     </div>
                                 </div>
 
-                                <hr>
 
-                                <h5>Branding</h5>
+                                <h5 class="section_title">Branding</h5>
                                 <div class="row">
 
                                     <!-- LOGO -->
@@ -99,19 +95,16 @@
 
                                 </div>
 
-
-                                <hr>
-
-                                <h5>SMTP Settings</h5>
+                                <h5 class="section_title">SMTP Settings</h5>
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label>SMTP Host</label>
                                         <input type="text" name="smtp_host" class="form-control" value="<?= $settings->smtp_host ?? '' ?>">
                                         <small class="text-danger error"></small>
 
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <label>Port</label>
                                         <input type="text" name="smtp_port" class="form-control" value="<?= $settings->smtp_port ?? '' ?>">
                                         <small class="text-danger error"></small>
@@ -135,7 +128,7 @@
                                 </div>
 
                                 <div class="row mt-2">
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label>Encryption</label>
                                         <select name="smtp_encryption" class="form-control">
                                             <option value="tls">TLS</option>
@@ -154,7 +147,7 @@
 
                                     </div>
 
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <label>From Name</label>
                                         <input type="text" name="smtp_from_name" class="form-control"
                                             value="<?= $settings->smtp_from_name ?? '' ?>">

@@ -93,8 +93,8 @@
                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
          </div>
-         <div class="modal-body ps-3 pe-3">
-            <div class="mb-3">
+         <div class="modal-body ps-3 pe-3 row">
+            <div class="col-sm-6 mb-3">
                <label for="country_id" class="form-label">Select Country <span class="required-asterisk">*</span></label>
                <select class="form-control" name="country_id" id="country_id">
                   <option value="">Select Country</option>
@@ -104,14 +104,14 @@
                </select>
                <span id="country_id_error" class="validation text-danger"></span>
             </div>
-            <div class="mb-3">
+            <div class="col-sm-6 mb-3">
                <label for="state_id" class="form-label">Select State <span class="required-asterisk">*</span></label>
                <select class="form-control" name="state_id" id="state_id" disabled>
                   <option value="">Select State</option>
                </select>
                <span id="state_id_error" class="validation text-danger"></span>
             </div>
-            <div class="mb-3">
+            <div class="col-sm-6 mb-3">
                <label for="city_name" class="form-label">City Name <span class="required-asterisk">*</span></label>
                <input class="form-control" type="text" id="city_name" required placeholder="Indore">
                <span id="city_name_error" class="validation text-danger"></span>

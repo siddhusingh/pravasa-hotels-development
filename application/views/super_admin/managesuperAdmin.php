@@ -84,28 +84,28 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">Full Name <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="full_name" placeholder="Full name">
                     <span id="full_name_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">Email <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="email" id="email" placeholder="admin@example.com">
                     <span id="email_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">Phone <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="phone" placeholder="9876543210">
                     <span id="phone_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label" id="password_label">Password <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="password" id="password" placeholder="Password">
                     <span id="password_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3" id="status-wrapper">
+                <div class="col-sm-6 mb-3" id="status-wrapper">
                     <label class="form-label">Status</label>
                     <select class="form-control" id="status">
                         <option value="active">Active</option>

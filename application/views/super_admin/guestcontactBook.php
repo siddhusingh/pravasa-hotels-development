@@ -29,11 +29,11 @@
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box new_table_box">
                         <div class="box-header">
                             <h4 class="box-title">Guest Contact Book</h4>
                             <div class="float-right" style="float:right;">
-                                <a href="<?php echo base_url('add-lead'); ?>" class="btn btn-primary-light btn-sm">
+                                <a href="<?php echo base_url('add-lead'); ?>" class="new_button">
                                     Add +
                                 </a>
                             </div>

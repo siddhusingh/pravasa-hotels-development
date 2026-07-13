@@ -33,7 +33,7 @@
                                 <button type="button" class="btn btn-primary-light btn-sm" id="open-department-modal">Add +</button>
                             </div>
                         </div>
-                        <div class="box-body">
+                        <div class="box-body last_active_design_td">
                             <div class="table-responsive">
                                 <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
                                     <thead>

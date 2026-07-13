@@ -83,8 +83,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-sm-6 mb-3">
                     <label>Parent Hotel <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="hotel_id" name="hotel_id">
                         <option value="">Select Hotel</option>
@@ -94,12 +94,12 @@
                     </select>
                     <span class="validation text-danger" id="hotel_id_error"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">RoomType Code <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="roomtype_code" placeholder="Please Enter RoomType Code">
                     <span id="roomtype_code_error" class="validation text-danger"></span>
                 </div>
-                <div class="mb-3">
+                <div class="col-sm-6 mb-3">
                     <label class="form-label">RoomType Name <span class="required-asterisk">*</span></label>
                     <input class="form-control" type="text" id="roomtype_name" placeholder="Please Enter Room Type Name">
                     <span id="roomtype_name_error" class="validation text-danger"></span>

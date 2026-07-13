@@ -81,8 +81,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="mb-3">
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-md-6 mb-3">
                     <label>Parent Hotel <span class="required-asterisk">*</span></label>
                     <select class="form-select" id="hotel_id" name="hotel_id">
                         <option value="">Select Hotel</option>
@@ -92,32 +92,32 @@
                     </select>
                     <div class="text-danger validation" id="hotel_id_error"></div>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Restaurant Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="restaurant_name" name="restaurant_name">
                     <div class="text-danger validation" id="restaurant_name_error"></div>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Restaurant Code <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="restaurant_code" name="restaurant_code">
                     <div class="text-danger validation" id="restaurant_code_error"></div>
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Contact Number</label>
                     <input type="text" class="form-control" id="contact_number" name="contact_number">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Email</label>
                     <input type="email" class="form-control" id="email" name="email">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Restaurant Image</label>
                     <input type="file" class="form-control" id="restaurant_image" name="restaurant_image" accept="image/*">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <img id="restaurant_image_preview" style="width:100px; display:none;">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 mb-3">
                     <label>Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>
@@ -125,8 +125,8 @@
                     </select>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" id="action-btn" class="btn btn-primary" data-key="">Save</button>
             </div>
         </div>
