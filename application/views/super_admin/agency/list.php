@@ -10,6 +10,55 @@
         color: #dc3545;
         font-weight: 600;
     }
+
+    #addAgencyModal .select2-container,
+    #editAgencyModal .select2-container {
+        width: 100% !important;
+    }
+
+    #addAgencyModal .select2-container--default .select2-selection--multiple,
+    #editAgencyModal .select2-container--default .select2-selection--multiple {
+        height: auto !important;
+        min-height: 46px;
+        max-height: none;
+        overflow: visible;
+        padding: 5px 8px;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #addAgencyModal .select2-selection--multiple .select2-selection__rendered,
+    #editAgencyModal .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        padding: 0;
+        white-space: normal;
+        overflow: visible;
+    }
+
+    #addAgencyModal .select2-selection--multiple .select2-selection__choice,
+    #editAgencyModal .select2-selection--multiple .select2-selection__choice {
+        margin: 0;
+    }
+
+    #addAgencyModal .select2-search--inline .select2-search__field,
+    #editAgencyModal .select2-search--inline .select2-search__field {
+        height: 30px !important;
+        margin: 0;
+        box-shadow: none !important;
+    }
+
+    .agency-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -41,7 +90,7 @@
                 <div class="col-12">
                     <div class="box new_table_box">
                         <div class="box-header">
-                            <h4 class="box-title">Agency Management</h4>
+                            <h4 class="box-title">Agency List</h4>
                             <div class="float-right" style="float:right;">
                                 <button type="button" class="btn btn-primary-light btn-sm" id="open-add-modal">
                                     Add +
@@ -50,18 +99,17 @@
                         </div>
                         <div class="box-body">
                             <div class="table-responsive">
-                                <table id="agencies-data-table" class="text-fade table table-bordered display" style="width:100%">
+                                <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
                                     <thead>
-                                        <tr class="text-dark">
-                                            <th>#</th>
+                                        <tr>
+                                            <th>Sr. No.</th>
                                             <th>Agency Name</th>
                                             <th>Contact Person</th>
                                             <th>Email</th>
                                             <th>Phone</th>
                                             <th>Status</th>
                                             <th>Assigned Properties</th>
-                                            <th>Created Date</th>
-                                            <th>Actions</th>
+                                            <th width="120">Action</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -158,7 +206,7 @@
                             <label>Assign Properties <span class="required-asterisk">*</span></label>
                             <select multiple name="property_ids[]" id="property_ids" class="form-control" style="width:100%;">
                                 <?php foreach ($hotel_admin as $p): ?>
-                                    <option value="<?= encrypt_id($p->hotel_id) ?>"><?= $p->hotel_name ?></option>
+                                    <option value="<?= encrypt_id($p->hotel_id) ?>"><?= htmlspecialchars($p->hotel_name, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <div class="error-label text-danger" id="property_ids_error"></div>
@@ -259,7 +307,7 @@
                             <label>Assign Properties <span class="required-asterisk">*</span></label>
                             <select multiple name="property_ids[]" id="edit_property_ids" class="form-control" style="width:100%;">
                                 <?php foreach ($hotel_admin as $p): ?>
-                                    <option value="<?= encrypt_id($p->hotel_id) ?>"><?= $p->hotel_name ?></option>
+                                    <option value="<?= encrypt_id($p->hotel_id) ?>"><?= htmlspecialchars($p->hotel_name, ENT_QUOTES, 'UTF-8') ?></option>
                                 <?php endforeach; ?>
                             </select>
                             <div class="error-label text-danger" id="edit_property_ids_error"></div>
@@ -300,29 +348,22 @@
 <script>
     var agencyTable;
 
-    function ensureModuleDataTable(callback) {
-        if ($.fn.DataTable) {
-            callback();
-            return;
-        }
-
-        $.getScript("<?= base_url('assets/assets/vendor_components/datatable/datatables.min.js') ?>", callback);
-    }
-
     function initAgencySelects() {
         if ($.fn.select2) {
             $('#property_ids').select2({
                 width: '100%',
                 placeholder: 'Select Properties',
                 closeOnSelect: false,
-                dropdownParent: $('#addAgencyModal')
+                dropdownParent: $('#addAgencyModal'),
+                dropdownCssClass: 'agency-select2-dropdown'
             });
 
             $('#edit_property_ids').select2({
                 width: '100%',
                 placeholder: 'Select Properties',
                 closeOnSelect: false,
-                dropdownParent: $('#editAgencyModal')
+                dropdownParent: $('#editAgencyModal'),
+                dropdownCssClass: 'agency-select2-dropdown'
             });
         }
     }
@@ -394,42 +435,37 @@
         return valid;
     }
 
-    function initAgenciesModule() {
-        initAgencySelects();
-
-        if (!$.fn.DataTable.isDataTable('#agencies-data-table')) {
-            agencyTable = $('#agencies-data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ordering: true,
-                searching: true,
-                columnDefs: [
-                    { targets: [6, 8], orderable: false }
-                ],
-                ajax: {
-                    url: "<?= base_url('get-agencies-table') ?>",
-                    type: "POST",
-                    data: function(d) {
-                        d[window.CSRF.name] = window.CSRF.hash;
-                    },
-                    dataSrc: function(json) {
-                        if (json.csrfHash) {
-                            window.CSRF.hash = json.csrfHash;
-                        }
-                        return json.data;
-                    }
+    agencyTable = $('#server-side-data-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ordering: true,
+        searching: true,
+        columnDefs: [
+            { targets: [6, 7], orderable: false }
+        ],
+        ajax: {
+            url: "<?= base_url('get-agencies-table') ?>",
+            type: "POST",
+            data: function(d) {
+                d[window.CSRF.name] = window.CSRF.hash;
+            },
+            drawCallback: function(settings) {
+                if (settings.json && settings.json.csrfHash) {
+                    window.CSRF.hash = settings.json.csrfHash;
                 }
-            });
+            },
+            dataSrc: function(json) {
+                if (json.csrfHash) {
+                    window.CSRF.hash = json.csrfHash;
+                }
+                return json.data;
+            }
         }
-    }
-
-    $(window).on('load', function() {
-        ensureModuleDataTable(function() {
-            initAgenciesModule();
-        });
     });
 
     $(document).ready(function() {
+        initAgencySelects();
+
         $(document).on('click', '#open-add-modal', function() {
             clearValidation('#addAgencyForm');
             $('#addAgencyForm')[0].reset();
@@ -519,6 +555,10 @@
                     $('#edit_password').val('');
                     setEncryptedMultiSelectValue('#edit_property_ids', row.selected_properties);
                     $('#editAgencyModal').modal('show');
+
+                    if (row.unavailable_properties > 0) {
+                        toastr.warning('One or more previously assigned properties are unavailable and were not selected.');
+                    }
                 },
                 error: function() {
                     toastr.error('Server error while fetching data');
@@ -568,12 +608,12 @@
 
             Swal.fire({
                 title: 'Are you sure?',
-                text: 'You will not be able to recover this record!',
+                text: 'This agency will be removed from the active agency list.',
                 icon: 'question',
                 showCancelButton: true,
                 showCloseButton: true,
-                confirmButtonText: 'Yes Delete it',
-                denyButtonText: 'Cancel'
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({

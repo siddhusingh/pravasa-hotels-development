@@ -217,7 +217,7 @@ class SuperAdminController extends CI_Controller
         if (empty($admin)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'Super admin not found',
+                'message' => 'Super admin not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -244,6 +244,16 @@ class SuperAdminController extends CI_Controller
             return;
         }
 
+        $existingAdmin = $this->SuperAdmin_model->getById($id);
+        if (empty($existingAdmin)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Super admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $validated = $this->validateAdminPayload(false);
         if (!empty($validated['errors'])) {
             echo json_encode([
@@ -259,7 +269,8 @@ class SuperAdminController extends CI_Controller
             'full_name' => $payload['full_name'],
             'email' => $payload['email'],
             'phone' => $payload['phone'],
-            'status' => $payload['status']
+            'status' => $payload['status'],
+            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         if ($payload['password'] !== '') {
@@ -267,8 +278,27 @@ class SuperAdminController extends CI_Controller
         }
 
         $updated = $this->SuperAdmin_model->update($id, $updateData);
+        $affectedRows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Unable to update super admin',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affectedRows === 0 && empty($this->SuperAdmin_model->getById($id))) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Super admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affectedRows > 0) {
             $this->logActivity(
                 'update',
                 $id,
@@ -296,18 +326,31 @@ class SuperAdminController extends CI_Controller
         }
 
         $admin = $this->SuperAdmin_model->getById($id);
-        $deleted = $this->SuperAdmin_model->delete($id);
+        if (empty($admin)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Super admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $deleteQuery = $this->SuperAdmin_model->delete($id);
+        $deleted = $deleteQuery && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
                 'delete',
                 $id,
-                $admin ? "Deleted super admin {$admin['full_name']} ({$admin['email']})" : "Deleted super admin record {$id}"
+                "Deleted super admin {$admin['full_name']} ({$admin['email']})"
             );
         }
 
         echo json_encode([
             'status' => $deleted ? 'success' : 'error',
+            'message' => $deleted
+                ? 'Super Admin deleted successfully'
+                : ($deleteQuery ? 'Super admin not found or already deleted' : 'Unable to delete super admin'),
             'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }

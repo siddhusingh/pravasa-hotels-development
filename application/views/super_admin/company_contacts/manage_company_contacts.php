@@ -9,6 +9,40 @@
         color: #dc3545;
         font-weight: 600;
     }
+
+    #addContactModal .select2-container,
+    #editContactModal .select2-container {
+        width: 100% !important;
+    }
+
+    #addContactModal .select2-container .select2-selection--single,
+    #editContactModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #addContactModal .select2-selection--single .select2-selection__rendered,
+    #editContactModal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 13px !important;
+        padding-right: 35px !important;
+    }
+
+    #addContactModal .select2-selection--single .select2-selection__arrow,
+    #editContactModal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    .company-contact-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -37,37 +71,40 @@
         </div>
 
         <section class="content">
-            <div class="box new_table_box">
-                <div class="box-header d-flex justify-content-between">
-                    <h4 class="box-title">Contact List</h4>
-                    <button class="btn btn-primary btn-sm" id="openAddContact">
-                        Add Contact +
-                    </button>
-                </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="box new_table_box">
+                        <div class="box-header">
+                            <h4 class="box-title">Contact List</h4>
+                            <div class="float-right" style="float:right;">
+                                <button type="button" class="btn btn-primary-light btn-sm" id="openAddContact">
+                                    Add Contact +
+                                </button>
+                            </div>
+                        </div>
 
-                <div class="box-body">
-                    <div class="table-responsive">
-                        <table id="company-contacts-data-table" class="text-fade table table-bordered display" style="width:100%">
-                            <thead>
-                                <tr class="text-dark">
-                                    <th>Sr. No.</th>
-                                    <th>Company Name</th>
-                                    <th>Title</th>
-                                    <th>Full Name</th>
-                                    <th>Designation</th>
-                                    <th>Email</th>
-                                    <th>Mobile</th>
-                                    <th>Phone</th>
-                                    <th>City</th>
-                                    <th>State</th>
-                                    <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-
-                        </table>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Sr. No.</th>
+                                            <th>Company Name</th>
+                                            <th>Title</th>
+                                            <th>Full Name</th>
+                                            <th>Designation</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Phone</th>
+                                            <th>City</th>
+                                            <th>State</th>
+                                            <th>Status</th>
+                                            <th width="120">Action</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -115,7 +152,7 @@
                                 <option value="" selected disabled>Select Company</option>
                                 <?php foreach ($companies as $company) { ?>
                                     <option value="<?= encrypt_id($company->company_id); ?>">
-                                        <?= $company->company_name; ?>
+                                        <?= htmlspecialchars($company->company_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -153,10 +190,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Designation</label>
                             <select class="form-control" name="designation_id">
-                                <option value="" selected disabled>Select Designation</option>
+                                <option value="">Select Designation</option>
                                 <?php foreach ($designations as $designation) { ?>
                                     <option value="<?= encrypt_id($designation->id); ?>">
-                                        <?= $designation->designation_name; ?>
+                                        <?= htmlspecialchars($designation->designation_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -192,10 +229,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Country</label>
                             <select class="form-control" name="country_id" id="country_id">
-                                <option value="" selected disabled>Select Country</option>
+                                <option value="">Select Country</option>
                                 <?php foreach ($countries as $each) { ?>
                                     <option value="<?= encrypt_id($each->country_id); ?>">
-                                        <?= $each->country_name; ?>
+                                        <?= htmlspecialchars($each->country_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -205,10 +242,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">State</label>
                             <select class="form-control" name="state_id" id="state_id">
-                                <option value="" selected disabled>Select State</option>
+                                <option value="">Select State</option>
                                 <?php foreach ($states as $state) { ?>
                                     <option value="<?= encrypt_id($state->state_id); ?>">
-                                        <?= $state->state_name; ?>
+                                        <?= htmlspecialchars($state->state_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -219,10 +256,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">City</label>
                             <select class="form-control" name="city" id="city">
-                                <option value="" selected disabled>Select City</option>
+                                <option value="">Select City</option>
                                 <?php foreach ($cities as $city) { ?>
                                     <option value="<?= encrypt_id($city->city_id); ?>">
-                                        <?= $city->city_name; ?>
+                                        <?= htmlspecialchars($city->city_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -319,7 +356,7 @@
                                 <option value="" disabled>Select Company</option>
                                 <?php foreach ($companies as $company) { ?>
                                     <option value="<?= encrypt_id($company->company_id); ?>">
-                                        <?= $company->company_name; ?>
+                                        <?= htmlspecialchars($company->company_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -357,10 +394,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Designation</label>
                             <select class="form-control" name="designation_id" id="edit_designation_id">
-                                <option value="" disabled>Select Designation</option>
+                                <option value="">Select Designation</option>
                                 <?php foreach ($designations as $designation) { ?>
                                     <option value="<?= encrypt_id($designation->id); ?>">
-                                        <?= $designation->designation_name; ?>
+                                        <?= htmlspecialchars($designation->designation_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -396,10 +433,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Country</label>
                             <select class="form-control" name="country_id" id="edit_country_id">
-                                <option value="" disabled>Select Country</option>
+                                <option value="">Select Country</option>
                                 <?php foreach ($countries as $each) { ?>
                                     <option value="<?= encrypt_id($each->country_id); ?>">
-                                        <?= $each->country_name; ?>
+                                        <?= htmlspecialchars($each->country_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -409,10 +446,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">State</label>
                             <select class="form-control" name="state_id" id="edit_state_id">
-                                <option value="" disabled>Select State</option>
+                                <option value="">Select State</option>
                                 <?php foreach ($states as $state) { ?>
                                     <option value="<?= encrypt_id($state->state_id); ?>">
-                                        <?= $state->state_name; ?>
+                                        <?= htmlspecialchars($state->state_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -423,10 +460,10 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">City</label>
                             <select class="form-control" name="city" id="edit_city">
-                                <option value="" disabled>Select City</option>
+                                <option value="">Select City</option>
                                 <?php foreach ($cities as $city) { ?>
                                     <option value="<?= encrypt_id($city->city_id); ?>">
-                                        <?= $city->city_name; ?>
+                                        <?= htmlspecialchars($city->city_name, ENT_QUOTES, 'UTF-8'); ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -526,61 +563,88 @@
             return;
         }
 
-        if ($(selector + ' option[value="' + value + '"]').length === 0) {
-            $(selector).append(new Option(label || 'Selected', value, true, true));
+        var optionExists = $(selector).find('option').filter(function() {
+            return this.value === value;
+        }).length > 0;
+
+        if (!optionExists) {
+            var option = new Option(label || 'Selected', value, true, true);
+            option.setAttribute('data-transient', 'true');
+            $(selector).append(option);
         }
 
         $(selector).val(value).trigger('change');
     }
 
-    function ensureModuleDataTable(callback) {
-        if ($.fn.DataTable) {
-            callback();
+    function initCompanyContactSelect2() {
+        if (!$.fn.select2) {
             return;
         }
 
-        $.getScript("<?= base_url('assets/assets/vendor_components/datatable/datatables.min.js') ?>", callback);
-    }
-
-    function initCompanyContactsModule() {
-        if ($.fn.DataTable.isDataTable('#company-contacts-data-table')) {
-            return;
-        }
-
-        contactTable = $('#company-contacts-data-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ordering: true,
-            searching: true,
-            columnDefs: [
-                { targets: 13, orderable: false }
-            ],
-            ajax: {
-                url: "<?= base_url('get-company-contacts-table') ?>",
-                type: "POST",
-                data: function(d) {
-                    d[window.CSRF.name] = window.CSRF.hash;
-                },
-                dataSrc: function(json) {
-                    if (json.csrfHash) {
-                        window.CSRF.hash = json.csrfHash;
-                    }
-                    return json.data;
-                }
+        var groups = [
+            {
+                modal: '#addContactModal',
+                selectors: '#company_id, #addContactModal select[name="designation_id"], #country_id, #state_id, #city'
+            },
+            {
+                modal: '#editContactModal',
+                selectors: '#edit_company_id, #edit_designation_id, #edit_country_id, #edit_state_id, #edit_city'
             }
+        ];
+
+        $.each(groups, function(index, group) {
+            $(group.selectors).each(function() {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+
+                $select.select2({
+                    width: '100%',
+                    placeholder: $select.find('option:first').text(),
+                    allowClear: false,
+                    dropdownParent: $(group.modal),
+                    dropdownCssClass: 'company-contact-select2-dropdown'
+                });
+            });
         });
     }
 
-    $(window).on('load', function() {
-        ensureModuleDataTable(function() {
-            initCompanyContactsModule();
-        });
+    contactTable = $('#server-side-data-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ordering: true,
+        searching: true,
+        columnDefs: [
+            { targets: 11, orderable: false }
+        ],
+        ajax: {
+            url: "<?= base_url('get-company-contacts-table') ?>",
+            type: "POST",
+            data: function(d) {
+                d[window.CSRF.name] = window.CSRF.hash;
+            },
+            drawCallback: function(settings) {
+                if (settings.json && settings.json.csrfHash) {
+                    window.CSRF.hash = settings.json.csrfHash;
+                }
+            },
+            dataSrc: function(json) {
+                if (json.csrfHash) {
+                    window.CSRF.hash = json.csrfHash;
+                }
+                return json.data;
+            }
+        }
     });
 
     $(document).ready(function() {
+        initCompanyContactSelect2();
+
         /* ================= OPEN ADD MODAL ================= */
         $(document).on('click', '#openAddContact', function() {
             $('#addContactForm')[0].reset();
+            $('#addContactForm select').trigger('change');
             $('.error-label').text('').hide();
             $('input, select, textarea').removeClass('is-invalid');
             $('#addContactModal').modal('show');
@@ -630,6 +694,7 @@
                         toastr.success(response.message || 'Contact added successfully');
                         $('#addContactModal').modal('hide');
                         $('#addContactForm')[0].reset();
+                        $('#addContactForm select').trigger('change');
                         contactTable.draw(false);
                     } else if (response.errors) {
                         $.each(response.errors, function(key, val) {
@@ -661,6 +726,10 @@
 
             $('.error-label').text('').hide();
             $('input, select, textarea').removeClass('is-invalid');
+            $('#editContactForm select').each(function() {
+                $(this).find('option[data-transient="true"]').remove();
+                $(this).val('').trigger('change');
+            });
 
             $.ajax({
                 url: "<?= base_url('company-contact-details') ?>",
@@ -716,6 +785,13 @@
 
 
                         $('#editContactModal').modal('show');
+
+                        if ((c.unavailable_dependencies || []).length > 0) {
+                            toastr.warning(
+                                'Please select an active replacement for: ' +
+                                c.unavailable_dependencies.join(', ') + '.'
+                            );
+                        }
 
                     } else {
                         toastr.error(response.message || 'Failed to fetch contact details');
@@ -800,11 +876,11 @@
 
         Swal.fire({
             title: "Are you sure?",
-            text: 'You will not be able to recover this record!',
+            text: 'This contact will be removed from the active company contact list.',
             icon: "question",
             showCancelButton: true,
             showCloseButton: true,
-            confirmButtonText: "Yes Delete it",
+            confirmButtonText: "Yes, delete it",
             denyButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
@@ -836,6 +912,6 @@
     });
 
     function refreshContactTable() {
-        $('#company-contacts-data-table').DataTable().draw(false);
+        $('#server-side-data-table').DataTable().draw(false);
     }
 </script>

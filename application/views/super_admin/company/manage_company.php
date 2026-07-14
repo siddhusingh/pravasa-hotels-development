@@ -9,6 +9,40 @@
         color: #dc3545;
         font-weight: 600;
     }
+
+    #addCompanyModal .select2-container,
+    #editCompanyModal .select2-container {
+        width: 100% !important;
+    }
+
+    #addCompanyModal .select2-container .select2-selection--single,
+    #editCompanyModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #addCompanyModal .select2-selection--single .select2-selection__rendered,
+    #editCompanyModal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 13px !important;
+        padding-right: 35px !important;
+    }
+
+    #addCompanyModal .select2-selection--single .select2-selection__arrow,
+    #editCompanyModal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    .company-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -37,34 +71,38 @@
         </div>
 
         <section class="content">
-            <div class="box new_table_box">
-                <div class="box-header d-flex justify-content-between">
-                    <h4 class="box-title">Company List</h4>
-                    <button class="btn btn-primary btn-sm" id="open-add-company">
-                        Add Company +
-                    </button>
-                </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="box new_table_box">
+                        <div class="box-header">
+                            <h4 class="box-title">Company List</h4>
+                            <div class="float-right" style="float:right;">
+                                <button type="button" class="btn btn-primary-light btn-sm" id="open-add-company">
+                                    Add Company +
+                                </button>
+                            </div>
+                        </div>
 
-                <div class="box-body">
-                    <div class="table-responsive">
-                        <table id="companies-data-table" class="text-fade table table-bordered display" style="width:100%">
-                            <thead>
-                                <tr class="text-dark">
-                                    <th>Sr. No.</th>
-                                    <th>Company Group</th>
-                                    <th>Company Name</th>
-                                    <th>Email</th>
-                                    <th>Area User</th>
-                                    <th>Mobile</th>
-                                    <th>City</th>
-                                    <th>State</th>
-                                    <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Sr. No.</th>
+                                            <th>Company Group</th>
+                                            <th>Company Name</th>
+                                            <th>Email</th>
+                                            <th>Area User</th>
+                                            <th>Mobile</th>
+                                            <th>City</th>
+                                            <th>State</th>
+                                            <th>Status</th>
+                                            <th width="120">Action</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -112,7 +150,7 @@
                         <select class="form-select" name="company_group_id" id="add_company_group_id">
                             <option value="">Select</option>
                             <?php foreach ($company_groups as $g) { ?>
-                                <option value="<?= encrypt_id($g->id) ?>"><?= $g->company_group_name ?></option>
+                                <option value="<?= encrypt_id($g->id) ?>"><?= htmlspecialchars($g->company_group_name, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php } ?>
                         </select>
                         <div class="error-label text-danger" id="add_company_group_id_error"></div>
@@ -156,7 +194,7 @@
                         <select class="form-select" name="country_id" id="add_country_id">
                             <option value="">Select Country</option>
                             <?php foreach ($countries as $c) { ?>
-                                <option value="<?= encrypt_id($c->country_id) ?>"><?= $c->country_name ?></option>
+                                <option value="<?= encrypt_id($c->country_id) ?>"><?= htmlspecialchars($c->country_name, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php } ?>
                         </select>
                         <div class="error-label text-danger" id="add_country_id_error"></div>
@@ -167,7 +205,7 @@
                         <select class="form-select" name="state_id" id="add_state_id">
                             <option value="">Select State</option>
                             <?php foreach ($states as $s) { ?>
-                                <option value="<?= encrypt_id($s->state_id) ?>"><?= $s->state_name ?></option>
+                                <option value="<?= encrypt_id($s->state_id) ?>"><?= htmlspecialchars($s->state_name, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php } ?>
                         </select>
                         <div class="error-label text-danger" id="add_state_id_error"></div>
@@ -178,7 +216,7 @@
                         <select class="form-select" name="city_id" id="add_city_id">
                             <option value="">Select City</option>
                             <?php foreach ($cities as $c) { ?>
-                                <option value="<?= encrypt_id($c->city_id) ?>"><?= $c->city_name ?></option>
+                                <option value="<?= encrypt_id($c->city_id) ?>"><?= htmlspecialchars($c->city_name, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php } ?>
                         </select>
                         <div class="error-label text-danger" id="add_city_id_error"></div>
@@ -189,7 +227,7 @@
                         <select class="form-select" name="area_id" id="add_area_id">
                             <option value="">Select</option>
                             <?php foreach ($areas as $a) { ?>
-                                <option value="<?= encrypt_id($a->area_id) ?>"><?= $a->area_name ?></option>
+                                <option value="<?= encrypt_id($a->area_id) ?>"><?= htmlspecialchars($a->area_name, ENT_QUOTES, 'UTF-8') ?></option>
                             <?php } ?>
                         </select>
                         <div class="error-label text-danger" id="add_area_id_error"></div>
@@ -289,7 +327,7 @@
                             <option value="">Select</option>
                             <?php foreach ($company_groups as $g) { ?>
                                 <option value="<?= encrypt_id($g->id) ?>">
-                                    <?= $g->company_group_name ?>
+                                    <?= htmlspecialchars($g->company_group_name, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php } ?>
                         </select>
@@ -342,7 +380,7 @@
                             <option value="">Select Country</option>
                             <?php foreach ($countries as $c) { ?>
                                 <option value="<?= encrypt_id($c->country_id) ?>">
-                                    <?= $c->country_name ?>
+                                    <?= htmlspecialchars($c->country_name, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php } ?>
                         </select>
@@ -356,7 +394,7 @@
                             <option value="">Select State</option>
                             <?php foreach ($states as $s) { ?>
                                 <option value="<?= encrypt_id($s->state_id) ?>">
-                                    <?= $s->state_name ?>
+                                    <?= htmlspecialchars($s->state_name, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php } ?>
                         </select>
@@ -370,7 +408,7 @@
                             <option value="">Select City</option>
                             <?php foreach ($cities as $c) { ?>
                                 <option value="<?= encrypt_id($c->city_id) ?>">
-                                    <?= $c->city_name ?>
+                                    <?= htmlspecialchars($c->city_name, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php } ?>
                         </select>
@@ -384,7 +422,7 @@
                             <option value="">Select Area</option>
                             <?php foreach ($areas as $a) { ?>
                                 <option value="<?= encrypt_id($a->area_id) ?>">
-                                    <?= $a->area_name ?>
+                                    <?= htmlspecialchars($a->area_name, ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php } ?>
                         </select>
@@ -497,62 +535,89 @@
             return;
         }
 
-        if ($(selector + ' option[value="' + value + '"]').length === 0) {
-            $(selector).append(new Option(label || 'Selected', value, true, true));
+        var optionExists = $(selector).find('option').filter(function() {
+            return this.value === value;
+        }).length > 0;
+
+        if (!optionExists) {
+            var option = new Option(label || 'Selected', value, true, true);
+            option.setAttribute('data-transient', 'true');
+            $(selector).append(option);
         }
 
         $(selector).val(value).trigger('change');
     }
 
-    function ensureModuleDataTable(callback) {
-        if ($.fn.DataTable) {
-            callback();
+    function initCompanySelect2() {
+        if (!$.fn.select2) {
             return;
         }
 
-        $.getScript("<?= base_url('assets/assets/vendor_components/datatable/datatables.min.js') ?>", callback);
-    }
-
-    function initCompaniesModule() {
-        if ($.fn.DataTable.isDataTable('#companies-data-table')) {
-            return;
-        }
-
-        companyTable = $('#companies-data-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ordering: true,
-            searching: true,
-            columnDefs: [
-                { targets: 11, orderable: false }
-            ],
-            ajax: {
-                url: "<?= base_url('get-companies-table') ?>",
-                type: "POST",
-                data: function(d) {
-                    d[window.CSRF.name] = window.CSRF.hash;
-                },
-                dataSrc: function(json) {
-                    if (json.csrfHash) {
-                        window.CSRF.hash = json.csrfHash;
-                    }
-                    return json.data;
-                }
+        var groups = [
+            {
+                modal: '#addCompanyModal',
+                selectors: '#add_company_group_id, #add_country_id, #add_state_id, #add_city_id, #add_area_id'
+            },
+            {
+                modal: '#editCompanyModal',
+                selectors: '#edit_company_group_id, #edit_country_id, #edit_state_id, #edit_city_id, #edit_area_id'
             }
+        ];
+
+        $.each(groups, function(index, group) {
+            $(group.selectors).each(function() {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+
+                $select.select2({
+                    width: '100%',
+                    placeholder: $select.find('option:first').text(),
+                    allowClear: false,
+                    dropdownParent: $(group.modal),
+                    dropdownCssClass: 'company-select2-dropdown'
+                });
+            });
         });
     }
 
-    $(window).on('load', function() {
-        ensureModuleDataTable(function() {
-            initCompaniesModule();
-        });
+    companyTable = $('#server-side-data-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ordering: true,
+        searching: true,
+        columnDefs: [
+            { targets: 9, orderable: false }
+        ],
+        ajax: {
+            url: "<?= base_url('get-companies-table') ?>",
+            type: "POST",
+            data: function(d) {
+                d[window.CSRF.name] = window.CSRF.hash;
+            },
+            drawCallback: function(settings) {
+                if (settings.json && settings.json.csrfHash) {
+                    window.CSRF.hash = settings.json.csrfHash;
+                }
+            },
+            dataSrc: function(json) {
+                if (json.csrfHash) {
+                    window.CSRF.hash = json.csrfHash;
+                }
+                return json.data;
+            }
+        }
     });
 
     $(document).ready(function() {
+        initCompanySelect2();
+
         /* ================= OPEN ADD MODAL ================= */
         $(document).on('click', '#open-add-company', function() {
             $('.error-label').text('').hide();
             $('#addCompanyForm')[0].reset();
+            $('#addCompanyForm select').trigger('change');
 
             $('input, select, textarea').removeClass('is-invalid');
             $('#addCompanyModal').modal('show');
@@ -611,6 +676,7 @@
                         toastr.success(response.message || 'Company added successfully');
                         $('#addCompanyModal').modal('hide');
                         $('#addCompanyForm')[0].reset();
+                        $('#addCompanyForm select').trigger('change');
                         companyTable.draw(false);
                     } else if (response.errors) {
                         $.each(response.errors, function(key, val) {
@@ -642,6 +708,10 @@
 
             $('.error-label').text('').hide();
             $('input, select, textarea').removeClass('is-invalid');
+            $('#editCompanyForm select').each(function() {
+                $(this).find('option[data-transient="true"]').remove();
+                $(this).val('').trigger('change');
+            });
 
             $.ajax({
                 url: "<?= base_url('company-details') ?>",
@@ -679,6 +749,13 @@
                         $('#edit_status').val(c.status);
 
                         $('#editCompanyModal').modal('show');
+
+                        if ((c.unavailable_dependencies || []).length > 0) {
+                            toastr.warning(
+                                'Please select an active replacement for: ' +
+                                c.unavailable_dependencies.join(', ') + '.'
+                            );
+                        }
 
                     } else {
                         toastr.error(response.message || 'Failed to load company details');
@@ -772,11 +849,11 @@
 
         Swal.fire({
             title: "Are you sure?",
-            text: 'You will not be able to recover this record!',
+            text: 'This company will be removed from the active company list.',
             icon: "question",
             showCancelButton: true,
             showCloseButton: true,
-            confirmButtonText: "Yes Delete it",
+            confirmButtonText: "Yes, delete it",
             denyButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
@@ -808,6 +885,6 @@
     });
 
     function refreshCompanyTable() {
-        $('#companies-data-table').DataTable().draw(false);
+        $('#server-side-data-table').DataTable().draw(false);
     }
 </script>

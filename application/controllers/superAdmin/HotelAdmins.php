@@ -59,7 +59,7 @@ class HotelAdmins extends MY_Controller
      */
     public function index()
     {
-        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -91,6 +91,15 @@ class HotelAdmins extends MY_Controller
 
         if (empty($hotelId)) {
             $errors['hotel_id'] = 'Please select a hotel';
+        } else {
+            $hotel = $this->Common_model->getdata('hotel_admin', [
+                'hotel_id' => $hotelId,
+                'is_deleted' => 0
+            ]);
+
+            if (empty($hotel)) {
+                $errors['hotel_id'] = 'Selected hotel is unavailable';
+            }
         }
 
         if ($requirePassword && ($password === '' || strlen($password) < 6)) {
@@ -249,20 +258,27 @@ class HotelAdmins extends MY_Controller
             return;
         }
 
-        $result = $this->Common_model->getdata('hotel_admins', ['id' => $id]);
+        $result = $this->Common_model->getdata('hotel_admins', [
+            'id' => $id,
+            'is_deleted' => 0
+        ]);
         if (empty($result)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'Hotel admin not found',
+                'message' => 'Hotel admin not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
 
-        $hotel = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $result->hotel_id]);
+        $hotel = $this->Common_model->getdata('hotel_admin', [
+            'hotel_id' => $result->hotel_id,
+            'is_deleted' => 0
+        ]);
         unset($result->password);
-        $result->hotel_id = encrypt_id($result->hotel_id);
+        $result->hotel_id = !empty($hotel) ? encrypt_id($result->hotel_id) : '';
         $result->hotel_name = $hotel->hotel_name ?? '';
+        $result->hotel_unavailable = empty($hotel);
 
         echo json_encode([
             'status' => true,
@@ -282,6 +298,20 @@ class HotelAdmins extends MY_Controller
             echo json_encode([
                 'status' => false,
                 'message' => 'Invalid hotel admin selected',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $existingHotelAdmin = $this->Common_model->getdata('hotel_admins', [
+            'id' => $record_id,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($existingHotelAdmin)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel admin not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -314,17 +344,44 @@ class HotelAdmins extends MY_Controller
             $updateData['password'] = md5($payload['password']);
         }
 
-        $this->Comman_model->UpdateRecord(
+        $updated = $this->Comman_model->UpdateRecord(
             'hotel_admins',
             $updateData,
-            ['id' => $record_id]
+            [
+                'id' => $record_id,
+                'is_deleted' => 0
+            ]
         );
+        $affectedRows = $this->db->affected_rows();
 
-        $this->logActivity(
-            'update',
-            $record_id,
-            "Updated hotel admin {$updateData['name']} ({$updateData['email']})"
-        );
+        if (!$updated) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to update hotel admin',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affectedRows === 0 && empty($this->Common_model->getdata('hotel_admins', [
+            'id' => $record_id,
+            'is_deleted' => 0
+        ]))) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affectedRows > 0) {
+            $this->logActivity(
+                'update',
+                $record_id,
+                "Updated hotel admin {$updateData['name']} ({$updateData['email']})"
+            );
+        }
 
         echo json_encode([
             'status' => true,
@@ -348,13 +405,34 @@ class HotelAdmins extends MY_Controller
             return;
         }
 
+        $hotelAdmin = $this->Common_model->getdata('hotel_admins', [
+            'id' => $id,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($hotelAdmin)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $updated = $this->Common_model->UpdateRecord(
             'hotel_admins',
-            ['status' => $status],
-            ['id' => $id]
+            [
+                'status' => $status,
+                'updated_at' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => $id,
+                'is_deleted' => 0
+            ]
         );
+        $affectedRows = $this->db->affected_rows();
 
-        if ($updated) {
+        if ($updated && $affectedRows === 1) {
             $this->logActivity(
                 'status_change',
                 $id,
@@ -392,19 +470,36 @@ class HotelAdmins extends MY_Controller
             return;
         }
 
-        $hotelAdmin = $this->Common_model->getdata('hotel_admins', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata(
+        $where = [
+            'id' => $id,
+            'is_deleted' => 0
+        ];
+        $hotelAdmin = $this->Common_model->getdata('hotel_admins', $where);
+
+        if (empty($hotelAdmin)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel admin not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $deleteQuery = $this->Comman_model->UpdateRecord(
             'hotel_admins',
-            ['id' => $id]
+            [
+                'is_deleted' => 1,
+                'updated_at' => date('Y-m-d H:i:s')
+            ],
+            $where
         );
+        $deleted = $deleteQuery && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
                 'delete',
                 $id,
-                $hotelAdmin
-                    ? "Deleted hotel admin {$hotelAdmin->name} ({$hotelAdmin->email})"
-                    : "Deleted hotel admin record ID {$id}"
+                "Deleted hotel admin {$hotelAdmin->name} ({$hotelAdmin->email})"
             );
 
             $response = [
@@ -415,7 +510,9 @@ class HotelAdmins extends MY_Controller
         } else {
             $response = [
                 'status' => false,
-                'message' => 'Something went wrong',
+                'message' => $deleteQuery
+                    ? 'Hotel admin not found or already deleted'
+                    : 'Unable to delete hotel admin',
                 'csrfHash' => $this->security->get_csrf_hash()
             ];
         }

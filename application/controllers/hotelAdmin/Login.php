@@ -38,7 +38,21 @@ class Login extends CI_Controller
         ];
 
         // Fetch user data based on email
-        $data = $this->Comman_model->get_single_record('hotel_admins', ['email' => $email]);
+        $data = $this->Comman_model->get_single_record('hotel_admins', [
+            'email' => $email,
+            'is_deleted' => 0
+        ]);
+
+        if (!empty($data)) {
+            $hotel = $this->Comman_model->get_single_record('hotel_admin', [
+                'hotel_id' => $data->hotel_id,
+                'is_deleted' => 0
+            ]);
+
+            if (empty($hotel)) {
+                $data = null;
+            }
+        }
 
         if (!empty($data)) {
             // Verify password

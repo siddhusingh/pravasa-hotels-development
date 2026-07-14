@@ -314,6 +314,7 @@ WHERE
             $this->db->from('agency_property_mapping');
             $this->db->join('hotel_admin', 'agency_property_mapping.property_id = hotel_admin.hotel_id', 'left');
             $this->db->where('agency_property_mapping.agency_id', $agency_id);
+            $this->db->where('hotel_admin.is_deleted', 0);
             // optional: order by hotel's name or mapping id
             $this->db->order_by('hotel_admin.hotel_name', 'ASC');
             return $this->db->get()->result();
