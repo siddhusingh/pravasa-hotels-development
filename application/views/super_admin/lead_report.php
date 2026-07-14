@@ -507,6 +507,99 @@
    } ?>
 </script>
 <script>
+   window.CSRF = window.CSRF || {};
+   window.CSRF.name = window.CSRF.name || "<?php echo $this->security->get_csrf_token_name(); ?>";
+   window.CSRF.hash = window.CSRF.hash || "<?php echo $this->security->get_csrf_hash(); ?>";
+   window.CSRF.cookie = "<?php echo $this->config->item('csrf_cookie_name'); ?>";
+
+   function readCookie(name) {
+      var value = '; ' + document.cookie;
+      var parts = value.split('; ' + name + '=');
+      if (parts.length === 2) {
+         return decodeURIComponent(parts.pop().split(';').shift());
+      }
+      return '';
+   }
+
+   function currentCsrfHash() {
+      return readCookie(window.CSRF.cookie) || window.CSRF.hash || '';
+   }
+
+   function refreshCsrf(response) {
+      if (response && response.csrfHash && window.CSRF) {
+         window.CSRF.hash = response.csrfHash;
+      }
+   }
+
+   function csrfData(data) {
+      var payload = data || {};
+
+      if (!window.CSRF || !window.CSRF.name) {
+         return payload;
+      }
+
+      if (typeof payload !== 'object' || payload instanceof FormData) {
+         return payload;
+      }
+
+      payload[window.CSRF.name] = currentCsrfHash();
+      return payload;
+   }
+
+   function csrfFormData(formData) {
+      if (!window.CSRF || !window.CSRF.name || !(formData instanceof FormData)) {
+         return formData;
+      }
+
+      if (typeof formData.set === 'function') {
+         formData.set(window.CSRF.name, currentCsrfHash());
+      } else {
+         formData.append(window.CSRF.name, currentCsrfHash());
+      }
+
+      return formData;
+   }
+
+   function isSameOriginRequest(url) {
+      if (!url || url.indexOf('http') !== 0) {
+         return true;
+      }
+
+      try {
+         return new URL(url, window.location.href).origin === window.location.origin;
+      } catch (e) {
+         return true;
+      }
+   }
+
+   var csrfAjaxQueue = $.Deferred().resolve().promise();
+
+   function csrfAjax(options) {
+      var requestOptions = $.extend({}, options);
+      var method = (requestOptions.type || requestOptions.method || 'GET').toUpperCase();
+
+      if (method !== 'POST' || !isSameOriginRequest(requestOptions.url)) {
+         return $.ajax(requestOptions);
+      }
+
+      var runRequest = function() {
+         if (requestOptions.data instanceof FormData) {
+            csrfFormData(requestOptions.data);
+         } else {
+            requestOptions.data = csrfData(requestOptions.data);
+         }
+
+         return $.ajax(requestOptions);
+      };
+
+      csrfAjaxQueue = csrfAjaxQueue.then(runRequest, runRequest);
+      return csrfAjaxQueue;
+   }
+
+   $(document).ajaxComplete(function(event, xhr) {
+      refreshCsrf(xhr.responseJSON);
+   });
+
    $(document).ready(function() {
       let leadId, phoneNumber;
       let callTimer;
@@ -590,7 +683,7 @@
 
 
 
-         $.ajax({
+         csrfAjax({
             url: "https://iqtelephony.airtel.in/gateway/airtel-xchange/v2/execute/workflow",
             type: "POST",
             contentType: "application/json",
@@ -603,7 +696,7 @@
 
                if (response.status === "success" && response.correlationId) {
                   // Send leadId and correlationId to backend to update
-                  $.ajax({
+                  csrfAjax({
                      url: "LeadController/update_correlation_id", // Update this to match your controller route
                      type: "POST",
                      data: {
@@ -633,7 +726,7 @@
 
          let leadId = $(this).data("id");
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('LeadController/get_call_history') ?>",
             type: "POST",
             data: {
@@ -681,7 +774,7 @@
 
       console.log("workin")
 
-      $.ajax({
+      csrfAjax({
          url: '<?= base_url("LeadController/get_status_history") ?>',
          type: 'POST',
          data: {
@@ -1093,7 +1186,7 @@
 
 
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('LeadController/get_lead_details') ?>",
             type: "POST",
             data: {
@@ -1840,7 +1933,7 @@
 
          $('#edit_restaurant_id').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-restaurants') ?>",
             type: "POST",
             data: {
@@ -1875,7 +1968,7 @@
 
          $('#edit_banquet_id').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-banquets') ?>",
             type: "POST",
             data: {
@@ -1908,7 +2001,7 @@
 
          $('#edit_meal_plan').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-meal-plans') ?>",
             type: "POST",
             dataType: "json",
@@ -1936,7 +2029,7 @@
 
          $('#edit_promotional_offers').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-promotional-offers') ?>",
             type: "POST",
             data: {
@@ -1966,7 +2059,7 @@
 
          $('#edit_roomtype').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-room-types') ?>",
             type: "POST",
             data: {
@@ -1999,7 +2092,7 @@
 
          $('#slot_type_id').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-slot-types') ?>",
             type: "GET",
             dataType: "json",
@@ -2041,7 +2134,7 @@
             '<option value="">Loading...</option>'
          );
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-time-slots') ?>",
             type: "POST",
             data: {
@@ -2099,7 +2192,7 @@
 
          $('#table_category_id').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-table-categories') ?>",
             type: "POST",
             data: {
@@ -2149,7 +2242,7 @@
 
          $('#table_id').html('<option value="">Loading...</option>');
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('lead/get-tables') ?>",
             type: "POST",
             data: {
@@ -2310,7 +2403,7 @@
          }
 
          // AJAX request
-         $.ajax({
+         csrfAjax({
             url: '<?php echo base_url("update-lead-super-admin"); ?>',
             type: 'POST',
             data: formData,
@@ -2488,7 +2581,7 @@
             filters[window.CSRF.name] = window.CSRF.hash;
          }
 
-         $.ajax({
+         csrfAjax({
             url: "<?= base_url('LeadController/fetch_leads_ajax/') ?>",
             method: "POST",
             data: filters,
@@ -2501,14 +2594,16 @@
                   window.CSRF.hash = response.csrfHash;
                }
 
-               $('#status_count_open').text('Open (' + response.totalCounts.open + ')');
-               $('#status_count_in_progress').text('In Progress (' + response.totalCounts.in_progress + ')');
-               $('#status_count_closed').text('Closed (' + response.totalCounts.closed + ')');
+               const totalCounts = response.totalCounts || {};
 
-               $('#status_count_not_assigned').text('Not Assigned (' + response.totalCounts.not_assigned + ')');
+               $('#status_count_open').text('Open (' + (totalCounts.open || 0) + ')');
+               $('#status_count_in_progress').text('In Progress (' + (totalCounts.in_progress || 0) + ')');
+               $('#status_count_closed').text('Closed (' + (totalCounts.closed || 0) + ')');
+
+               $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
 
 
-               $('#total_leads_count').text(response.totalCounts.total);
+               $('#total_leads_count').text(totalCounts.total || 0);
 
 
                if (reset) {
@@ -2609,7 +2704,7 @@
    $(document).on('click', '.view-lead-details', function() {
       var leadId = $(this).data('lead-id');
 
-      $.ajax({
+      csrfAjax({
          url: '<?= base_url("LeadController/get_lead_details_new") ?>',
          type: 'POST',
          data: {
@@ -2968,7 +3063,7 @@ ${data.bill_attachment ? `
             return;
          }
 
-         $.ajax({
+         csrfAjax({
             url: '<?= base_url("lead/get-tables") ?>',
             type: 'POST',
             data: {
@@ -3014,7 +3109,7 @@ ${data.bill_attachment ? `
 
          if (result.isConfirmed) {
 
-            $.ajax({
+            csrfAjax({
                url: "<?= base_url('LeadController/deleteLead') ?>", // ✅ CHANGE to your actual controller method
                type: "POST",
                data: {
@@ -3231,7 +3326,7 @@ ${data.bill_attachment ? `
          return false;
       }
 
-      $.ajax({
+      csrfAjax({
          url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
          type: "POST",
          data: {
@@ -3356,7 +3451,7 @@ ${data.bill_attachment ? `
 
       $('#whatsappTemplateModal').modal('show');
 
-      $.ajax({
+      csrfAjax({
          url: "<?= base_url('LeadController/getwhatsappTempByProperty'); ?>",
          type: "POST",
          data: {
@@ -3402,7 +3497,7 @@ ${data.bill_attachment ? `
          return;
       }
 
-      $.ajax({
+      csrfAjax({
          url: "<?= base_url('LeadController/sendwhatsappMessage'); ?>",
          type: "POST",
          data: {
