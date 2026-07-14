@@ -124,10 +124,6 @@
                             </div>
                         </div>
 
-
-
-
-
                         <div class="box-body">
                             <div class="table-responsive">
                                 <div class="box-body ">
@@ -135,18 +131,18 @@
                                     <div class="table-responsive">
                                         <div id="tableViewWrapper">
 
-                                            <table id="salesVisitTable" class="table table-bordered table-striped sales-visit-table ">
+                                            <table class="text-fade table table-bordered display" id="salesVisitTable" class="table table-bordered table-striped sales-visit-table ">
 
                                                 <!-- Date Header -->
-                                                <thead class="table-light bg-dark">
+                                                <thead class="">
 
                                                     <tr>
-                                                        <th class="col-company">Company Name</th>
-                                                        <th class="col-person">Person Met</th>
-                                                        <th class="col-discussion">Discussion Summary</th>
-                                                        <th class="col-executive text-center">Sales Executive</th>
-                                                        <th class="col-executive text-center">Report Date </th>
-                                                        <th class="col-action text-center">Action</th>
+                                                        <th class="">Company Name</th>
+                                                        <th class="">Person Met</th>
+                                                        <th class="">Discussion Summary</th>
+                                                        <th class="">Sales Executive</th>
+                                                        <th class="">Report Date </th>
+                                                        <th class="">Action</th>
                                                     </tr>
                                                 </thead>
 
