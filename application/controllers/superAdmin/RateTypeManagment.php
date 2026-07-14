@@ -164,10 +164,13 @@ class RateTypeManagment extends MY_Controller
     public function edit()
     {
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('ratetype', ['ratetype_id' => $id]);
+        $result = $this->Common_model->getdata('ratetype', array(
+            'ratetype_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($result)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Rate type not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Rate type not found or already deleted']);
             return;
         }
 
@@ -190,6 +193,16 @@ class RateTypeManagment extends MY_Controller
             return;
         }
 
+        $existing_ratetype = $this->Common_model->getdata('ratetype', array(
+            'ratetype_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_ratetype)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Rate type not found or already deleted']);
+            return;
+        }
+
         $data = $this->rateTypePayload();
         $validationError = $this->validateRateTypePayload($data);
 
@@ -198,9 +211,30 @@ class RateTypeManagment extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('ratetype', $data, ['ratetype_id' => $record_id]);
+        $updated = $this->Comman_model->UpdateRecord('ratetype', $data, array(
+            'ratetype_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update rate type']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('ratetype', array(
+                'ratetype_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Rate type not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $record_id, 'Updated rate type '.$data['ratetype_name'].' ('.$data['ratetype_code'].')');
         }
 
@@ -220,8 +254,22 @@ class RateTypeManagment extends MY_Controller
             return;
         }
 
-        $ratetype = $this->Common_model->getdata('ratetype', ['ratetype_id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('ratetype', ['ratetype_id' => $id]);
+        $where = array(
+            'ratetype_id' => $id,
+            'is_deleted' => 0
+        );
+        $ratetype = $this->Common_model->getdata('ratetype', $where);
+
+        if (empty($ratetype)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Rate type not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('ratetype', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -233,7 +281,9 @@ class RateTypeManagment extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Rate type deleted successfully' : 'Something went wrong'
+            'message' => $deleted
+                ? 'Rate type deleted successfully'
+                : ($delete_query ? 'Rate type not found or already deleted' : 'Unable to delete rate type')
         ]);
     }
 }

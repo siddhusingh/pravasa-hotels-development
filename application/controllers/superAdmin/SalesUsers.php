@@ -18,14 +18,42 @@ class SalesUsers extends MY_Controller
         }
     }
 
+    private function getCurrentActor()
+    {
+        $actor = $this->session->userdata('super_admin_session');
+        return [
+            'id' => $actor['id'] ?? null,
+            'name' => $actor['user_name'] ?? $actor['full_name'] ?? '',
+            'email' => $actor['email'] ?? '',
+            'role' => $this->session->userdata('role_as') ?? 'super_admin'
+        ];
+    }
+
+    private function logActivity($action, $recordId, $details = '')
+    {
+        $actor = $this->getCurrentActor();
+        $this->Common_model->insertActivityLog([
+            'module' => 'sales_users',
+            'record_id' => $recordId,
+            'action' => $action,
+            'details' => $details,
+            'actor_id' => $actor['id'],
+            'actor_name' => $actor['name'],
+            'actor_email' => $actor['email'],
+            'actor_role' => $actor['role'],
+            'ip_address' => $this->input->ip_address(),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+    }
+
     public function index()
     {
-        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', '');
-        $data['states'] = $this->Common_model->getAllData('state', '');
-        $data['countries'] = $this->Common_model->getAllData('country', '');
-        $data['team_groups'] = $this->Common_model->getAllData('team_groups', '');
+        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
+        $data['states'] = $this->Common_model->getAllData('state', ['is_deleted' => 0]);
+        $data['countries'] = $this->Common_model->getAllData('country', ['is_deleted' => 0]);
+        $data['team_groups'] = $this->Common_model->getAllData('team_groups', ['is_deleted' => 0]);
         $data['team_group'] = $data['team_groups'];
-        $data['cities'] = $this->Comman_model->getcityData();
+        $data['cities'] = $this->Common_model->getAllData('city', ['is_deleted' => 0]);
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -56,17 +84,21 @@ class SalesUsers extends MY_Controller
         return implode(',', $ids);
     }
 
-    private function labelsForCsv($table, $idColumn, $labelColumn, $csv)
+    private function labelsForCsv($table, $idColumn, $labelColumn, $csv, $activeOnly = false)
     {
         $ids = array_filter(explode(',', (string)$csv));
         if (empty($ids)) {
             return [];
         }
 
-        $rows = $this->db->select($idColumn.', '.$labelColumn)
-            ->where_in($idColumn, $ids)
-            ->get($table)
-            ->result();
+        $this->db->select($idColumn.', '.$labelColumn);
+        $this->db->where_in($idColumn, $ids);
+
+        if ($activeOnly) {
+            $this->db->where('is_deleted', 0);
+        }
+
+        $rows = $this->db->get($table)->result();
 
         $labels = [];
         foreach ($rows as $row) {
@@ -96,7 +128,10 @@ class SalesUsers extends MY_Controller
             return false;
         }
 
-        $count = $this->db->where_in($idColumn, $ids)->count_all_results($table);
+        $count = $this->db
+            ->where_in($idColumn, $ids)
+            ->where('is_deleted', 0)
+            ->count_all_results($table);
         return $count === count($ids);
     }
 
@@ -148,7 +183,7 @@ class SalesUsers extends MY_Controller
         } elseif (count($assignedHotelIds) !== count($hotelTokens)) {
             $errors['hotel_id'] = 'Invalid hotel selected';
         } elseif (!$this->csvIdsExist('hotel_admin', 'hotel_id', $assignedHotels)) {
-            $errors['hotel_id'] = 'Please select valid hotels';
+            $errors['hotel_id'] = 'Please select active hotels';
         }
 
         if ($teamGroup === '') {
@@ -156,23 +191,27 @@ class SalesUsers extends MY_Controller
         } elseif (count($teamGroupIds) !== count($teamGroupTokens)) {
             $errors['team_group'] = 'Invalid team group selected';
         } elseif (!$this->csvIdsExist('team_groups', 'id', $teamGroup)) {
-            $errors['team_group'] = 'Please select valid team groups';
+            $errors['team_group'] = 'Please select active team groups';
         }
 
         if (empty($city)) {
             $errors['city'] = 'Please select city';
-        } elseif (!$this->Common_model->getdata('city', ['city_id' => $city])) {
-            $errors['city'] = 'Please select a valid city';
+        } elseif (!$this->Common_model->getdata('city', ['city_id' => $city, 'is_deleted' => 0])) {
+            $errors['city'] = 'Please select an active city';
         }
 
         if (empty($stateId)) {
             $errors['state_id'] = 'Please select state';
-        } elseif (!$this->Common_model->getdata('state', ['state_id' => $stateId])) {
-            $errors['state_id'] = 'Please select a valid state';
+        } elseif (!$this->Common_model->getdata('state', ['state_id' => $stateId, 'is_deleted' => 0])) {
+            $errors['state_id'] = 'Please select an active state';
         }
 
         if (!empty($city) && !empty($stateId)) {
-            $cityState = $this->Common_model->getdata('city', ['city_id' => $city, 'state_id' => $stateId]);
+            $cityState = $this->Common_model->getdata('city', [
+                'city_id' => $city,
+                'state_id' => $stateId,
+                'is_deleted' => 0
+            ]);
             if (empty($cityState)) {
                 $errors['city'] = 'Selected city does not belong to the selected state';
             }
@@ -301,6 +340,10 @@ class SalesUsers extends MY_Controller
 
         $recordId = $this->Comman_model->insertData('sales_users', $data);
 
+        if ($recordId) {
+            $this->logActivity('create', $recordId, "Created sales user {$data['full_name']} ({$data['email']})");
+        }
+
         echo json_encode([
             'status' => (bool)$recordId,
             'message' => $recordId ? 'Sales user has been added successfully' : 'Failed to add sales user',
@@ -321,29 +364,46 @@ class SalesUsers extends MY_Controller
             return;
         }
 
-        $result = $this->Common_model->getdata('sales_users', ['id' => $id]);
+        $result = $this->Common_model->getdata('sales_users', [
+            'id' => $id,
+            'is_deleted' => 0
+        ]);
         if (empty($result)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'Sales user not found',
+                'message' => 'Sales user not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
 
         unset($result->password);
-        $city = $this->Common_model->getdata('city', ['city_id' => $result->city_id]);
-        $state = $this->Common_model->getdata('state', ['state_id' => $result->state_id]);
+        $city = $this->Common_model->getdata('city', [
+            'city_id' => $result->city_id,
+            'is_deleted' => 0
+        ]);
+        $state = $this->Common_model->getdata('state', [
+            'state_id' => $result->state_id,
+            'is_deleted' => 0
+        ]);
+        $selectedTeamGroups = $this->labelsForCsv('team_groups', 'id', 'team_group_name', $result->team_group, true);
+        $selectedHotels = $this->labelsForCsv('hotel_admin', 'hotel_id', 'hotel_name', $result->assigned_hotels, true);
+        $originalTeamGroupCount = count(array_filter(explode(',', (string)$result->team_group)));
+        $originalHotelCount = count(array_filter(explode(',', (string)$result->assigned_hotels)));
 
         $result->id = encrypt_id($result->id);
-        $result->team_group = $this->encryptCsvIds($result->team_group);
-        $result->assigned_hotels = $this->encryptCsvIds($result->assigned_hotels);
-        $result->city_id = encrypt_id($result->city_id);
-        $result->state_id = encrypt_id($result->state_id);
-        $result->selected_team_groups = $this->labelsForCsv('team_groups', 'id', 'team_group_name', $this->Common_model->getdata('sales_users', ['id' => $id])->team_group);
-        $result->selected_hotels = $this->labelsForCsv('hotel_admin', 'hotel_id', 'hotel_name', $this->Common_model->getdata('sales_users', ['id' => $id])->assigned_hotels);
+        $result->team_group = implode(',', array_column($selectedTeamGroups, 'id'));
+        $result->assigned_hotels = implode(',', array_column($selectedHotels, 'id'));
+        $result->city_id = !empty($city) ? encrypt_id($result->city_id) : '';
+        $result->state_id = !empty($state) ? encrypt_id($result->state_id) : '';
+        $result->selected_team_groups = $selectedTeamGroups;
+        $result->selected_hotels = $selectedHotels;
         $result->city_name = $city->city_name ?? '';
         $result->state_name = $state->state_name ?? '';
+        $result->has_unavailable_assignments = count($selectedTeamGroups) !== $originalTeamGroupCount
+            || count($selectedHotels) !== $originalHotelCount
+            || empty($city)
+            || empty($state);
 
         echo json_encode([
             'status' => true,
@@ -360,6 +420,20 @@ class SalesUsers extends MY_Controller
             echo json_encode([
                 'status' => false,
                 'message' => 'Invalid sales user selected',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $existingSalesUser = $this->Common_model->getdata('sales_users', [
+            'id' => $recordId,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($existingSalesUser)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Sales user not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -384,11 +458,26 @@ class SalesUsers extends MY_Controller
         }
         $data['updated_at'] = date('Y-m-d H:i:s');
 
-        $update = $this->Comman_model->UpdateRecord('sales_users', $data, ['id' => $recordId]);
+        $update = $this->Comman_model->UpdateRecord('sales_users', $data, [
+            'id' => $recordId,
+            'is_deleted' => 0
+        ]);
+        $affectedRows = $this->db->affected_rows();
+
+        if ($update && $affectedRows > 0) {
+            $this->logActivity('update', $recordId, "Updated sales user {$data['full_name']} ({$data['email']})");
+        }
+
+        if ($update && $affectedRows === 0 && empty($this->Common_model->getdata('sales_users', [
+            'id' => $recordId,
+            'is_deleted' => 0
+        ]))) {
+            $update = false;
+        }
 
         echo json_encode([
             'status' => (bool)$update,
-            'message' => $update ? 'Sales user has been updated successfully' : 'No changes detected or update failed',
+            'message' => $update ? 'Sales user has been updated successfully' : 'Sales user not found, already deleted, or update failed',
             'record_id' => encrypt_id($recordId),
             'csrfHash' => $this->security->get_csrf_hash()
         ]);
@@ -406,10 +495,36 @@ class SalesUsers extends MY_Controller
             return;
         }
 
-        $deleted = $this->Comman_model->Deletedata('sales_users', ['id' => $id]);
+        $where = [
+            'id' => $id,
+            'is_deleted' => 0
+        ];
+        $salesUser = $this->Common_model->getdata('sales_users', $where);
+
+        if (empty($salesUser)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Sales user not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $deleteQuery = $this->Comman_model->UpdateRecord('sales_users', [
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], $where);
+        $deleted = $deleteQuery && $this->db->affected_rows() === 1;
+
+        if ($deleted) {
+            $this->logActivity('delete', $id, "Deleted sales user {$salesUser->full_name} ({$salesUser->email})");
+        }
+
         echo json_encode([
             'status' => (bool)$deleted,
-            'message' => $deleted ? 'Sales user deleted successfully' : 'Something went wrong',
+            'message' => $deleted
+                ? 'Sales user deleted successfully'
+                : ($deleteQuery ? 'Sales user not found or already deleted' : 'Unable to delete sales user'),
             'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }

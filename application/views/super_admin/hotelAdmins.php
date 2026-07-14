@@ -396,7 +396,12 @@
                 $('#phone').val(res.data.phone);
                 $('#password').val('');
                 $('#status').val(String(res.data.status));
-                ensureSelectedOption($('#hotel_id'), res.data.hotel_id, res.data.hotel_name);
+                if (res.data.hotel_id) {
+                    ensureSelectedOption($('#hotel_id'), res.data.hotel_id, res.data.hotel_name);
+                } else {
+                    $('#hotel_id').val('');
+                    toastr.warning('The previous hotel is unavailable. Please select a new hotel.');
+                }
                 $('#password-label').text('Password (Optional)');
                 $('#status-wrapper').show();
                 $('#action-btn').text('Update').attr('data-key', res.id);
@@ -407,30 +412,39 @@
 
     $(document).on('click', '.delete', function(e) {
         e.preventDefault();
+        var $button = $(this);
 
-        if (!confirm('Are you sure you want to delete this hotel admin?')) {
-            return;
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This hotel admin will be removed from the active hotel admin list.',
+            icon: 'question',
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Yes Delete it',
+            denyButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<?= base_url('delete-hotel-admin') ?>',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: {
+                        id: $button.attr('data-record_id'),
+                        [window.CSRF.name]: window.CSRF.hash
+                    },
+                    success: function(res) {
+                        if (res.csrfHash) {
+                            window.CSRF.hash = res.csrfHash;
+                        }
 
-        $.ajax({
-            url: '<?= base_url('delete-hotel-admin') ?>',
-            type: 'POST',
-            dataType: 'JSON',
-            data: {
-                id: $(this).attr('data-record_id'),
-                [window.CSRF.name]: window.CSRF.hash
-            },
-            success: function(res) {
-                if (res.csrfHash) {
-                    window.CSRF.hash = res.csrfHash;
-                }
-
-                if (res.status) {
-                    toastr.success(res.message);
-                    data_table.draw(false);
-                } else {
-                    toastr.error(res.message || 'Something went wrong');
-                }
+                        if (res.status) {
+                            toastr.success(res.message);
+                            data_table.draw(false);
+                        } else {
+                            toastr.error(res.message || 'Something went wrong');
+                        }
+                    }
+                });
             }
         });
     });

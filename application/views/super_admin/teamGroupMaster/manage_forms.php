@@ -256,7 +256,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This team group will be removed from the active team group list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

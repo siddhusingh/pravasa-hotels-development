@@ -104,7 +104,7 @@
                <select class="form-control select2" type="text" name="country_id" id="country_id">
                   <option selected="" disabled="" value="">Select Country </option>
                   <?php foreach ($countries as $each) { ?>
-                     <option value="<?php echo $each->country_id ?>"><?php echo $each->country_name ?></option>
+                     <option value="<?php echo encrypt_id($each->country_id) ?>" data-country-code="<?php echo html_escape($each->country_code) ?>"><?php echo $each->country_name ?></option>
                   <?php
                   } ?>
                </select>
@@ -284,7 +284,16 @@
                }
                $('#crud-modal-title').text('Edit State');
                $('#state_name').val(res.data.state_name);
-               $('#country_id').val(res.data.country_id).trigger('change');
+               var $countryOption = $('#country_id option').filter(function() {
+                  return $(this).attr('data-country-code') === res.data.country_code;
+               }).first();
+
+               if (!$countryOption.length) {
+                  toastr.error('The country assigned to this state is unavailable');
+                  return;
+               }
+
+               $('#country_id').val($countryOption.val()).trigger('change');
                $('#state_name_error').text('');
                $('#country_id_error').text('');
                $('#action-btn').text('Update');
@@ -299,7 +308,7 @@
       var $button = $(this);
       Swal.fire({
          title: "Are you sure?",
-         text: 'You will not be able to recover this record!',
+         text: 'This state will be removed from the active state list.',
          icon: "question",
          showCancelButton: true,
          showCloseButton: true,

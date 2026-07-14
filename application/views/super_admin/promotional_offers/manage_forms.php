@@ -251,12 +251,17 @@
                     return;
                 }
 
-                if ($('#department_id option[value="' + response.data.department_id + '"]').length === 0) {
-                    $('#department_id').append(new Option(response.data.department_name, response.data.department_id));
+                if (response.data.department_id) {
+                    if ($('#department_id option[value="' + response.data.department_id + '"]').length === 0) {
+                        $('#department_id').append(new Option(response.data.department_name, response.data.department_id));
+                    }
+                    $('#department_id').val(response.data.department_id);
+                } else {
+                    $('#department_id').val('');
+                    toastr.warning('The previous department is unavailable. Please select a new department.');
                 }
 
                 $('#crud-modal-title').text('Edit Promotional Offer');
-                $('#department_id').val(response.data.department_id);
                 $('#offer_name').val(response.data.offer_name);
                 $('#status').val(response.data.status);
                 $('#action-btn').text('Update').attr('data-key', response.id);
@@ -270,7 +275,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This promotional offer will be removed from the active offer list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

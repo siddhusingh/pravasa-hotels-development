@@ -40,7 +40,7 @@ class WeeklyPlanner extends CI_Controller
     public function manage()
     {
 
-        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1]);
+        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
 
 
         $data['planners'] = $this->Common_model->getAllData(

@@ -37,7 +37,10 @@ class Login extends CI_Controller
         ];
 
         // Fetch staff member
-        $staff = $this->Comman_model->get_single_record('staff_members', ['email' => $email]);
+        $staff = $this->Comman_model->get_single_record('staff_members', [
+            'email' => $email,
+            'is_deleted' => 0
+        ]);
 
         if (!empty($staff)) {
             if ($staff->password == md5($password)) {

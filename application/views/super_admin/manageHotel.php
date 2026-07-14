@@ -443,7 +443,7 @@
       var $button = $(this);
       Swal.fire({
          title: 'Are you sure?',
-         text: 'You will not be able to recover this record!',
+         text: 'This hotel will be removed from the active hotel list.',
          icon: 'question',
          showCancelButton: true,
          showCloseButton: true,

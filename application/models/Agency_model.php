@@ -4,7 +4,10 @@ class Agency_model extends CI_Model
 
     public function get_all_agencies()
     {
-        return $this->db->get('agencies')->result();
+        return $this->db
+            ->where('is_deleted', 0)
+            ->get('agencies')
+            ->result();
     }
 
     public function insert_agency($data)
@@ -15,19 +18,31 @@ class Agency_model extends CI_Model
 
     public function get_agency($id)
     {
-        return $this->db->get_where('agencies', ['id' => $id])->row();
+        return $this->db->get_where('agencies', [
+            'id' => $id,
+            'is_deleted' => 0
+        ])->row();
     }
 
     public function update_agency($id, $data)
     {
-        return $this->db->where('id', $id)->update('agencies', $data);
+        return $this->db
+            ->where('id', $id)
+            ->where('is_deleted', 0)
+            ->update('agencies', $data);
     }
 
     public function delete_agency($id)
     {
-        $deleted = $this->db->where('id', $id)->delete('agencies');
-        $this->db->where('agency_id', $id)->delete('agency_property_mapping');
-        return $deleted;
+        $updated = $this->db
+            ->where('id', $id)
+            ->where('is_deleted', 0)
+            ->update('agencies', [
+                'is_deleted' => 1,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+        return $updated && $this->db->affected_rows() === 1;
     }
 
     public function save_property_mapping($agency_id, $property_ids)
@@ -61,9 +76,9 @@ class Agency_model extends CI_Model
 
     public function get_property_names_by_ids($ids = [])
     {
-
         $this->db->select('hotel_name');
         $this->db->where_in('hotel_id', $ids);
+        $this->db->where('is_deleted', 0);
         $query = $this->db->get('hotel_admin');
 
         return array_column($query->result_array(), 'hotel_name');
@@ -78,6 +93,6 @@ class Agency_model extends CI_Model
             ->get()
             ->result_array();
 
-        return array_column($result, 'property_id'); // returns [1,2,3]
+        return array_column($result, 'property_id');
     }
 }

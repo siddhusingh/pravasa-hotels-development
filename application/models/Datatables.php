@@ -10,6 +10,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('country');
+        $this->db->where('is_deleted', 0);
     
         if (!empty($search)) {
             $this->db->group_start();
@@ -27,12 +28,16 @@ class Datatables extends CI_Model {
     
     public function DTCountriesAll()
     {
-        return $this->db->count_all('country');
+        $this->db->from('country');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
     
     public function DTCountriesFiltered($search = "")
     {
         $this->db->from('country');
+        $this->db->where('is_deleted', 0);
     
         if (!empty($search)) {
             $this->db->group_start();
@@ -49,6 +54,7 @@ class Datatables extends CI_Model {
         $this->db->select('state.*, country.country_name');
         $this->db->from('state');
         $this->db->join('country', 'state.country_id = country.country_id');
+        $this->db->where('state.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -65,13 +71,17 @@ class Datatables extends CI_Model {
 
     public function DTStatesAll()
     {
-        return $this->db->count_all('state');
+        $this->db->from('state');
+        $this->db->where('state.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTStatesFiltered($search = "")
     {
         $this->db->from('state');
         $this->db->join('country', 'state.country_id = country.country_id');
+        $this->db->where('state.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -89,6 +99,7 @@ class Datatables extends CI_Model {
         $this->db->from('city');
         $this->db->join('country', 'city.country_id = country.country_id');
         $this->db->join('state', 'city.state_id = state.state_id');
+        $this->db->where('city.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -106,7 +117,10 @@ class Datatables extends CI_Model {
 
     public function DTCitiesAll()
     {
-        return $this->db->count_all('city');
+        $this->db->from('city');
+        $this->db->where('city.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTCitiesFiltered($search = "")
@@ -114,6 +128,7 @@ class Datatables extends CI_Model {
         $this->db->from('city');
         $this->db->join('country', 'city.country_id = country.country_id');
         $this->db->join('state', 'city.state_id = state.state_id');
+        $this->db->where('city.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -133,6 +148,7 @@ class Datatables extends CI_Model {
         $this->db->join('country', 'hotel_admin.country_id = country.country_id', 'left');
         $this->db->join('state', 'hotel_admin.state_id = state.state_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
+        $this->db->where('hotel_admin.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -153,7 +169,10 @@ class Datatables extends CI_Model {
 
     public function DTHotelsAll()
     {
-        return $this->db->count_all('hotel_admin');
+        $this->db->from('hotel_admin');
+        $this->db->where('hotel_admin.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTHotelsFiltered($search = "")
@@ -162,6 +181,7 @@ class Datatables extends CI_Model {
         $this->db->join('country', 'hotel_admin.country_id = country.country_id', 'left');
         $this->db->join('state', 'hotel_admin.state_id = state.state_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
+        $this->db->where('hotel_admin.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -270,6 +290,7 @@ class Datatables extends CI_Model {
         $this->db->select('id, full_name, email, phone, status, created_at, updated_at');
         $this->db->from('super_admin');
         $this->db->where('user_role', 2);
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -288,13 +309,17 @@ class Datatables extends CI_Model {
 
     public function DTSuperAdminsAll()
     {
-        return $this->db->where('user_role', 2)->count_all_results('super_admin');
+        return $this->db
+            ->where('user_role', 2)
+            ->where('is_deleted', 0)
+            ->count_all_results('super_admin');
     }
 
     public function DTSuperAdminsFiltered($search = "")
     {
         $this->db->from('super_admin');
         $this->db->where('user_role', 2);
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -313,6 +338,7 @@ class Datatables extends CI_Model {
         $this->db->select('ha.id, ha.hotel_id, ha.name, ha.email, ha.phone, ha.status, ha.created_at, ha.updated_at, h.hotel_name');
         $this->db->from('hotel_admins ha');
         $this->db->join('hotel_admin h', 'h.hotel_id = ha.hotel_id', 'left');
+        $this->db->where('ha.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -331,13 +357,17 @@ class Datatables extends CI_Model {
 
     public function DTHotelAdminsAll()
     {
-        return $this->db->count_all('hotel_admins');
+        $this->db->from('hotel_admins');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTHotelAdminsFiltered($search = "")
     {
         $this->db->from('hotel_admins ha');
         $this->db->join('hotel_admin h', 'h.hotel_id = ha.hotel_id', 'left');
+        $this->db->where('ha.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -357,6 +387,7 @@ class Datatables extends CI_Model {
         $this->db->from('sales_users su');
         $this->db->join('city', 'city.city_id = su.city_id', 'left');
         $this->db->join('state', 'state.state_id = su.state_id', 'left');
+        $this->db->where('su.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -377,7 +408,10 @@ class Datatables extends CI_Model {
 
     public function DTSalesUsersAll()
     {
-        return $this->db->count_all('sales_users');
+        $this->db->from('sales_users');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTSalesUsersFiltered($search = "")
@@ -385,6 +419,7 @@ class Datatables extends CI_Model {
         $this->db->from('sales_users su');
         $this->db->join('city', 'city.city_id = su.city_id', 'left');
         $this->db->join('state', 'state.state_id = su.state_id', 'left');
+        $this->db->where('su.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -404,6 +439,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('id, name, email, phone, created_at, updated_at');
         $this->db->from('staff_members');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -421,12 +457,15 @@ class Datatables extends CI_Model {
 
     public function DTStaffMembersAll()
     {
-        return $this->db->count_all('staff_members');
+        return $this->db
+            ->where('is_deleted', 0)
+            ->count_all_results('staff_members');
     }
 
     public function DTStaffMembersFiltered($search = "")
     {
         $this->db->from('staff_members');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -443,6 +482,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('departments');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -461,12 +501,16 @@ class Datatables extends CI_Model {
 
     public function DTDepartmentsAll()
     {
-        return $this->db->count_all('departments');
+        $this->db->from('departments');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTDepartmentsFiltered($search = "")
     {
         $this->db->from('departments');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -620,6 +664,7 @@ class Datatables extends CI_Model {
         $this->db->select('roomtype.*, hotel_admin.hotel_name');
         $this->db->from('roomtype');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = roomtype.hotel_id', 'left');
+        $this->db->where('roomtype.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -637,13 +682,17 @@ class Datatables extends CI_Model {
 
     public function DTRoomTypesAll()
     {
-        return $this->db->count_all('roomtype');
+        $this->db->from('roomtype');
+        $this->db->where('roomtype.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTRoomTypesFiltered($search = "")
     {
         $this->db->from('roomtype');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = roomtype.hotel_id', 'left');
+        $this->db->where('roomtype.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -660,6 +709,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('ratetype');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -676,12 +726,16 @@ class Datatables extends CI_Model {
 
     public function DTRateTypesAll()
     {
-        return $this->db->count_all('ratetype');
+        $this->db->from('ratetype');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTRateTypesFiltered($search = "")
     {
         $this->db->from('ratetype');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -697,6 +751,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('meal_plans');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -713,12 +768,16 @@ class Datatables extends CI_Model {
 
     public function DTMealPlansAll()
     {
-        return $this->db->count_all('meal_plans');
+        $this->db->from('meal_plans');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTMealPlansFiltered($search = "")
     {
         $this->db->from('meal_plans');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -735,6 +794,7 @@ class Datatables extends CI_Model {
         $this->db->select('po.*, d.department_name');
         $this->db->from('promotional_offers po');
         $this->db->join('departments d', 'd.department_id = po.department_id', 'left');
+        $this->db->where('po.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -751,13 +811,17 @@ class Datatables extends CI_Model {
 
     public function DTPromotionalOffersAll()
     {
-        return $this->db->count_all('promotional_offers');
+        $this->db->from('promotional_offers');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTPromotionalOffersFiltered($search = "")
     {
         $this->db->from('promotional_offers po');
         $this->db->join('departments d', 'd.department_id = po.department_id', 'left');
+        $this->db->where('po.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -773,6 +837,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('designations');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('designation_name', $search);
@@ -786,12 +851,16 @@ class Datatables extends CI_Model {
 
     public function DTDesignationsAll()
     {
-        return $this->db->count_all('designations');
+        $this->db->from('designations');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTDesignationsFiltered($search = "")
     {
         $this->db->from('designations');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('designation_name', $search);
@@ -804,6 +873,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('team_groups');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('team_group_name', $search);
@@ -817,12 +887,16 @@ class Datatables extends CI_Model {
 
     public function DTTeamGroupsAll()
     {
-        return $this->db->count_all('team_groups');
+        $this->db->from('team_groups');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTTeamGroupsFiltered($search = "")
     {
         $this->db->from('team_groups');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('team_group_name', $search);
@@ -835,6 +909,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('travel_modes');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('travel_mode_name', $search);
@@ -848,12 +923,16 @@ class Datatables extends CI_Model {
 
     public function DTTravelModesAll()
     {
-        return $this->db->count_all('travel_modes');
+        $this->db->from('travel_modes');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTTravelModesFiltered($search = "")
     {
         $this->db->from('travel_modes');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('travel_mode_name', $search);
@@ -866,6 +945,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('slot_types');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -883,12 +963,16 @@ class Datatables extends CI_Model {
 
     public function DTSlotTypesAll()
     {
-        return $this->db->count_all('slot_types');
+        $this->db->from('slot_types');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTSlotTypesFiltered($search = "")
     {
         $this->db->from('slot_types');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -906,6 +990,7 @@ class Datatables extends CI_Model {
         $this->db->select('wt.*, p.hotel_name');
         $this->db->from('whatsapp_templates wt');
         $this->db->join('hotel_admin p', 'p.hotel_id = wt.property_id', 'left');
+        $this->db->where('wt.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -923,13 +1008,17 @@ class Datatables extends CI_Model {
 
     public function DTWhatsappTemplatesAll()
     {
-        return $this->db->count_all('whatsapp_templates');
+        $this->db->from('whatsapp_templates');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTWhatsappTemplatesFiltered($search = "")
     {
         $this->db->from('whatsapp_templates wt');
         $this->db->join('hotel_admin p', 'p.hotel_id = wt.property_id', 'left');
+        $this->db->where('wt.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -946,6 +1035,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('company_groups');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('company_group_name', $search);
@@ -959,12 +1049,16 @@ class Datatables extends CI_Model {
 
     public function DTCompanyGroupsAll()
     {
-        return $this->db->count_all('company_groups');
+        $this->db->from('company_groups');
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTCompanyGroupsFiltered($search = "")
     {
         $this->db->from('company_groups');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->like('company_group_name', $search);
@@ -980,6 +1074,7 @@ class Datatables extends CI_Model {
         $this->db->join('state s', 's.state_id = a.state_id', 'left');
         $this->db->join('sales_users su1', 'su1.id = a.primary_user_id', 'left');
         $this->db->join('sales_users su2', 'su2.id = a.secondary_user_id', 'left');
+        $this->db->where('a.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -999,7 +1094,9 @@ class Datatables extends CI_Model {
 
     public function DTAreasAll()
     {
-        return $this->db->count_all('areas');
+        return $this->db
+            ->where('is_deleted', 0)
+            ->count_all_results('areas');
     }
 
     public function DTAreasFiltered($search = "")
@@ -1008,6 +1105,7 @@ class Datatables extends CI_Model {
         $this->db->join('state s', 's.state_id = a.state_id', 'left');
         $this->db->join('sales_users su1', 'su1.id = a.primary_user_id', 'left');
         $this->db->join('sales_users su2', 'su2.id = a.secondary_user_id', 'left');
+        $this->db->where('a.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1030,6 +1128,7 @@ class Datatables extends CI_Model {
         $this->db->join('city', 'city.city_id = c.city_id', 'left');
         $this->db->join('state', 'state.state_id = c.state_id', 'left');
         $this->db->join('areas area', 'area.area_id = c.area_id', 'left');
+        $this->db->where('c.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1051,7 +1150,9 @@ class Datatables extends CI_Model {
 
     public function DTCompaniesAll()
     {
-        return $this->db->count_all('companies');
+        return $this->db
+            ->where('is_deleted', 0)
+            ->count_all_results('companies');
     }
 
     public function DTCompaniesFiltered($search = "")
@@ -1061,6 +1162,7 @@ class Datatables extends CI_Model {
         $this->db->join('city', 'city.city_id = c.city_id', 'left');
         $this->db->join('state', 'state.state_id = c.state_id', 'left');
         $this->db->join('areas area', 'area.area_id = c.area_id', 'left');
+        $this->db->where('c.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1086,6 +1188,7 @@ class Datatables extends CI_Model {
         $this->db->join('state s', 's.state_id = cc.state', 'left');
         $this->db->join('city ci', 'ci.city_id = cc.city', 'left');
         $this->db->join('designations d', 'd.id = cc.designation', 'left');
+        $this->db->where('cc.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1108,7 +1211,9 @@ class Datatables extends CI_Model {
 
     public function DTCompanyContactsAll()
     {
-        return $this->db->count_all('company_contacts');
+        return $this->db
+            ->where('is_deleted', 0)
+            ->count_all_results('company_contacts');
     }
 
     public function DTCompanyContactsFiltered($search = "")
@@ -1119,6 +1224,7 @@ class Datatables extends CI_Model {
         $this->db->join('state s', 's.state_id = cc.state', 'left');
         $this->db->join('city ci', 'ci.city_id = cc.city', 'left');
         $this->db->join('designations d', 'd.id = cc.designation', 'left');
+        $this->db->where('cc.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1140,6 +1246,7 @@ class Datatables extends CI_Model {
     {
         $this->db->select('*');
         $this->db->from('agencies');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -1159,12 +1266,15 @@ class Datatables extends CI_Model {
 
     public function DTAgenciesAll()
     {
-        return $this->db->count_all('agencies');
+        return $this->db
+            ->where('is_deleted', 0)
+            ->count_all_results('agencies');
     }
 
     public function DTAgenciesFiltered($search = "")
     {
         $this->db->from('agencies');
+        $this->db->where('is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();

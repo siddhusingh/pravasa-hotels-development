@@ -46,7 +46,7 @@ class SalesVisits extends CI_Controller
     /* ================= MANAGE PAGE ================= */
     public function index()
     {
-        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1]);
+        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
 
         $data['sales_visits'] = $this->Common_model->getAllData('sales_visits', ['status' => 1]);
 
@@ -79,7 +79,7 @@ class SalesVisits extends CI_Controller
     {
         $data['departments'] = $this->Common_model->getAllData('departments', '');
         $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
-        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1]);
+        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
 
 
         $this->db->select('a.*, 
@@ -122,7 +122,7 @@ class SalesVisits extends CI_Controller
         /* ===================== PERSON MET DETAILS ===================== */
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet]
+            ['contact_id' => $personMet, 'is_deleted' => 0]
         );
 
         if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata)) {
@@ -495,7 +495,7 @@ class SalesVisits extends CI_Controller
 
         $data['departments'] = $this->Common_model->getAllData('departments', '');
         $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
-        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1]);
+        $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', "");
         $data['travel_modes'] = $this->Common_model->getAllData('travel_modes', "");
 
@@ -895,7 +895,7 @@ class SalesVisits extends CI_Controller
 
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet]
+            ['contact_id' => $personMet, 'is_deleted' => 0]
         );
 
         if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata)) {
@@ -1137,7 +1137,14 @@ class SalesVisits extends CI_Controller
         $selectedContactToken = $this->input->post('selected_contact_id');
         $selectedContactId = $this->decodeId($selectedContactToken);
 
-        if (empty($company_id)) {
+        $company = !empty($company_id)
+            ? $this->Common_model->getdata('companies', [
+                'company_id' => $company_id,
+                'is_deleted' => 0
+            ])
+            : null;
+
+        if (empty($company_id) || empty($company)) {
             $this->jsonResponse([
                 'status' => 'error',
                 'message' => 'Invalid Company'
@@ -1149,6 +1156,7 @@ class SalesVisits extends CI_Controller
             ->select('contact_id, first_name, last_name,mobile_number')
             ->from('company_contacts')
             ->where('company_id', $company_id)
+            ->where('is_deleted', 0)
             ->where('status', 1) // optional
             ->order_by('first_name', 'ASC')
             ->get()

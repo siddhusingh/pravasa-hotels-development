@@ -20,11 +20,40 @@ class HotelManagment extends MY_Controller
         }
     }
 
+    private function getActiveLocation($country_id, $state_id, $city_id)
+    {
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+        $state = $this->Common_model->getdata('state', array(
+            'state_id' => $state_id,
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+        $city = $this->Common_model->getdata('city', array(
+            'city_id' => $city_id,
+            'state_id' => $state_id,
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country) || empty($state) || empty($city)) {
+            return null;
+        }
+
+        return array(
+            'country' => $country,
+            'state' => $state,
+            'city' => $city
+        );
+    }
+
 
     public function index()
     {
 
-        $data['countries'] = $this->Common_model->getAllData('country', "");
+        $data['countries'] = $this->Common_model->getAllData('country', array('is_deleted' => 0));
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -106,11 +135,21 @@ class HotelManagment extends MY_Controller
         $states = [];
 
         if (!empty($country_id)) {
-            foreach ($this->Common_model->getAllData('state', ['country_id' => $country_id]) as $state) {
-                $states[] = [
-                    'state_id' => (!empty($selected_state_id) && $selected_state_id == $state->state_id) ? $selected_state_token : encrypt_id($state->state_id),
-                    'state_name' => $state->state_name
-                ];
+            $country = $this->Common_model->getdata('country', array(
+                'country_id' => $country_id,
+                'is_deleted' => 0
+            ));
+
+            if (!empty($country)) {
+                foreach ($this->Common_model->getAllData('state', array(
+                    'country_id' => $country_id,
+                    'is_deleted' => 0
+                )) as $state) {
+                    $states[] = [
+                        'state_id' => (!empty($selected_state_id) && $selected_state_id == $state->state_id) ? $selected_state_token : encrypt_id($state->state_id),
+                        'state_name' => $state->state_name
+                    ];
+                }
             }
         }
 
@@ -129,11 +168,26 @@ class HotelManagment extends MY_Controller
         $cities = [];
 
         if (!empty($state_id)) {
-            foreach ($this->Common_model->getAllData('city', ['state_id' => $state_id]) as $city) {
-                $cities[] = [
-                    'city_id' => (!empty($selected_city_id) && $selected_city_id == $city->city_id) ? $selected_city_token : encrypt_id($city->city_id),
-                    'city_name' => $city->city_name
-                ];
+            $state = $this->Common_model->getdata('state', array(
+                'state_id' => $state_id,
+                'is_deleted' => 0
+            ));
+            $country = !empty($state) ? $this->Common_model->getdata('country', array(
+                'country_id' => $state->country_id,
+                'is_deleted' => 0
+            )) : null;
+
+            if (!empty($state) && !empty($country)) {
+                foreach ($this->Common_model->getAllData('city', array(
+                    'state_id' => $state_id,
+                    'country_id' => $state->country_id,
+                    'is_deleted' => 0
+                )) as $city) {
+                    $cities[] = [
+                        'city_id' => (!empty($selected_city_id) && $selected_city_id == $city->city_id) ? $selected_city_token : encrypt_id($city->city_id),
+                        'city_name' => $city->city_name
+                    ];
+                }
             }
         }
 
@@ -162,6 +216,15 @@ class HotelManagment extends MY_Controller
             echo json_encode([
                 'status' => false,
                 'message' => 'Please fill all required hotel details',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if (empty($this->getActiveLocation($country_id, $state_id, $city_id))) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country, state, or city is unavailable',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -243,20 +306,34 @@ class HotelManagment extends MY_Controller
     {
 
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('hotel_admin', array('hotel_id' => $id));
+        $result = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($result)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'Hotel record not found',
+                'message' => 'Hotel record not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
 
-        $country = $this->Common_model->getdata('country', ['country_id' => $result->country_id]);
-        $state = $this->Common_model->getdata('state', ['state_id' => $result->state_id]);
-        $city = $this->Common_model->getdata('city', ['city_id' => $result->city_id]);
+        $location = $this->getActiveLocation($result->country_id, $result->state_id, $result->city_id);
+
+        if (empty($location)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel cannot be edited because its country, state, or city is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $country = $location['country'];
+        $state = $location['state'];
+        $city = $location['city'];
 
         echo json_encode([
             'status' => true,
@@ -302,12 +379,33 @@ class HotelManagment extends MY_Controller
             return;
         }
 
+        $old_data = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($old_data)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if (empty($this->getActiveLocation($country_id, $state_id, $city_id))) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country, state, or city is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $status = 'active';
         $updated_on = date('Y-m-d h:i:s');
 
         // ✅ Get old image
-        $old_data = $this->Common_model->getdata('hotel_admin', array('hotel_id' => $record_id));
-
         $old_image = !empty($old_data->hotel_image) ? $old_data->hotel_image : '';
         $hotel_image = $old_image;
 
@@ -361,7 +459,36 @@ class HotelManagment extends MY_Controller
             'updated_at' => $updated_on
         );
 
-        $this->Comman_model->UpdateRecord('hotel_admin', $hotel_data, array('hotel_id' => $record_id));
+        $updated = $this->Comman_model->UpdateRecord('hotel_admin', $hotel_data, array(
+            'hotel_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
+
+        if (!$updated) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to update hotel',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('hotel_admin', array(
+                'hotel_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => 'Hotel record not found or already deleted',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]);
+                return;
+            }
+        }
 
         $response_json['status'] = true;
         $response_json['message'] = "hotel data has been updated successfully";
@@ -387,16 +514,34 @@ class HotelManagment extends MY_Controller
             return;
         }
 
-        $table = 'hotel';
-        $where = array('hotel_id' => $id);
+        $where = array(
+            'hotel_id' => $id,
+            'is_deleted' => 0
+        );
+        $hotel = $this->Common_model->getdata('hotel_admin', $where);
 
-        $data = $this->Comman_model->Deletedata('hotel_admin', array('hotel_id' => $id));
-        if ($data) {
+        if (empty($hotel)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Hotel record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $data = $this->Comman_model->UpdateRecord('hotel_admin', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+
+        if ($data && $this->db->affected_rows() === 1) {
             $response['status'] = true;
-            $response['message'] = "hotel Deleted successfully";
+            $response['message'] = "Hotel deleted successfully";
         } else {
             $response['status'] = false;
-            $response['message'] = "Something Went wrong";
+            $response['message'] = $data
+                ? 'Hotel record not found or already deleted'
+                : 'Unable to delete hotel';
         }
 
         $response['csrfHash'] = $this->security->get_csrf_hash();
