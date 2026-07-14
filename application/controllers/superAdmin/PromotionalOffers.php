@@ -77,12 +77,21 @@ class PromotionalOffers extends MY_Controller
             return 'Invalid promotional offer status';
         }
 
+        $department = $this->Common_model->getdata('departments', array(
+            'department_id' => $data['department_id'],
+            'is_deleted' => 0
+        ));
+
+        if (empty($department)) {
+            return 'Selected department is unavailable';
+        }
+
         return '';
     }
 
     public function manage()
     {
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', array('is_deleted' => 0));
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -187,20 +196,27 @@ class PromotionalOffers extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $offer = $this->Common_model->getdata('promotional_offers', ['id' => $id]);
+        $offer = $this->Common_model->getdata('promotional_offers', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($offer)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Offer not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Offer not found or already deleted']);
             return;
         }
 
-        $department = $this->Common_model->getdata('departments', ['department_id' => $offer->department_id]);
+        $department = $this->Common_model->getdata('departments', array(
+            'department_id' => $offer->department_id,
+            'is_deleted' => 0
+        ));
 
         $this->jsonResponse([
             'status' => true,
             'data' => [
-                'department_id' => encrypt_id($offer->department_id),
+                'department_id' => !empty($department) ? encrypt_id($offer->department_id) : '',
                 'department_name' => $department->department_name ?? '',
+                'department_unavailable' => empty($department),
                 'offer_name' => $offer->offer_name,
                 'status' => $offer->status
             ],
@@ -231,6 +247,16 @@ class PromotionalOffers extends MY_Controller
             return;
         }
 
+        $existing_offer = $this->Common_model->getdata('promotional_offers', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_offer)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Offer not found or already deleted']);
+            return;
+        }
+
         $data = $this->offerPayload();
         $validationError = $this->validateOfferPayload($data);
 
@@ -239,9 +265,30 @@ class PromotionalOffers extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('promotional_offers', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('promotional_offers', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update promotional offer']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('promotional_offers', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Offer not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated promotional offer '.$data['offer_name']);
         }
 
@@ -261,8 +308,22 @@ class PromotionalOffers extends MY_Controller
             return;
         }
 
-        $offer = $this->Common_model->getdata('promotional_offers', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('promotional_offers', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $offer = $this->Common_model->getdata('promotional_offers', $where);
+
+        if (empty($offer)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Offer not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('promotional_offers', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -274,7 +335,9 @@ class PromotionalOffers extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Promotional Offer deleted successfully' : 'Failed to delete promotional offer'
+            'message' => $deleted
+                ? 'Promotional Offer deleted successfully'
+                : ($delete_query ? 'Offer not found or already deleted' : 'Unable to delete promotional offer')
         ]);
     }
 }

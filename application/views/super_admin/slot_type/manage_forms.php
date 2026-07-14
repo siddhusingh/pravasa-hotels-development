@@ -285,7 +285,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This slot type will be removed from the active slot type list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

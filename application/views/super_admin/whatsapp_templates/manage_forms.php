@@ -43,7 +43,6 @@
                                             <th>ORAI Template Code</th>
                                             <th>Status</th>
                                             <th>Created Date</th>
-                                            <th>Updated Date</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -160,7 +159,7 @@
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 7, orderable: false }
+            { targets: 6, orderable: false }
         ],
         ajax: {
             url: '<?php echo base_url('get-whatsapp-templates-table') ?>',
@@ -296,12 +295,17 @@
                     return;
                 }
 
-                if ($('#property_id option[value="' + response.data.property_id + '"]').length === 0) {
-                    $('#property_id').append(new Option(response.data.property_name, response.data.property_id));
+                if (response.data.property_id) {
+                    if ($('#property_id option[value="' + response.data.property_id + '"]').length === 0) {
+                        $('#property_id').append(new Option(response.data.property_name, response.data.property_id));
+                    }
+                    $('#property_id').val(response.data.property_id);
+                } else {
+                    $('#property_id').val('');
+                    toastr.warning('The previous property is unavailable. Please select a new property.');
                 }
 
                 $('#crud-modal-title').text('Edit WhatsApp Template');
-                $('#property_id').val(response.data.property_id);
                 $('#template_name').val(response.data.template_name);
                 $('#orai_template_code').val(response.data.orai_template_code);
                 $('#api_key').val(response.data.api_key);
@@ -318,7 +322,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This WhatsApp template will be removed from the active template list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

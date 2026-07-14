@@ -265,7 +265,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This meal plan will be removed from the active meal plan list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

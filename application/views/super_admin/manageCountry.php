@@ -295,7 +295,7 @@
       var $button = $(this);
       Swal.fire({
          title: "Are you sure?",
-         text: 'You will not be able to recover this record!',
+         text: 'This country will be removed from the active country list.',
          icon: "question",
          showCancelButton: true,
          showCloseButton: true,

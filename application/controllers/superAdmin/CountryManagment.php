@@ -52,7 +52,7 @@ class CountryManagment extends MY_Controller
     public function index()
     {
 
-        $data['countries'] = $this->Common_model->getAllData('country', "");
+        $data['countries'] = $this->Common_model->getAllData('country', array('is_deleted' => 0));
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/manageCountry', $data);
@@ -173,12 +173,15 @@ class CountryManagment extends MY_Controller
     {
         $id = $this->input->post('id');
         $record_id = decrypt_id($id);
-        $result = $this->Common_model->getdata('country', array('country_id' => $record_id));
+        $result = $this->Common_model->getdata('country', array(
+            'country_id' => $record_id,
+            'is_deleted' => 0
+        ));
 
         if (empty($record_id) || empty($result)) {
             echo json_encode([
                 "status" => false,
-                "message" => "Country record not found",
+                "message" => "Country record not found or already deleted",
                 "csrfHash" => $this->security->get_csrf_hash()
             ]);
             return;
@@ -215,6 +218,20 @@ class CountryManagment extends MY_Controller
             return;
         }
 
+        $existing_country = $this->Common_model->getdata('country', array(
+            'country_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_country)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Country record not found or already deleted",
+                "csrfHash" => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $country_data = array(
             'country_name' => $country_name,
             'country_code' => $country_code,
@@ -222,9 +239,38 @@ class CountryManagment extends MY_Controller
 
         );
 
-        $datas = $this->Comman_model->UpdateRecord('country', $country_data, array('country_id' => $record_id));
+        $datas = $this->Comman_model->UpdateRecord('country', $country_data, array(
+            'country_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($datas) {
+        if (!$datas) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Unable to update country",
+                "csrfHash" => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('country', array(
+                'country_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                echo json_encode([
+                    "status" => false,
+                    "message" => "Country record not found or already deleted",
+                    "csrfHash" => $this->security->get_csrf_hash()
+                ]);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity(
                 'update',
                 $record_id,
@@ -260,13 +306,28 @@ class CountryManagment extends MY_Controller
             return;
         }
 
-        $table = 'country';
-        $where = array('country_id' => $id);
+        $where = array(
+            'country_id' => $id,
+            'is_deleted' => 0
+        );
 
-        $result = $this->Common_model->getdata('country', array('country_id' => $id));
-        $data = $this->Comman_model->Deletedata('country', array('country_id' => $id));
+        $result = $this->Common_model->getdata('country', $where);
 
-        if ($data) {
+        if (empty($result)) {
+            echo json_encode([
+                "status" => false,
+                "message" => "Country record not found or already deleted",
+                "csrfHash" => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $data = $this->Comman_model->UpdateRecord('country', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+
+        if ($data && $this->db->affected_rows() === 1) {
             $this->logActivity(
                 'delete',
                 $id,
@@ -274,10 +335,12 @@ class CountryManagment extends MY_Controller
             );
 
             $status = true;
-            $message = "Country Deleted successfully";
+            $message = "Country deleted successfully";
         } else {
             $status = false;
-            $message = "Something Went wrong";
+            $message = $data
+                ? "Country record not found or already deleted"
+                : "Unable to delete country";
         }
 
         $output = array(

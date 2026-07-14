@@ -83,12 +83,21 @@ class Whatsapp_templates extends MY_Controller
             return 'Invalid WhatsApp template status';
         }
 
+        $property = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $data['property_id'],
+            'is_deleted' => 0
+        ));
+
+        if (empty($property)) {
+            return 'Selected property is unavailable';
+        }
+
         return '';
     }
 
     public function manage()
     {
-        $data['properties'] = $this->Common_model->getAllData('hotel_admin', "");
+        $data['properties'] = $this->Common_model->getAllData('hotel_admin', array('is_deleted' => 0));
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -104,7 +113,7 @@ class Whatsapp_templates extends MY_Controller
         $length = $inputs['length'];
         $search = $inputs['search']['value'];
 
-        $columns = [0 => 'wt.id', 1 => 'p.hotel_name', 2 => 'wt.template_name', 3 => 'wt.orai_template_code', 4 => 'wt.status', 5 => 'wt.created_at', 6 => 'wt.updated_at'];
+        $columns = [0 => 'wt.id', 1 => 'p.hotel_name', 2 => 'wt.template_name', 3 => 'wt.orai_template_code', 4 => 'wt.status', 5 => 'wt.created_at'];
         $order = $columns[$inputs['order'][0]['column']] ?? 'wt.id';
         $dir = $inputs['order'][0]['dir'] ?? 'DESC';
 
@@ -122,7 +131,6 @@ class Whatsapp_templates extends MY_Controller
                 htmlspecialchars($row->orai_template_code ?? '-'),
                 $status,
                 !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
-                !empty($row->updated_at) ? date('d M Y', strtotime($row->updated_at)) : '-',
                 '<a href="javascript:void(0)" class="text-fade hover-primary edit-template" data-record_id="'.$encrypted.'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
                 </a>
@@ -163,22 +171,27 @@ class Whatsapp_templates extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $this->db->select('wt.*, p.hotel_name');
-        $this->db->from('whatsapp_templates wt');
-        $this->db->join('hotel_admin p', 'p.hotel_id = wt.property_id', 'left');
-        $this->db->where('wt.id', $id);
-        $row = $this->db->get()->row();
+        $row = $this->Common_model->getdata('whatsapp_templates', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($row)) {
-            $this->jsonResponse(['status' => false, 'message' => 'WhatsApp template not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'WhatsApp template not found or already deleted']);
             return;
         }
+
+        $property = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $row->property_id,
+            'is_deleted' => 0
+        ));
 
         $this->jsonResponse([
             'status' => true,
             'data' => [
-                'property_id' => encrypt_id($row->property_id),
-                'property_name' => $row->hotel_name,
+                'property_id' => !empty($property) ? encrypt_id($row->property_id) : '',
+                'property_name' => $property->hotel_name ?? '',
+                'property_unavailable' => empty($property),
                 'template_name' => $row->template_name,
                 'orai_template_code' => $row->orai_template_code,
                 'api_key' => $row->api_key,
@@ -198,6 +211,16 @@ class Whatsapp_templates extends MY_Controller
             return;
         }
 
+        $existing_template = $this->Common_model->getdata('whatsapp_templates', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_template)) {
+            $this->jsonResponse(['status' => false, 'message' => 'WhatsApp template not found or already deleted']);
+            return;
+        }
+
         $data = $this->payload();
         $validationError = $this->validatePayload($data);
 
@@ -206,9 +229,30 @@ class Whatsapp_templates extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('whatsapp_templates', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('whatsapp_templates', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update WhatsApp template']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('whatsapp_templates', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'WhatsApp template not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated WhatsApp template '.$data['template_name']);
         }
 
@@ -224,13 +268,32 @@ class Whatsapp_templates extends MY_Controller
             return;
         }
 
-        $row = $this->Common_model->getdata('whatsapp_templates', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('whatsapp_templates', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $row = $this->Common_model->getdata('whatsapp_templates', $where);
+
+        if (empty($row)) {
+            $this->jsonResponse(['status' => false, 'message' => 'WhatsApp template not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('whatsapp_templates', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity('delete', $id, isset($row->template_name) ? 'Deleted WhatsApp template '.$row->template_name : 'Deleted WhatsApp template ID '.$id);
         }
 
-        $this->jsonResponse(['status' => (bool) $deleted, 'message' => $deleted ? 'WhatsApp template deleted successfully' : 'Failed to delete WhatsApp template']);
+        $this->jsonResponse([
+            'status' => (bool) $deleted,
+            'message' => $deleted
+                ? 'WhatsApp template deleted successfully'
+                : ($delete_query ? 'WhatsApp template not found or already deleted' : 'Unable to delete WhatsApp template')
+        ]);
     }
 }
