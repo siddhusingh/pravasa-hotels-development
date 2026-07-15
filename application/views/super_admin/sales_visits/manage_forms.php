@@ -226,7 +226,7 @@
                                                         <?php endforeach; ?>
                                                     <?php else : ?>
                                                         <tr>
-                                                            <td colspan="5" class="text-center text-muted">
+                                                            <td colspan="6" class="text-center text-muted">
                                                                 No sales visits found.
                                                             </td>
                                                         </tr>
@@ -321,6 +321,49 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
 
 <script>
+    $(document).on('click', '.delete-visit', function() {
+        var visitId = $(this).data('record_id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This sales visit will be removed from the active visit list.',
+            icon: 'question',
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            var requestData = { id: visitId };
+            requestData[window.CSRF.name] = window.CSRF.hash;
+
+            $.ajax({
+                url: '<?= base_url('delete-sales-visit') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: requestData,
+                success: function(response) {
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+
+                    if (response.status) {
+                        toastr.success(response.message);
+                        window.location.reload();
+                    } else {
+                        toastr.error(response.message || 'Unable to delete sales visit');
+                    }
+                },
+                error: function() {
+                    toastr.error('Something went wrong');
+                }
+            });
+        });
+    });
+
     $(document).ready(function() {
 
         var calendarEl = document.getElementById('salesVisitCalendar');

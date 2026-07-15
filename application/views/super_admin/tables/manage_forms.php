@@ -1,4 +1,9 @@
-<!-- Content Wrapper -->
+<style>
+    #table-crud-modal .select2-container { width: 100% !important; }
+    #table-crud-modal .select2-selection--single { height: 38px; padding: 5px 8px; }
+    #table-crud-modal .select2-selection__arrow { height: 36px; }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
         <div class="custom-page-header">
@@ -44,8 +49,6 @@
                                     <th>Table Number</th>
                                     <th>Capacity</th>
                                     <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -88,10 +91,10 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>Restaurant <span class="required-asterisk">*</span></label>
-                        <select class="form-select" id="restaurant_id" name="restaurant_id">
+                        <select class="form-select table-select" id="restaurant_id" name="restaurant_id">
                             <option value="">Select Restaurant</option>
                             <?php foreach ($restaurants as $r) { ?>
-                                <option value="<?= $r->id ?>"><?= $r->restaurant_name ?></option>
+                                <option value="<?= (int) $r->id ?>"><?= html_escape($r->restaurant_name) ?></option>
                             <?php } ?>
                         </select>
                         <span class="validation text-danger" id="restaurant_id_error"></span>
@@ -99,36 +102,33 @@
 
                     <div class="col-md-6 mb-3">
                         <label>Category <span class="required-asterisk">*</span></label>
-                        <select class="form-select" id="category_id" name="category_id">
+                        <select class="form-select table-select" id="category_id" name="category_id">
                             <option value="">Select Category</option>
-                            <?php foreach ($categories as $c) { ?>
-                                <option value="<?= $c->id ?>"><?= $c->category_name ?></option>
-                            <?php } ?>
                         </select>
                         <span class="validation text-danger" id="category_id_error"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label>Table Name <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-control" id="table_name" name="table_name">
+                        <input type="text" class="form-control" id="table_name" name="table_name" maxlength="100">
                         <span class="validation text-danger" id="table_name_error"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label>Table Number <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-control" id="table_number" name="table_number">
+                        <input type="text" class="form-control" id="table_number" name="table_number" maxlength="50">
                         <span class="validation text-danger" id="table_number_error"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label>Capacity <span class="required-asterisk">*</span></label>
-                        <input type="number" class="form-control" id="capacity" name="capacity">
+                        <input type="number" class="form-control" id="capacity" name="capacity" min="1" step="1">
                         <span class="validation text-danger" id="capacity_error"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label>Status</label>
-                        <select class="form-select" id="status" name="status">
+                        <select class="form-select table-select" id="status" name="status">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
@@ -158,13 +158,14 @@
 </script>
 
 <script>
+    var availableCategories = <?php echo json_encode($categories, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     var data_table = $('#server-side-data-table').DataTable({
         processing: true,
         serverSide: true,
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 9, orderable: false }
+            { targets: 7, orderable: false }
         ],
         ajax: {
             url: '<?php echo base_url('get-tables-table') ?>',
@@ -181,14 +182,56 @@
         }
     });
 
+    function initializeTableSelects() {
+        $('#restaurant_id, #category_id').select2({
+            dropdownParent: $('#table-crud-modal'),
+            width: '100%'
+        });
+        $('#status').select2({
+            dropdownParent: $('#table-crud-modal'),
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        });
+    }
+
+    function setTableSelectValue(selector, value) {
+        $(selector).val(value).trigger('change.select2');
+    }
+
+    function populateCategorySelect(restaurantId, selectedCategoryId) {
+        var $category = $('#category_id');
+        var restaurantKey = String(restaurantId || '');
+
+        $category.empty().append(new Option('Select Category', ''));
+        availableCategories.forEach(function(category) {
+            if (String(category.restaurant_id) === restaurantKey) {
+                $category.append(new Option(category.category_name, category.id));
+            }
+        });
+        setTableSelectValue('#category_id', selectedCategoryId || '');
+    }
+
+    $(document).ready(function() {
+        initializeTableSelects();
+        populateCategorySelect('', '');
+
+        $('#restaurant_id').on('change', function() {
+            populateCategorySelect($(this).val(), '');
+            $('#restaurant_id_error').text('');
+        });
+        $('#category_id, #status').on('change', function() {
+            $(this).siblings('.validation').text('');
+        });
+    });
+
     function resetTableForm() {
         $('.validation').text('');
-        $('#restaurant_id').val('');
-        $('#category_id').val('');
+        setTableSelectValue('#restaurant_id', '');
+        populateCategorySelect('', '');
         $('#table_name').val('');
         $('#table_number').val('');
         $('#capacity').val('');
-        $('#status').val('active');
+        setTableSelectValue('#status', 'active');
     }
 
     function validateTableForm() {
@@ -230,6 +273,7 @@
 
         var key = $(this).attr('data-key');
         var btn_txt = $(this).text();
+        var $button = $(this);
         var formData = new FormData();
 
         formData.append('restaurant_id', $('#restaurant_id').val());
@@ -252,7 +296,7 @@
             contentType: false,
             dataType: 'JSON',
             beforeSend: function() {
-                $('#action-btn-container').html('<button type="button" class="btn btn-primary">' + ((key !== '') ? 'Updating..' : 'Saving..') + '</button>');
+                $button.prop('disabled', true).text((key !== '') ? 'Updating..' : 'Saving..');
             },
             success: function(response) {
                 if (response.csrfHash) {
@@ -270,7 +314,7 @@
                 toastr.error('Something went wrong');
             },
             complete: function() {
-                $('#action-btn-container').html('<button type="button" id="action-btn" class="btn btn-primary">' + btn_txt + '</button>');
+                $button.prop('disabled', false).text(btn_txt);
             }
         });
     });
@@ -296,12 +340,12 @@
                 }
 
                 $('#crud-modal-title').text('Edit Table');
-                $('#restaurant_id').val(response.data.restaurant_id);
-                $('#category_id').val(response.data.category_id);
+                setTableSelectValue('#restaurant_id', response.data.restaurant_id);
+                populateCategorySelect(response.data.restaurant_id, response.data.category_id);
                 $('#table_name').val(response.data.table_name);
                 $('#table_number').val(response.data.table_number);
                 $('#capacity').val(response.data.capacity);
-                $('#status').val(response.data.status);
+                setTableSelectValue('#status', response.data.status);
                 $('#action-btn').text('Update').attr('data-key', response.id);
                 $('#table-crud-modal').modal('show');
             },
@@ -316,7 +360,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This table will be removed from the active table list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

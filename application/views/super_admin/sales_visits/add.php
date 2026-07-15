@@ -1,4 +1,12 @@
-<!-- Content Wrapper -->
+<style>
+    #salesVisitForm .select2-container { width: 100% !important; }
+    #salesVisitForm .select2-selection--single { height: 38px; padding: 5px 8px; }
+    #salesVisitForm .select2-selection__arrow { height: 36px; }
+    #salesVisitForm .required-asterisk { color: #dc3545; }
+    #salesVisitForm .select2-selection.is-invalid { border-color: #dc3545 !important; }
+    #salesVisitForm .validation-message { display: block; margin-top: 4px; }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
 
@@ -41,43 +49,41 @@
                         </div>
 
                         <div class="box-body">
-                            <form id="salesVisitForm">
+                            <form id="salesVisitForm" novalidate>
                                 <div class="row g-3">
 
                                     <!-- Hotel -->
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="property"><i class="fa fa-hotel me-1 text-danger"></i>Hotel (Property)</label>
+                                            <label for="property">Hotel (Property) <span class="required-asterisk">*</span></label>
                                             <select name="property" id="property" class="form-control" required>
                                                 <option selected disabled value="">Select Hotel</option>
                                                 <?php foreach ($hotel_admin as $each) { ?>
-                                                    <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>
+                                                    <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo html_escape($each->hotel_name) ?></option>
                                                 <?php } ?>
                                             </select>
-                                            <span id="property_error" class="text-danger small"></span>
+                                            <span id="property_error" class="text-danger small validation-message"></span>
                                         </div>
                                     </div>
 
                                     <!-- Department -->
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="type"><i class="fa fa-sitemap me-1 text-muted"></i>Department (Type)</label>
+                                            <label for="type">Department (Type) <span class="required-asterisk">*</span></label>
                                             <select name="type" id="type" class="form-control" required>
                                                 <option selected disabled value="">Select Department</option>
                                                 <?php foreach ($departments as $each) { ?>
                                                     <option value="<?php echo encrypt_id($each->department_id) ?>"
-                                                        data-name="<?php echo $each->department_name; ?>"><?php echo $each->department_name ?></option>
+                                                        data-name="<?php echo html_escape($each->department_name); ?>"><?php echo html_escape($each->department_name) ?></option>
                                                 <?php } ?>
                                             </select>
-                                            <span id="type_error" class="text-danger small"></span>
+                                            <span id="type_error" class="text-danger small validation-message"></span>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="lead_type">
-                                                <i class="fa fa-fire me-1 text-secondary"></i>Lead Type
-                                            </label>
+                                            <label for="lead_type">Lead Type</label>
                                             <select name="lead_type" id="lead_type" class="form-control">
                                                 <option value="Hot">Hot</option>
                                                 <option value="Warm">Warm</option>
@@ -89,37 +95,37 @@
 
                                     <!-- Report Date -->
                                     <div class="col-md-4">
-                                        <label>Report Date *</label>
+                                        <label for="report_date">Report Date <span class="required-asterisk">*</span></label>
                                         <input type="date" id="report_date" name="report_date" class="form-control" required>
-                                        <span class="text-danger small" id="report_date_error"></span>
+                                        <span class="text-danger small validation-message" id="report_date_error"></span>
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label>Company *</label>
+                                        <label for="company_id">Company <span class="required-asterisk">*</span></label>
                                         <select name="company_id" id="company_id" class="form-control" required>
                                             <option value="">Select Company</option>
                                             <?php foreach ($companies as $c) { ?>
                                                 <option value="<?= encrypt_id($c->company_id) ?>">
-                                                    <?= $c->company_name ?>
+                                                    <?= html_escape($c->company_name) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
-                                        <span class="text-danger small"></span>
+                                        <span class="text-danger small validation-message" id="company_id_error"></span>
                                     </div>
 
                                     <!-- Person Met -->
                                     <div class="col-md-4">
-                                        <label>Person Met *</label>
+                                        <label for="person_met">Person Met <span class="required-asterisk">*</span></label>
                                         <select name="person_met" id="person_met" class="form-control" required>
                                             <option value="">Select Person</option>
                                         </select>
-                                        <span class="text-danger small"></span>
+                                        <span class="text-danger small validation-message" id="person_met_error"></span>
                                     </div>
 
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage</label>
+                                            <label for="disposition">Stage</label>
                                             <select class="form-control" name="disposition" id="disposition">
                                                 <option value="" selected disabled>Select Stage</option>
                                                 <option value="Not Contacted">Not Contacted</option>
@@ -137,7 +143,7 @@
 
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status</label>
+                                            <label for="lead_status">Lead Status</label>
                                             <select name="lead_status" id="lead_status" class="form-control" disabled>
                                                 <option value="Open" selected>Open</option>
 
@@ -165,8 +171,9 @@
 
                                     <!-- Discussion Summary -->
                                     <div class="col-sm-4">
-                                        <label>Discussion Summary *</label>
+                                        <label for="discussion_summary">Discussion Summary <span class="required-asterisk">*</span></label>
                                         <textarea name="discussion_summary" class="form-control" rows="3" required id="discussion_summary"></textarea>
+                                        <span class="text-danger small validation-message" id="discussion_summary_error"></span>
                                     </div>
 
                                     <!-- Conclusion -->
@@ -195,7 +202,7 @@
                                             <?php if (!empty($travel_modes)) : ?>
                                                 <?php foreach ($travel_modes as $mode) : ?>
                                                     <option value="<?php echo encrypt_id($mode->id); ?>">
-                                                        <?php echo $mode->travel_mode_name; ?>
+                                                        <?php echo html_escape($mode->travel_mode_name); ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
@@ -205,31 +212,31 @@
                                     <!-- KMS -->
                                     <div class="col-sm-4">
                                         <label>Kms Run</label>
-                                        <input type="number" step="0.01" name="kms_run" class="form-control" id="kms_run">
+                                        <input type="number" min="0" step="0.01" name="kms_run" class="form-control" id="kms_run">
                                     </div>
 
                                     <!-- Rate -->
                                     <div class="col-sm-4">
                                         <label>Rate / Km</label>
-                                        <input type="number" step="0.01" name="rate_per_km" class="form-control" id="rate_per_km">
+                                        <input type="number" min="0" step="0.01" name="rate_per_km" class="form-control" id="rate_per_km">
                                     </div>
 
                                     <!-- Parking -->
                                     <div class="col-sm-4">
                                         <label>Parking / Toll</label>
-                                        <input type="number" step="0.01" name="parking_charges" class="form-control" id="parking_charges">
+                                        <input type="number" min="0" step="0.01" name="parking_charges" class="form-control" id="parking_charges">
                                     </div>
 
                                     <!-- Lunch -->
                                     <div class="col-sm-4">
                                         <label>Lunch</label>
-                                        <input type="number" step="0.01" name="lunch" class="form-control" id="lunch">
+                                        <input type="number" min="0" step="0.01" name="lunch" class="form-control" id="lunch">
                                     </div>
 
                                     <!-- Entertainment -->
                                     <div class="col-sm-4">
                                         <label>Entertainment</label>
-                                        <input type="number" step="0.01" name="entertainment" class="form-control" id="entertainment">
+                                        <input type="number" min="0" step="0.01" name="entertainment" class="form-control" id="entertainment">
                                     </div>
 
                                     <!-- Total -->
@@ -304,7 +311,27 @@
         }
     }
 
+    function initializeSalesVisitSelects(scope) {
+        $(scope).find('select').not('.select2-hidden-accessible').each(function() {
+            var noSearch = ['lead_type', 'disposition', 'lead_status', 'status'].indexOf(this.id) !== -1;
+            $(this).select2({
+                dropdownParent: $('#salesVisitForm'),
+                minimumResultsForSearch: noSearch ? Infinity : 0,
+                width: '100%'
+            });
+        });
+    }
+
     $(document).ready(function() {
+        initializeSalesVisitSelects(document);
+
+        var dynamicFields = document.getElementById('dynamicFields');
+        if (dynamicFields) {
+            new MutationObserver(function() {
+                initializeSalesVisitSelects(dynamicFields);
+            }).observe(dynamicFields, { childList: true, subtree: true });
+        }
+
         // Username
         $('#username').focusout(function() {
             let value = this.value.trim();
@@ -413,26 +440,13 @@
     });
 
 
-    $("#disposition").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
-
-    $("#type").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
-
-    $("#property").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
+    $(document).ready(function() {
+        $('#disposition, #type, #property')
+            .off('change.salesVisitDynamicFields')
+            .on('change.salesVisitDynamicFields', function() {
+                updateDynamicFieldsForEdit('', $('#property').val());
+            });
+    });
 
 
     function updateDynamicFieldsForEdit(data = "") {
@@ -759,13 +773,75 @@
         });
     }
 
+    function setSalesVisitFieldError(selector, errorId, message) {
+        var $field = $(selector);
+        $field.addClass('is-invalid');
+        $field.next('.select2-container').find('.select2-selection').addClass('is-invalid');
+        $('#' + errorId).text(message);
+    }
+
+    function clearSalesVisitFieldError(selector, errorId) {
+        var $field = $(selector);
+        $field.removeClass('is-invalid');
+        $field.next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+        $('#' + errorId).text('');
+    }
+
+    function validateSalesVisitRequiredFields() {
+        var isValid = true;
+        var requiredFields = [
+            ['#property', 'property_error', 'Please select a hotel'],
+            ['#type', 'type_error', 'Please select a department'],
+            ['#report_date', 'report_date_error', 'Please select the report date'],
+            ['#company_id', 'company_id_error', 'Please select a company'],
+            ['#person_met', 'person_met_error', 'Please select the person met'],
+            ['#discussion_summary', 'discussion_summary_error', 'Please enter the discussion summary']
+        ];
+
+        requiredFields.forEach(function(field) {
+            var value = $.trim($(field[0]).val() || '');
+            if (value === '') {
+                setSalesVisitFieldError(field[0], field[1], field[2]);
+                isValid = false;
+            } else {
+                clearSalesVisitFieldError(field[0], field[1]);
+            }
+        });
+
+        if (!isValid) {
+            var $firstInvalid = $('#salesVisitForm .is-invalid').first();
+            if ($firstInvalid.length) {
+                $('html, body').animate({ scrollTop: $firstInvalid.closest('.col-md-4, .col-sm-4').offset().top - 120 }, 250);
+            }
+        }
+
+        return isValid;
+    }
+
+    $(document).ready(function() {
+        $('#salesVisitForm')
+            .off('change.salesVisitValidation input.salesVisitValidation')
+            .on('change.salesVisitValidation input.salesVisitValidation', '#property, #type, #report_date, #company_id, #person_met, #discussion_summary', function() {
+                var errorIds = {
+                    property: 'property_error',
+                    type: 'type_error',
+                    report_date: 'report_date_error',
+                    company_id: 'company_id_error',
+                    person_met: 'person_met_error',
+                    discussion_summary: 'discussion_summary_error'
+                };
+
+                if ($.trim($(this).val() || '') !== '') {
+                    clearSalesVisitFieldError('#' + this.id, errorIds[this.id]);
+                }
+            });
+    });
+
 
 
     $('#salesVisitForm').on('submit', function(e) {
 
         e.preventDefault();
-
-        $("#lead_status").prop('disabled', false);
 
         /* ================== BASIC FIELDS ================== */
 
@@ -798,13 +874,7 @@
         let total_amount = $('#total_amount').val();
 
         /* ================== BASIC VALIDATION ================== */
-        if (
-
-            userChannel &&
-            property &&
-            department &&
-            query
-        ) {
+        if (validateSalesVisitRequiredFields()) {
 
             let formData = new FormData();
 
@@ -869,20 +939,23 @@
                     refreshCsrf(response);
 
                     if (response.duplicate) {
-                        alert('Failed to create lead: ' + response.message);
+                        toastr.error(response.message || 'A duplicate record already exists');
                         return;
                     }
 
                     if (response.status) {
                         window.location.href = '<?php echo base_url("sales-visits-history"); ?>';
                     } else {
-                        alert('Failed to create lead: ' + response.message);
+                        toastr.error(response.message || 'Unable to create sales visit');
                     }
+                },
+                error: function() {
+                    toastr.error('Something went wrong while saving the sales visit');
+                },
+                complete: function() {
+                    $('#submitBtn').prop('disabled', false).text('Submit');
                 }
             });
-
-        } else {
-            alert('Please fill all required fields.');
         }
     });
 
@@ -928,39 +1001,51 @@
 </script>
 
 <script>
-    $('#company_id').change(function() {
-        let company_id = $(this).val();
+    $(document).ready(function() {
+        $('#company_id').off('change.salesVisitContacts').on('change.salesVisitContacts', function() {
+            let company_id = $(this).val();
 
-        $('#person_met').html('<option value="">Loading...</option>');
+            $('#person_met').html('<option value="">Loading...</option>').trigger('change.select2');
 
-        if (company_id !== '') {
-            $.ajax({
-                url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
-                type: "POST",
-                data: csrfData({
-                    company_id: company_id
-                }),
-                dataType: "json",
-                success: function(res) {
-                    refreshCsrf(res);
-                    let options = '<option value="">Select Person</option>';
+            if (company_id !== '') {
+                $.ajax({
+                    url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
+                    type: "POST",
+                    data: csrfData({
+                        company_id: company_id
+                    }),
+                    dataType: "json",
+                    success: function(res) {
+                        refreshCsrf(res);
+                        let $personSelect = $('#person_met');
+                        $personSelect.empty().append(new Option('Select Person', ''));
 
-                    if (res.status === 'success') {
-                        $.each(res.data, function(i, row) {
-                            options += `<option value="${row.contact_id}">
-                                            ${row.first_name} ${row.last_name} (${row.mobile_number})
-                                        </option>`;
-                        });
-                    } else {
-                        options += '<option value="">No contacts found</option>';
+                        if (res.status === 'success') {
+                            $.each(res.data, function(i, row) {
+                                let contactName = $.trim(row.first_name + ' ' + row.last_name);
+                                $personSelect.append(new Option(contactName + ' (' + row.mobile_number + ')', row.contact_id));
+                            });
+                        } else {
+                            $personSelect.append(new Option('No contacts found', ''));
+                        }
+
+                        $personSelect.trigger('change.select2');
+                    },
+                    error: function() {
+                        $('#person_met')
+                            .empty()
+                            .append(new Option('Unable to load contacts', ''))
+                            .trigger('change.select2');
+                        toastr.error('Unable to load company contacts');
                     }
-
-                    $('#person_met').html(options);
-                }
-            });
-        } else {
-            $('#person_met').html('<option value="">Select Person</option>');
-        }
+                });
+            } else {
+                $('#person_met')
+                    .empty()
+                    .append(new Option('Select Person', ''))
+                    .trigger('change.select2');
+            }
+        });
     });
 
 

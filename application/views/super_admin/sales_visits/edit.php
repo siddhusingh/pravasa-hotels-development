@@ -1,3 +1,12 @@
+<style>
+    #salesVisitForm .select2-container { width: 100% !important; }
+    #salesVisitForm .select2-selection--single { height: 38px; padding: 5px 8px; }
+    #salesVisitForm .select2-selection__arrow { height: 36px; }
+    #salesVisitForm .required-asterisk { color: #dc3545; }
+    #salesVisitForm .select2-selection.is-invalid { border-color: #dc3545 !important; }
+    #salesVisitForm .validation-message { display: block; margin-top: 4px; }
+</style>
+
 <!-- Content Wrapper -->
 <div class="content-wrapper">
     <div class="container-full">
@@ -41,7 +50,7 @@
                         </div>
 
                         <div class="box-body">
-                            <form id="salesVisitForm">
+                            <form id="salesVisitForm" novalidate>
 
                                 <input type="hidden" name="visit_id" value="<?= encrypt_id($sales_visit->visit_id) ?>">
 
@@ -49,31 +58,33 @@
 
                                     <!-- Hotel -->
                                     <div class="col-md-4">
-                                        <label>Hotel (Property)</label>
+                                        <label for="property">Hotel (Property) <span class="required-asterisk">*</span></label>
                                         <select name="property" id="property" class="form-control" required>
                                             <option value="">Select Hotel</option>
                                             <?php foreach ($hotel_admin as $each) { ?>
                                                 <option value="<?= encrypt_id($each->hotel_id) ?>"
                                                     <?= ($sales_visit->property == $each->hotel_id) ? 'selected' : '' ?>>
-                                                    <?= $each->hotel_name ?>
+                                                    <?= html_escape($each->hotel_name) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
+                                        <span id="property_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Department -->
                                     <div class="col-md-4">
-                                        <label>Department</label>
+                                        <label for="type">Department (Type) <span class="required-asterisk">*</span></label>
                                         <select name="type" id="type" class="form-control" required>
                                             <option value="">Select Department</option>
                                             <?php foreach ($departments as $each) { ?>
                                                 <option value="<?= encrypt_id($each->department_id) ?>"
-                                                    data-name="<?= strtolower($each->department_name) ?>"
+                                                    data-name="<?= html_escape($each->department_name) ?>"
                                                     <?= ($sales_visit->type == $each->department_id) ? 'selected' : '' ?>>
-                                                    <?= $each->department_name ?>
+                                                    <?= html_escape($each->department_name) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
+                                        <span id="type_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Lead Type -->
@@ -88,34 +99,37 @@
 
                                     <!-- Report Date -->
                                     <div class="col-md-4">
-                                        <label>Report Date</label>
+                                        <label for="report_date">Report Date <span class="required-asterisk">*</span></label>
                                         <input type="date" id="report_date" name="report_date"
                                             value="<?= date('Y-m-d', strtotime($sales_visit->report_date)) ?>"
-                                            class="form-control">
+                                            class="form-control" required>
+                                        <span id="report_date_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Company -->
                                     <div class="col-md-4">
-                                        <label>Company</label>
-                                        <select name="company_id" id="company_id" class="form-control">
+                                        <label for="company_id">Company <span class="required-asterisk">*</span></label>
+                                        <select name="company_id" id="company_id" class="form-control" required>
                                             <option value="">Select Company</option>
                                             <?php foreach ($companies as $c) { ?>
                                                 <option value="<?= encrypt_id($c->company_id) ?>"
                                                     <?= ($sales_visit->company_id == $c->company_id) ? 'selected' : '' ?>>
-                                                    <?= $c->company_name ?>
+                                                    <?= html_escape($c->company_name) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
+                                        <span id="company_id_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Person Met -->
                                     <div class="col-md-4">
-                                        <label>Person Met</label>
-                                        <select name="person_met" id="person_met" class="form-control">
+                                        <label for="person_met">Person Met <span class="required-asterisk">*</span></label>
+                                        <select name="person_met" id="person_met" class="form-control" required>
                                             <option value="<?= encrypt_id($sales_visit->person_met) ?>" selected>
                                                 Loading...
                                             </option>
                                         </select>
+                                        <span id="person_met_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Stage -->
@@ -124,17 +138,22 @@
                                         <select name="disposition" id="disposition" class="form-control">
                                             <?php
                                             $dispositions = [
-                                                'Information/Enquiry',
-                                                'Reservation',
-                                                'Shopping - Follow up',
-                                                'Shopping - No Follow up',
-                                                'Trash',
-                                                'Denied'
+                                                'Not Contacted',
+                                                'Contacted',
+                                                'Quotation Sent',
+                                                'Negotiations',
+                                                'Contract Done',
+                                                'Advance Received',
+                                                'Lead Won',
+                                                'Lead Lost'
                                             ];
+                                            if (!empty($sales_visit->disposition) && !in_array($sales_visit->disposition, $dispositions, true)) {
+                                                array_unshift($dispositions, $sales_visit->disposition);
+                                            }
                                             foreach ($dispositions as $d) { ?>
-                                                <option value="<?= $d ?>"
+                                                <option value="<?= html_escape($d) ?>"
                                                     <?= ($sales_visit->disposition == $d) ? 'selected' : '' ?>>
-                                                    <?= $d ?>
+                                                    <?= html_escape($d) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
@@ -144,9 +163,9 @@
                                     <div class="col-md-4">
                                         <label>Lead Status</label>
                                         <select name="lead_status" id="lead_status" class="form-control" disabled>
-                                            <option value="Open" <?= ($sales_visit->status == 'Open') ? 'selected' : '' ?>>Open</option>
-                                            <option value="In Progress" <?= ($sales_visit->status == 'In Progress') ? 'selected' : '' ?>>In Progress</option>
-                                            <option value="Closed" <?= ($sales_visit->status == 'Closed') ? 'selected' : '' ?>>Closed</option>
+                                            <option value="Open" <?= ($sales_visit->lead_status == 'Open') ? 'selected' : '' ?>>Open</option>
+                                            <option value="In Progress" <?= ($sales_visit->lead_status == 'In Progress') ? 'selected' : '' ?>>In Progress</option>
+                                            <option value="Closed" <?= ($sales_visit->lead_status == 'Closed') ? 'selected' : '' ?>>Closed</option>
                                         </select>
                                     </div>
 
@@ -156,104 +175,111 @@
                                     <div id="dynamicFields"></div>
 
                                     <!-- Agenda -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-4">
                                         <label>Agenda</label>
-                                        <textarea name="agenda" id="agenda" class="form-control"><?= $sales_visit->agenda ?></textarea>
+                                        <textarea name="agenda" id="agenda" class="form-control" rows="2"><?= html_escape($sales_visit->agenda) ?></textarea>
                                     </div>
 
                                     <!-- Discussion Summary -->
-                                    <div class="col-md-12">
-                                        <label>Discussion Summary</label>
-                                        <textarea name="discussion_summary" id="discussion_summary" class="form-control" required><?= $sales_visit->discussion_summary ?></textarea>
+                                    <div class="col-sm-4">
+                                        <label for="discussion_summary">Discussion Summary <span class="required-asterisk">*</span></label>
+                                        <textarea name="discussion_summary" id="discussion_summary" class="form-control" rows="3" required><?= html_escape($sales_visit->discussion_summary) ?></textarea>
+                                        <span id="discussion_summary_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Conclusion -->
-                                    <div class="col-md-12">
+                                    <div class="col-sm-4">
                                         <label>Conclusion</label>
-                                        <textarea name="conclusion" id="conclusion" class="form-control"><?= $sales_visit->conclusion ?></textarea>
+                                        <textarea name="conclusion" id="conclusion" class="form-control" rows="2"><?= html_escape($sales_visit->conclusion) ?></textarea>
                                     </div>
 
-                                    <hr>
+                                    <hr class="mt-3">
 
-                                    <h5>Conveyance Details</h5>
+                                    <h5 class="mt-3">Conveyance Details</h5>
 
-                                    <div class="col-md-4">
+                                    <div class="col-sm-4">
                                         <label>Area Covered</label>
-                                        <textarea name="area_covered" id="area_covered" class="form-control"><?= $sales_visit->area_covered ?></textarea>
+                                        <textarea name="area_covered" id="area_covered" class="form-control" rows="2"><?= html_escape($sales_visit->area_covered) ?></textarea>
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label>Travel Mode</label>
                                         <select name="travel_mode" class="form-control" id="travel_mode">
                                             <option value="">Select</option>
                                             <?php foreach ($travel_modes as $mode) { ?>
                                                 <option value="<?= encrypt_id($mode->id) ?>"
                                                     <?= ($sales_visit->travel_mode == $mode->id) ? 'selected' : '' ?>>
-                                                    <?= $mode->travel_mode_name ?>
+                                                    <?= html_escape($mode->travel_mode_name) ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label for="kms_run">Kms Run</label>
                                         <input type="number"
                                             id="kms_run"
                                             name="kms_run"
-                                            value="<?= $sales_visit->kms_run ?>"
+                                            value="<?= html_escape($sales_visit->kms_run) ?>"
+                                            min="0" step="0.01"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label for="rate_per_km">Rate / Km</label>
                                         <input type="number"
                                             id="rate_per_km"
                                             name="rate_per_km"
-                                            value="<?= $sales_visit->rate_per_km ?>"
+                                            value="<?= html_escape($sales_visit->rate_per_km) ?>"
+                                            min="0" step="0.01"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-2">
-                                        <label for="parking_charges">Parking</label>
+                                    <div class="col-sm-4">
+                                        <label for="parking_charges">Parking / Toll</label>
                                         <input type="number"
                                             id="parking_charges"
                                             name="parking_charges"
-                                            value="<?= $sales_visit->parking_charges ?>"
+                                            value="<?= html_escape($sales_visit->parking_charges) ?>"
+                                            min="0" step="0.01"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label for="lunch">Lunch</label>
                                         <input type="number"
                                             id="lunch"
                                             name="lunch"
-                                            value="<?= $sales_visit->lunch ?>"
+                                            value="<?= html_escape($sales_visit->lunch) ?>"
+                                            min="0" step="0.01"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-2">
+                                    <div class="col-sm-4">
                                         <label for="entertainment">Entertainment</label>
                                         <input type="number"
                                             id="entertainment"
                                             name="entertainment"
-                                            value="<?= $sales_visit->entertainment ?>"
+                                            value="<?= html_escape($sales_visit->entertainment) ?>"
+                                            min="0" step="0.01"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-2">
-                                        <label for="total_amount">Total</label>
+                                    <div class="col-sm-4">
+                                        <label for="total_amount">Total Amount</label>
                                         <input type="number"
                                             id="total_amount"
                                             name="total_amount"
-                                            value="<?= $sales_visit->total_amount ?>"
+                                            value="<?= html_escape($sales_visit->total_amount) ?>"
+                                            step="0.01"
                                             class="form-control"
                                             readonly>
                                     </div>
 
 
-                                    <div class="col-md-12">
+                                    <div class="col-sm-12">
                                         <label>Remarks</label>
-                                        <textarea name="remarks" class="form-control"><?= $sales_visit->remarks ?></textarea>
+                                        <textarea name="remarks" class="form-control" rows="2"><?= html_escape($sales_visit->remarks) ?></textarea>
                                     </div>
 
                                 </div>
@@ -266,7 +292,7 @@
 
                                     <button type="submit" id="submitBtn"
                                         class="btn btn-primary px-4">
-                                        Submit
+                                        Update
                                     </button>
                                 </div>
 
@@ -317,17 +343,31 @@
         }
     }
 
-    $(document).ready(function() {
+    function initializeSalesVisitSelects(scope) {
+        $(scope).find('select').not('.select2-hidden-accessible').each(function() {
+            var noSearch = ['lead_type', 'disposition', 'lead_status', 'status'].indexOf(this.id) !== -1;
+            $(this).select2({
+                dropdownParent: $('#salesVisitForm'),
+                minimumResultsForSearch: noSearch ? Infinity : 0,
+                width: '100%'
+            });
+        });
+    }
 
-        $('#property').val("<?= encrypt_id($sales_visit->property) ?>");
-        $('#type').val("<?= encrypt_id($sales_visit->type) ?>");
-        $('#disposition').val("<?= $sales_visit->disposition ?>");
-        $('#lead_status').val("<?= $sales_visit->status ?>");
+    $(document).ready(function() {
+        initializeSalesVisitSelects(document);
+
+        var dynamicFields = document.getElementById('dynamicFields');
+        if (dynamicFields) {
+            new MutationObserver(function() {
+                initializeSalesVisitSelects(dynamicFields);
+            }).observe(dynamicFields, { childList: true, subtree: true });
+        }
 
         // Pass full object safely to JS
-        const salesVisit = <?= json_encode($sales_visit); ?>;
-        salesVisit.restaurant_id = "<?= !empty($sales_visit->restaurant_id) ? encrypt_id($sales_visit->restaurant_id) : '' ?>";
-        salesVisit.slot_type_id = "<?= !empty($sales_visit->slot_type_id) ? encrypt_id($sales_visit->slot_type_id) : '' ?>";
+        const salesVisit = <?= json_encode($sales_visit, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+        salesVisit.restaurant_id = <?= json_encode(!empty($sales_visit->restaurant_id) ? encrypt_id($sales_visit->restaurant_id) : '') ?>;
+        salesVisit.slot_type_id = <?= json_encode(!empty($sales_visit->slot_type_id) ? encrypt_id($sales_visit->slot_type_id) : '') ?>;
 
         updateDynamicFieldsForEdit(salesVisit);
     });
@@ -447,26 +487,13 @@
     });
 
 
-    $("#disposition").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
-
-    $("#type").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
-
-    $("#property").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFieldsForEdit("", property);
-
-    })
+    $(document).ready(function() {
+        $('#disposition, #type, #property')
+            .off('change.salesVisitDynamicFields')
+            .on('change.salesVisitDynamicFields', function() {
+                updateDynamicFieldsForEdit('', $('#property').val());
+            });
+    });
 
 
     function updateDynamicFieldsForEdit(data = "") {
@@ -800,11 +827,75 @@
 
 
 
+    function setSalesVisitFieldError(selector, errorId, message) {
+        var $field = $(selector);
+        $field.addClass('is-invalid');
+        $field.next('.select2-container').find('.select2-selection').addClass('is-invalid');
+        $('#' + errorId).text(message);
+    }
+
+    function clearSalesVisitFieldError(selector, errorId) {
+        var $field = $(selector);
+        $field.removeClass('is-invalid');
+        $field.next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+        $('#' + errorId).text('');
+    }
+
+    function validateSalesVisitRequiredFields() {
+        var isValid = true;
+        var requiredFields = [
+            ['#property', 'property_error', 'Please select a hotel'],
+            ['#type', 'type_error', 'Please select a department'],
+            ['#report_date', 'report_date_error', 'Please select the report date'],
+            ['#company_id', 'company_id_error', 'Please select a company'],
+            ['#person_met', 'person_met_error', 'Please select the person met'],
+            ['#discussion_summary', 'discussion_summary_error', 'Please enter the discussion summary']
+        ];
+
+        requiredFields.forEach(function(field) {
+            if ($.trim($(field[0]).val() || '') === '') {
+                setSalesVisitFieldError(field[0], field[1], field[2]);
+                isValid = false;
+            } else {
+                clearSalesVisitFieldError(field[0], field[1]);
+            }
+        });
+
+        if (!isValid) {
+            var $firstInvalid = $('#salesVisitForm .is-invalid').first();
+            if ($firstInvalid.length) {
+                var $column = $firstInvalid.closest('.col-md-4, .col-sm-4');
+                if ($column.length) {
+                    $('html, body').animate({ scrollTop: $column.offset().top - 120 }, 250);
+                }
+            }
+        }
+
+        return isValid;
+    }
+
+    $(document).ready(function() {
+        $('#salesVisitForm')
+            .off('change.salesVisitValidation input.salesVisitValidation')
+            .on('change.salesVisitValidation input.salesVisitValidation', '#property, #type, #report_date, #company_id, #person_met, #discussion_summary', function() {
+                var errorIds = {
+                    property: 'property_error',
+                    type: 'type_error',
+                    report_date: 'report_date_error',
+                    company_id: 'company_id_error',
+                    person_met: 'person_met_error',
+                    discussion_summary: 'discussion_summary_error'
+                };
+
+                if ($.trim($(this).val() || '') !== '') {
+                    clearSalesVisitFieldError('#' + this.id, errorIds[this.id]);
+                }
+            });
+    });
+
     $('#salesVisitForm').on('submit', function(e) {
 
         e.preventDefault();
-
-        $("#lead_status").prop('disabled', false);
 
         /* ================== BASIC FIELDS ================== */
 
@@ -838,13 +929,7 @@
 
         /* ================== BASIC VALIDATION ================== */
 
-        if (
-
-            userChannel &&
-            property &&
-            department &&
-            query
-        ) {
+        if (validateSalesVisitRequiredFields()) {
 
             let formData = new FormData();
 
@@ -908,24 +993,21 @@
                 success: function(response) {
                     refreshCsrf(response);
 
-                    if (response.duplicate) {
-                        alert('Failed to update sales visit: ' + response.message);
-                        return;
-                    }
-
                     if (response.status) {
                         window.location.href = '<?php echo base_url("sales-visits-history"); ?>';
                     } else {
-                        alert('Failed to update sales visit: ' + response.message);
+                        toastr.error(response.message || 'Failed to update sales visit');
                     }
                 },
+                error: function(xhr) {
+                    var response = xhr.responseJSON || {};
+                    refreshCsrf(response);
+                    toastr.error(response.message || 'Unable to update the sales visit');
+                },
                 complete: function() {
-                    $('#submitBtn').prop('disabled', false).text('Submit');
+                    $('#submitBtn').prop('disabled', false).text('Update');
                 }
             });
-
-        } else {
-            alert('Please fill all required fields.');
         }
     });
 
@@ -969,84 +1051,6 @@
 </script>
 
 <script>
-    $(document).ready(function() {
-
-        $('#company_id').change(function() {
-            let company_id = $(this).val();
-
-            $('#person_met').html('<option value="">Loading...</option>');
-
-            if (company_id !== '') {
-                $.ajax({
-                    url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
-                    type: "POST",
-                    data: csrfData({
-                        company_id: company_id
-                    }),
-                    dataType: "json",
-                    success: function(res) {
-                        refreshCsrf(res);
-                        let options = '<option value="">Select Person</option>';
-
-                        if (res.status === 'success') {
-                            $.each(res.data, function(i, row) {
-                                options += `<option value="${row.contact_id}">
-                                            ${row.first_name} ${row.last_name} (${row.mobile_number})
-                                        </option>`;
-                            });
-                        } else {
-                            options += '<option value="">No contacts found</option>';
-                        }
-
-                        $('#person_met').html(options);
-                    }
-                });
-            } else {
-                $('#person_met').html('<option value="">Select Person</option>');
-            }
-        });
-
-    });
-</script>
-
-<script>
-    $('#company_id').change(function() {
-        let company_id = $(this).val();
-
-        $('#person_met').html('<option value="">Loading...</option>');
-
-        if (company_id !== '') {
-            $.ajax({
-                url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
-                type: "POST",
-                data: csrfData({
-                    company_id: company_id
-                }),
-                dataType: "json",
-                success: function(res) {
-                    refreshCsrf(res);
-                    let options = '<option value="">Select Person</option>';
-
-                    if (res.status === 'success') {
-                        $.each(res.data, function(i, row) {
-                            options += `<option value="${row.contact_id}">
-                                            ${row.first_name} ${row.last_name} (${row.mobile_number})
-                                        </option>`;
-                        });
-                    } else {
-                        options += '<option value="">No contacts found</option>';
-                    }
-
-                    $('#person_met').html(options);
-                }
-            });
-        } else {
-            $('#person_met').html('<option value="">Select Person</option>');
-        }
-    });
-
-
-
     // Delegated event for dynamic fields
     $(document).on("change", "#checkin_date", function() {
         let today = new Date().toISOString().split("T")[0];
@@ -1179,39 +1183,64 @@
 
 
     $(document).ready(function() {
+        let companyId = <?= json_encode(encrypt_id($sales_visit->company_id)) ?>;
+        let selectedPerson = <?= json_encode(encrypt_id($sales_visit->person_met)) ?>;
 
-        let companyId = "<?= encrypt_id($sales_visit->company_id) ?>";
-        let selectedPerson = "<?= encrypt_id($sales_visit->person_met) ?>";
+        $('#company_id')
+            .off('change.salesVisitContacts')
+            .on('change.salesVisitContacts', function() {
+                loadCompanyContacts($(this).val());
+            });
 
         if (companyId) {
             loadCompanyContacts(companyId, selectedPerson);
+        } else {
+            $('#person_met').empty().append(new Option('Select Person', '')).trigger('change.select2');
         }
     });
 
     function loadCompanyContacts(companyId, selectedPerson = '') {
+        let $personSelect = $('#person_met');
+
+        if (!companyId) {
+            $personSelect.empty().append(new Option('Select Person', '')).trigger('change.select2');
+            return;
+        }
+
+        $personSelect.empty().append(new Option('Loading...', '')).trigger('change.select2');
 
         $.ajax({
             url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
             type: "POST",
             data: csrfData({
-                company_id: companyId
+                company_id: companyId,
+                selected_contact_id: selectedPerson
             }),
             dataType: "json",
             success: function(res) {
                 refreshCsrf(res);
-
-                let options = '<option value="">Select Person</option>';
+                $personSelect.empty().append(new Option('Select Person', ''));
 
                 if (res.status === 'success') {
                     $.each(res.data, function(i, row) {
-                        let selected = (row.contact_id == selectedPerson) ? 'selected' : '';
-                        options += `<option ${selected} value="${row.contact_id}">
-                        ${row.first_name} ${row.last_name}
-                    </option>`;
+                        let contactName = $.trim(row.first_name + ' ' + row.last_name);
+                        let label = contactName + (row.mobile_number ? ' (' + row.mobile_number + ')' : '');
+                        $personSelect.append(new Option(label, row.contact_id, false, row.contact_id == selectedPerson));
                     });
+                } else {
+                    $personSelect.append(new Option('No contacts found', ''));
                 }
 
-                $('#person_met').html(options);
+                $personSelect.trigger('change.select2');
+            },
+            error: function(xhr) {
+                let response = xhr.responseJSON || {};
+                refreshCsrf(response);
+                $personSelect
+                    .empty()
+                    .append(new Option('Unable to load contacts', ''))
+                    .trigger('change.select2');
+                toastr.error(response.message || 'Unable to load company contacts');
             }
         });
     }

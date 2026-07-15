@@ -1,4 +1,9 @@
-<!-- Content Wrapper -->
+<style>
+    #slot-crud-modal .select2-container { width: 100% !important; }
+    #slot-crud-modal .select2-selection--single { height: 38px; padding: 5px 8px; }
+    #slot-crud-modal .select2-selection__arrow { height: 36px; }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
         <div class="custom-page-header">
@@ -43,8 +48,6 @@
                                     <th>Start Time</th>
                                     <th>End Time</th>
                                     <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -87,10 +90,10 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>Slot Type <span class="required-asterisk">*</span></label>
-                        <select class="form-select" id="slot_type_id" name="slot_type_id">
+                        <select class="form-select slot-select" id="slot_type_id" name="slot_type_id">
                             <option value="">Select Slot Type</option>
                             <?php foreach ($slot_types as $s) { ?>
-                                <option value="<?= $s->id ?>"><?= $s->slot_name ?></option>
+                                <option value="<?= (int) $s->id ?>"><?= html_escape($s->slot_name) ?></option>
                             <?php } ?>
                         </select>
                         <span class="validation text-danger" id="slot_type_id_error"></span>
@@ -110,7 +113,7 @@
 
                     <div class="col-md-6 mb-3">
                         <label>Status</label>
-                        <select class="form-select" id="status" name="status">
+                        <select class="form-select slot-select" id="status" name="status">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
@@ -146,7 +149,7 @@
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 8, orderable: false }
+            { targets: 6, orderable: false }
         ],
         ajax: {
             url: '<?php echo base_url('get-time-slots-table') ?>',
@@ -163,12 +166,35 @@
         }
     });
 
+    function initializeTimeSlotSelects() {
+        $('#slot_type_id').select2({
+            dropdownParent: $('#slot-crud-modal'),
+            width: '100%'
+        });
+        $('#status').select2({
+            dropdownParent: $('#slot-crud-modal'),
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        });
+    }
+
+    function setTimeSlotSelectValue(selector, value) {
+        $(selector).val(value).trigger('change.select2');
+    }
+
+    $(document).ready(function() {
+        initializeTimeSlotSelects();
+        $('#slot_type_id, #status').on('change', function() {
+            $(this).siblings('.validation').text('');
+        });
+    });
+
     function resetSlotForm() {
         $('.validation').text('');
-        $('#slot_type_id').val('');
+        setTimeSlotSelectValue('#slot_type_id', '');
         $('#start_time').val('');
         $('#end_time').val('');
-        $('#status').val('active');
+        setTimeSlotSelectValue('#status', 'active');
     }
 
     function validateSlotForm() {
@@ -187,6 +213,11 @@
                 $('#' + field[1]).text('');
             }
         });
+
+        if ($('#start_time').val() !== '' && $('#end_time').val() !== '' && $('#end_time').val() <= $('#start_time').val()) {
+            $('#end_time_error').text('End time must be later than start time');
+            isValid = false;
+        }
 
         return isValid;
     }
@@ -208,6 +239,7 @@
 
         var key = $(this).attr('data-key');
         var btn_txt = $(this).text();
+        var $button = $(this);
         var formData = new FormData();
 
         formData.append('slot_type_id', $('#slot_type_id').val());
@@ -228,7 +260,7 @@
             contentType: false,
             dataType: 'JSON',
             beforeSend: function() {
-                $('#action-btn-container').html('<button type="button" class="btn btn-primary">' + ((key !== '') ? 'Updating..' : 'Saving..') + '</button>');
+                $button.prop('disabled', true).text((key !== '') ? 'Updating..' : 'Saving..');
             },
             success: function(response) {
                 if (response.csrfHash) {
@@ -246,7 +278,7 @@
                 toastr.error('Something went wrong');
             },
             complete: function() {
-                $('#action-btn-container').html('<button type="button" id="action-btn" class="btn btn-primary">' + btn_txt + '</button>');
+                $button.prop('disabled', false).text(btn_txt);
             }
         });
     });
@@ -272,10 +304,10 @@
                 }
 
                 $('#crud-modal-title').text('Edit Time Slot');
-                $('#slot_type_id').val(response.data.slot_type_id);
+                setTimeSlotSelectValue('#slot_type_id', response.data.slot_type_id);
                 $('#start_time').val(response.data.start_time);
                 $('#end_time').val(response.data.end_time);
-                $('#status').val(response.data.status);
+                setTimeSlotSelectValue('#status', response.data.status);
                 $('#action-btn').text('Update').attr('data-key', response.id);
                 $('#slot-crud-modal').modal('show');
             },
@@ -290,7 +322,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This time slot will be removed from the active time slot list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

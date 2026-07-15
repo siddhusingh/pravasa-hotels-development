@@ -2057,6 +2057,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
             ->from('sales_visits sv')
             ->join('companies c', 'c.company_id = sv.company_id', 'left')
             ->where('sv.status', 1)
+            ->where('sv.is_deleted', 0)
             ->get()
             ->result();
     }
