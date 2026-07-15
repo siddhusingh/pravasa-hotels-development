@@ -4,27 +4,35 @@
 <div class="content-wrapper">
     <div class="container-full">
         <!-- Content Header (Page header) -->
-        <div class="content-header">
-            <div class="d-flex align-items-center">
-                <div class="me-auto">
-                    <h4 class="page-title">Create New Lead</h4>
-                    <div class="d-inline-block align-items-center">
-                        <nav>
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                                <li class="breadcrumb-item" aria-current="page">Super Admin</li>
-                                <li class="breadcrumb-item active" aria-current="page">Create New Lead</li>
-                            </ol>
-                        </nav>
-                    </div>
+
+        <div class="custom-page-header">
+            <div class="header-left">
+                <div class="header-icon-box">
+                    <i class="fa fa-"></i>
                 </div>
+                <div class="header-content">
+                    <h2 class="header-title">Create New Lead</h2>
+                    <ol class="custom-breadcrumb">
+                        <li>
+                            <i class="fa fa-home"></i>
+                        </li>
+                        <li>Super Admin</li>
+                        <li>
+                            <i class="fa fa-angle-right"></i>
+                        </li>
+                        <li class="active">Create New Lead</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="header-banner">
+                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
             </div>
         </div>
         <!-- Main content -->
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box new_table_box">
                         <div class="box-header">
                             <h4 class="box-title">Create New Lead</h4>
 
