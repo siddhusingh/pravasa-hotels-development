@@ -155,10 +155,13 @@ class SlotType extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $row = $this->Common_model->getdata('slot_types', ['id' => $id]);
+        $row = $this->Common_model->getdata('slot_types', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($row)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Slot Type not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Slot Type not found or already deleted']);
             return;
         }
 
@@ -187,6 +190,16 @@ class SlotType extends MY_Controller
             return;
         }
 
+        $existing_slot_type = $this->Common_model->getdata('slot_types', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_slot_type)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Slot Type not found or already deleted']);
+            return;
+        }
+
         $data = $this->payload();
         $validationError = $this->validatePayload($data);
 
@@ -195,9 +208,30 @@ class SlotType extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('slot_types', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('slot_types', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update slot type']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('slot_types', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Slot Type not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated slot type '.$data['slot_name']);
         }
 
@@ -213,13 +247,32 @@ class SlotType extends MY_Controller
             return;
         }
 
-        $row = $this->Common_model->getdata('slot_types', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('slot_types', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $row = $this->Common_model->getdata('slot_types', $where);
+
+        if (empty($row)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Slot Type not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('slot_types', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity('delete', $id, isset($row->slot_name) ? 'Deleted slot type '.$row->slot_name : 'Deleted slot type ID '.$id);
         }
 
-        $this->jsonResponse(['status' => (bool) $deleted, 'message' => $deleted ? 'Slot Type deleted successfully' : 'Failed to delete slot type']);
+        $this->jsonResponse([
+            'status' => (bool) $deleted,
+            'message' => $deleted
+                ? 'Slot Type deleted successfully'
+                : ($delete_query ? 'Slot Type not found or already deleted' : 'Unable to delete slot type')
+        ]);
     }
 }

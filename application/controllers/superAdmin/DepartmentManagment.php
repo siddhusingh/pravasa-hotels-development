@@ -176,10 +176,13 @@ class DepartmentManagment extends MY_Controller
     public function edit()
     {
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('departments', ['department_id' => $id]);
+        $result = $this->Common_model->getdata('departments', array(
+            'department_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($result)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Department record not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Department record not found or already deleted']);
             return;
         }
 
@@ -204,6 +207,16 @@ class DepartmentManagment extends MY_Controller
             return;
         }
 
+        $existing_department = $this->Common_model->getdata('departments', array(
+            'department_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_department)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Department record not found or already deleted']);
+            return;
+        }
+
         $department_data = $this->departmentPayload();
         $validationError = $this->validateDepartmentPayload($department_data);
 
@@ -212,9 +225,30 @@ class DepartmentManagment extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('departments', $department_data, ['department_id' => $record_id]);
+        $updated = $this->Comman_model->UpdateRecord('departments', $department_data, array(
+            'department_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update department']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('departments', array(
+                'department_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Department record not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $record_id, 'Updated department '.$department_data['department_name']);
         }
 
@@ -234,8 +268,22 @@ class DepartmentManagment extends MY_Controller
             return;
         }
 
-        $department = $this->Common_model->getdata('departments', ['department_id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('departments', ['department_id' => $id]);
+        $where = array(
+            'department_id' => $id,
+            'is_deleted' => 0
+        );
+        $department = $this->Common_model->getdata('departments', $where);
+
+        if (empty($department)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Department record not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('departments', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -247,7 +295,9 @@ class DepartmentManagment extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Department deleted successfully' : 'Something went wrong'
+            'message' => $deleted
+                ? 'Department deleted successfully'
+                : ($delete_query ? 'Department record not found or already deleted' : 'Unable to delete department')
         ]);
     }
 }

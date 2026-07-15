@@ -1,3 +1,35 @@
+<style>
+    #area-crud-modal .select2-container {
+        width: 100% !important;
+    }
+
+    #area-crud-modal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #area-crud-modal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 13px !important;
+        padding-right: 35px !important;
+    }
+
+    #area-crud-modal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    .area-users-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
         <div class="custom-page-header">
@@ -96,7 +128,7 @@
                     <select class="form-select" id="state" name="state">
                         <option value="">Select State</option>
                         <?php foreach ($states as $state) { ?>
-                            <option value="<?php echo encrypt_id($state->state_id); ?>"><?php echo htmlspecialchars($state->state_name); ?></option>
+                            <option value="<?php echo encrypt_id($state->state_id); ?>"><?php echo htmlspecialchars($state->state_name, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php } ?>
                     </select>
                     <span class="validation text-danger" id="state_error"></span>
@@ -106,7 +138,7 @@
                     <select class="form-select" id="primary_user" name="primary_user">
                         <option value="">Select User</option>
                         <?php foreach ($primary_users as $user) { ?>
-                            <option value="<?php echo encrypt_id($user->id); ?>"><?php echo htmlspecialchars($user->full_name); ?></option>
+                            <option value="<?php echo encrypt_id($user->id); ?>"><?php echo htmlspecialchars($user->full_name, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php } ?>
                     </select>
                     <span class="validation text-danger" id="primary_user_error"></span>
@@ -116,7 +148,7 @@
                     <select class="form-select" id="secondary_user" name="secondary_user">
                         <option value="">Select User</option>
                         <?php foreach ($secondary_users as $user) { ?>
-                            <option value="<?php echo encrypt_id($user->id); ?>"><?php echo htmlspecialchars($user->full_name); ?></option>
+                            <option value="<?php echo encrypt_id($user->id); ?>"><?php echo htmlspecialchars($user->full_name, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php } ?>
                     </select>
                 </div>
@@ -187,14 +219,50 @@
         }
     });
 
+    function initAreaSelect2() {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $('#state, #primary_user, #secondary_user').each(function() {
+            var $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) {
+                return;
+            }
+
+            $select.select2({
+                width: '100%',
+                placeholder: $select.find('option:first').text(),
+                allowClear: false,
+                dropdownParent: $('#area-crud-modal'),
+                dropdownCssClass: 'area-users-select2-dropdown'
+            });
+        });
+
+        if (!$('#status').hasClass('select2-hidden-accessible')) {
+            $('#status').select2({
+                width: '100%',
+                minimumResultsForSearch: Infinity,
+                allowClear: false,
+                dropdownParent: $('#area-crud-modal'),
+                dropdownCssClass: 'area-users-select2-dropdown'
+            });
+        }
+    }
+
+    $(function() {
+        initAreaSelect2();
+    });
+
     function resetAreaForm() {
         $('.validation').text('');
         $('#area_name').val('');
         $('#area_description').val('');
-        $('#state').val('');
-        $('#primary_user').val('');
-        $('#secondary_user').val('');
-        $('#status').val('Active');
+        $('#state, #primary_user, #secondary_user').each(function() {
+            $(this).find('option[data-transient="true"]').remove();
+            $(this).val('').trigger('change');
+        });
+        $('#status').val('Active').trigger('change');
     }
 
     function validateAreaForm() {
@@ -218,10 +286,22 @@
     }
 
     function ensureSelectedOption(selector, value, text) {
-        if (value !== '' && $(selector + ' option[value="' + value + '"]').length === 0) {
-            $(selector).append(new Option(text || 'Selected', value));
+        if (value === '') {
+            $(selector).val('').trigger('change');
+            return;
         }
-        $(selector).val(value);
+
+        var optionExists = $(selector).find('option').filter(function() {
+            return this.value === value;
+        }).length > 0;
+
+        if (!optionExists) {
+            var option = new Option(text || 'Selected', value, true, true);
+            option.setAttribute('data-transient', 'true');
+            $(selector).append(option);
+        }
+
+        $(selector).val(value).trigger('change');
     }
 
     $('#open-area-modal').click(function(e) {
@@ -280,7 +360,13 @@
                 toastr.error('Something went wrong');
             },
             complete: function() {
-                $('#action-btn-container').html('<button type="button" id="action-btn" class="btn btn-primary">' + btn_txt + '</button>');
+                var $actionButton = $('<button>', {
+                    type: 'button',
+                    id: 'action-btn',
+                    class: 'btn btn-primary',
+                    text: btn_txt
+                }).attr('data-key', key);
+                $('#action-btn-container').empty().append($actionButton);
             }
         });
     });
@@ -311,9 +397,16 @@
                 ensureSelectedOption('#state', response.data.state, response.data.state_name);
                 ensureSelectedOption('#primary_user', response.data.primary_user, response.data.primary_user_name);
                 ensureSelectedOption('#secondary_user', response.data.secondary_user, response.data.secondary_user_name);
-                $('#status').val(response.data.status);
+                $('#status').val(response.data.status).trigger('change');
                 $('#action-btn').text('Update').attr('data-key', response.id);
                 $('#area-crud-modal').modal('show');
+
+                if ((response.data.unavailable_dependencies || []).length > 0) {
+                    toastr.warning(
+                        'Please select an active replacement for: ' +
+                        response.data.unavailable_dependencies.join(', ') + '.'
+                    );
+                }
             }
         });
     });
@@ -323,11 +416,11 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This area will be removed from the active area user list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,
-            confirmButtonText: 'Yes Delete it',
+            confirmButtonText: 'Yes, delete it',
             denyButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {

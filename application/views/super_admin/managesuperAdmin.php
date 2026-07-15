@@ -323,30 +323,39 @@
 
     $(document).on('click', '.delete-admin', function(e) {
         e.preventDefault();
+        var $button = $(this);
 
-        if (!confirm('Are you sure to delete this Super Admin?')) {
-            return;
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This Super Admin will be removed from the active administrator list.',
+            icon: 'question',
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Yes Delete it',
+            denyButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<?php echo base_url('delete-super-admin') ?>',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: {
+                        id: $button.attr('data-record_id'),
+                        [window.CSRF.name]: window.CSRF.hash
+                    },
+                    success: function(response) {
+                        if (response.csrfHash) {
+                            window.CSRF.hash = response.csrfHash;
+                        }
 
-        $.ajax({
-            url: '<?php echo base_url('delete-super-admin') ?>',
-            type: 'POST',
-            dataType: 'JSON',
-            data: {
-                id: $(this).attr('data-record_id'),
-                [window.CSRF.name]: window.CSRF.hash
-            },
-            success: function(response) {
-                if (response.csrfHash) {
-                    window.CSRF.hash = response.csrfHash;
-                }
-
-                if (response.status === 'success') {
-                    toastr.success('Super Admin deleted successfully');
-                    data_table.draw(false);
-                } else {
-                    toastr.error(response.message || 'Error deleting Super Admin');
-                }
+                        if (response.status === 'success') {
+                            toastr.success('Super Admin deleted successfully');
+                            data_table.draw(false);
+                        } else {
+                            toastr.error(response.message || 'Error deleting Super Admin');
+                        }
+                    }
+                });
             }
         });
     });

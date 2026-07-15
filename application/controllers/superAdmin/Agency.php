@@ -54,7 +54,7 @@ class Agency extends MY_Controller
 
     public function index()
     {
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -76,8 +76,7 @@ class Agency extends MY_Controller
             2 => 'contact_person',
             3 => 'email',
             4 => 'phone',
-            5 => 'status',
-            7 => 'created_at'
+            5 => 'status'
         ];
         $order = $columns[$inputs['order'][0]['column']] ?? 'id';
         $dir = $inputs['order'][0]['dir'] ?? 'DESC';
@@ -93,24 +92,23 @@ class Agency extends MY_Controller
 
             if (!empty($property_ids)) {
                 $property_names = $this->Agency_model->get_property_names_by_ids($property_ids);
-                $assigned_properties = htmlspecialchars(implode(', ', $property_names));
+                $assigned_properties = htmlspecialchars(implode(', ', $property_names), ENT_QUOTES, 'UTF-8');
             }
 
             $status = $row->status === 'Active' ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
 
             $data[] = [
                 $i++,
-                htmlspecialchars($row->agency_name ?? '-'),
-                htmlspecialchars($row->contact_person ?? '-'),
-                htmlspecialchars($row->email ?? '-'),
-                htmlspecialchars($row->phone ?? '-'),
+                htmlspecialchars($row->agency_name ?? '-', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($row->contact_person ?? '-', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($row->email ?? '-', ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($row->phone ?? '-', ENT_QUOTES, 'UTF-8'),
                 $status,
                 $assigned_properties,
-                !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
-                '<a href="javascript:void(0)" class="text-fade hover-primary edit-agency" data-record_id="'.$encrypted.'">
+                '<a href="javascript:void(0)" class="text-fade hover-primary edit-agency" data-record_id="' . $encrypted . '">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle"><polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon></svg>
                 </a>
-                <a href="javascript:void(0)" class="text-fade hover-primary delete-agency" data-record_id="'.$encrypted.'">
+                <a href="javascript:void(0)" class="text-fade hover-primary delete-agency" data-record_id="' . $encrypted . '">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash align-middle"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </a>'
             ];
@@ -145,24 +143,37 @@ class Agency extends MY_Controller
         }
 
         if (empty($id)) {
+            $this->db->trans_start();
             $record_id = $this->Agency_model->insert_agency($data);
-            $this->Agency_model->save_property_mapping($record_id, $property_ids);
-
             if ($record_id) {
-                $this->logActivity('create', $record_id, 'Created agency '.$data['agency_name']);
+                $this->Agency_model->save_property_mapping($record_id, $property_ids);
+            }
+            $this->db->trans_complete();
+
+            if ($record_id && $this->db->trans_status()) {
+                $this->logActivity('create', $record_id, 'Created agency ' . $data['agency_name']);
+                $this->jsonResponse(['status' => true, 'message' => 'Agency added successfully', 'record_id' => encrypt_id($record_id)]);
+                return;
             }
 
-            $this->jsonResponse(['status' => (bool) $record_id, 'message' => $record_id ? 'Agency added successfully' : 'Failed to add agency', 'record_id' => $record_id ? encrypt_id($record_id) : '']);
+            $this->jsonResponse(['status' => false, 'message' => 'Failed to add agency', 'record_id' => '']);
             return;
         }
 
+        $this->db->trans_start();
         $updated = $this->Agency_model->update_agency($id, $data);
-        $this->Agency_model->update_property_mapping($id, $property_ids);
+        $activeAgency = $updated !== false ? $this->Agency_model->get_agency($id) : null;
+        if (!empty($activeAgency)) {
+            $this->Agency_model->update_property_mapping($id, $property_ids);
+        }
+        $this->db->trans_complete();
 
-        if ($updated !== false) {
-            $this->logActivity('update', $id, 'Updated agency '.$data['agency_name']);
+        if ($updated === false || empty($activeAgency) || !$this->db->trans_status()) {
+            $this->jsonResponse(['status' => false, 'message' => 'Agency not found or already deleted']);
+            return;
         }
 
+        $this->logActivity('update', $id, 'Updated agency ' . $data['agency_name']);
         $this->jsonResponse(['status' => true, 'message' => 'Agency updated successfully', 'record_id' => encrypt_id($id)]);
     }
 
@@ -192,6 +203,7 @@ class Agency extends MY_Controller
             $properties = $this->db
                 ->select('hotel_id, hotel_name')
                 ->where_in('hotel_id', $property_ids)
+                ->where('is_deleted', 0)
                 ->get('hotel_admin')
                 ->result();
 
@@ -213,7 +225,8 @@ class Agency extends MY_Controller
                 'phone' => $agency->phone,
                 'address' => $agency->address,
                 'status' => $agency->status,
-                'selected_properties' => $selected
+                'selected_properties' => $selected,
+                'unavailable_properties' => count($property_ids) - count($selected)
             ]
         ]);
     }
@@ -235,13 +248,20 @@ class Agency extends MY_Controller
         }
 
         $agency = $this->Agency_model->get_agency($id);
-        $deleted = $this->Agency_model->delete_agency($id);
-
-        if ($deleted !== false) {
-            $this->logActivity('delete', $id, isset($agency->agency_name) ? 'Deleted agency '.$agency->agency_name : 'Deleted agency ID '.$id);
+        if (empty($agency)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Agency not found or already deleted']);
+            return;
         }
 
-        $this->jsonResponse(['status' => true, 'message' => 'Agency deleted successfully']);
+        $deleted = $this->Agency_model->delete_agency($id);
+
+        if ($deleted) {
+            $this->logActivity('delete', $id, 'Soft deleted agency ' . $agency->agency_name);
+            $this->jsonResponse(['status' => true, 'message' => 'Agency deleted successfully']);
+            return;
+        }
+
+        $this->jsonResponse(['status' => false, 'message' => 'Agency not found or already deleted']);
     }
 
     private function agencyPayload($includePassword)
@@ -252,8 +272,14 @@ class Agency extends MY_Controller
             'email' => trim($this->input->post('email')),
             'phone' => trim($this->input->post('phone')),
             'address' => trim($this->input->post('address')),
-            'status' => $this->input->post('status')
+            'status' => $this->input->post('status'),
+            'updated_at' => date('Y-m-d H:i:s')
         ];
+
+        if ($includePassword) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $data['is_deleted'] = 0;
+        }
 
         $password = trim($this->input->post('password'));
         if ($includePassword && $password === '') {
@@ -309,6 +335,15 @@ class Agency extends MY_Controller
 
         if (empty($property_ids)) {
             return 'Please assign at least one property';
+        }
+
+        $activePropertyCount = $this->db
+            ->where_in('hotel_id', $property_ids)
+            ->where('is_deleted', 0)
+            ->count_all_results('hotel_admin');
+
+        if ($activePropertyCount !== count($property_ids)) {
+            return 'One or more selected properties are unavailable';
         }
 
         return '';

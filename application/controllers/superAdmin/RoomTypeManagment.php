@@ -74,12 +74,21 @@ class RoomTypeManagment extends MY_Controller
             return 'Please fill all required room type details';
         }
 
+        $hotel = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $data['hotel_id'],
+            'is_deleted' => 0
+        ));
+
+        if (empty($hotel)) {
+            return 'Selected hotel is unavailable';
+        }
+
         return '';
     }
 
     public function index()
     {
-        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', "");
+        $data['hotels'] = $this->Common_model->getAllData('hotel_admin', array('is_deleted' => 0));
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -180,14 +189,25 @@ class RoomTypeManagment extends MY_Controller
     public function edit()
     {
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('roomtype', ['roomtype_id' => $id]);
+        $result = $this->Common_model->getdata('roomtype', array(
+            'roomtype_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($result)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Room type not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Room type not found or already deleted']);
             return;
         }
 
-        $hotel = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $result->hotel_id]);
+        $hotel = $this->Common_model->getdata('hotel_admin', array(
+            'hotel_id' => $result->hotel_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($hotel)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Room type cannot be edited because its hotel is unavailable']);
+            return;
+        }
 
         $this->jsonResponse([
             'status' => true,
@@ -210,6 +230,16 @@ class RoomTypeManagment extends MY_Controller
             return;
         }
 
+        $existing_roomtype = $this->Common_model->getdata('roomtype', array(
+            'roomtype_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_roomtype)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Room type not found or already deleted']);
+            return;
+        }
+
         $data = $this->roomTypePayload();
         $validationError = $this->validateRoomTypePayload($data);
 
@@ -218,9 +248,30 @@ class RoomTypeManagment extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('roomtype', $data, ['roomtype_id' => $record_id]);
+        $updated = $this->Comman_model->UpdateRecord('roomtype', $data, array(
+            'roomtype_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update room type']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('roomtype', array(
+                'roomtype_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Room type not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $record_id, 'Updated room type '.$data['roomtype_name'].' ('.$data['roomtype_code'].')');
         }
 
@@ -240,8 +291,22 @@ class RoomTypeManagment extends MY_Controller
             return;
         }
 
-        $roomtype = $this->Common_model->getdata('roomtype', ['roomtype_id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('roomtype', ['roomtype_id' => $id]);
+        $where = array(
+            'roomtype_id' => $id,
+            'is_deleted' => 0
+        );
+        $roomtype = $this->Common_model->getdata('roomtype', $where);
+
+        if (empty($roomtype)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Room type not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('roomtype', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -253,7 +318,9 @@ class RoomTypeManagment extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Room type deleted successfully' : 'Something went wrong'
+            'message' => $deleted
+                ? 'Room type deleted successfully'
+                : ($delete_query ? 'Room type not found or already deleted' : 'Unable to delete room type')
         ]);
     }
 }

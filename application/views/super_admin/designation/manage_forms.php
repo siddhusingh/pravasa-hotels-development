@@ -256,7 +256,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This designation will be removed from the active designation list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

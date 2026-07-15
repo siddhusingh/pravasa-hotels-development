@@ -51,7 +51,7 @@ class CityManagment extends MY_Controller
     public function index()
     {
 
-        $data['countries'] = $this->Common_model->getAllData('country', "");
+        $data['countries'] = $this->Common_model->getAllData('country', array('is_deleted' => 0));
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -133,12 +133,22 @@ class CityManagment extends MY_Controller
         $states = [];
 
         if (!empty($country_id)) {
-            $state_rows = $this->Common_model->getAllData('state', ['country_id' => $country_id]);
-            foreach ($state_rows as $state) {
-                $states[] = [
-                    'state_id' => (!empty($selected_state_id) && $selected_state_id == $state->state_id) ? $selected_state_token : encrypt_id($state->state_id),
-                    'state_name' => $state->state_name
-                ];
+            $country = $this->Common_model->getdata('country', array(
+                'country_id' => $country_id,
+                'is_deleted' => 0
+            ));
+
+            if (!empty($country)) {
+                $state_rows = $this->Common_model->getAllData('state', array(
+                    'country_id' => $country_id,
+                    'is_deleted' => 0
+                ));
+                foreach ($state_rows as $state) {
+                    $states[] = [
+                        'state_id' => (!empty($selected_state_id) && $selected_state_id == $state->state_id) ? $selected_state_token : encrypt_id($state->state_id),
+                        'state_name' => $state->state_name
+                    ];
+                }
             }
         }
 
@@ -171,6 +181,25 @@ class CityManagment extends MY_Controller
             return;
         }
 
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+        $state = $this->Common_model->getdata('state', array(
+            'state_id' => $state_id,
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country) || empty($state)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country or state is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $city_data = array(
             'city_name' => $city_name,
             'country_id' => $country_id,
@@ -180,9 +209,6 @@ class CityManagment extends MY_Controller
         );
 
         $record_id = $this->Comman_model->insertData('city', $city_data);
-        $state = $this->Common_model->getdata('state', ['state_id' => $state_id]);
-        $country = $this->Common_model->getdata('country', ['country_id' => $country_id]);
-
         if ($record_id) {
             $this->logActivity(
                 'create',
@@ -204,19 +230,38 @@ class CityManagment extends MY_Controller
     {
 
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('city', array('city_id' => $id));
+        $result = $this->Common_model->getdata('city', array(
+            'city_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($result)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'City record not found',
+                'message' => 'City record not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
         }
 
-        $country = $this->Common_model->getdata('country', ['country_id' => $result->country_id]);
-        $state = $this->Common_model->getdata('state', ['state_id' => $result->state_id]);
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $result->country_id,
+            'is_deleted' => 0
+        ));
+        $state = $this->Common_model->getdata('state', array(
+            'state_id' => $result->state_id,
+            'country_id' => $result->country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country) || empty($state)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'City cannot be edited because its country or state is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
 
         echo json_encode([
             'status' => true,
@@ -251,6 +296,38 @@ class CityManagment extends MY_Controller
             return;
         }
 
+        $existing_city = $this->Common_model->getdata('city', array(
+            'city_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+        $state = $this->Common_model->getdata('state', array(
+            'state_id' => $state_id,
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_city)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'City record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if (empty($country) || empty($state)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country or state is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
         $created_on = date('Y-m-d h:i:s');
         $updated_on = date('Y-m-d h:i:s');
 
@@ -263,11 +340,38 @@ class CityManagment extends MY_Controller
         );
 
 
-        $datas = $this->Comman_model->UpdateRecord('city', $city_data, array('city_id' => $record_id));
-        $state = $this->Common_model->getdata('state', ['state_id' => $state_id]);
-        $country = $this->Common_model->getdata('country', ['country_id' => $country_id]);
+        $datas = $this->Comman_model->UpdateRecord('city', $city_data, array(
+            'city_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($datas) {
+        if (!$datas) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to update city',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('city', array(
+                'city_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => 'City record not found or already deleted',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity(
                 'update',
                 $record_id,
@@ -299,9 +403,27 @@ class CityManagment extends MY_Controller
             return;
         }
 
-        $result = $this->Common_model->getdata('city', array('city_id' => $id));
-        $data = $this->Comman_model->Deletedata('city', array('city_id' => $id));
-        if ($data) {
+        $where = array(
+            'city_id' => $id,
+            'is_deleted' => 0
+        );
+        $result = $this->Common_model->getdata('city', $where);
+
+        if (empty($result)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'City record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $data = $this->Comman_model->UpdateRecord('city', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+
+        if ($data && $this->db->affected_rows() === 1) {
             $this->logActivity(
                 'delete',
                 $id,
@@ -309,10 +431,12 @@ class CityManagment extends MY_Controller
             );
 
             $response['status'] = true;
-            $response['message'] = "city Deleted successfully";
+            $response['message'] = "City deleted successfully";
         } else {
             $response['status'] = false;
-            $response['message'] = "Something Went wrong";
+            $response['message'] = $data
+                ? 'City record not found or already deleted'
+                : 'Unable to delete city';
         }
 
         $response['csrfHash'] = $this->security->get_csrf_hash();

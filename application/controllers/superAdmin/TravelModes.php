@@ -154,10 +154,13 @@ class TravelModes extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $row = $this->Common_model->getdata('travel_modes', ['id' => $id]);
+        $row = $this->Common_model->getdata('travel_modes', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($row)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Travel mode not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Travel mode not found or already deleted']);
             return;
         }
 
@@ -177,6 +180,16 @@ class TravelModes extends MY_Controller
             return;
         }
 
+        $existing_travel_mode = $this->Common_model->getdata('travel_modes', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_travel_mode)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Travel mode not found or already deleted']);
+            return;
+        }
+
         $data = $this->payload();
         $validationError = $this->validatePayload($data);
 
@@ -185,9 +198,30 @@ class TravelModes extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('travel_modes', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('travel_modes', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update travel mode']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('travel_modes', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Travel mode not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated travel mode '.$data['travel_mode_name']);
         }
 
@@ -203,13 +237,32 @@ class TravelModes extends MY_Controller
             return;
         }
 
-        $row = $this->Common_model->getdata('travel_modes', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('travel_modes', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $row = $this->Common_model->getdata('travel_modes', $where);
+
+        if (empty($row)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Travel mode not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('travel_modes', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity('delete', $id, isset($row->travel_mode_name) ? 'Deleted travel mode '.$row->travel_mode_name : 'Deleted travel mode ID '.$id);
         }
 
-        $this->jsonResponse(['status' => (bool) $deleted, 'message' => $deleted ? 'Travel Mode deleted successfully' : 'Failed to delete travel mode']);
+        $this->jsonResponse([
+            'status' => (bool) $deleted,
+            'message' => $deleted
+                ? 'Travel Mode deleted successfully'
+                : ($delete_query ? 'Travel mode not found or already deleted' : 'Unable to delete travel mode')
+        ]);
     }
 }

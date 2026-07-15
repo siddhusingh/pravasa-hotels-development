@@ -3,10 +3,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 // include('MyController');
 class Managestaff extends MY_Controller
 {
-
     public function __construct()
     {
-
         parent::__construct();
 
         $this->load->model('Comman_model');
@@ -14,7 +12,6 @@ class Managestaff extends MY_Controller
         $this->load->model('Datatables', 'objdt');
         $this->load->helper('download');
         date_default_timezone_set('Asia/Kolkata');
-
 
         if (empty($this->session->userdata('super_admin_session')) || ($this->session->userdata('role_as') != 'super_admin') || ($this->session->userdata('user_role') != 1)) {
             return redirect('super-admin-login');
@@ -49,12 +46,10 @@ class Managestaff extends MY_Controller
         ]);
     }
 
-
     public function index()
     {
-
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
+        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/managestaff', $data);
@@ -107,8 +102,8 @@ class Managestaff extends MY_Controller
                     $errors['mapping'] = 'Invalid hotel selected';
                     break;
                 }
-                if (!$this->Common_model->getdata('hotel_admin', ['hotel_id' => $hotelId])) {
-                    $errors['mapping'] = 'Selected hotel does not exist';
+                if (!$this->Common_model->getdata('hotel_admin', ['hotel_id' => $hotelId, 'is_deleted' => 0])) {
+                    $errors['mapping'] = 'Selected hotel is unavailable';
                     break;
                 }
                 $decryptedHotels[] = $hotelId;
@@ -120,8 +115,8 @@ class Managestaff extends MY_Controller
                     $errors['mapping'] = 'Invalid department selected';
                     break;
                 }
-                if (!$this->Common_model->getdata('departments', ['department_id' => $departmentId])) {
-                    $errors['mapping'] = 'Selected department does not exist';
+                if (!$this->Common_model->getdata('departments', ['department_id' => $departmentId, 'is_deleted' => 0])) {
+                    $errors['mapping'] = 'Selected department is unavailable';
                     break;
                 }
                 $decryptedDepartments[] = $departmentId;
@@ -187,13 +182,13 @@ class Managestaff extends MY_Controller
                 htmlspecialchars($row->phone ?? ''),
                 !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
                 !empty($row->updated_at) ? date('d M Y', strtotime($row->updated_at)) : '-',
-                '<a href="javascript:void(0)" class="text-fade hover-primary view-staff" data-record_id="'.$encrypted.'" data-name="'.$name.'">
+                '<a href="javascript:void(0)" class="text-fade hover-primary view-staff" data-record_id="' . $encrypted . '" data-name="' . $name . '">
                     <i class="fa fa-eye"></i> View
                 </a>
-                <a href="javascript:void(0)" class="text-fade hover-primary edit-staff" data-record_id="'.$encrypted.'">
+                <a href="javascript:void(0)" class="text-fade hover-primary edit-staff" data-record_id="' . $encrypted . '">
                     <i class="fa fa-edit"></i> Edit
                 </a>
-                <a href="javascript:void(0)" class="text-fade hover-primary delete-staff" data-record_id="'.$encrypted.'">
+                <a href="javascript:void(0)" class="text-fade hover-primary delete-staff" data-record_id="' . $encrypted . '">
                     <i class="fa fa-trash"></i> Delete
                 </a>'
             ];
@@ -242,6 +237,7 @@ class Managestaff extends MY_Controller
             'phone' => $phone,
             'password' => $password,
             'status' => 1,
+            'is_deleted' => 0,
             'created_at' => $created_on
         );
 
@@ -304,11 +300,6 @@ class Managestaff extends MY_Controller
         }
     }
 
-
-
-
-
-
     public function update()
     {
         $record_id = decrypt_id($this->input->post('record_id'));
@@ -354,19 +345,33 @@ class Managestaff extends MY_Controller
             $staff_data['password'] = md5($password_raw); // Hash only if password is sent
         }
 
-        // Update staff_members table
-        $update_success = $this->Comman_model->UpdateRecord('staff_members', $staff_data, ['id' => $record_id]);
+        $existing = $this->Common_model->getdata('staff_members', [
+            'id' => $record_id,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($existing)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Staff member not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        // Update only an active staff record so stale requests cannot modify deleted data.
+        $update_success = $this->Comman_model->UpdateRecord('staff_members', $staff_data, [
+            'id' => $record_id,
+            'is_deleted' => 0
+        ]);
 
         if (!$update_success) {
-            $existing = $this->Common_model->getdata('staff_members', ['id' => $record_id]);
-            if (empty($existing)) {
-                echo json_encode([
-                    'status' => false,
-                    'message' => 'Failed to update staff member.',
-                    'csrfHash' => $this->security->get_csrf_hash()
-                ]);
-                return;
-            }
+            echo json_encode([
+                'status' => false,
+                'message' => 'Failed to update staff member.',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
         }
 
         $this->logActivity(
@@ -415,12 +420,8 @@ class Managestaff extends MY_Controller
         }
     }
 
-
     public function delete()
     {
-
-        // $this->check_login();
-
         $id = decrypt_id($this->input->post('id'));
         if (empty($id)) {
             echo json_encode([
@@ -431,35 +432,49 @@ class Managestaff extends MY_Controller
             return;
         }
 
-        $staff = $this->Common_model->getdata('staff_members', ['id' => $id]);
+        $staff = $this->Common_model->getdata('staff_members', [
+            'id' => $id,
+            'is_deleted' => 0
+        ]);
 
-        $table = 'staff_members';
-        $where = array('id' => $id);
+        if (empty($staff)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Staff member not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
 
-        $data = $this->Comman_model->Deletedata('staff_members', array('id' => $id));
+        $deleted = $this->Comman_model->UpdateRecord(
+            'staff_members',
+            [
+                'is_deleted' => 1,
+                'updated_at' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => $id,
+                'is_deleted' => 0
+            ]
+        );
 
-        //   $data = $this->Comman_model->Deletedata('staff_members', array('id' => $id));
-
-
-
-        if ($data) {
+        if ($deleted && $this->db->affected_rows() === 1) {
             $this->logActivity(
                 'delete',
                 $id,
-                $staff ? "Deleted staff member {$staff->name} ({$staff->email})" : "Deleted staff member record {$id}"
+                "Soft deleted staff member {$staff->name} ({$staff->email})"
             );
 
             $response['status'] = true;
-            $response['message'] = "staff_members Deleted successfully";
+            $response['message'] = 'Staff member deleted successfully';
         } else {
             $response['status'] = false;
-            $response['message'] = "Something Went wrong";
+            $response['message'] = 'Staff member not found or already deleted';
         }
         $response['csrfHash'] = $this->security->get_csrf_hash();
 
         echo json_encode($response);
     }
-
 
     public function get_mapping_details()
     {
@@ -474,7 +489,21 @@ class Managestaff extends MY_Controller
             return;
         }
 
-        // Fetch mapping data with hotel & department names
+        $staff = $this->Common_model->getdata('staff_members', [
+            'id' => $staff_id,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($staff)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Staff member not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        // Keep historical dependency names readable in the view modal.
         $this->db->select('h.hotel_name, d.department_name, m.level');
         $this->db->from('staff_hotel_department_mapping m');
         $this->db->join('hotel_admin h', 'm.hotel_id = h.hotel_id ', 'left');
@@ -510,33 +539,61 @@ class Managestaff extends MY_Controller
             return;
         }
 
+        $staff = $this->Common_model->getdata('staff_members', [
+            'id' => $staff_id,
+            'is_deleted' => 0
+        ]);
 
+        if (empty($staff)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Staff member not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
 
+        $this->db->select('m.hotel_id, m.department_id, m.level');
+        $this->db->from('staff_hotel_department_mapping m');
+        $this->db->where('m.staff_id', $staff_id);
+        $mappings = $this->db->get()->result();
 
-        // Get staff basic details
+        unset($staff->password);
+        $staff->id = encrypt_id($staff->id);
 
-        $staff = $this->Common_model->getdata('staff_members', array('id' => $staff_id));
+        $hotelOptions = [];
+        $hotelTokens = [];
+        foreach ($this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]) as $hotel) {
+            $token = encrypt_id($hotel->hotel_id);
+            $hotelTokens[$hotel->hotel_id] = $token;
+            $hotelOptions[] = [
+                'id' => $token,
+                'text' => $hotel->hotel_name
+            ];
+        }
 
-
-        // Get staff mappings (    hotels, departments, levels)
-        //$mappings = $this->Staff_model->get_staff_mappings($staff_id);
-        $mappings = $this->Common_model->getAllData('staff_hotel_department_mapping', array('staff_id' => $staff_id));
-
-
-        if (!empty($staff)) {
-            unset($staff->password);
-            $staff->id = encrypt_id($staff->id);
+        $departmentOptions = [];
+        $departmentTokens = [];
+        foreach ($this->Common_model->getAllData('departments', ['is_deleted' => 0]) as $department) {
+            $token = encrypt_id($department->department_id);
+            $departmentTokens[$department->department_id] = $token;
+            $departmentOptions[] = [
+                'id' => $token,
+                'text' => $department->department_name
+            ];
         }
 
         foreach ($mappings as $mapping) {
-            $mapping->hotel_id = encrypt_id($mapping->hotel_id);
-            $mapping->department_id = encrypt_id($mapping->department_id);
+            $mapping->hotel_id = $hotelTokens[$mapping->hotel_id] ?? null;
+            $mapping->department_id = $departmentTokens[$mapping->department_id] ?? null;
         }
 
         echo json_encode([
             'status' => true,
             'staff' => $staff,
             'mappings' => $mappings,
+            'hotel_options' => $hotelOptions,
+            'department_options' => $departmentOptions,
             'id' => encrypt_id($staff_id),
             'csrfHash' => $this->security->get_csrf_hash()
         ]);

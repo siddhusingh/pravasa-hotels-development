@@ -164,10 +164,13 @@ class TeamGroup extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $team_group = $this->Common_model->getdata('team_groups', ['id' => $id]);
+        $team_group = $this->Common_model->getdata('team_groups', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($team_group)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Team Group not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Team Group not found or already deleted']);
             return;
         }
 
@@ -190,6 +193,16 @@ class TeamGroup extends MY_Controller
             return;
         }
 
+        $existing_team_group = $this->Common_model->getdata('team_groups', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_team_group)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Team Group not found or already deleted']);
+            return;
+        }
+
         $data = $this->teamGroupPayload();
         $validationError = $this->validateTeamGroupPayload($data);
 
@@ -198,9 +211,30 @@ class TeamGroup extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('team_groups', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('team_groups', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update team group']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('team_groups', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Team Group not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated team group '.$data['team_group_name']);
         }
 
@@ -220,8 +254,22 @@ class TeamGroup extends MY_Controller
             return;
         }
 
-        $team_group = $this->Common_model->getdata('team_groups', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('team_groups', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $team_group = $this->Common_model->getdata('team_groups', $where);
+
+        if (empty($team_group)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Team Group not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('team_groups', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -233,7 +281,9 @@ class TeamGroup extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Team Group deleted successfully' : 'Failed to delete team group'
+            'message' => $deleted
+                ? 'Team Group deleted successfully'
+                : ($delete_query ? 'Team Group not found or already deleted' : 'Unable to delete team group')
         ]);
     }
 }

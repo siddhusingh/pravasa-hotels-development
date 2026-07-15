@@ -150,10 +150,13 @@ class CompanyGroup extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $row = $this->Common_model->getdata('company_groups', ['id' => $id]);
+        $row = $this->Common_model->getdata('company_groups', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($row)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Company group not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Company group not found or already deleted']);
             return;
         }
 
@@ -173,6 +176,16 @@ class CompanyGroup extends MY_Controller
             return;
         }
 
+        $existing_company_group = $this->Common_model->getdata('company_groups', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_company_group)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Company group not found or already deleted']);
+            return;
+        }
+
         $data = $this->payload();
         $validationError = $this->validatePayload($data);
 
@@ -181,9 +194,30 @@ class CompanyGroup extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('company_groups', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('company_groups', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update company group']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('company_groups', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Company group not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated company group '.$data['company_group_name']);
         }
 
@@ -199,13 +233,32 @@ class CompanyGroup extends MY_Controller
             return;
         }
 
-        $row = $this->Common_model->getdata('company_groups', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('company_groups', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $row = $this->Common_model->getdata('company_groups', $where);
+
+        if (empty($row)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Company group not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('company_groups', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity('delete', $id, isset($row->company_group_name) ? 'Deleted company group '.$row->company_group_name : 'Deleted company group ID '.$id);
         }
 
-        $this->jsonResponse(['status' => (bool) $deleted, 'message' => $deleted ? 'Company Group deleted successfully' : 'Failed to delete company group']);
+        $this->jsonResponse([
+            'status' => (bool) $deleted,
+            'message' => $deleted
+                ? 'Company Group deleted successfully'
+                : ($delete_query ? 'Company group not found or already deleted' : 'Unable to delete company group')
+        ]);
     }
 }

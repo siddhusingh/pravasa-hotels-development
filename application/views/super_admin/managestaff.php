@@ -1,3 +1,39 @@
+<style>
+    #add-staff-modal .select2-container,
+    #edit-staff-modal .select2-container {
+        width: 100% !important;
+    }
+
+    #add-staff-modal .select2-container .select2-selection--single,
+    #edit-staff-modal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #add-staff-modal .select2-selection--single .select2-selection__rendered,
+    #edit-staff-modal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 13px !important;
+        padding-right: 35px !important;
+    }
+
+    #add-staff-modal .select2-selection--single .select2-selection__arrow,
+    #edit-staff-modal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    .staff-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+</style>
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
@@ -173,7 +209,9 @@
                                     <select class="form-control" name="hotel_id[]">
                                         <option selected disabled value="">Select Hotel</option>
                                         <?php foreach ($hotel_admin as $each) { ?>
-                                            <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>
+                                            <option value="<?php echo encrypt_id($each->hotel_id); ?>">
+                                                <?php echo htmlspecialchars($each->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                     <span class="validation text-danger"></span>
@@ -187,7 +225,9 @@
                                     <select class="form-control" name="department_id[]">
                                         <option selected disabled value="">Select Department</option>
                                         <?php foreach ($departments as $each) { ?>
-                                            <option value="<?php echo encrypt_id($each->department_id) ?>"><?php echo $each->department_name ?></option>
+                                            <option value="<?php echo encrypt_id($each->department_id); ?>">
+                                                <?php echo htmlspecialchars($each->department_name, ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                     <span class="validation text-danger"></span>
@@ -315,7 +355,9 @@
                                     <select class="form-control" name="hotel_id_edit[]">
                                         <option selected disabled value="">Select Hotel</option>
                                         <?php foreach ($hotel_admin as $each) { ?>
-                                            <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>
+                                            <option value="<?php echo encrypt_id($each->hotel_id); ?>">
+                                                <?php echo htmlspecialchars($each->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                     <span class="validation text-danger"></span>
@@ -329,7 +371,9 @@
                                     <select class="form-control" name="department_id_edit[]">
                                         <option selected disabled value="">Select Department</option>
                                         <?php foreach ($departments as $each) { ?>
-                                            <option value="<?php echo encrypt_id($each->department_id) ?>"><?php echo $each->department_name ?></option>
+                                            <option value="<?php echo encrypt_id($each->department_id); ?>">
+                                                <?php echo htmlspecialchars($each->department_name, ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                     <span class="validation text-danger"></span>
@@ -489,6 +533,61 @@
         });
     }
 
+    function initStaffMappingSelect2(container, modalSelector) {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $(container).find(
+            'select[name="hotel_id[]"], select[name="department_id[]"], ' +
+            'select[name="hotel_id_edit[]"], select[name="department_id_edit[]"]'
+        ).each(function() {
+            var $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) {
+                return;
+            }
+
+            var isHotel = $select.attr('name').indexOf('hotel_id') === 0;
+            $select.select2({
+                width: '100%',
+                placeholder: isHotel ? 'Select Hotel' : 'Select Department',
+                allowClear: false,
+                dropdownParent: $(modalSelector),
+                dropdownCssClass: 'staff-select2-dropdown'
+            });
+        });
+    }
+
+    function buildStaffOptions(options, selectedId, placeholder) {
+        var html = '<option value="">' + placeholder + '</option>';
+
+        $.each(options || [], function(index, option) {
+            var selected = option.id === selectedId ? ' selected' : '';
+            html += '<option value="' + $('<div>').text(option.id).html() + '"' + selected + '>' +
+                $('<div>').text(option.text).html() + '</option>';
+        });
+
+        return html;
+    }
+
+    var staffHotelOptions = <?php echo json_encode(array_map(function ($hotel) {
+        return [
+            'id' => encrypt_id($hotel->hotel_id),
+            'text' => $hotel->hotel_name
+        ];
+    }, $hotel_admin), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+    var staffDepartmentOptions = <?php echo json_encode(array_map(function ($department) {
+        return [
+            'id' => encrypt_id($department->department_id),
+            'text' => $department->department_name
+        ];
+    }, $departments), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+
+    $(function() {
+        initStaffMappingSelect2('#add-staff-modal', '#add-staff-modal');
+        initStaffMappingSelect2('#edit-staff-modal', '#edit-staff-modal');
+    });
+
     // Open Add Staff Modal
     $("#open-staff-modal").click(function(e) {
         e.preventDefault();
@@ -499,10 +598,11 @@
         $('#password').val("");
         $('#designation').val("");
 
-        // Uncheck all multi-select checkboxes for hotels, departments, and levels
-        $('input[name="hotel_id[]"]').prop("checked", false);
-        $('input[name="department_id[]"]').prop("checked", false);
-        $('input[name="level[]"]').prop("checked", false);
+        $('#new__ver_seq .row__par_div').not(':first').remove();
+        $('#new__ver_seq select[name="hotel_id[]"], #new__ver_seq select[name="department_id[]"]')
+            .val(null)
+            .trigger('change');
+        $('#new__ver_seq select[name="level[]"]').val('1');
 
         $('#add-staff-modal').modal('show');
     });
@@ -693,15 +793,6 @@
     // edit-staff function start from here
 
 
-    var allHotels = <?php echo json_encode(array_map(function ($hotel) {
-        return ['hotel_id' => encrypt_id($hotel->hotel_id), 'hotel_name' => $hotel->hotel_name];
-    }, $hotel_admin)); ?>;
-    var allDepartments = <?php echo json_encode(array_map(function ($department) {
-        return ['department_id' => encrypt_id($department->department_id), 'department_name' => $department->department_name];
-    }, $departments)); ?>;
-
-
-
     $(document).on("click", ".edit-staff", function(e) {
         e.preventDefault();
 
@@ -722,7 +813,6 @@
             success: function(res) {
                 updateStaffCsrf(res);
 
-                console.log(res)
                 if (res.status) {
                     // Populate Staff Details
                     $("#edit_record_id").val(staffId);
@@ -730,21 +820,17 @@
                     $("#email_edit").val(res.staff.email);
                     $("#phone_edit").val(res.staff.phone);
 
-                    // Populate Hotels, Departments & Levels
-
-
                     $.each(res.mappings, function(index, mapping) {
-                        var hotelOptions = '';
-                        $.each(allHotels, function(i, hotel) {
-                            var selected = (hotel.hotel_id == mapping.hotel_id) ? 'selected' : '';
-                            hotelOptions += `<option value="${hotel.hotel_id}" ${selected}>${hotel.hotel_name}</option>`;
-                        });
-
-                        var departmentOptions = '';
-                        $.each(allDepartments, function(i, dept) {
-                            var selected = (dept.department_id == mapping.department_id) ? 'selected' : '';
-                            departmentOptions += `<option value="${dept.department_id}" ${selected}>${dept.department_name}</option>`;
-                        });
+                        var hotelOptions = buildStaffOptions(
+                            res.hotel_options,
+                            mapping.hotel_id,
+                            'Select Hotel'
+                        );
+                        var departmentOptions = buildStaffOptions(
+                            res.department_options,
+                            mapping.department_id,
+                            'Select Department'
+                        );
 
                         var levelOptions = '';
                         for (let level = 1; level <= 3; level++) {
@@ -786,6 +872,16 @@
                         $("#edit__ver_seq").append(newRow);
                     });
 
+                    initStaffMappingSelect2('#edit__ver_seq', '#edit-staff-modal');
+
+                    var unavailableMapping = (res.mappings || []).some(function(mapping) {
+                        return !mapping.hotel_id || !mapping.department_id;
+                    });
+                    if (unavailableMapping) {
+                        toastr.warning(
+                            'A previously assigned hotel or department is unavailable. Please select an active replacement.'
+                        );
+                    }
 
                     // Show Modal
                     $("#edit-staff-modal").modal("show");
@@ -807,9 +903,7 @@
         <div class="mb-3">
             <label class="form-label">Select Hotel</label>
             <select class="form-control" name="hotel_id_edit[]">
-                <?php foreach ($hotel_admin as $each) { ?>
-                    <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>
-                <?php } ?>
+                ${buildStaffOptions(staffHotelOptions, null, 'Select Hotel')}
             </select>
         </div>
     </div>
@@ -817,9 +911,7 @@
         <div class="mb-3">
             <label class="form-label">Select Department</label>
             <select class="form-control" name="department_id_edit[]">
-                <?php foreach ($departments as $each) { ?>
-                    <option value="<?php echo encrypt_id($each->department_id) ?>"><?php echo $each->department_name ?></option>
-                <?php } ?>
+                ${buildStaffOptions(staffDepartmentOptions, null, 'Select Department')}
             </select>
         </div>
     </div>
@@ -839,6 +931,7 @@
 </div>
 `;
         $("#edit__ver_seq").append(newRow);
+        initStaffMappingSelect2('#edit__ver_seq .row__par_div:last', '#edit-staff-modal');
     });
 
     // Remove Row
@@ -949,12 +1042,12 @@
         var id = $(this).attr('data-record_id');
         Swal.fire({
             title: "Are you sure?",
-            text: 'You will not be able to recover this imaginary file!',
+            text: 'This staff member will be removed from the active staff list.',
             icon: "question",
             showCancelButton: true,
             showCloseButton: true,
 
-            confirmButtonText: "Yes Delete it",
+            confirmButtonText: "Yes, delete it",
             denyButtonText: `Cancel`
         }).then((result) => {
 
@@ -992,6 +1085,8 @@
 
 <script type="text/javascript">
     $("#add__ver_seq").click(function() {
+        var hotelOptions = buildStaffOptions(staffHotelOptions, null, 'Select Hotel');
+        var departmentOptions = buildStaffOptions(staffDepartmentOptions, null, 'Select Department');
         var newAdd__VS =
             '<div id="row__ver_seq" class="row__par_div">' +
             '<div class="row">' +
@@ -1001,10 +1096,7 @@
             '<div class="mb-3">' +
             '<label class="form-label">Select Hotel</label>' +
             '<select class="form-control" name="hotel_id[]">' +
-            '<option selected disabled value="">Select Hotel</option>' +
-            '<?php foreach ($hotel_admin as $each) { ?>' +
-            '<option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>' +
-            '<?php } ?>' +
+            hotelOptions +
             '</select>' +
             '<span class="validation text-danger"></span>' +
             '</div></div>' +
@@ -1014,10 +1106,7 @@
             '<div class="mb-3">' +
             '<label class="form-label">Select Department</label>' +
             '<select class="form-control" name="department_id[]">' +
-            '<option selected disabled value="">Select Department</option>' +
-            '<?php foreach ($departments as $each) { ?>' +
-            '<option value="<?php echo encrypt_id($each->department_id) ?>"><?php echo $each->department_name ?></option>' +
-            '<?php } ?>' +
+            departmentOptions +
             '</select>' +
             '<span class="validation text-danger"></span>' +
             '</div></div>' +
@@ -1043,6 +1132,7 @@
             '</div></div>';
 
         $('#new__ver_seq').append(newAdd__VS);
+        initStaffMappingSelect2('#new__ver_seq .row__par_div:last', '#add-staff-modal');
     });
 
     // Remove dynamically added row

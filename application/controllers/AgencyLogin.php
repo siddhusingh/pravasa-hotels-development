@@ -36,7 +36,10 @@ class AgencyLogin extends CI_Controller
         ];
 
         // Fetch user data based on email
-        $data = $this->Comman_model->get_single_record('agencies', ['email' => $email]);
+        $data = $this->Comman_model->get_single_record('agencies', [
+            'email' => $email,
+            'is_deleted' => 0
+        ]);
 
         if (!empty($data)) {
             // Verify password

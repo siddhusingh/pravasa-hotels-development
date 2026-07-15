@@ -174,10 +174,13 @@ class MealPlan extends MY_Controller
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $data = $this->Common_model->getdata('meal_plans', ['id' => $id]);
+        $data = $this->Common_model->getdata('meal_plans', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($data)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found']);
+            $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found or already deleted']);
             return;
         }
 
@@ -215,6 +218,16 @@ class MealPlan extends MY_Controller
             return;
         }
 
+        $existing_meal_plan = $this->Common_model->getdata('meal_plans', array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_meal_plan)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found or already deleted']);
+            return;
+        }
+
         $data = $this->mealPlanPayload();
         $validationError = $this->validateMealPlanPayload($data);
 
@@ -223,9 +236,30 @@ class MealPlan extends MY_Controller
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('meal_plans', $data, ['id' => $id]);
+        $updated = $this->Comman_model->UpdateRecord('meal_plans', $data, array(
+            'id' => $id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
 
-        if ($updated) {
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update meal plan']);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('meal_plans', array(
+                'id' => $id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found or already deleted']);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity('update', $id, 'Updated meal plan '.$data['plan'].' ('.$data['plan_code'].')');
         }
 
@@ -245,8 +279,22 @@ class MealPlan extends MY_Controller
             return;
         }
 
-        $mealPlan = $this->Common_model->getdata('meal_plans', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('meal_plans', ['id' => $id]);
+        $where = array(
+            'id' => $id,
+            'is_deleted' => 0
+        );
+        $mealPlan = $this->Common_model->getdata('meal_plans', $where);
+
+        if (empty($mealPlan)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Meal Plan not found or already deleted']);
+            return;
+        }
+
+        $delete_query = $this->Comman_model->UpdateRecord('meal_plans', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+        $deleted = $delete_query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
             $this->logActivity(
@@ -258,7 +306,9 @@ class MealPlan extends MY_Controller
 
         $this->jsonResponse([
             'status' => (bool) $deleted,
-            'message' => $deleted ? 'Meal Plan deleted successfully' : 'Failed to delete meal plan'
+            'message' => $deleted
+                ? 'Meal Plan deleted successfully'
+                : ($delete_query ? 'Meal Plan not found or already deleted' : 'Unable to delete meal plan')
         ]);
     }
 }

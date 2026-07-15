@@ -284,7 +284,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This room type will be removed from the active room type list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

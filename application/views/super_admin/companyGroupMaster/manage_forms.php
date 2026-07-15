@@ -257,7 +257,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This company group will be removed from the active company group list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

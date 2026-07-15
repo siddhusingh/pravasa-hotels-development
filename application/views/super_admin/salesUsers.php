@@ -1,3 +1,67 @@
+<style>
+    #add-modal .select2-container--default .select2-selection--multiple,
+    #edit-modal .select2-container--default .select2-selection--multiple {
+        height: auto !important;
+        min-height: 46px;
+        max-height: 112px;
+        overflow-y: auto;
+        padding: 5px 8px;
+    }
+
+    #add-modal .select2-selection--multiple .select2-selection__rendered,
+    #edit-modal .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        padding: 0;
+        white-space: normal;
+    }
+
+    #add-modal .select2-selection--multiple .select2-selection__choice,
+    #edit-modal .select2-selection--multiple .select2-selection__choice {
+        margin: 0;
+    }
+
+    #add-modal .select2-search--inline .select2-search__field,
+    #edit-modal .select2-search--inline .select2-search__field {
+        height: 30px !important;
+        margin: 0;
+        box-shadow: none !important;
+    }
+
+    #add-modal .select2-container--default .select2-selection--single,
+    #edit-modal .select2-container--default .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        background-color: #fff !important;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px !important;
+    }
+
+    #add-modal .select2-selection--single .select2-selection__rendered,
+    #edit-modal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 14px;
+    }
+
+    #add-modal .select2-selection--single .select2-selection__arrow,
+    #edit-modal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    #add-modal .select2-search--dropdown .select2-search__field,
+    #edit-modal .select2-search--dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+    }
+</style>
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
@@ -218,44 +282,12 @@
                         </div>
                     </div>
 
-                    <!-- Team Group -->
-                    <div class="col-md-4">
-                        <div class="">
-                            <label for="team_group" class="form-label">Team Group</label>
-                            <select class="form-control" name="team_group[]" id="team_group" multiple>
-                                <option disabled>Select Team Group</option>
-                                <?php foreach ($team_group as $each) { ?>
-                                    <option value="<?php echo encrypt_id($each->id); ?>">
-                                        <?php echo $each->team_group_name ?? $each->team_group ?? ''; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                            <span id="team_group_error" class="validation text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- Hotels -->
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="hotel_id" class="form-label">Select Hotels (Multiple)</label>
-                            <select class="form-control" name="hotel_id[]" id="hotel_id" multiple>
-                                <option disabled>Select Hotels</option>
-                                <?php foreach ($hotels as $each) { ?>
-                                    <option value="<?php echo encrypt_id($each->hotel_id); ?>">
-                                        <?php echo $each->hotel_name; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                            <span id="hotel_id_error" class="validation text-danger"></span>
-                        </div>
-                    </div>
-
                     <!-- City -->
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label for="city" class="form-label">City</label>
                             <select class="form-control" name="city" id="city">
-                                <option value="" selected disabled>Select City</option>
+                                <option value=""></option>
                                 <?php foreach ($cities as $city) { ?>
                                     <option value="<?php echo encrypt_id($city->city_id); ?>">
                                         <?php echo $city->city_name; ?>
@@ -271,7 +303,7 @@
                         <div class="mb-3">
                             <label for="state_id" class="form-label">State</label>
                             <select class="form-control" name="state_id" id="state_id">
-                                <option value="" selected disabled>Select State</option>
+                                <option value=""></option>
                                 <?php foreach ($states as $state) { ?>
                                     <option value="<?php echo encrypt_id($state->state_id); ?>">
                                         <?php echo $state->state_name; ?>
@@ -290,6 +322,7 @@
                             <span id="zipcode_error" class="validation text-danger"></span>
                         </div>
                     </div>
+
                     <!-- Status -->
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -301,9 +334,39 @@
                         </div>
                     </div>
 
+                    <!-- Team Group -->
+                    <div class="col-md-12">
+                        <div class="">
+                            <label for="team_group" class="form-label">Team Group</label>
+                            <select class="form-control" name="team_group[]" id="team_group" multiple>
+                                <?php foreach ($team_group as $each) { ?>
+                                    <option value="<?php echo encrypt_id($each->id); ?>">
+                                        <?php echo $each->team_group_name ?? $each->team_group ?? ''; ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                            <span id="team_group_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Hotels -->
+                    <div class="col-md-12">
+                        <div class="mt-3">
+                            <label for="hotel_id" class="form-label">Select Hotels (Multiple)</label>
+                            <select class="form-control" name="hotel_id[]" id="hotel_id" multiple>
+                                <?php foreach ($hotels as $each) { ?>
+                                    <option value="<?php echo encrypt_id($each->hotel_id); ?>">
+                                        <?php echo $each->hotel_name; ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                            <span id="hotel_id_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+
                     <!-- Company -->
                     <div class="col-md-6">
-                        <div class="mb-3">
+                        <div class="mt-3">
                             <label for="company" class="form-label">Company</label>
                             <textarea class="form-control" id="company" name="company" rows="2"></textarea>
                         </div>
@@ -311,7 +374,7 @@
 
                     <!-- Address -->
                     <div class="col-md-6">
-                        <div class="mb-3">
+                        <div class="mt-3">
                             <label for="address" class="form-label">Address</label>
                             <textarea class="form-control" id="address" name="address" rows="3"></textarea>
                         </div>
@@ -364,7 +427,7 @@
                     <input type="hidden" id="record_id">
 
                     <!-- Full Name -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="full_name_edit" class="form-label">Full Name <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="text" id="full_name_edit" placeholder="Enter Full Name">
@@ -373,7 +436,7 @@
                     </div>
 
                     <!-- Email -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="email_edit" class="form-label">Email <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="email" id="email_edit" placeholder="Enter Email">
@@ -382,7 +445,7 @@
                     </div>
 
                     <!-- Password (Optional on Edit) -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="password_edit" class="form-label">Password</label>
                             <input class="form-control" type="password" id="password_edit" placeholder="Leave blank to keep current">
@@ -391,7 +454,7 @@
                     </div>
 
                     <!-- Phone -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="phone_edit" class="form-label">Phone Number <span class="required-asterisk">*</span></label>
                             <input class="form-control" type="number" id="phone_edit" placeholder="Enter Phone Number">
@@ -400,7 +463,7 @@
                     </div>
 
                     <!-- User Role -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="user_role_edit" class="form-label">User Role <span class="required-asterisk">*</span></label>
                             <select class="form-control" id="user_role_edit">
@@ -413,9 +476,61 @@
                         </div>
                     </div>
 
-                    <!-- Team Group -->
-                    <div class="col-md-6">
+                    <!-- City -->
+                    <div class="col-md-4">
                         <div class="mb-3">
+                            <label for="city_edit" class="form-label">City</label>
+                            <select class="form-control" id="city_edit">
+                                <option value=""></option>
+                                <?php foreach ($cities as $city) { ?>
+                                    <option value="<?php echo encrypt_id($city->city_id); ?>">
+                                        <?php echo $city->city_name; ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                            <span id="city_edit_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- State -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="state_id_edit" class="form-label">State</label>
+                            <select class="form-control" id="state_id_edit">
+                                <option value=""></option>
+                                <?php foreach ($states as $state) { ?>
+                                    <option value="<?php echo encrypt_id($state->state_id); ?>">
+                                        <?php echo $state->state_name; ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                            <span id="state_id_edit_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Zip Code -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="zipcode_edit" class="form-label">Zip Code</label>
+                            <input class="form-control" type="number" id="zipcode_edit" placeholder="Enter Zip Code">
+                            <span id="zipcode_edit_error" class="validation text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="status_edit" class="form-label">Status</label>
+                            <select class="form-select" id="status_edit">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Team Group -->
+                    <div class="col-md-12">
+                        <div>
                             <label for="team_group_edit" class="form-label">Team Group</label>
                             <select class="form-control" id="team_group_edit" multiple>
                                 <?php foreach ($team_group as $each) { ?>
@@ -429,8 +544,8 @@
                     </div>
 
                     <!-- Hotels -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
+                    <div class="col-md-12">
+                        <div class="mt-3">
                             <label for="hotel_id_edit" class="form-label">Select Hotels (Multiple)</label>
                             <select class="form-control" id="hotel_id_edit" multiple>
                                 <?php foreach ($hotels as $each) { ?>
@@ -443,71 +558,19 @@
                         </div>
                     </div>
 
-                    <!-- City -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="city_edit" class="form-label">City</label>
-                            <select class="form-control" id="city_edit">
-                                <option value="" disabled>Select City</option>
-                                <?php foreach ($cities as $city) { ?>
-                                    <option value="<?php echo encrypt_id($city->city_id); ?>">
-                                        <?php echo $city->city_name; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                            <span id="city_edit_error" class="validation text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- State -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="state_id_edit" class="form-label">State</label>
-                            <select class="form-control" id="state_id_edit">
-                                <option value="" disabled>Select State</option>
-                                <?php foreach ($states as $state) { ?>
-                                    <option value="<?php echo encrypt_id($state->state_id); ?>">
-                                        <?php echo $state->state_name; ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
-                            <span id="state_id_edit_error" class="validation text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- Zip Code -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="zipcode_edit" class="form-label">Zip Code</label>
-                            <input class="form-control" type="number" id="zipcode_edit" placeholder="Enter Zip Code">
-                            <span id="zipcode_edit_error" class="validation text-danger"></span>
-                        </div>
-                    </div>
-
                     <!-- Company -->
                     <div class="col-md-6">
-                        <div class="mb-3">
+                        <div class="mt-3">
                             <label for="company_edit" class="form-label">Company</label>
                             <textarea class="form-control" id="company_edit" rows="2"></textarea>
                         </div>
                     </div>
 
                     <!-- Address -->
-                    <div class="col-md-12">
-                        <div class="mb-3">
+                    <div class="col-md-6">
+                        <div class="mt-3">
                             <label for="address_edit" class="form-label">Address</label>
                             <textarea class="form-control" id="address_edit" rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="status_edit" class="form-label">Status</label>
-                            <select class="form-select" id="status_edit">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
                         </div>
                     </div>
 
@@ -515,8 +578,8 @@
 
 
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                 <button type="button" id="updateBtn" class="btn btn-primary">Update changes</button>
             </div>
         </div>
@@ -555,6 +618,124 @@
     } ?>
 </script>
 <script type="text/javascript">
+    function initializeSalesMultiSelects() {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $('#team_group').select2({
+            width: '100%',
+            placeholder: 'Select Team Groups',
+            closeOnSelect: false,
+            allowClear: true,
+            dropdownParent: $('#add-modal')
+        });
+
+        $('#team_group_edit').select2({
+            width: '100%',
+            placeholder: 'Select Team Groups',
+            closeOnSelect: false,
+            allowClear: true,
+            dropdownParent: $('#edit-modal')
+        });
+
+        $('#hotel_id').select2({
+            width: '100%',
+            placeholder: 'Select Hotels',
+            closeOnSelect: false,
+            allowClear: true,
+            dropdownParent: $('#add-modal')
+        });
+
+        $('#hotel_id_edit').select2({
+            width: '100%',
+            placeholder: 'Select Hotels',
+            closeOnSelect: false,
+            allowClear: true,
+            dropdownParent: $('#edit-modal')
+        });
+
+        $('#city').select2({
+            width: '100%',
+            placeholder: 'Select City',
+            allowClear: false,
+            dropdownParent: $('#add-modal')
+        });
+
+        $('#city_edit').select2({
+            width: '100%',
+            placeholder: 'Select City',
+            allowClear: false,
+            dropdownParent: $('#edit-modal')
+        });
+
+        $('#state_id').select2({
+            width: '100%',
+            placeholder: 'Select State',
+            allowClear: false,
+            dropdownParent: $('#add-modal')
+        });
+
+        $('#state_id_edit').select2({
+            width: '100%',
+            placeholder: 'Select State',
+            allowClear: false,
+            dropdownParent: $('#edit-modal')
+        });
+    }
+
+    function setSelectedEncryptedOptions(selector, items, fallbackLabel) {
+        var $select = $(selector);
+        var selectedValues = [];
+
+        $select.find('option[data-dynamic-selected="1"]').remove();
+
+        $.each(items || [], function(_, item) {
+            var itemId = String(item.id || '');
+            var itemLabel = $.trim(item.label || '');
+            var $option = $select.find('option').filter(function() {
+                return String($(this).val()) === itemId;
+            }).first();
+
+            if (!$option.length && itemLabel !== '') {
+                $option = $select.find('option').filter(function() {
+                    return $.trim($(this).text()) === itemLabel;
+                }).first();
+            }
+
+            if (!$option.length && itemId !== '') {
+                $option = $(new Option(itemLabel || fallbackLabel, itemId, true, true));
+                $option.attr('data-dynamic-selected', '1');
+                $select.append($option);
+            }
+
+            if ($option.length) {
+                selectedValues.push($option.val());
+            }
+        });
+
+        $select.val(selectedValues).trigger('change');
+    }
+
+    function setSelectedEncryptedSingle(selector, encryptedId, label) {
+        var $select = $(selector);
+        var $option = $select.find('option').filter(function() {
+            return String($(this).val()) === String(encryptedId || '');
+        }).first();
+
+        if (!$option.length && label) {
+            $option = $select.find('option').filter(function() {
+                return $.trim($(this).text()) === $.trim(label);
+            }).first();
+        }
+
+        $select.val($option.length ? $option.val() : '').trigger('change');
+    }
+
+    $(document).ready(function() {
+        initializeSalesMultiSelects();
+    });
+
     var salesUsersTable = $('#server-side-data-table').DataTable({
         processing: true,
         serverSide: true,
@@ -623,7 +804,7 @@
         $('#add-modal input, #add-modal textarea').val('');
         $('#user_role').val('');
         $('#team_group, #hotel_id').val(null).trigger('change');
-        $('#city, #state_id').val('');
+        $('#city, #state_id').val(null).trigger('change');
         $('#status').val('1');
         $('#add-modal').modal('show');
     });
@@ -688,14 +869,19 @@
                 $('#phone_edit').val(data.phone);
                 $('#password_edit').val('');
                 $('#user_role_edit').val(data.user_role);
-                $('#team_group_edit').val(data.team_group ? data.team_group.split(',') : []).trigger('change');
-                $('#hotel_id_edit').val(data.assigned_hotels ? data.assigned_hotels.split(',') : []).trigger('change');
-                $('#city_edit').val(data.city_id);
-                $('#state_id_edit').val(data.state_id);
+                setSelectedEncryptedOptions('#team_group_edit', data.selected_team_groups, 'Selected Team Group');
+                setSelectedEncryptedOptions('#hotel_id_edit', data.selected_hotels, 'Selected Hotel');
+                setSelectedEncryptedSingle('#city_edit', data.city_id, data.city_name);
+                setSelectedEncryptedSingle('#state_id_edit', data.state_id, data.state_name);
                 $('#zipcode_edit').val(data.zipcode);
                 $('#company_edit').val(data.company);
                 $('#address_edit').val(data.address);
                 $('#status_edit').val(String(data.status));
+
+                if (data.has_unavailable_assignments) {
+                    toastr.warning('Some previous assignments are unavailable. Please select active replacements before updating.');
+                }
+
                 $('#edit-modal').modal('show');
             },
             error: function() {
@@ -744,7 +930,7 @@
 
         Swal.fire({
             title: "Are you sure?",
-            text: 'This sales user will be deleted.',
+            text: 'This sales user will be removed from the active sales user list.',
             icon: "question",
             showCancelButton: true,
             showCloseButton: true,

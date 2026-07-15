@@ -53,7 +53,7 @@ class StateManagment extends MY_Controller
     {
 
         $data['states'] = $this->Comman_model->getStateData();
-        $data['countries'] = $this->Common_model->getAllData('country', "");
+        $data['countries'] = $this->Common_model->getAllData('country', array('is_deleted' => 0));
 
 
 
@@ -135,9 +135,23 @@ class StateManagment extends MY_Controller
 
         // $this->check_login();
         $state_name = $this->input->post('state_name');
-        $country_id = $this->input->post('country_id');
+        $country_id = decrypt_id($this->input->post('country_id'));
         $created_on = date('Y-m-d h:i:s');
         $updated_on = date('Y-m-d h:i:s');
+
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
 
         $state_data = array(
             'state_name' => $state_name,
@@ -147,7 +161,6 @@ class StateManagment extends MY_Controller
         );
 
         $record_id = $this->Comman_model->insertData('state', $state_data);
-        $country = $this->Common_model->getdata('country', ['country_id' => $country_id]);
         $country_name = $country->country_name ?? '';
 
         if ($record_id) {
@@ -170,12 +183,29 @@ class StateManagment extends MY_Controller
     {
 
         $id = decrypt_id($this->input->post('id'));
-        $result = $this->Common_model->getdata('state', array('state_id' => $id));
+        $result = $this->Common_model->getdata('state', array(
+            'state_id' => $id,
+            'is_deleted' => 0
+        ));
 
         if (empty($id) || empty($result)) {
             echo json_encode([
                 'status' => false,
-                'message' => 'State record not found',
+                'message' => 'State record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $result->country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'State cannot be edited because its country is unavailable',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -184,7 +214,7 @@ class StateManagment extends MY_Controller
         echo json_encode([
             'status' => true,
             'data' => [
-                'country_id' => $result->country_id,
+                'country_code' => $country->country_code,
                 'state_name' => $result->state_name
             ],
             'csrfHash' => $this->security->get_csrf_hash(),
@@ -200,14 +230,42 @@ class StateManagment extends MY_Controller
 
         //  $this->check_login();
         $state_name = $this->input->post('state_name');
-        $country_id = $this->input->post('country_id');
+        $country_id = decrypt_id($this->input->post('country_id'));
         $created_on = date('Y-m-d h:i:s');
         $updated_on = date('Y-m-d h:i:s');
+
+        $country = $this->Common_model->getdata('country', array(
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($country)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Selected country is unavailable',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
 
         if (empty($record_id)) {
             echo json_encode([
                 'status' => false,
                 'message' => 'Invalid state record',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $existing_state = $this->Common_model->getdata('state', array(
+            'state_id' => $record_id,
+            'is_deleted' => 0
+        ));
+
+        if (empty($existing_state)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'State record not found or already deleted',
                 'csrfHash' => $this->security->get_csrf_hash()
             ]);
             return;
@@ -221,11 +279,39 @@ class StateManagment extends MY_Controller
         );
 
 
-        $datas = $this->Comman_model->UpdateRecord('state', $state_data, array('state_id' => $record_id));
-        $country = $this->Common_model->getdata('country', ['country_id' => $country_id]);
+        $datas = $this->Comman_model->UpdateRecord('state', $state_data, array(
+            'state_id' => $record_id,
+            'is_deleted' => 0
+        ));
+        $affected_rows = $this->db->affected_rows();
         $country_name = $country->country_name ?? '';
 
-        if ($datas) {
+        if (!$datas) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to update state',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        if ($affected_rows === 0) {
+            $still_active = $this->Common_model->getdata('state', array(
+                'state_id' => $record_id,
+                'is_deleted' => 0
+            ));
+
+            if (empty($still_active)) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => 'State record not found or already deleted',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]);
+                return;
+            }
+        }
+
+        if ($affected_rows > 0) {
             $this->logActivity(
                 'update',
                 $record_id,
@@ -256,9 +342,27 @@ class StateManagment extends MY_Controller
             return;
         }
 
-        $state = $this->Common_model->getdata('state', ['state_id' => $id]);
-        $data = $this->Comman_model->Deletedata('state', array('state_id' => $id));
-        if ($data) {
+        $where = array(
+            'state_id' => $id,
+            'is_deleted' => 0
+        );
+        $state = $this->Common_model->getdata('state', $where);
+
+        if (empty($state)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'State record not found or already deleted',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $data = $this->Comman_model->UpdateRecord('state', array(
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ), $where);
+
+        if ($data && $this->db->affected_rows() === 1) {
             $country_name = '';
             if (!empty($state)) {
                 $country = $this->Common_model->getdata('country', ['country_id' => $state->country_id]);
@@ -273,7 +377,9 @@ class StateManagment extends MY_Controller
             $response['message'] = "State deleted successfully";
         } else {
             $response['status'] = false;
-            $response['message'] = "Something went wrong";
+            $response['message'] = $data
+                ? 'State record not found or already deleted'
+                : 'Unable to delete state';
         }
 
         $response['csrfHash'] = $this->security->get_csrf_hash();
