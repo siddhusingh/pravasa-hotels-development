@@ -1,3 +1,63 @@
+<style>
+   #hotel-crud-modal .select2-container {
+      width: 100% !important;
+   }
+
+   #hotel-crud-modal .select2-container .select2-selection--single {
+      height: 46px !important;
+      border: 1px solid #d9d9d9 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+   }
+
+   #hotel-crud-modal .select2-selection--single .select2-selection__rendered {
+      line-height: 44px !important;
+      padding-left: 13px !important;
+      padding-right: 35px !important;
+   }
+
+   #hotel-crud-modal .select2-selection--single .select2-selection__arrow {
+      height: 44px !important;
+   }
+
+   .hotel-select2-dropdown .select2-search__field {
+      height: 34px !important;
+      min-height: 34px !important;
+      padding: 5px 9px !important;
+      border: 1px solid #d9d9d9 !important;
+      border-radius: 5px !important;
+      box-shadow: none !important;
+   }
+
+   #server-side-data-table .hotel-facebook-column {
+      width: 170px !important;
+      max-width: 170px;
+   }
+
+   .hotel-facebook-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      white-space: nowrap;
+      color: #4267b2;
+      font-weight: 500;
+   }
+
+   .hotel-facebook-link:hover {
+      color: #2f4f8f;
+      text-decoration: underline;
+   }
+
+   .hotel-table-ellipsis {
+      display: block;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+   }
+</style>
+
 <div class="content-wrapper">
    <div class="container-full">
       <div class="custom-page-header">
@@ -36,16 +96,14 @@
                      <div class="table-responsive">
                         <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
                            <thead>
-                              <tr class="text-dark">
+                               <tr class="text-dark">
                                  <th>Sr. No.</th>
+                                 <th>Hotel Code</th>
+                                 <th>Hotel Name</th>
                                  <th>Country Name</th>
                                  <th>State Name</th>
                                  <th>City Name</th>
-                                 <th>FB page ID</th>
-                                 <th>Hotel Code</th>
-                                 <th>Hotel Name</th>
-                                 <th>Created Date</th>
-                                 <th>Updated Date</th>
+                                 <th>Facebook</th>
                                  <th>Lead Link</th>
                                  <th>Action</th>
                               </tr>
@@ -90,7 +148,7 @@
             <div class="row">
                <div class="col-md-4 mb-3">
                   <label class="form-label">Select Country <span class="required-asterisk">*</span></label>
-                  <select class="form-control" id="country_id">
+                  <select class="form-control hotel-location-select" id="country_id">
                      <option value="">Select Country</option>
                      <?php foreach ($countries as $each) { ?>
                         <option value="<?php echo encrypt_id($each->country_id) ?>"><?php echo $each->country_name ?></option>
@@ -100,14 +158,14 @@
                </div>
                <div class="col-md-4 mb-3">
                   <label class="form-label">Select State <span class="required-asterisk">*</span></label>
-                  <select class="form-control" id="state_id" disabled>
+                  <select class="form-control hotel-location-select" id="state_id" disabled>
                      <option value="">Select State</option>
                   </select>
                   <span id="state_id_error" class="validation text-danger"></span>
                </div>
                <div class="col-md-4 mb-3">
                   <label class="form-label">Select City <span class="required-asterisk">*</span></label>
-                  <select class="form-control" id="city_id" disabled>
+                  <select class="form-control hotel-location-select" id="city_id" disabled>
                      <option value="">Select City</option>
                   </select>
                   <span id="city_id_error" class="validation text-danger"></span>
@@ -126,9 +184,6 @@
                   <label class="form-label">Hotel Image</label>
                   <input type="file" class="form-control" id="hotel_image" accept="image/*">
                </div>
-               <!-- <div class="col-md-4 mb-3">
-                  <img id="hotel_image_preview" src="" style="width:100px;display:none;">
-               </div> -->
                <div class="col-md-4 mb-3">
                   <label class="form-label">Phone <span class="required-asterisk">*</span></label>
                   <input class="form-control" type="number" id="hotel_contact" placeholder="Phone">
@@ -170,8 +225,10 @@
       serverSide: true,
       ordering: true,
       searching: true,
+      autoWidth: false,
       columnDefs: [
-         { targets: [9, 10], orderable: false }
+         { targets: 6, width: '170px', className: 'hotel-facebook-column' },
+         { targets: [7, 8], orderable: false }
       ],
       ajax: {
          url: '<?php echo base_url('get-hotels-table') ?>',
@@ -199,13 +256,56 @@
       }
    }
 
+   function refreshHotelSelect($select, value) {
+      $select.val(value || '');
+      if ($select.hasClass('select2-hidden-accessible')) {
+         $select.trigger('change.select2');
+      }
+   }
+
+   function initHotelSelect2() {
+      if (!$.fn.select2) {
+         return;
+      }
+
+      $('.hotel-location-select').each(function() {
+         var $select = $(this);
+         if ($select.hasClass('select2-hidden-accessible')) {
+            return;
+         }
+
+         $select.select2({
+            width: '100%',
+            placeholder: $select.find('option:first').text(),
+            allowClear: false,
+            dropdownParent: $('#hotel-crud-modal'),
+            dropdownCssClass: 'hotel-select2-dropdown'
+         });
+      });
+   }
+
+   function bindHotelLocationEvents() {
+      $(document)
+         .off('change.hotelLocation', '#country_id')
+         .on('change.hotelLocation', '#country_id', function() {
+            $('#country_id_error').text('');
+            loadStatesByCountry($(this).val(), '');
+         })
+         .off('change.hotelLocation', '#state_id')
+         .on('change.hotelLocation', '#state_id', function() {
+            $('#state_id_error').text('');
+            loadCitiesByState($(this).val(), '');
+         });
+   }
+
    function resetHotelForm() {
-      $('#country_id').val('');
-      $('#state_id').prop('disabled', true).html('<option value="">Select State</option>').val('');
-      $('#city_id').prop('disabled', true).html('<option value="">Select City</option>').val('');
+      refreshHotelSelect($('#country_id'), '');
+      $('#state_id').prop('disabled', true).html('<option value="">Select State</option>');
+      refreshHotelSelect($('#state_id'), '');
+      $('#city_id').prop('disabled', true).html('<option value="">Select City</option>');
+      refreshHotelSelect($('#city_id'), '');
       $('#hotel_name, #hotel_code, #hotel_contact, #facebook_page_id, #hotel_address').val('');
       $('#hotel_image').val('');
-      $('#hotel_image_preview').attr('src', '').hide();
       $('.validation').text('');
    }
 
@@ -236,15 +336,18 @@
    }
 
    function loadStatesByCountry(countryId, selectedStateId) {
-      $('#state_id').prop('disabled', true).html('<option value="">Loading...</option>').val('');
-      $('#city_id').prop('disabled', true).html('<option value="">Select City</option>').val('');
+      $('#state_id').prop('disabled', true).html('<option value="">Loading...</option>');
+      refreshHotelSelect($('#state_id'), '');
+      $('#city_id').prop('disabled', true).html('<option value="">Select City</option>');
+      refreshHotelSelect($('#city_id'), '');
 
       if (!countryId) {
          $('#state_id').prop('disabled', true).html('<option value="">Select State</option>');
-         return;
+         refreshHotelSelect($('#state_id'), '');
+         return null;
       }
 
-      $.ajax({
+      return $.ajax({
          url: '<?php echo base_url('hotel/get-states-by-country') ?>',
          type: 'POST',
          dataType: 'JSON',
@@ -257,27 +360,41 @@
             if (response.csrfHash) {
                window.CSRF.hash = response.csrfHash;
             }
+
+            if (!response.status) {
+               $('#state_id').prop('disabled', true).html('<option value="">Select State</option>');
+               refreshHotelSelect($('#state_id'), '');
+               toastr.error(response.message || 'Unable to fetch states');
+               return;
+            }
+
+            var states = response.data || [];
             $('#state_id').html('<option value="">Select State</option>');
-            $.each(response.data || [], function(index, state) {
+            $.each(states, function(index, state) {
                $('#state_id').append($('<option></option>').val(state.state_id).text(state.state_name));
             });
-            $('#state_id').prop('disabled', false).val(selectedStateId || '');
+            $('#state_id').prop('disabled', states.length === 0);
+            refreshHotelSelect($('#state_id'), selectedStateId);
          },
          error: function() {
+            $('#state_id').prop('disabled', true).html('<option value="">Select State</option>');
+            refreshHotelSelect($('#state_id'), '');
             toastr.error('Unable to fetch states');
          }
       });
    }
 
    function loadCitiesByState(stateId, selectedCityId) {
-      $('#city_id').prop('disabled', true).html('<option value="">Loading...</option>').val('');
+      $('#city_id').prop('disabled', true).html('<option value="">Loading...</option>');
+      refreshHotelSelect($('#city_id'), '');
 
       if (!stateId) {
          $('#city_id').prop('disabled', true).html('<option value="">Select City</option>');
-         return;
+         refreshHotelSelect($('#city_id'), '');
+         return null;
       }
 
-      $.ajax({
+      return $.ajax({
          url: '<?php echo base_url('hotel/get-cities-by-state') ?>',
          type: 'POST',
          dataType: 'JSON',
@@ -290,30 +407,37 @@
             if (response.csrfHash) {
                window.CSRF.hash = response.csrfHash;
             }
+
+            if (!response.status) {
+               $('#city_id').prop('disabled', true).html('<option value="">Select City</option>');
+               refreshHotelSelect($('#city_id'), '');
+               toastr.error(response.message || 'Unable to fetch cities');
+               return;
+            }
+
+            var cities = response.data || [];
             $('#city_id').html('<option value="">Select City</option>');
-            $.each(response.data || [], function(index, city) {
+            $.each(cities, function(index, city) {
                $('#city_id').append($('<option></option>').val(city.city_id).text(city.city_name));
             });
-            $('#city_id').prop('disabled', false).val(selectedCityId || '');
+            $('#city_id').prop('disabled', cities.length === 0);
+            refreshHotelSelect($('#city_id'), selectedCityId);
          },
          error: function() {
+            $('#city_id').prop('disabled', true).html('<option value="">Select City</option>');
+            refreshHotelSelect($('#city_id'), '');
             toastr.error('Unable to fetch cities');
          }
       });
    }
 
-   $('#country_id').on('change', function() {
-      $('#country_id_error').text('');
-      loadStatesByCountry($(this).val(), '');
-   });
-
-   $('#state_id').on('change', function() {
-      $('#state_id_error').text('');
-      loadCitiesByState($(this).val(), '');
-   });
-
    $('#city_id, #hotel_name, #hotel_code, #hotel_contact, #facebook_page_id').on('input change', function() {
       $('#' + this.id + '_error').text('');
+   });
+
+   $(document).ready(function() {
+      initHotelSelect2();
+      bindHotelLocationEvents();
    });
 
    $('#open-hotel-modal').on('click', function(e) {
@@ -322,18 +446,6 @@
       $('#crud-modal-title').text('Add New Hotel');
       $('#action-btn').text('Create').attr('data-key', '');
       $('#hotel-crud-modal').modal('show');
-   });
-
-   $('#hotel_image').on('change', function() {
-      if (!this.files || !this.files[0]) {
-         $('#hotel_image_preview').attr('src', '').hide();
-         return;
-      }
-      var reader = new FileReader();
-      reader.onload = function(e) {
-         $('#hotel_image_preview').attr('src', e.target.result).show();
-      };
-      reader.readAsDataURL(this.files[0]);
    });
 
    $(document).on('click', '#action-btn', function(e) {
@@ -423,13 +535,16 @@
             $('#hotel_contact').val(res.data.hotel_contact);
             $('#hotel_address').val(res.data.hotel_address);
             ensureSelectedOption($('#country_id'), res.data.country_id, res.data.country_name);
-            $('#country_id').val(res.data.country_id);
-            loadStatesByCountry(res.data.country_id, res.data.state_id);
-            loadCitiesByState(res.data.state_id, res.data.city_id);
-
-            if (res.data.hotel_image) {
-               $('#hotel_image_preview').attr('src', '<?php echo base_url("uploads/hotel_images/") ?>' + res.data.hotel_image).show();
+            refreshHotelSelect($('#country_id'), res.data.country_id);
+            var stateRequest = loadStatesByCountry(res.data.country_id, res.data.state_id);
+            if (stateRequest) {
+               stateRequest.done(function(response) {
+                  if (response.status) {
+                     loadCitiesByState(res.data.state_id, res.data.city_id);
+                  }
+               });
             }
+
             $('#action-btn').text('Update').attr('data-key', res.id);
             $('#hotel-crud-modal').modal('show');
          },

@@ -5,12 +5,9 @@
             <th>Hotel</th>
             <th>Restaurant Name</th>
             <th>Restaurant Code</th>
-
             <th>Contact Number</th>
             <th>Email</th>
             <th>Status</th>
-            <th>Created Date</th>
-            <th>Updated Date</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -23,25 +20,16 @@
                 ?>
                 <tr>
                     <td><?= $number++; ?></td>
-
                     <td><?= htmlspecialchars($row->hotel_name ?? '-') ?></td>
-
                     <td><?= htmlspecialchars($row->restaurant_name) ?></td>
-
                     <td><?= htmlspecialchars($row->restaurant_code) ?></td>
-
-
-
                     <td><?= htmlspecialchars($row->contact_number) ?></td>
-
                     <td><?= htmlspecialchars($row->email) ?></td>
-
-                    <td><?= ($row->status == 1) ? 'Active' : 'Inactive'; ?></td>
-
-                    <td><?= date('d M Y h:i A', strtotime($row->created_at)) ?></td>
-
-                    <td><?= date('d M Y h:i A', strtotime($row->updated_at)) ?></td>
-
+                    <td>
+                        <span class="badge <?= ((int) $row->status === 1) ? 'badge-success' : 'badge-danger'; ?>">
+                            <?= ((int) $row->status === 1) ? 'Active' : 'Inactive'; ?>
+                        </span>
+                    </td>
                     <td class="table-action min-w-100">
                         <a href="javascript:void(0)"
                             class="text-fade hover-primary edit-restaurant"
@@ -73,7 +61,7 @@
             <?php }
         } else { ?>
             <tr>
-                <td colspan="13" class="text-center text-muted">
+                <td colspan="8" class="text-center text-muted">
                     No Restaurant found.
                 </td>
             </tr>

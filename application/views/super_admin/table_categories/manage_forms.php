@@ -1,4 +1,25 @@
-<!-- Content Wrapper -->
+<style>
+    #category-crud-modal .select2-container { width: 100% !important; }
+    #category-crud-modal .select2-selection--single { height: 38px; padding: 5px 8px; }
+    #category-crud-modal .select2-selection__arrow { height: 36px; }
+    #category-crud-modal .select2-search--dropdown { padding: 8px; }
+    #category-crud-modal .select2-search--dropdown .select2-search__field {
+        height: 48px;
+        padding: 10px 14px;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        background-color: #fff;
+        color: #1f1f2e;
+        font-size: 16px;
+        outline: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+    }
+    #category-crud-modal .select2-search--dropdown .select2-search__field:focus {
+        border-color: #9b87e8;
+        box-shadow: 0 0 0 2px rgba(155, 135, 232, 0.15);
+    }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
         <div class="custom-page-header">
@@ -42,8 +63,6 @@
                                     <th>Category Name</th>
                                     <th>Description</th>
                                     <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -85,10 +104,10 @@
             <div class="modal-body ps-3 pe-3 row">
                 <div class="col-sm-4 mb-3">
                     <label>Restaurant <span class="required-asterisk">*</span></label>
-                    <select class="form-select" id="restaurant_id" name="restaurant_id">
+                    <select class="form-select category-select" id="restaurant_id" name="restaurant_id">
                         <option value="">Select Restaurant</option>
                         <?php foreach ($restaurants as $each) { ?>
-                            <option value="<?= $each->id ?>"><?= $each->restaurant_name ?></option>
+                            <option value="<?= (int) $each->id ?>"><?= html_escape($each->restaurant_name) ?></option>
                         <?php } ?>
                     </select>
                     <span class="validation text-danger" id="restaurant_id_error"></span>
@@ -101,7 +120,7 @@
                 </div>
                 <div class="col-sm-4 mb-3">
                     <label>Status</label>
-                    <select class="form-select" id="status" name="status">
+                    <select class="form-select category-select" id="status" name="status">
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
@@ -112,8 +131,6 @@
                     <label>Description</label>
                     <textarea class="form-control" id="description" name="description"></textarea>
                 </div>
-
-                
             </div>
 
             <div class="modal-footer d-flex justify-content-start">
@@ -154,7 +171,7 @@
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 7, orderable: false }
+            { targets: 5, orderable: false }
         ],
         ajax: {
             url: '<?php echo base_url('get-table-categories-table') ?>',
@@ -171,12 +188,36 @@
         }
     });
 
+    function initializeCategorySelects() {
+        $('#restaurant_id').select2({
+            dropdownParent: $('#category-crud-modal'),
+            placeholder: 'Select Restaurant',
+            width: '100%'
+        });
+        $('#status').select2({
+            dropdownParent: $('#category-crud-modal'),
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        });
+    }
+
+    function setCategorySelectValue(selector, value) {
+        $(selector).val(value).trigger('change.select2');
+    }
+
+    $(document).ready(function() {
+        initializeCategorySelects();
+        $('#restaurant_id, #status').on('change', function() {
+            $(this).siblings('.validation').text('');
+        });
+    });
+
     function resetCategoryForm() {
         $('.validation').text('');
-        $('#restaurant_id').val('');
+        setCategorySelectValue('#restaurant_id', '');
         $('#category_name').val('');
         $('#description').val('');
-        $('#status').val('active');
+        setCategorySelectValue('#status', 'active');
     }
 
     function validateCategoryForm() {
@@ -216,6 +257,7 @@
 
         var key = $(this).attr('data-key');
         var btn_txt = $(this).text();
+        var $button = $(this);
         var formData = new FormData();
 
         formData.append('restaurant_id', $('#restaurant_id').val());
@@ -236,7 +278,7 @@
             contentType: false,
             dataType: 'JSON',
             beforeSend: function() {
-                $('#action-btn-container').html('<button type="button" class="btn btn-primary">' + ((key !== '') ? 'Updating..' : 'Saving..') + '</button>');
+                $button.prop('disabled', true).text((key !== '') ? 'Updating..' : 'Saving..');
             },
             success: function(response) {
                 if (response.csrfHash) {
@@ -254,7 +296,7 @@
                 toastr.error('Something went wrong');
             },
             complete: function() {
-                $('#action-btn-container').html('<button type="button" id="action-btn" class="btn btn-primary">' + btn_txt + '</button>');
+                $button.prop('disabled', false).text(btn_txt);
             }
         });
     });
@@ -280,10 +322,10 @@
                 }
 
                 $('#crud-modal-title').text('Edit Table Category');
-                $('#restaurant_id').val(response.data.restaurant_id);
+                setCategorySelectValue('#restaurant_id', response.data.restaurant_id);
                 $('#category_name').val(response.data.category_name);
                 $('#description').val(response.data.description);
-                $('#status').val(response.data.status);
+                setCategorySelectValue('#status', response.data.status);
                 $('#action-btn').text('Update').attr('data-key', response.id);
                 $('#category-crud-modal').modal('show');
             },
@@ -298,7 +340,7 @@
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This category will be removed from the active category list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,

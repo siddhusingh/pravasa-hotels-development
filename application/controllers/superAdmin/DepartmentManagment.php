@@ -10,9 +10,6 @@ class DepartmentManagment extends MY_Controller
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
         $this->load->model('Datatables', 'objdt');
-        $this->load->helper('download');
-        date_default_timezone_set('Asia/Kolkata');
-
         if (empty($this->session->userdata('super_admin_session')) || ($this->session->userdata('role_as') != 'super_admin') || ($this->session->userdata('user_role') != 1)) {
             return redirect('super-admin-login');
         }
@@ -49,7 +46,9 @@ class DepartmentManagment extends MY_Controller
     private function jsonResponse($response)
     {
         $response['csrfHash'] = $this->security->get_csrf_hash();
-        echo json_encode($response);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($response));
     }
 
     private function departmentPayload($includeCreated = false)
@@ -79,6 +78,10 @@ class DepartmentManagment extends MY_Controller
             return 'Escalation levels must be numeric';
         }
 
+        if ($data['escalation_level_1'] < 0 || $data['escalation_level_2'] < 0 || $data['escalation_level_3'] < 0) {
+            return 'Escalation levels cannot be negative';
+        }
+
         return '';
     }
 
@@ -94,23 +97,22 @@ class DepartmentManagment extends MY_Controller
     {
         $inputs = $this->input->post();
 
-        $draw = $inputs['draw'];
-        $start = $inputs['start'];
-        $length = $inputs['length'];
-        $search = $inputs['search']['value'];
+        $draw = (int) ($inputs['draw'] ?? 0);
+        $start = max(0, (int) ($inputs['start'] ?? 0));
+        $length = max(1, min(100, (int) ($inputs['length'] ?? 10)));
+        $search = trim($inputs['search']['value'] ?? '');
 
         $columns = [
             0 => 'department_id',
             1 => 'department_name',
             2 => 'escalation_level_1',
             3 => 'escalation_level_2',
-            4 => 'escalation_level_3',
-            5 => 'created_at',
-            6 => 'updated_at'
+            4 => 'escalation_level_3'
         ];
 
-        $order = $columns[$inputs['order'][0]['column']] ?? 'department_id';
-        $dir = $inputs['order'][0]['dir'] ?? 'DESC';
+        $orderIndex = (int) ($inputs['order'][0]['column'] ?? 0);
+        $order = $columns[$orderIndex] ?? 'department_id';
+        $dir = strtolower($inputs['order'][0]['dir'] ?? '') === 'asc' ? 'ASC' : 'DESC';
 
         $list = $this->objdt->DTDepartments($length, $start, $search, $order, $dir);
         $data = [];
@@ -120,12 +122,10 @@ class DepartmentManagment extends MY_Controller
             $encrypted = encrypt_id($row->department_id);
             $data[] = [
                 $i++,
-                $row->department_name,
-                $row->escalation_level_1 . ' Hours',
-                $row->escalation_level_2 . ' Hours',
-                $row->escalation_level_3 . ' Hours',
-                date('d M Y', strtotime($row->created_at)),
-                date('d M Y', strtotime($row->updated_at)),
+                html_escape($row->department_name),
+                html_escape($row->escalation_level_1) . ' Hours',
+                html_escape($row->escalation_level_2) . ' Hours',
+                html_escape($row->escalation_level_3) . ' Hours',
                 '<a href="javascript:void(0)" class="text-fade hover-primary edit-department" data-record_id="'.$encrypted.'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle">
                         <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
@@ -141,18 +141,18 @@ class DepartmentManagment extends MY_Controller
             ];
         }
 
-        echo json_encode([
-            'draw' => intval($draw),
+        $this->jsonResponse([
+            'draw' => $draw,
             'recordsTotal' => $this->objdt->DTDepartmentsAll(),
             'recordsFiltered' => $this->objdt->DTDepartmentsFiltered($search),
-            'data' => $data,
-            'csrfHash' => $this->security->get_csrf_hash()
+            'data' => $data
         ]);
     }
 
     public function insert()
     {
         $department_data = $this->departmentPayload(true);
+        $department_data['is_deleted'] = 0;
         $validationError = $this->validateDepartmentPayload($department_data);
 
         if ($validationError !== '') {
@@ -248,9 +248,7 @@ class DepartmentManagment extends MY_Controller
             }
         }
 
-        if ($affected_rows > 0) {
-            $this->logActivity('update', $record_id, 'Updated department '.$department_data['department_name']);
-        }
+        $this->logActivity('update', $record_id, 'Updated department '.$department_data['department_name']);
 
         $this->jsonResponse([
             'status' => true,
@@ -289,7 +287,7 @@ class DepartmentManagment extends MY_Controller
             $this->logActivity(
                 'delete',
                 $id,
-                isset($department->department_name) ? 'Deleted department '.$department->department_name : 'Deleted department ID '.$id
+                isset($department->department_name) ? 'Soft deleted department '.$department->department_name : 'Soft deleted department ID '.$id
             );
         }
 

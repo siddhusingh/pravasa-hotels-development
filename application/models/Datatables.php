@@ -201,7 +201,9 @@ class Datatables extends CI_Model {
     {
         $this->db->select('r.*, h.hotel_name');
         $this->db->from('hotel_restaurants r');
-        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'left');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -221,13 +223,20 @@ class Datatables extends CI_Model {
 
     public function DTRestaurantsAll()
     {
-        return $this->db->count_all('hotel_restaurants');
+        $this->db->from('hotel_restaurants r');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTRestaurantsFiltered($search = "")
     {
         $this->db->from('hotel_restaurants r');
-        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'left');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -246,7 +255,9 @@ class Datatables extends CI_Model {
     {
         $this->db->select('banquet.*, hotel_admin.hotel_name');
         $this->db->from('banquet');
-        $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'left');
+        $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
+        $this->db->where('banquet.is_deleted', 0);
+        $this->db->where('hotel_admin.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -265,13 +276,20 @@ class Datatables extends CI_Model {
 
     public function DTBanquetsAll()
     {
-        return $this->db->count_all('banquet');
+        $this->db->from('banquet');
+        $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
+        $this->db->where('banquet.is_deleted', 0);
+        $this->db->where('hotel_admin.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTBanquetsFiltered($search = "")
     {
         $this->db->from('banquet');
-        $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'left');
+        $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
+        $this->db->where('banquet.is_deleted', 0);
+        $this->db->where('hotel_admin.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -528,7 +546,11 @@ class Datatables extends CI_Model {
     {
         $this->db->select('tc.*, r.restaurant_name');
         $this->db->from('table_categories tc');
-        $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'left');
+        $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'inner');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('tc.is_deleted', 0);
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -547,13 +569,24 @@ class Datatables extends CI_Model {
 
     public function DTTableCategoriesAll()
     {
-        return $this->db->count_all('table_categories');
+        $this->db->from('table_categories tc');
+        $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'inner');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('tc.is_deleted', 0);
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
+
+        return $this->db->count_all_results();
     }
 
     public function DTTableCategoriesFiltered($search = "")
     {
         $this->db->from('table_categories tc');
-        $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'left');
+        $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'inner');
+        $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
+        $this->db->where('tc.is_deleted', 0);
+        $this->db->where('r.is_deleted', 0);
+        $this->db->where('h.is_deleted', 0);
 
         if (!empty($search)) {
             $this->db->group_start();

@@ -10,7 +10,6 @@ class Table_categories extends MY_Controller
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
         $this->load->model('Datatables', 'objdt');
-        date_default_timezone_set('Asia/Kolkata');
 
         if (empty($this->session->userdata('super_admin_session')) || ($this->session->userdata('role_as') != 'super_admin') || ($this->session->userdata('user_role') != 1)) {
             return redirect('super-admin-login');
@@ -20,6 +19,7 @@ class Table_categories extends MY_Controller
     private function getCurrentActor()
     {
         $actor = $this->session->userdata('super_admin_session');
+
         return [
             'id' => $actor['id'] ?? null,
             'name' => $actor['user_name'] ?? $actor['full_name'] ?? '',
@@ -28,12 +28,12 @@ class Table_categories extends MY_Controller
         ];
     }
 
-    private function logActivity($action, $record_id, $details = '')
+    private function logActivity($action, $recordId, $details = '')
     {
         $actor = $this->getCurrentActor();
         $this->Common_model->insertActivityLog([
             'module' => 'table_categories',
-            'record_id' => $record_id,
+            'record_id' => $recordId,
             'action' => $action,
             'details' => $details,
             'actor_id' => $actor['id'],
@@ -45,37 +45,68 @@ class Table_categories extends MY_Controller
         ]);
     }
 
-    private function jsonResponse($response)
+    private function jsonResponse(array $response)
     {
         $response['csrfHash'] = $this->security->get_csrf_hash();
-        echo json_encode($response);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($response));
+    }
+
+    private function getActiveRestaurants()
+    {
+        return $this->db
+            ->select('r.id, r.restaurant_name')
+            ->from('hotel_restaurants r')
+            ->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner')
+            ->where('r.is_deleted', 0)
+            ->where('h.is_deleted', 0)
+            ->order_by('r.restaurant_name', 'ASC')
+            ->get()
+            ->result();
+    }
+
+    private function activeRestaurantExists($restaurantId)
+    {
+        return $this->db
+            ->from('hotel_restaurants r')
+            ->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner')
+            ->where('r.id', $restaurantId)
+            ->where('r.is_deleted', 0)
+            ->where('h.is_deleted', 0)
+            ->count_all_results() === 1;
     }
 
     private function categoryPayload($includeCreated = false)
     {
         $data = [
-            'restaurant_id' => $this->input->post('restaurant_id'),
-            'category_name' => trim($this->input->post('category_name')),
-            'description' => trim($this->input->post('description')),
-            'status' => $this->input->post('status'),
+            'restaurant_id' => (int) $this->input->post('restaurant_id'),
+            'category_name' => trim((string) $this->input->post('category_name')),
+            'description' => trim((string) $this->input->post('description')),
+            'status' => trim((string) $this->input->post('status')),
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
         if ($includeCreated) {
             $data['created_at'] = date('Y-m-d H:i:s');
+            $data['is_deleted'] = 0;
         }
 
         return $data;
     }
 
-    private function validateCategoryPayload($data)
+    private function validateCategoryPayload(array $data)
     {
-        if (empty($data['restaurant_id']) || $data['category_name'] === '') {
+        if ($data['restaurant_id'] <= 0 || $data['category_name'] === '') {
             return 'Please fill all required table category details';
         }
 
-        if (!in_array($data['status'], ['active', 'inactive'])) {
+        if (!in_array($data['status'], ['active', 'inactive'], true)) {
             return 'Invalid category status';
+        }
+
+        if (!$this->activeRestaurantExists($data['restaurant_id'])) {
+            return 'Selected restaurant is unavailable or has been deleted';
         }
 
         return '';
@@ -83,7 +114,7 @@ class Table_categories extends MY_Controller
 
     public function manage()
     {
-        $data['restaurants'] = $this->Common_model->getAllData('hotel_restaurants', "");
+        $data['restaurants'] = $this->getActiveRestaurants();
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
@@ -94,49 +125,43 @@ class Table_categories extends MY_Controller
     public function get_table_categories_table()
     {
         $inputs = $this->input->post();
-
-        $draw = $inputs['draw'];
-        $start = $inputs['start'];
-        $length = $inputs['length'];
-        $search = $inputs['search']['value'];
-
+        $draw = (int) ($inputs['draw'] ?? 0);
+        $start = max(0, (int) ($inputs['start'] ?? 0));
+        $length = max(1, min(100, (int) ($inputs['length'] ?? 10)));
+        $search = trim($inputs['search']['value'] ?? '');
         $columns = [
             0 => 'tc.id',
             1 => 'r.restaurant_name',
             2 => 'tc.category_name',
             3 => 'tc.description',
-            4 => 'tc.status',
-            5 => 'tc.created_at',
-            6 => 'tc.updated_at'
+            4 => 'tc.status'
         ];
+        $orderIndex = (int) ($inputs['order'][0]['column'] ?? 0);
+        $order = $columns[$orderIndex] ?? 'tc.id';
+        $direction = strtolower($inputs['order'][0]['dir'] ?? '') === 'asc' ? 'ASC' : 'DESC';
 
-        $order = $columns[$inputs['order'][0]['column']] ?? 'tc.id';
-        $dir = $inputs['order'][0]['dir'] ?? 'DESC';
-
-        $list = $this->objdt->DTTableCategories($length, $start, $search, $order, $dir);
+        $rows = $this->objdt->DTTableCategories($length, $start, $search, $order, $direction);
         $data = [];
-        $i = $start + 1;
+        $serialNumber = $start + 1;
 
-        foreach ($list as $row) {
-            $encrypted = encrypt_id($row->id);
-            $status = ($row->status == 'active')
+        foreach ($rows as $row) {
+            $encryptedId = encrypt_id($row->id);
+            $status = $row->status === 'active'
                 ? '<span class="badge badge-success">Active</span>'
                 : '<span class="badge badge-danger">Inactive</span>';
 
             $data[] = [
-                $i++,
-                htmlspecialchars($row->restaurant_name ?? '-'),
-                htmlspecialchars($row->category_name),
-                htmlspecialchars($row->description ?: '-'),
+                $serialNumber++,
+                html_escape($row->restaurant_name),
+                html_escape($row->category_name),
+                html_escape($row->description ?: '-'),
                 $status,
-                !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
-                !empty($row->updated_at) ? date('d M Y', strtotime($row->updated_at)) : '-',
-                '<a href="javascript:void(0)" class="text-fade hover-primary edit-category" data-record_id="'.$encrypted.'">
+                '<a href="javascript:void(0)" class="text-fade hover-primary edit-category" data-record_id="'.$encryptedId.'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle">
                         <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
                     </svg>
                 </a>
-                <a href="javascript:void(0)" class="text-fade hover-primary delete-category" data-record_id="'.$encrypted.'">
+                <a href="javascript:void(0)" class="text-fade hover-primary delete-category ms-2" data-record_id="'.$encryptedId.'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash align-middle">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -145,12 +170,11 @@ class Table_categories extends MY_Controller
             ];
         }
 
-        echo json_encode([
-            'draw' => intval($draw),
+        $this->jsonResponse([
+            'draw' => $draw,
             'recordsTotal' => $this->objdt->DTTableCategoriesAll(),
             'recordsFiltered' => $this->objdt->DTTableCategoriesFiltered($search),
-            'data' => $data,
-            'csrfHash' => $this->security->get_csrf_hash()
+            'data' => $data
         ]);
     }
 
@@ -164,41 +188,44 @@ class Table_categories extends MY_Controller
             return;
         }
 
-        $record_id = $this->Comman_model->insertData('table_categories', $data);
-
-        if ($record_id) {
-            $this->logActivity('create', $record_id, 'Created table category '.$data['category_name']);
+        $recordId = $this->Comman_model->insertData('table_categories', $data);
+        if ($recordId) {
+            $this->logActivity('create', $recordId, 'Created table category '.$data['category_name']);
         }
 
         $this->jsonResponse([
-            'status' => (bool) $record_id,
-            'message' => $record_id ? 'Category added successfully' : 'Database error',
-            'record_id' => $record_id ? encrypt_id($record_id) : ''
+            'status' => (bool) $recordId,
+            'message' => $recordId ? 'Category added successfully' : 'Unable to add category',
+            'record_id' => $recordId ? encrypt_id($recordId) : ''
         ]);
     }
 
     public function getByRestaurant()
     {
-        $restaurant_id = $this->input->post('restaurant_id');
+        $restaurantId = (int) $this->input->post('restaurant_id');
+        if ($restaurantId <= 0 || !$this->activeRestaurantExists($restaurantId)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Selected restaurant is unavailable or has been deleted', 'data' => []]);
+            return;
+        }
+
         $categories = $this->db
-            ->where('restaurant_id', $restaurant_id)
+            ->where('restaurant_id', $restaurantId)
             ->where('status', 'active')
+            ->where('is_deleted', 0)
+            ->order_by('category_name', 'ASC')
             ->get('table_categories')
             ->result();
 
-        $this->jsonResponse([
-            'status' => true,
-            'data' => $categories
-        ]);
+        $this->jsonResponse(['status' => true, 'data' => $categories]);
     }
 
     public function getDetails()
     {
         $id = decrypt_id($this->input->post('id'));
-        $category = $this->Common_model->getdata('table_categories', ['id' => $id]);
+        $category = empty($id) ? null : $this->Common_model->getdata('table_categories', ['id' => $id, 'is_deleted' => 0]);
 
-        if (empty($id) || empty($category)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Category not found']);
+        if (empty($category) || !$this->activeRestaurantExists($category->restaurant_id)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Category not found or already deleted']);
             return;
         }
 
@@ -217,26 +244,33 @@ class Table_categories extends MY_Controller
     public function update()
     {
         $id = decrypt_id($this->input->post('id'));
+        $where = ['id' => $id, 'is_deleted' => 0];
+        $existing = empty($id) ? null : $this->Common_model->getdata('table_categories', $where);
 
-        if (empty($id)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Invalid category record']);
+        if (empty($existing)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Category not found or already deleted']);
             return;
         }
 
         $data = $this->categoryPayload();
         $validationError = $this->validateCategoryPayload($data);
-
         if ($validationError !== '') {
             $this->jsonResponse(['status' => false, 'message' => $validationError]);
             return;
         }
 
-        $updated = $this->Comman_model->UpdateRecord('table_categories', $data, ['id' => $id]);
-
-        if ($updated) {
-            $this->logActivity('update', $id, 'Updated table category '.$data['category_name']);
+        $updated = $this->Comman_model->UpdateRecord('table_categories', $data, $where);
+        if (!$updated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update category']);
+            return;
         }
 
+        if ($this->db->affected_rows() === 0 && empty($this->Common_model->getdata('table_categories', $where))) {
+            $this->jsonResponse(['status' => false, 'message' => 'Category not found or already deleted']);
+            return;
+        }
+
+        $this->logActivity('update', $id, 'Updated table category '.$data['category_name']);
         $this->jsonResponse([
             'status' => true,
             'message' => 'Category updated successfully',
@@ -247,26 +281,29 @@ class Table_categories extends MY_Controller
     public function delete()
     {
         $id = decrypt_id($this->input->post('id'));
+        $where = ['id' => $id, 'is_deleted' => 0];
+        $category = empty($id) ? null : $this->Common_model->getdata('table_categories', $where);
 
-        if (empty($id)) {
-            $this->jsonResponse(['status' => false, 'message' => 'Invalid category record']);
+        if (empty($category)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Category not found or already deleted']);
             return;
         }
 
-        $category = $this->Common_model->getdata('table_categories', ['id' => $id]);
-        $deleted = $this->Comman_model->Deletedata('table_categories', ['id' => $id]);
+        $query = $this->Comman_model->UpdateRecord('table_categories', [
+            'is_deleted' => 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], $where);
+        $deleted = $query && $this->db->affected_rows() === 1;
 
         if ($deleted) {
-            $this->logActivity(
-                'delete',
-                $id,
-                isset($category->category_name) ? 'Deleted table category '.$category->category_name : 'Deleted table category ID '.$id
-            );
+            $this->logActivity('delete', $id, 'Soft deleted table category '.$category->category_name);
         }
 
         $this->jsonResponse([
-            'status' => (bool) $deleted,
-            'message' => $deleted ? 'Category deleted successfully' : 'Failed to delete category'
+            'status' => $deleted,
+            'message' => $deleted
+                ? 'Category deleted successfully'
+                : ($query ? 'Category not found or already deleted' : 'Unable to delete category')
         ]);
     }
 }
