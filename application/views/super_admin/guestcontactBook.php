@@ -40,7 +40,7 @@
                         </div>
                         <div class="box-body">
                             <div class="table-responsive">
-                                <table id="complex_header" class="text-fade table table-bordered display" style="width:100%">
+                                <table id="complex_header" class="text-fade table table-bordered display dataTable no-footer" style="width:100%">
                                     <thead>
                                         <tr class="text-dark">
                                             <th>Sr. No.</th>
