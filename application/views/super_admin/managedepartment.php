@@ -43,8 +43,6 @@
                                             <th>Escalation Level 1</th>
                                             <th>Escalation Level 2</th>
                                             <th>Escalation Level 3</th>
-                                            <th>Created Date</th>
-                                            <th>Updated Date</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -96,21 +94,21 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Level 1 Escalation <span class="required-asterisk">*</span></label>
-                            <input class="form-control" type="number" id="escalation_level_1" placeholder="Escalation in Hours">
+                            <input class="form-control" type="number" min="0" step="any" id="escalation_level_1" placeholder="Escalation in Hours">
                             <span id="level1_error" class="validation text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Level 2 Escalation <span class="required-asterisk">*</span></label>
-                            <input class="form-control" type="number" id="escalation_level_2" placeholder="Escalation in Hours">
+                            <input class="form-control" type="number" min="0" step="any" id="escalation_level_2" placeholder="Escalation in Hours">
                             <span id="level2_error" class="validation text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Level 3 Escalation <span class="required-asterisk">*</span></label>
-                            <input class="form-control" type="number" id="escalation_level_3" placeholder="Escalation in Hours">
+                            <input class="form-control" type="number" min="0" step="any" id="escalation_level_3" placeholder="Escalation in Hours">
                             <span id="level3_error" class="validation text-danger"></span>
                         </div>
                     </div>
@@ -154,7 +152,7 @@
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 7, orderable: false }
+            { targets: 5, orderable: false }
         ],
         ajax: {
             url: '<?php echo base_url('get-departments-table') ?>',
@@ -217,6 +215,7 @@
 
         var key = $(this).attr('data-key');
         var btn_txt = $(this).text();
+        var $button = $(this);
         var formData = new FormData();
 
         formData.append('department_name', $('#department_name').val());
@@ -237,7 +236,7 @@
             contentType: false,
             dataType: 'JSON',
             beforeSend: function() {
-                $('#action-btn-container').html('<button type="button" class="btn btn-primary">' + ((key !== '') ? 'Updating..' : 'Saving..') + '</button>');
+                $button.prop('disabled', true).text((key !== '') ? 'Updating..' : 'Saving..');
             },
             success: function(response) {
                 if (response.csrfHash) {
@@ -255,7 +254,7 @@
                 toastr.error('Something went wrong');
             },
             complete: function() {
-                $('#action-btn-container').html('<button type="button" id="action-btn" class="btn btn-primary">' + btn_txt + '</button>');
+                $button.prop('disabled', false).text(btn_txt);
             }
         });
     });

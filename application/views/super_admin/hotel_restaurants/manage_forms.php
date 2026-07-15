@@ -1,3 +1,35 @@
+<style>
+    #restaurant-crud-modal .select2-container {
+        width: 100% !important;
+    }
+
+    #restaurant-crud-modal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #restaurant-crud-modal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 13px !important;
+        padding-right: 35px !important;
+    }
+
+    #restaurant-crud-modal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    .restaurant-select2-dropdown .select2-search__field {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+</style>
+
 <div class="content-wrapper">
     <div class="container-full">
         <div class="custom-page-header">
@@ -42,8 +74,6 @@
                                     <th>Contact Number</th>
                                     <th>Email</th>
                                     <th>Status</th>
-                                    <th>Created Date</th>
-                                    <th>Updated Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -84,10 +114,10 @@
             <div class="modal-body ps-3 pe-3 row">
                 <div class="col-md-6 mb-3">
                     <label>Parent Hotel <span class="required-asterisk">*</span></label>
-                    <select class="form-select" id="hotel_id" name="hotel_id">
+                    <select class="form-select restaurant-select" id="hotel_id" name="hotel_id">
                         <option value="">Select Hotel</option>
                         <?php foreach ($hotels as $each) { ?>
-                            <option value="<?php echo encrypt_id($each->hotel_id); ?>"><?php echo $each->hotel_name; ?></option>
+                            <option value="<?php echo encrypt_id($each->hotel_id); ?>"><?php echo html_escape($each->hotel_name); ?></option>
                         <?php } ?>
                     </select>
                     <div class="text-danger validation" id="hotel_id_error"></div>
@@ -119,7 +149,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label>Status</label>
-                    <select class="form-select" id="status" name="status">
+                    <select class="form-select restaurant-select" id="status" name="status">
                         <option value="1" selected>Active</option>
                         <option value="0">Inactive</option>
                     </select>
@@ -149,7 +179,7 @@
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 9, orderable: false }
+            { targets: 7, orderable: false }
         ],
         ajax: {
             url: "<?= base_url('get-restaurants-table') ?>",
@@ -177,9 +207,39 @@
         }
     }
 
+    function refreshRestaurantSelect($select, value) {
+        $select.val(value);
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.trigger('change.select2');
+        }
+    }
+
+    function initRestaurantSelect2() {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $('.restaurant-select').each(function() {
+            var $select = $(this);
+            if ($select.hasClass('select2-hidden-accessible')) {
+                return;
+            }
+
+            $select.select2({
+                width: '100%',
+                placeholder: $select.find('option:first').text(),
+                allowClear: false,
+                dropdownParent: $('#restaurant-crud-modal'),
+                dropdownCssClass: 'restaurant-select2-dropdown',
+                minimumResultsForSearch: $select.attr('id') === 'status' ? Infinity : 0
+            });
+        });
+    }
+
     function resetRestaurantForm() {
-        $('#hotel_id, #restaurant_name, #restaurant_code, #contact_number, #email').val('');
-        $('#status').val('1');
+        refreshRestaurantSelect($('#hotel_id'), '');
+        $('#restaurant_name, #restaurant_code, #contact_number, #email').val('');
+        refreshRestaurantSelect($('#status'), '1');
         $('#restaurant_image').val('');
         $('#restaurant_image_preview').hide().attr('src', '');
         $('.validation').text('');
@@ -206,6 +266,10 @@
 
         return isValid;
     }
+
+    $(document).ready(function() {
+        initRestaurantSelect2();
+    });
 
     $('#restaurant_image').on('change', function() {
         if (!this.files || !this.files[0]) {
@@ -304,12 +368,12 @@
 
                 var data = response.data;
                 ensureSelectedOption($('#hotel_id'), data.hotel_id, data.hotel_name);
-                $('#hotel_id').val(data.hotel_id);
+                refreshRestaurantSelect($('#hotel_id'), data.hotel_id);
                 $('#restaurant_name').val(data.restaurant_name);
                 $('#restaurant_code').val(data.restaurant_code);
                 $('#contact_number').val(data.contact_number);
                 $('#email').val(data.email);
-                $('#status').val(data.status);
+                refreshRestaurantSelect($('#status'), String(data.status));
                 if (data.restaurant_image) {
                     $('#restaurant_image_preview').attr('src', '<?= base_url("uploads/restaurant_images/") ?>' + data.restaurant_image + '?t=' + new Date().getTime()).show();
                 }
@@ -327,7 +391,7 @@
         var id = $(this).attr('data-record_id');
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this record!',
+            text: 'This restaurant will be removed from the active restaurant list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,
