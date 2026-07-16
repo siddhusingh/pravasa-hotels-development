@@ -160,6 +160,7 @@ class LeadController extends CI_Controller
             ->where("RIGHT(phone_number, 10) =", $last10Digits, false)
             ->where('created_at >=', $twoHoursAgo)
             ->where('status !=', 'Closed')
+            ->where('is_deleted', 0)
             ->order_by('id', 'DESC')
             ->get('leads')
             ->row();
@@ -172,6 +173,7 @@ class LeadController extends CI_Controller
         $valuableGuest = $this->db
             ->select('id, disposition, amount')  // revenue_amount = your amount column
             ->from('leads')
+            ->where('is_deleted', 0)
             ->where('phone_number', $phone)
             ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
             ->where('amount >', 0)                // has revenue
@@ -399,6 +401,7 @@ class LeadController extends CI_Controller
             ->where("RIGHT(phone_number, 10) =", $last10Digits, false)
             ->where('created_at >=', $twoHoursAgo)
             ->where('status !=', 'Closed')
+            ->where('is_deleted', 0)
             ->order_by('id', 'DESC')
             ->get('leads')
             ->row();
@@ -444,6 +447,7 @@ class LeadController extends CI_Controller
         $valuableGuest = $this->db
             ->select('id')
             ->from('leads')
+            ->where('is_deleted', 0)
             ->where('phone_number', $lead_data['phone_number'])
             ->where('LOWER(disposition)', 'reservation')
             ->where('amount >', 0)
@@ -699,6 +703,7 @@ class LeadController extends CI_Controller
             ->where("RIGHT(phone_number, 10) =", $last10Digits, false)
             ->where('created_at >=', $twoHoursAgo)
             ->where('status !=', 'Closed')
+            ->where('is_deleted', 0)
             ->order_by('id', 'DESC')
             ->get('leads')
             ->row();
@@ -731,6 +736,7 @@ class LeadController extends CI_Controller
         $valuableGuest = $this->db
             ->select('id, disposition, amount')  // revenue_amount = your amount column
             ->from('leads')
+            ->where('is_deleted', 0)
             ->where('phone_number', $phone)
             ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
             ->where('amount >', 0)                // has revenue
@@ -983,6 +989,82 @@ class LeadController extends CI_Controller
         $this->load->view('super_admin/include/footer');
     }
 
+    private function validateLeadInput($departmentName)
+    {
+        $errors = [];
+        $value = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+
+        $phone = preg_replace('/\D+/', '', $value('phone_number'));
+        $phone = substr($phone, -10);
+        $disposition = $value('disposition');
+        $department = strtolower(trim((string) $departmentName));
+        if ($department === 'restaurants') {
+            $department = 'restaurant';
+        } elseif ($department === 'banquets') {
+            $department = 'banquet';
+        }
+
+        if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+            $errors['phone_number'] = 'Enter a valid 10-digit Indian mobile number.';
+        }
+        if ($disposition !== 'Not Contacted' && $value('user_name') === '') {
+            $errors['username'] = 'Guest name is required.';
+        }
+        if ($value('email') !== '' && !filter_var($value('email'), FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Enter a valid email address.';
+        }
+
+        $required = [
+            'property' => 'Please select a hotel.',
+            'type' => 'Please select a department.',
+            'user_channel' => 'Please select a lead source.',
+            'disposition' => 'Please select a stage.',
+            'status' => 'Please select a lead status.',
+            'query' => 'Query is required.'
+        ];
+
+        foreach ($required as $field => $message) {
+            if ($value($field) === '') {
+                $errors[$field === 'status' ? 'lead_status' : $field] = $message;
+            }
+        }
+
+        if ($disposition === 'Lead Lost' && $value('reason') === '') {
+            $errors['reason'] = 'Please select a reason.';
+        }
+
+        if ($disposition === 'Quotation Sent') {
+            if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
+                $errors['meal_plan'] = 'Please select a meal plan.';
+            }
+            if (in_array($department, ['banquet', 'wedding'], true) && $value('banquet_id') === '') {
+                $errors['banquet_id'] = 'Please select a banquet.';
+            }
+            if ($department === 'restaurant') {
+                $restaurantRequired = [
+                    'restaurant_id' => 'Please select a restaurant.',
+                    'slot_type_id' => 'Please select a slot type.',
+                    'time_slot_id' => 'Please select a time slot.',
+                    'table_category_id' => 'Please select a table category.',
+                    'table_reservation_status' => 'Please select a reservation status.'
+                ];
+                foreach ($restaurantRequired as $field => $message) {
+                    if ($value($field) === '') {
+                        $errors[$field] = $message;
+                    }
+                }
+                $tableIds = $this->input->post('table_id');
+                if (empty($tableIds) || (is_array($tableIds) && count(array_filter($tableIds)) === 0)) {
+                    $errors['table_id'] = 'Please select at least one table.';
+                }
+            }
+        }
+
+        return $errors;
+    }
+
     public function insert_lead()
     {
         if ($this->input->method() === 'post') {
@@ -995,6 +1077,25 @@ class LeadController extends CI_Controller
             // Combine both hotel and department data in a single go
             $hotel_data = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
             $department_data = $this->Common_model->getdata('departments', ['department_id' => $type]);
+
+            $errors = $this->validateLeadInput($department_data->department_name ?? '');
+            if (!$hotel_data) {
+                $errors['property'] = 'Please select a valid hotel.';
+            }
+            if (!$department_data) {
+                $errors['type'] = 'Please select a valid department.';
+            }
+            if (!empty($errors)) {
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(422)
+                    ->set_output(json_encode([
+                        'status' => false,
+                        'message' => 'Please correct the highlighted fields.',
+                        'errors' => $errors,
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ], JSON_UNESCAPED_UNICODE));
+            }
 
 
 
@@ -1415,6 +1516,7 @@ class LeadController extends CI_Controller
             $existingLead = $this->db
                 ->where("RIGHT(phone_number, 10) =", $last10Digits, false)
                 ->where('created_at >=', $twoHoursAgo)
+                ->where('is_deleted', 0)
 
                 ->order_by('id', 'DESC')
                 ->get('leads')
@@ -1477,6 +1579,7 @@ class LeadController extends CI_Controller
             $valuableGuest = $this->db
                 ->select('id, disposition, amount')  // revenue_amount = your amount column
                 ->from('leads')
+                ->where('is_deleted', 0)
                 ->where('phone_number', $phone)
                 ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
                 ->where('amount >', 0)                // has revenue
@@ -1573,6 +1676,7 @@ class LeadController extends CI_Controller
             r.restaurant_name
         ')
             ->from('leads l')
+            ->where('l.is_deleted', 0)
             ->join('hotel_admin h', 'h.hotel_id = l.property', 'left')
             ->join('hotel_restaurants r', 'r.id = l.restaurant_id', 'left')
             ->where('l.id', $lead_id)
@@ -1622,6 +1726,7 @@ class LeadController extends CI_Controller
             r.restaurant_name
         ')
             ->from('leads l')
+            ->where('l.is_deleted', 0)
             ->join('hotel_admin h', 'h.hotel_id = l.property', 'left')
             ->join('hotel_restaurants r', 'r.id = l.restaurant_id', 'left')
             ->where('l.id', $lead_id)
@@ -2056,6 +2161,7 @@ class LeadController extends CI_Controller
 
         // Fetch lead
         $this->db->where('id', $leadId);
+        $this->db->where('is_deleted', 0);
         $query = $this->db->get('leads');
         $lead = $query->row();
 
@@ -3261,6 +3367,7 @@ class LeadController extends CI_Controller
         $valuableGuest = $this->db
             ->select('id, disposition, amount')  // revenue_amount = your amount column
             ->from('leads')
+            ->where('is_deleted', 0)
             ->where('phone_number', $phone)
             ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
             ->where('amount >', 0)                // has revenue
@@ -3380,6 +3487,7 @@ class LeadController extends CI_Controller
 
         $this->db->select('leads.*, departments.department_name');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->where('leads.id', $id);
         $updatedLead = $this->db->get()->row();
@@ -3410,6 +3518,7 @@ class LeadController extends CI_Controller
             ->group_end();
         $this->db->group_by(['user_name', 'phone_number']);
         $this->db->limit(10);
+        $this->db->where('is_deleted', 0);
 
         $result = $this->db->get('leads')->result_array();
 
@@ -3635,18 +3744,27 @@ class LeadController extends CI_Controller
 
     public function deleteLead()
     {
-        $id = $this->input->post('id');
+        $id = (int) $this->input->post('id');
 
-        if ($id) {
-            $this->db->where('id', $id)->delete('leads');
+        if ($id > 0) {
+            $deleted = $this->db
+                ->where('id', $id)
+                ->where('is_deleted', 0)
+                ->update('leads', [
+                    'is_deleted' => 1,
+                    'deleted_at' => date('Y-m-d H:i:s')
+                ]);
+            $deleted = $deleted && $this->db->affected_rows() === 1;
 
             $response = [
-                'status' => true,
+                'status' => (bool) $deleted,
+                'message' => $deleted ? 'Lead deleted successfully.' : 'Unable to delete lead.',
                 'csrfHash' => $this->security->get_csrf_hash()
             ];
         } else {
             $response = [
                 'status' => false,
+                'message' => 'Invalid lead ID.',
                 'csrfHash' => $this->security->get_csrf_hash()
             ];
         }
@@ -4227,7 +4345,7 @@ class LeadController extends CI_Controller
 
         $slots = $this->db
             ->where('slot_type_id', $slot_type_id) // 🔥 IMPORTANT relation
-            ->where('status', 1)
+            ->where('status', 'active')
             ->order_by('start_time', 'ASC')
             ->get('time_slots')
             ->result();
@@ -4254,7 +4372,7 @@ class LeadController extends CI_Controller
 
         $categories = $this->db
             ->where('restaurant_id', $restaurant_id) // 🔥 relation
-            ->where('status', 1)
+            ->where('status', 'active')
             ->order_by('category_name', 'ASC')
             ->get('table_categories')
             ->result();
@@ -4285,7 +4403,7 @@ class LeadController extends CI_Controller
         $tables = $this->db
             ->where('restaurant_id', $restaurant_id)
             ->where('category_id', $category_id)
-            ->where('status', 1)
+            ->where('status', 'active')
             ->order_by('table_name', 'ASC')
             ->get('tables')
             ->result();

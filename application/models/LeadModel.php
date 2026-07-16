@@ -21,9 +21,10 @@ class LeadModel extends CI_Model
         hotel_admin.hotel_name, 
         departments.department_name, 
         city.city_name,
-        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative
+        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -95,7 +96,7 @@ class LeadModel extends CI_Model
     departments.department_name, 
     city.city_name,
 
-    (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative,
+    (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative,
 
     -- Creator Name
     COALESCE(
@@ -118,6 +119,7 @@ class LeadModel extends CI_Model
     ) AS assigned_person_name
 ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -225,11 +227,13 @@ class LeadModel extends CI_Model
                 SELECT COUNT(*) 
                 FROM leads AS l2 
                 WHERE RIGHT(l2.phone_number, 10) = RIGHT(leads.phone_number, 10)
+                  AND l2.is_deleted = 0
             ) > 1 THEN 1 ELSE 0 
         END AS is_repeatative
     ", FALSE); // <- don't escape this complex select
 
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'leads.city = city.city_id', 'left');
@@ -271,11 +275,13 @@ class LeadModel extends CI_Model
                 SELECT COUNT(*) 
                 FROM leads AS l2 
                 WHERE RIGHT(l2.phone_number, 10) = RIGHT(leads.phone_number, 10)
+                  AND l2.is_deleted = 0
             ) > 1 THEN 1 ELSE 0 
         END AS is_repeatative
     ", FALSE); // ✅ don't escape
 
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'leads.city = city.city_id', 'left');
@@ -309,10 +315,12 @@ class LeadModel extends CI_Model
             SELECT COUNT(*) 
             FROM leads as l2 
             WHERE l2.phone_number = leads.phone_number
+              AND l2.is_deleted = 0
         ) > 1 AS is_repeatative
     ', false); // 'false' prevents CI from escaping the subquery
 
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -329,9 +337,10 @@ class LeadModel extends CI_Model
         hotel_admin.hotel_name,
         departments.department_name,
         city.city_name,
-        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative
+        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'leads.city = city.city_id', 'left');
@@ -392,9 +401,10 @@ class LeadModel extends CI_Model
         hotel_admin.hotel_name,
         departments.department_name,
         city.city_name,
-        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative
+        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'leads.city = city.city_id', 'left');
@@ -456,6 +466,7 @@ class LeadModel extends CI_Model
 
     public function get_leads_for_scheduler($id)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select('
     leads.*,
     hotel_admin.hotel_name,
@@ -523,6 +534,7 @@ class LeadModel extends CI_Model
 
     public function append_correlation_id($leadId, $newCorrelationId)
     {
+        $this->db->where('leads.is_deleted', 0);
         // Get current correlation_id value
         $this->db->select('correlation_id');
         $this->db->from('leads');
@@ -590,6 +602,7 @@ class LeadModel extends CI_Model
         $channel = "",
         $disposition = ""
     ) {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->where('status', $status);
 
@@ -646,6 +659,7 @@ class LeadModel extends CI_Model
         $channel = "",
         $disposition = ""
     ) {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
 
         if (!empty($status)) {
@@ -697,6 +711,7 @@ class LeadModel extends CI_Model
 
     public function get_lead_count_by_status_for_lead_report($status)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->where('status', $status);
 
@@ -720,6 +735,7 @@ class LeadModel extends CI_Model
         $channel = "",
         $disposition_Z = ""
     ) {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->where('disposition', $disposition);
 
@@ -779,6 +795,7 @@ class LeadModel extends CI_Model
         $channel = "",
         $disposition_Z = ""
     ) {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select_sum('amount'); // replace revenue with your actual column name
         $this->db->from('leads');
         $this->db->where('disposition', $disposition);
@@ -829,6 +846,7 @@ class LeadModel extends CI_Model
 
     public function get_lead_count_by_disposition_agent($disposition, $property = null, $department_id = "", $start_date = null, $end_date = null)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->where('disposition', $disposition);
 
@@ -857,6 +875,7 @@ class LeadModel extends CI_Model
 
     public function get_lead_count_by_disposition_agency($disposition, $property = null, $department_id = "", $start_date = null, $end_date = null, $agency_id)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->where('disposition', $disposition);
 
@@ -891,6 +910,7 @@ class LeadModel extends CI_Model
 
     public function get_total_leads_last_30_days_agent($hotel_id, $department_id, $start_date = null, $end_date = null)
     {
+        $this->db->where('leads.is_deleted', 0);
         $date_30_days_ago = date('Y-m-d', strtotime('-30 days'));
         $today = date('Y-m-d');
 
@@ -905,6 +925,7 @@ class LeadModel extends CI_Model
 
     public function get_total_leads_last_30_days_hotel($hotel_id)
     {
+        $this->db->where('leads.is_deleted', 0);
         $date_30_days_ago = date('Y-m-d', strtotime('-30 days'));
         $today = date('Y-m-d');
 
@@ -924,6 +945,7 @@ class LeadModel extends CI_Model
 
     public function get_lead_count_by_status_agent($status, $hotel_id, $department_id, $start_date = null, $end_date = null)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
 
         $this->db->where('status', $status);
@@ -951,6 +973,7 @@ class LeadModel extends CI_Model
         $end_date = null,
         $agency_id = null
     ) {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
 
         // Apply filters only if values exist
@@ -985,6 +1008,7 @@ class LeadModel extends CI_Model
 
     public function get_lead_count_by_status_hotel($status, $hotel_id)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->from('leads');
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
@@ -1014,6 +1038,7 @@ class LeadModel extends CI_Model
 
     public function get_hotel_leads_for_agent_dashboard($hotel_id, $filters = [])
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select('
     leads.*,
 
@@ -1042,6 +1067,7 @@ class LeadModel extends CI_Model
 
     public function guestcontactBook()
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select('
         RIGHT(leads.phone_number, 10) AS phone_number,
         MAX(leads.user_name) AS user_name,
@@ -1061,6 +1087,7 @@ class LeadModel extends CI_Model
 
     public function guestcontactBookAdmin($property)
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select('
         RIGHT(leads.phone_number, 10) AS phone_number,
         MIN(leads.phone_number) AS original_phone, -- keep one original sample
@@ -1082,6 +1109,7 @@ class LeadModel extends CI_Model
     {
         $this->db->select('status, COUNT(*) as count');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
 
         // Apply filters
         if (!empty($filters['city'])) {
@@ -1167,9 +1195,10 @@ class LeadModel extends CI_Model
         hotel_admin.hotel_name, 
         departments.department_name, 
         city.city_name,
-        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative
+        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -1316,6 +1345,7 @@ COALESCE(SUM(CASE WHEN leads.status = "Closed" THEN 1 ELSE 0 END), 0) AS closed,
 COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assigned
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -1451,9 +1481,10 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
         hotel_admin.hotel_name, 
         departments.department_name, 
         city.city_name,
-        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number) > 1 AS is_repeatative
+        (SELECT COUNT(*) FROM leads as l2 WHERE l2.phone_number = leads.phone_number AND l2.is_deleted = 0) > 1 AS is_repeatative
     ');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
         $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
         $this->db->join('departments', 'leads.type = departments.department_id', 'left');
         $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
@@ -1540,6 +1571,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
             tables.capacity
         ')
             ->from('leads')
+            ->where('leads.is_deleted', 0)
 
             ->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left')
             ->join('departments', 'leads.type = departments.department_id', 'left')
@@ -1659,6 +1691,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
     public function get_all_today_followups($date)
     {
         return $this->db->where('followup_date', $date)
+            ->where('is_deleted', 0)
             ->get('leads')
             ->result();
     }
@@ -1704,6 +1737,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
     {
         $this->db->select('disposition, COUNT(*) as total');
         $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
 
         // Date Range Filter
         if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
@@ -1757,6 +1791,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
 
     public function get_user_channel_report($filters = [])
     {
+        $this->db->where('leads.is_deleted', 0);
         $this->db->select('user_channel, COUNT(*) as total');
         $this->db->from('leads');
 
@@ -1796,6 +1831,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
     ");
 
         $this->db->from('leads l');
+        $this->db->where('l.is_deleted', 0);
         $this->db->join('hotel_admin h', 'h.hotel_id = l.property', 'left');
         $this->db->join('departments d', 'd.department_id = l.type', 'left');
 
@@ -1939,6 +1975,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
     ");
 
         $this->db->from('leads l');
+        $this->db->where('l.is_deleted', 0);
         $this->db->join('departments d', 'd.department_id = l.type', 'left');
 
         // ✅ FILTERS
@@ -2066,6 +2103,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
     {
         return $this->db
             ->where('status', 'Open')          // ✅ only open leads
+            ->where('is_deleted', 0)
             ->where('property', 1)
             ->where('esc_next_followup_at <=', $now)
             ->where('esc_follow_up_level <', 4)
@@ -2097,6 +2135,7 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
             d.department_name
         ')
             ->from('leads l')
+            ->where('l.is_deleted', 0)
             ->join('hotel_admin h', 'h.hotel_id = l.property', 'left')
             ->join('departments d', 'd.department_id = l.type', 'left')
             ->where('l.id', $lead_id)

@@ -52,6 +52,323 @@
       padding: 6px 20px;
       font-weight: 500;
    }
+
+   #editLeadDetails .edit-table-multiselect-source {
+      display: none !important;
+   }
+
+   #editLeadDetails .edit-table-multiselect {
+      position: relative;
+      width: 100%;
+   }
+
+   #editLeadDetails .edit-table-multiselect-toggle {
+      align-items: center;
+      background: #fff !important;
+      border: 1px solid #b8c0cc !important;
+      border-radius: 8px;
+      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+      color: #495057 !important;
+      display: flex;
+      height: 46px;
+      justify-content: space-between;
+      padding: 0 14px;
+      text-align: left;
+      width: 100%;
+   }
+
+   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-toggle,
+   #editLeadDetails .edit-table-multiselect-toggle:focus {
+      border-color: #80bdff !important;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+      outline: 0;
+   }
+
+   #editLeadDetails .edit-table-multiselect-toggle::after {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #6c757d;
+      content: '';
+      margin-left: 10px;
+   }
+
+   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-toggle::after {
+      border-bottom: 6px solid #6c757d;
+      border-top: 0;
+   }
+
+   #editLeadDetails .edit-table-multiselect-menu {
+      background: #d2d2d2;
+      border: 1px solid #c5c5c5;
+      border-radius: 6px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+      display: none;
+      left: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 6px 0;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 1065;
+   }
+
+   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-menu {
+      display: block;
+   }
+
+   #editLeadDetails .edit-table-multiselect-option {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      gap: 9px;
+      margin: 0;
+      padding: 8px 12px;
+   }
+
+   #editLeadDetails .edit-table-multiselect-option:hover {
+      background: rgba(255, 255, 255, 0.35);
+   }
+
+   #editLeadDetails .edit-table-multiselect-option input[type="checkbox"] {
+      -webkit-appearance: checkbox !important;
+      appearance: checkbox !important;
+      accent-color: #1473d2;
+      clip: auto !important;
+      cursor: pointer;
+      display: inline-block !important;
+      flex: 0 0 18px;
+      height: 18px !important;
+      left: auto !important;
+      margin: 0 !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: static !important;
+      visibility: visible !important;
+      width: 18px !important;
+   }
+
+   #editLeadDetails .edit-table-multiselect-select-all {
+      border-bottom: 1px solid #e9ecef;
+      font-weight: 600;
+   }
+
+   #editLeadDetails .edit-table-multiselect-empty {
+      color: #6c757d;
+      padding: 9px 12px;
+   }
+
+   #leadEditForm .required-marker {
+      color: #dc3545;
+      font-weight: 700;
+      margin-left: 2px;
+   }
+
+   #leadEditForm .select2-container--default .select2-selection--single {
+      background-color: #fff !important;
+      border: 1px solid transparent !important;
+      border-radius: 8px !important;
+      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+         rgba(0, 0, 0, 0.3) 0 1px 3px -1px !important;
+      height: 46px !important;
+      padding: 11px 14px;
+   }
+
+   #leadEditForm .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 22px;
+      margin-top: 0;
+      padding-left: 0;
+   }
+
+   #leadEditForm .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 44px;
+   }
+
+   #leadEditForm select.is-invalid + .select2-container .select2-selection--single {
+      border-color: #dc3545 !important;
+   }
+
+   #leadEditForm .select2-container--focus .select2-selection--single,
+   #leadEditForm .select2-container--open .select2-selection--single {
+      border-color: #80bdff !important;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+   }
+
+   #leadEditForm .edit-select2-dropdown-parent {
+      position: relative;
+   }
+
+   #leadEditForm .edit-select2-dropdown-parent > .select2-container--open .select2-dropdown {
+      z-index: 1070;
+   }
+
+   #assigned_to_filter + .select2-container,
+   #created_by + .select2-container {
+      height: 46px;
+      width: 100% !important;
+   }
+
+   #assigned_to_filter + .select2-container .select2-selection--single,
+   #created_by + .select2-container .select2-selection--single {
+      align-items: center;
+      background-color: #fff;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+      box-sizing: border-box;
+      display: flex;
+      height: 46px !important;
+      min-height: 0;
+      padding: 0 14px !important;
+   }
+
+   #assigned_to_filter + .select2-container .select2-selection__rendered,
+   #created_by + .select2-container .select2-selection__rendered {
+      line-height: normal;
+      margin-top: 0;
+      padding-left: 0;
+   }
+
+   #assigned_to_filter + .select2-container .select2-selection__arrow,
+   #created_by + .select2-container .select2-selection__arrow {
+      height: 100%;
+      right: 8px;
+      top: 0;
+   }
+
+   #filter-section .lead-filter-multiselect-source {
+      display: none !important;
+   }
+
+   #filter-section .lead-filter-multiselect {
+      position: relative;
+      width: 100%;
+   }
+
+   #filter-section .lead-filter-multiselect-toggle {
+      align-items: center;
+      background: #fff;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+      color: #495057;
+      display: flex;
+      height: 46px;
+      justify-content: space-between;
+      padding: 0 14px;
+      text-align: left;
+      width: 100%;
+   }
+
+   #filter-section .lead-filter-multiselect-toggle::after {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #6c757d;
+      content: '';
+      flex: 0 0 auto;
+      margin-left: 10px;
+   }
+
+   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle,
+   #filter-section .lead-filter-multiselect-toggle:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+      outline: 0;
+   }
+
+   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle::after {
+      border-bottom: 6px solid #6c757d;
+      border-top: 0;
+   }
+
+   #filter-section .lead-filter-multiselect-menu {
+      background: #d2d2d2;
+      border: 1px solid #c5c5c5;
+      border-radius: 6px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+      display: none;
+      left: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 6px 0;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 1080;
+   }
+
+   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-menu {
+      display: block;
+   }
+
+   #filter-section .lead-filter-multiselect-option {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      gap: 9px;
+      margin: 0;
+      padding: 8px 12px;
+   }
+
+   #filter-section .lead-filter-multiselect-option:hover {
+      background: rgba(255, 255, 255, 0.35);
+   }
+
+   #filter-section .lead-filter-multiselect-option input[type="checkbox"] {
+      -webkit-appearance: checkbox !important;
+      appearance: checkbox !important;
+      accent-color: #1473d2;
+      clip: auto !important;
+      cursor: pointer;
+      display: inline-block !important;
+      flex: 0 0 18px;
+      height: 18px !important;
+      left: auto !important;
+      margin: 0 !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: static !important;
+      visibility: visible !important;
+      width: 18px !important;
+   }
+
+   #filter-section .lead-filter-multiselect-select-all {
+      border-bottom: 1px solid #e9ecef;
+      font-weight: 600;
+   }
+
+   #business_type + .select2-container {
+      height: 46px;
+      width: 100% !important;
+   }
+
+   #business_type + .select2-container .select2-selection--single {
+      align-items: center;
+      background: #fff;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+      box-sizing: border-box;
+      display: flex;
+      height: 46px !important;
+      padding: 0 14px !important;
+   }
+
+   #business_type + .select2-container .select2-selection__rendered {
+      line-height: normal;
+      margin-top: 0;
+      padding-left: 0;
+   }
+
+   #business_type + .select2-container .select2-selection__arrow {
+      height: 100%;
+      right: 8px;
+      top: 0;
+   }
 </style>
 <style>
    /* Timeline Container */
@@ -209,7 +526,7 @@
                               <!-- Property -->
                               <div class="col-md-3">
                                  <label for="property" class="form-label">Property</label>
-                                 <select name="property[]" class="form-select filter-input" multiple id="property">
+                                 <select name="property[]" class="filter-input lead-filter-multiselect-source" multiple id="property">
                                     <?php foreach ($properties as $property) { ?>
                                        <option value="<?= $property->hotel_id; ?>"><?= $property->hotel_name; ?></option>
                                     <?php } ?>
@@ -218,7 +535,7 @@
                               <!-- Department -->
                               <div class="col-md-3">
                                  <label for="department" class="form-label">Department</label>
-                                 <select name="department[]" class="form-select filter-input" multiple id="department">
+                                 <select name="department[]" class="filter-input lead-filter-multiselect-source" multiple id="department">
                                     <?php foreach ($departments as $dept) { ?>
                                        <option value="<?= $dept->department_id; ?>"><?= $dept->department_name; ?></option>
                                     <?php } ?>
@@ -227,7 +544,7 @@
                               <!-- Status -->
                               <div class="col-md-3">
                                  <label for="status" class="form-label">Status</label>
-                                 <select name="status[]" class="form-select filter-input" multiple id="status">
+                                 <select name="status[]" class="filter-input lead-filter-multiselect-source" multiple id="status">
                                     <option value="Open">Open</option>
                                     <option value="In Progress">In Progress</option>
                                     <option value="Closed">Closed</option>
@@ -237,7 +554,7 @@
                               <!-- Lead Source -->
                               <div class="col-md-3">
                                  <label for="channel" class="form-label">Lead Source</label>
-                                 <select name="channel[]" class="form-select filter-input" multiple id="channel">
+                                 <select name="channel[]" class="filter-input lead-filter-multiselect-source" multiple id="channel">
                                     <?php foreach ($user_channel as $channelObj): ?>
                                        <?php $channel = $channelObj->user_channel; ?>
                                        <option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
@@ -247,7 +564,7 @@
                               <!-- Stage -->
                               <div class="col-md-3">
                                  <label for="disposition" class="form-label">Stage</label>
-                                 <select class="form-select filter-input" name="disposition[]" multiple id="disposition">
+                                 <select class="filter-input lead-filter-multiselect-source" name="disposition[]" multiple id="disposition">
                                     <option value="" selected disabled>Select Stage</option>
 
                                     <option value="Not Contacted">Not Contacted</option>
@@ -833,18 +1150,18 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            <form id="leadEditForm">
+            <form id="leadEditForm" novalidate>
                <input type="hidden" name="edit_lead_id" id="edit_lead_id">
                <div class="row g-3">
                   <!-- Phone Number -->
                   <div class="col-md-4">
-                     <label>Phone</label>
+                     <label>Phone <span class="required-marker">*</span></label>
                      <input type="number" name="phone_number" id="edit_phone_number" class="form-control" value="<?= $lead->phone_number ?>" required id="phone_number">
                   </div>
                   <input type="hidden" name="lead_id" value="<?= $lead->id ?>">
                   <!-- Guest Name -->
                   <div class="col-md-4">
-                     <label>Name</label>
+                     <label>Name <span class="required-marker" id="editGuestNameRequiredMarker">*</span></label>
                      <input type="text" name="user_name" class="form-control" value="<?= $lead->user_name ?>" required id="edit_user_name">
                   </div>
                   <!-- Email -->
@@ -854,7 +1171,7 @@
                   </div>
                   <!-- Property -->
                   <div class="col-md-4">
-                     <label>Property</label>
+                     <label>Property <span class="required-marker">*</span></label>
                      <select name="property" class="form-control" required id="edit_property">
                         <?php foreach ($properties as $property) { ?>
                            <option
@@ -869,7 +1186,7 @@
 
                   <!-- Department -->
                   <div class="col-md-4">
-                     <label>Department</label>
+                     <label>Department <span class="required-marker">*</span></label>
                      <select name="type" class="form-control" required id="edit_type">
                         <?php foreach ($departments as $each): ?>
                            <option value="<?= $each->department_id ?>"
@@ -895,7 +1212,7 @@
                   </div>
                   <div class="col-md-4">
                      <div class="form-group">
-                        <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage</label>
+                        <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage <span class="required-marker">*</span></label>
                         <select class="form-control" name="disposition" id="edit_disposition">
                            <option value="" <?= empty($lead->disposition) ? 'selected' : '' ?>>Select Stage</option>
 
@@ -922,7 +1239,7 @@
                   <!-- Lead Status -->
                   <div class="col-md-4">
                      <div class="form-group">
-                        <label>Lead Status</label>
+                        <label>Lead Status <span class="required-marker">*</span></label>
                         <select name="status" id="edit_lead_status" class="form-control" required disabled>
                            <option value="Open" <?= ($lead->status == 'Open') ? 'selected' : '' ?>>Open</option>
                            <option value="On Hold" <?= ($lead->status == 'On Hold') ? 'selected' : '' ?>>On Hold</option>
@@ -975,7 +1292,7 @@
                   <div class="col-md-4">
                      <div class="form-group">
                         <label for="user_channel">
-                           <i class="fa fa-fire me-1 text-secondary"></i>Lead Source
+                           <i class="fa fa-fire me-1 text-secondary"></i>Lead Source <span class="required-marker">*</span>
                         </label>
 
                         <select name="user_channel" id="user_channel" class="form-control">
@@ -1035,10 +1352,10 @@
                   <!-- Lead Type -->
                   <!-- Stage -->
                   <input type="hidden" id="edit_leadDepartment" name="edit_leadDepartment">
-                  <div id="Edit_dynamicFields" class="row gt-3"></div>
+                  <div id="Edit_dynamicFields" class="row g-3"></div>
                   <!-- Query -->
                   <div class="col-md-6">
-                     <label>Query</label>
+                     <label>Query <span class="required-marker">*</span></label>
                      <textarea name="query" class="form-control" id="edit_query"><?= $lead->query ?></textarea>
                   </div>
                   <!-- Remark -->
@@ -1079,6 +1396,160 @@
 </div>
 <script>
    $(document).ready(function() {
+
+      function initializeEditSingleSelect2(scope) {
+         const $scope = scope ? $(scope) : $('#leadEditForm');
+         const $selects = $scope.is('select')
+            ? $scope.filter('select:not([multiple])')
+            : $scope.find('select:not([multiple])');
+
+         $selects.each(function() {
+            const $select = $(this);
+            const $formGroup = $select.closest('.form-group');
+            const $dropdownParent = $formGroup.length
+               ? $formGroup
+               : $select.closest('[class*="col-"]');
+
+            $dropdownParent.addClass('edit-select2-dropdown-parent');
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+               $select.select2({
+                  dropdownParent: $dropdownParent,
+                  width: '100%'
+               });
+            }
+         });
+      }
+
+      function refreshEditSingleSelect2(select) {
+         const $select = $(select);
+         initializeEditSingleSelect2($select);
+         $select.trigger('change.select2');
+      }
+
+      function normalizeEditDepartmentName(name) {
+         const department = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+         if (department === 'restaurants') return 'restaurant';
+         if (department === 'banquets') return 'banquet';
+         return department;
+      }
+
+      function editLeadField(field) {
+         const fieldNames = {
+            username: 'user_name',
+            lead_status: 'status'
+         };
+         const name = fieldNames[field] || field;
+
+         if (field === 'table_id') {
+            return $('#Edit_dynamicFields #table_id');
+         }
+
+         return $('#leadEditForm [name="' + name + '"]').first();
+      }
+
+      function clearEditLeadValidation() {
+         $('#leadEditForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
+         $('#leadEditForm .edit-lead-validation-error').remove();
+      }
+
+      function showEditLeadFieldError(field, message) {
+         const $input = editLeadField(field);
+         if (!$input.length) return;
+
+         $input.addClass('is-invalid').attr('aria-invalid', 'true');
+         const $wrapper = $input.closest('.form-group, [class*="col-"]').first();
+         $('<div>', {
+            class: 'text-danger small edit-lead-validation-error',
+            text: message
+         }).appendTo($wrapper);
+      }
+
+      function validateEditLeadForm() {
+         const errors = {};
+         const value = function(name) {
+            return $.trim(String($('#leadEditForm [name="' + name + '"]').first().val() || ''));
+         };
+         const phone = value('phone_number').replace(/^(\+91|91)/, '');
+         const email = value('email');
+         const disposition = value('disposition');
+         const department = normalizeEditDepartmentName($('#edit_leadDepartment').val());
+
+         if (!/^[6-9][0-9]{9}$/.test(phone)) {
+            errors.phone_number = phone
+               ? 'Enter a valid 10-digit Indian mobile number.'
+               : 'Phone number is required.';
+         }
+         if (disposition !== 'Not Contacted' && !value('user_name')) {
+            errors.username = 'Guest name is required.';
+         }
+         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.email = 'Enter a valid email address.';
+         }
+         if (!value('property')) errors.property = 'Please select a hotel.';
+         if (!value('type')) errors.type = 'Please select a department.';
+         if (!value('user_channel')) errors.user_channel = 'Please select a lead source.';
+         if (!disposition) errors.disposition = 'Please select a stage.';
+         if (!value('status')) errors.lead_status = 'Please select a lead status.';
+         if (!value('query')) errors.query = 'Query is required.';
+
+         if (disposition === 'Lead Lost' && !value('reason')) {
+            errors.reason = 'Please select a reason.';
+         }
+
+         if (disposition === 'Quotation Sent') {
+            if ((department === 'rooms' || department === 'wedding') && !value('meal_plan')) {
+               errors.meal_plan = 'Please select a meal plan.';
+            }
+            if ((department === 'banquet' || department === 'wedding') && !value('banquet_id')) {
+               errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'restaurant') {
+               if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
+               if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
+               if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';
+               if (!value('table_category_id')) errors.table_category_id = 'Please select a table category.';
+               if (!$('#Edit_dynamicFields #table_id').val() || !$('#Edit_dynamicFields #table_id').val().length) {
+                  errors.table_id = 'Please select at least one table.';
+               }
+               if (!value('table_reservation_status')) {
+                  errors.table_reservation_status = 'Please select a reservation status.';
+               }
+            }
+         }
+
+         clearEditLeadValidation();
+         let $firstField = $();
+         $.each(errors, function(field, message) {
+            showEditLeadFieldError(field, message);
+            if (!$firstField.length) $firstField = editLeadField(field);
+         });
+
+         if ($firstField.length) {
+            const $modalBody = $('#editLeadDetails .modal-body');
+            const targetTop = $firstField.closest('[class*="col-"]').position().top;
+            $modalBody.animate({ scrollTop: Math.max(targetTop - 20, 0) }, 200);
+
+            if ($firstField.hasClass('select2-hidden-accessible')) {
+               $firstField.next('.select2-container').find('.select2-selection').trigger('focus');
+            } else {
+               $firstField.trigger('focus');
+            }
+         }
+
+         return Object.keys(errors).length === 0;
+      }
+
+      $('#editLeadDetails').on('shown.bs.modal', function() {
+         initializeEditSingleSelect2('#leadEditForm');
+         $('#leadEditForm select:not([multiple])').trigger('change.select2');
+      });
+
+      $(document).on('input change', '#leadEditForm input, #leadEditForm select, #leadEditForm textarea', function() {
+         $(this).removeClass('is-invalid').removeAttr('aria-invalid');
+         $(this).closest('.form-group, [class*="col-"]').first().find('.edit-lead-validation-error').remove();
+      });
 
 
       // form validation rules
@@ -1312,6 +1783,7 @@
       function updateDynamicFieldsForEdit(data = "") {
 
          const disposition = $("#edit_disposition").val();
+         $('#editGuestNameRequiredMarker').toggle(disposition !== 'Not Contacted');
          let property = $("#edit_property").val();
          let department = $('#edit_type').find(':selected').data('name')?.toLowerCase();
          let department_id = $('#edit_type').val();
@@ -1325,6 +1797,9 @@
          console.log(existingLeadData);
 
          const container = $("#Edit_dynamicFields");
+         container.find('select.select2-hidden-accessible:not([multiple])').each(function() {
+            $(this).select2('destroy');
+         });
          container.empty();
 
          var today = new Date().toISOString().split('T')[0];
@@ -1365,7 +1840,7 @@
 
             container.append(`
             <div class="col-lg-4 col-md-6 col-sm-12">
-                <label class="form-label">Reason</label>
+                <label class="form-label">Reason <span class="required-marker">*</span></label>
                 <select name="reason" class="form-select" id="reason" required>
                     <option value="">Select Reason</option>
                     <option value="Budget Issue">Budget Issue</option>
@@ -1408,7 +1883,7 @@
                 </div>
 
                 <div class="col-lg-4 col-md-6 col-sm-12">
-                    <label class="form-label">Meal Plan</label>
+                    <label class="form-label">Meal Plan <span class="required-marker">*</span></label>
                     <select name="meal_plan" id="edit_meal_plan" class="form-select">
                         <option value="">Select Meal Plan</option>
                     </select>
@@ -1520,7 +1995,7 @@
 </div>
 
 <div class="col-lg-4 col-md-6 col-sm-12">
-    <label class="form-label">Restaurant</label>
+    <label class="form-label">Restaurant <span class="required-marker">*</span></label>
     <select name="restaurant_id" id="edit_restaurant_id" class="form-select"></select>
 </div>
 
@@ -1611,16 +2086,7 @@
 
                loadRestaurants(property, existingLeadData);
                loadSlotTypes(existingLeadData);
-
-               if (
-                  existingLeadData &&
-                  existingLeadData.slot_type_id
-               ) {
-                  loadTimeSlots(
-                     existingLeadData.slot_type_id,
-                     existingLeadData.time_slot_id
-                  );
-               }
+               initializeEditTableMultiSelect();
             }
 
             /* BANQUETS */
@@ -1639,7 +2105,7 @@
                 </div>
 
                 <div class="col-lg-4 col-md-6 col-sm-12">
-                    <label class="form-label">Banquet</label>
+                    <label class="form-label">Banquet <span class="required-marker">*</span></label>
                     <select name="banquet_id" id="edit_banquet_id" class="form-select"></select>
                 </div>
 
@@ -1757,7 +2223,7 @@
                 </div>
 
                 <div class="col-lg-3 col-md-6 col-sm-12">
-                    <label class="form-label">Meal Plan</label>
+                    <label class="form-label">Meal Plan <span class="required-marker">*</span></label>
                     <select name="meal_plan"
                         id="edit_meal_plan"
                         class="form-select">
@@ -1828,7 +2294,7 @@
                 </div>
 
                 <div class="col-lg-4 col-md-6 col-sm-12">
-                    <label class="form-label">Banquet</label>
+                    <label class="form-label">Banquet <span class="required-marker">*</span></label>
                     <select name="banquet_id"
                         id="edit_banquet_id"
                         class="form-select"></select>
@@ -1923,6 +2389,10 @@
                }
             }
          }
+
+         initializeEditSingleSelect2(container);
+         container.find('select:not([multiple])').trigger('change.select2');
+         $('#edit_lead_status').trigger('change.select2');
       }
 
 
@@ -1960,6 +2430,8 @@
                      loadTableCategories(existingLeadData.restaurant_id, existingLeadData.table_category_id, existingLeadData.table_id);
                   }
                }
+
+               refreshEditSingleSelect2('#edit_restaurant_id');
             }
          });
       }
@@ -1990,6 +2462,8 @@
                if (existingLeadData && existingLeadData.banquet_id) {
                   $('#edit_banquet_id').val(existingLeadData.banquet_id);
                }
+
+               refreshEditSingleSelect2('#edit_banquet_id');
             }
          });
       }
@@ -2020,6 +2494,8 @@
                if (existingLeadData && existingLeadData.meal_plan) {
                   $('#edit_meal_plan').val(existingLeadData.meal_plan);
                }
+
+               refreshEditSingleSelect2('#edit_meal_plan');
             }
          });
       }
@@ -2051,6 +2527,8 @@
                if (existingLeadData && existingLeadData.promotional_offers) {
                   $('#edit_promotional_offers').val(existingLeadData.promotional_offers);
                }
+
+               refreshEditSingleSelect2('#edit_promotional_offers');
             }
          });
       }
@@ -2081,6 +2559,8 @@
                if (existingLeadData && existingLeadData.roomtype) {
                   $('#edit_roomtype').val(existingLeadData.roomtype);
                }
+
+               refreshEditSingleSelect2('#edit_roomtype');
             }
          });
       }
@@ -2109,23 +2589,32 @@
                   });
                }
 
-               $('#slot_type_id').html(html);
-               if (typeof existingLeadData !== "undefined" && existingLeadData.slot_type_id) {
-                  $('#slot_type_id').val(existingLeadData.slot_type_id);
+               const $slotType = $('#slot_type_id').html(html);
+               if (existingLeadData && existingLeadData.slot_type_id) {
+                  $slotType.val(existingLeadData.slot_type_id);
                }
+
+               $slotType
+                  .off('change.editLeadTimeSlots')
+                  .on('change.editLeadTimeSlots', function() {
+                     const slotTypeId = $(this).val();
+
+                     if (slotTypeId) {
+                        loadTimeSlots(slotTypeId);
+                     } else {
+                        $('#time_slot_id').html('<option value="">Select Time Slot</option>');
+                        refreshEditSingleSelect2('#time_slot_id');
+                     }
+                  });
+
+               if ($slotType.val()) {
+                  loadTimeSlots($slotType.val(), existingLeadData.time_slot_id);
+               }
+
+               refreshEditSingleSelect2($slotType);
             }
          });
       }
-
-      $(document).on('change', '#slot_type_id', function() {
-         let slotTypeId = $(this).val();
-
-         if (slotTypeId) {
-            loadTimeSlots(slotTypeId);
-         } else {
-            $('#time_slot_id').html('<option value="">Select Time Slot</option>');
-         }
-      });
 
 
       function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
@@ -2159,7 +2648,7 @@
                   });
                }
 
-               $('#time_slot_id').html(html);
+               const $timeSlot = $('#time_slot_id').html(html);
 
                /*
                |--------------------------------------------------------------------------
@@ -2168,10 +2657,10 @@
                */
 
                if (selectedTimeSlotId) {
-                  $('#time_slot_id')
-                     .val(selectedTimeSlotId)
-                     .trigger('change');
+                  $timeSlot.val(selectedTimeSlotId);
                }
+
+               refreshEditSingleSelect2($timeSlot);
             }
          });
       }
@@ -2185,6 +2674,8 @@
          } else {
             $('#table_category_id').html('<option value="">Select Category</option>');
             $('#table_id').html('<option value="">Select Table</option>');
+            refreshEditSingleSelect2('#table_category_id');
+            initializeEditTableMultiSelect();
          }
       });
 
@@ -2212,15 +2703,17 @@
                   });
                }
 
-               $('#table_category_id').html(html);
+               const $tableCategory = $('#table_category_id').html(html);
 
                // ✅ For edit case
                if (selectedCategoryId !== null && selectedCategoryId !== "") {
-                  $('#table_category_id').val(selectedCategoryId);
+                  $tableCategory.val(selectedCategoryId);
                   if (selectedTableId !== null && selectedTableId !== "") {
                      loadTables(restaurantId, selectedCategoryId, selectedTableId);
                   }
                }
+
+               refreshEditSingleSelect2($tableCategory);
             }
          });
       }
@@ -2234,8 +2727,135 @@
             loadTables(restaurantId, categoryId);
          } else {
             $('#table_id').html('<option value="">Select Table</option>');
+            initializeEditTableMultiSelect();
          }
       });
+
+
+      function syncEditTableMultiSelect($select, $widget) {
+         const selectedValues = ($select.val() || []).map(String);
+         const total = $widget.find('.edit-table-multiselect-item').length;
+         const selectedCount = selectedValues.length;
+
+         $widget.find('.edit-table-multiselect-item').each(function() {
+            $(this).prop('checked', selectedValues.includes(String($(this).val())));
+         });
+
+         const $selectAll = $widget.find('.edit-table-multiselect-all');
+         $selectAll.prop('checked', total > 0 && selectedCount === total);
+         $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+         let summary = 'Select Table';
+         if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+         } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
+         }
+
+         $widget.find('.edit-table-multiselect-summary').text(summary);
+      }
+
+
+      function initializeEditTableMultiSelect() {
+         const $select = $('#Edit_dynamicFields #table_id');
+         if (!$select.length) return;
+
+         if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+         }
+
+         $select.next('.edit-table-multiselect').remove();
+         $select.addClass('edit-table-multiselect-source');
+
+         const $widget = $('<div>', { class: 'edit-table-multiselect' });
+         const $toggle = $('<button>', {
+            type: 'button',
+            class: 'edit-table-multiselect-toggle',
+            'aria-expanded': 'false'
+         }).append($('<span>', {
+            class: 'edit-table-multiselect-summary',
+            text: 'Select Table'
+         }));
+         const $menu = $('<div>', { class: 'edit-table-multiselect-menu' });
+         const availableOptions = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '';
+         });
+
+         if (availableOptions.length) {
+            const $selectAll = $('<input>', {
+               type: 'checkbox',
+               class: 'edit-table-multiselect-all'
+            });
+            $menu.append(
+               $('<label>', {
+                  class: 'edit-table-multiselect-option edit-table-multiselect-select-all'
+               }).append($selectAll, $('<span>', { text: 'Select all' }))
+            );
+
+            availableOptions.each(function() {
+               const $checkbox = $('<input>', {
+                  type: 'checkbox',
+                  class: 'edit-table-multiselect-item',
+                  value: this.value
+               });
+               $menu.append(
+                  $('<label>', { class: 'edit-table-multiselect-option' })
+                     .append($checkbox, $('<span>').text($(this).text().trim()))
+               );
+            });
+         } else {
+            $menu.append($('<div>', {
+               class: 'edit-table-multiselect-empty',
+               text: 'No tables available'
+            }));
+         }
+
+         $widget.append($toggle, $menu);
+         $select.after($widget);
+
+         $toggle.on('click', function() {
+            const isOpen = !$widget.hasClass('is-open');
+            $('.edit-table-multiselect').not($widget).removeClass('is-open')
+               .find('.edit-table-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', isOpen);
+            $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+         });
+
+         $widget.on('change', '.edit-table-multiselect-all', function() {
+            const values = this.checked
+               ? $widget.find('.edit-table-multiselect-item').map(function() {
+                    return this.value;
+                 }).get()
+               : [];
+            $select.val(values).trigger('change');
+         });
+
+         $widget.on('change', '.edit-table-multiselect-item', function() {
+            const values = $widget.find('.edit-table-multiselect-item:checked')
+               .map(function() {
+                  return this.value;
+               }).get();
+            $select.val(values).trigger('change');
+         });
+
+         $select
+            .off('change.editTableMultiSelect')
+            .on('change.editTableMultiSelect', function() {
+               syncEditTableMultiSelect($select, $widget);
+            });
+
+         syncEditTableMultiSelect($select, $widget);
+      }
+
+
+      $(document)
+         .off('click.editTableMultiSelect')
+         .on('click.editTableMultiSelect', function(e) {
+            if (!$(e.target).closest('.edit-table-multiselect').length) {
+               $('.edit-table-multiselect').removeClass('is-open')
+                  .find('.edit-table-multiselect-toggle').attr('aria-expanded', 'false');
+            }
+         });
 
 
       function loadTables(restaurantId, categoryId, selectedTableId = null) {
@@ -2275,6 +2895,8 @@
                   }
                   $('#table_id').val(tableIds);
                }
+
+               initializeEditTableMultiSelect();
             }
          });
       }
@@ -2294,8 +2916,13 @@
 
       $('#updateLead').on('click', function(e) {
 
-         $("#edit_lead_status").prop('disabled', false);
          e.preventDefault();
+         $("#edit_lead_status").prop('disabled', false);
+
+         if (!validateEditLeadForm()) {
+            $("#edit_lead_status").prop('disabled', true);
+            return false;
+         }
 
          // Collect form values
          const formValues = {
@@ -2303,7 +2930,7 @@
             user_name: $('input[name="user_name"]').val(),
             phone_number: $('#edit_phone_number').val(),
             email: $('#edit_email').val(),
-            user_channel: $('input[name="user_channel"]').val(),
+            user_channel: $('#leadEditForm select[name="user_channel"]').val(),
             property: $('#edit_property').val(),
             department: $('#edit_type').val(),
             status: $('#edit_lead_status').val(),
@@ -2311,34 +2938,12 @@
             remark: $('#edit_remark').val(),
             lead_type: $('#edit_lead_type').val(),
             lead_status: $('#edit_lead_status').val(),
-            leadDepartment: $('#leadDepartment').val(),
+            leadDepartment: $('#edit_leadDepartment').val(),
             disposition: $('#edit_disposition').val()
          };
 
          console.log(formValues);
 
-
-         let disposition = $('#edit_disposition option:selected').text().trim().toLowerCase();
-
-
-         // If Lead Lost selected then reason mandatory
-         if (disposition === 'lead lost') {
-
-            let reason = $('#reason').val().trim();
-            if (reason === '') {
-               $('#reason_error').html('Please enter reason');
-               $('#reason').focus();
-               return false
-            }
-         }
-
-
-         // Basic validation
-         if (!formValues.user_name || !formValues.phone_number || !formValues.property ||
-            !formValues.department || !formValues.status || !formValues.query) {
-            alert("Please fill all required fields.");
-            return;
-         }
 
          // Build FormData
          let formData = new FormData();
@@ -2397,7 +3002,7 @@
          }
 
 
-         if ($('#leadDepartment').val() === 'restaurant') {
+         if (normalizeEditDepartmentName($('#edit_leadDepartment').val()) === 'restaurant') {
             let tableReservationStatus = $('#table_reservation_status').val();
             formData.append('table_reservation_status', tableReservationStatus);
          }
@@ -2493,6 +3098,139 @@
 
       let offset = 0; // pagination offset
       const limit = 100; // initial records to load
+
+      $('#assigned_to_filter, #created_by').select2({
+         width: '100%'
+      });
+
+      $('#business_type').select2({
+         width: '100%'
+      });
+
+      function syncLeadFilterMultiSelect($select, $widget) {
+         const selectedValues = ($select.val() || []).map(String);
+         const $items = $widget.find('.lead-filter-multiselect-item');
+         const total = $items.length;
+         const selectedCount = selectedValues.length;
+
+         $items.each(function() {
+            $(this).prop('checked', selectedValues.includes(String($(this).val())));
+         });
+
+         const $selectAll = $widget.find('.lead-filter-multiselect-all');
+         $selectAll.prop('checked', total > 0 && selectedCount === total);
+         $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+         let summary = 'Select Options';
+         if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+         } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
+         }
+
+         $widget.find('.lead-filter-multiselect-summary').text(summary);
+      }
+
+      function initializeLeadFilterMultiSelect(select) {
+         const $select = $(select);
+         if (!$select.length) return;
+
+         if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+         }
+
+         $select.next('.lead-filter-multiselect').remove();
+
+         const $widget = $('<div>', { class: 'lead-filter-multiselect' });
+         const $toggle = $('<button>', {
+            type: 'button',
+            class: 'lead-filter-multiselect-toggle',
+            'aria-expanded': 'false'
+         }).append($('<span>', {
+            class: 'lead-filter-multiselect-summary',
+            text: 'Select Options'
+         }));
+         const $menu = $('<div>', { class: 'lead-filter-multiselect-menu' });
+         const $options = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '' && !this.disabled;
+         });
+
+         if ($options.length) {
+            $menu.append(
+               $('<label>', {
+                  class: 'lead-filter-multiselect-option lead-filter-multiselect-select-all'
+               }).append(
+                  $('<input>', {
+                     type: 'checkbox',
+                     class: 'lead-filter-multiselect-all'
+                  }),
+                  $('<span>', { text: 'Select all' })
+               )
+            );
+
+            $options.each(function() {
+               $menu.append(
+                  $('<label>', { class: 'lead-filter-multiselect-option' }).append(
+                     $('<input>', {
+                        type: 'checkbox',
+                        class: 'lead-filter-multiselect-item',
+                        value: this.value
+                     }),
+                     $('<span>').text($(this).text().trim())
+                  )
+               );
+            });
+         }
+
+         $widget.append($toggle, $menu);
+         $select.after($widget);
+
+         $toggle.on('click', function() {
+            const isOpen = !$widget.hasClass('is-open');
+            $('.lead-filter-multiselect').not($widget).removeClass('is-open')
+               .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', isOpen);
+            $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+         });
+
+         $widget.on('change', '.lead-filter-multiselect-all', function() {
+            const values = this.checked
+               ? $widget.find('.lead-filter-multiselect-item').map(function() {
+                    return this.value;
+                 }).get()
+               : [];
+            $select.val(values).trigger('change');
+         });
+
+         $widget.on('change', '.lead-filter-multiselect-item', function() {
+            const values = $widget.find('.lead-filter-multiselect-item:checked')
+               .map(function() {
+                  return this.value;
+               }).get();
+            $select.val(values).trigger('change');
+         });
+
+         $select
+            .off('change.leadFilterMultiSelect')
+            .on('change.leadFilterMultiSelect', function() {
+               syncLeadFilterMultiSelect($select, $widget);
+            });
+
+         syncLeadFilterMultiSelect($select, $widget);
+      }
+
+      $('#property, #department, #status, #channel, #disposition').each(function() {
+         initializeLeadFilterMultiSelect(this);
+      });
+
+      $(document)
+         .off('click.leadFilterMultiSelect')
+         .on('click.leadFilterMultiSelect', function(e) {
+            if (!$(e.target).closest('.lead-filter-multiselect').length) {
+               $('.lead-filter-multiselect').removeClass('is-open')
+                  .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+            }
+         });
 
 
       // -------- GET PARAM READER (works for arrays too) --------
@@ -2675,7 +3413,7 @@
 
          // ✅ Always set Select2 value as array (not string)
          var selectedArray = Array.isArray(status) ? status : [status];
-         select.val(selectedArray).trigger('change.select2'); // Works for Select2
+         select.val(selectedArray).trigger('change.leadFilterMultiSelect');
 
 
          // ✅ Trigger reload with updated filter
@@ -3098,7 +3836,7 @@ ${data.bill_attachment ? `
 
       Swal.fire({
          title: "Are you sure?",
-         text: "This lead will be permanently deleted!",
+         text: "This lead will be removed from active leads.",
          icon: "warning",
          showCancelButton: true,
          confirmButtonColor: "#d33",
