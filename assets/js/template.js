@@ -1578,8 +1578,15 @@ function w3_close() {
 	});
 
 
-new PerfectScrollbar(".multinav-scroll");
-new PerfectScrollbar(".slim-scroll3");
+const multiNav = document.querySelector(".multinav-scroll");
+if (multiNav) {
+    new PerfectScrollbar(multiNav);
+}
+
+const slimScroll = document.querySelector(".slim-scroll3");
+if (slimScroll) {
+    new PerfectScrollbar(slimScroll);
+}
 
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

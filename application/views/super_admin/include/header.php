@@ -32,7 +32,6 @@
 	<title><?php echo $branding->site_title ?> Super Admin - Dashboard</title>
 	<link rel="shortcut icon" type="image/x-icon" href="<?= $favicon ?>">
 
-
 	<!-- Vendors Style-->
 	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/vendors_css.css">
 	<script src="https://use.fontawesome.com/76ecd250b9.js"></script>
