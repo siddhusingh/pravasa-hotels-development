@@ -32,6 +32,7 @@
 	<title><?php echo $branding->site_title ?> Super Admin - Dashboard</title>
 	<link rel="shortcut icon" type="image/x-icon" href="<?= $favicon ?>">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.2/css/bootstrap-multiselect.min.css">
 	<!-- Vendors Style-->
 	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/vendors_css.css">
 	<script src="https://use.fontawesome.com/76ecd250b9.js"></script>
@@ -42,7 +43,7 @@
 	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/custom.css">
 	<!-- <link href="../../../../../cdn.jquery.app/jqueryscripttop.css" rel="stylesheet" type="text/css">
 	 -->
-
+<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/resposnive.css">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -105,7 +106,7 @@
 		<div class="d-none" id="loader"></div>
 
 		<header class="main-header">
-			<div class="d-flex align-items-center logo-box justify-content-start">
+			<div class="d-flex align-items-center logo-box justify-content-start mobile_hide">
 				<!-- Logo -->
 				<a href="<?php echo base_url('super-admin-dashbaord') ?>" class="logo">
 					<!-- logo-->
@@ -144,6 +145,29 @@
 							</div>
 						</li>
 					</ul>
+				</div>
+
+				<div class="responsive_logo">
+					<a href="<?php echo base_url('super-admin-dashbaord') ?>" class="logo">
+					<!-- logo-->
+					<div class="logo-mini w-40">
+						<span class="light-logo"><img src="<?= !empty($branding->logo)
+																? base_url($branding->logo)
+																: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+						<span class="dark-logo"><img src="<?= !empty($branding->logo)
+																? base_url($branding->logo)
+																: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+					</div>
+
+					<div class="logo-lg">
+						<span class="light-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
+																						? base_url($branding->logo)
+																						: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+						<span class="dark-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
+																					? base_url($branding->logo)
+																					: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+					</div>
+				</a>
 				</div>
 
 				<div class="navbar-custom-menu r-side">
