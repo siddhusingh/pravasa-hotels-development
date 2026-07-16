@@ -125,4 +125,29 @@
   line-height: 115px;
   }
 
+/* Compact Select2 dropdown search used across the admin interface. */
+.select2-search--dropdown {
+  padding: 6px !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 5px 9px !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 5px !important;
+  background-color: #fff;
+  color: #1f1f2e;
+  font-size: 14px;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+  border-color: #9b87e8 !important;
+  box-shadow: 0 0 0 2px rgba(155, 135, 232, 0.12) !important;
+}
+
 /*-------dashboard-17--------*/

@@ -10,7 +10,6 @@ class SalesVisits extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
-        $this->load->helper('download');
         $this->load->helper('secure');
 
 
@@ -40,15 +39,68 @@ class SalesVisits extends CI_Controller
     private function jsonResponse($payload)
     {
         $payload['csrfHash'] = $this->security->get_csrf_hash();
-        echo json_encode($payload);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($payload));
+    }
+
+    private function getCurrentActor()
+    {
+        $actor = $this->session->userdata('super_admin_session');
+
+        return [
+            'id' => $actor['id'] ?? null,
+            'name' => $actor['user_name'] ?? $actor['full_name'] ?? '',
+            'email' => $actor['email'] ?? '',
+            'role' => $this->session->userdata('role_as') ?? 'super_admin'
+        ];
+    }
+
+    private function logActivity($action, $recordId, $details = '')
+    {
+        $actor = $this->getCurrentActor();
+        $this->Common_model->insertActivityLog([
+            'module' => 'sales_visits',
+            'record_id' => $recordId,
+            'action' => $action,
+            'details' => $details,
+            'actor_id' => $actor['id'],
+            'actor_name' => $actor['name'],
+            'actor_email' => $actor['email'],
+            'actor_role' => $actor['role'],
+            'ip_address' => $this->input->ip_address(),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    private function validateSalesVisitFields()
+    {
+        $reportDate = trim((string) $this->input->post('report_date'));
+        $discussion = trim((string) $this->input->post('discussion_summary'));
+        $parsedDate = DateTime::createFromFormat('Y-m-d', $reportDate);
+
+        if ($reportDate === '' || !$parsedDate || $parsedDate->format('Y-m-d') !== $reportDate) {
+            return 'Please enter a valid report date';
+        }
+
+        if ($discussion === '') {
+            return 'Discussion summary is required';
+        }
+
+        foreach (['kms_run', 'rate_per_km', 'parking_charges', 'lunch', 'entertainment', 'total_amount'] as $field) {
+            $value = $this->input->post($field);
+            if ($value !== null && $value !== '' && (!is_numeric($value) || (float) $value < 0)) {
+                return 'Conveyance amounts must be valid non-negative numbers';
+            }
+        }
+
+        return '';
     }
 
     /* ================= MANAGE PAGE ================= */
     public function index()
     {
         $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
-
-        $data['sales_visits'] = $this->Common_model->getAllData('sales_visits', ['status' => 1]);
 
         $this->db->select('
     sv.*,
@@ -62,6 +114,7 @@ class SalesVisits extends CI_Controller
         $this->db->join('company_contacts cc', 'cc.contact_id = sv.person_met', 'left');
         $this->db->join('sales_users su', 'su.id = sv.user_id', 'left');
         $this->db->where('sv.status', 1);
+        $this->db->where('sv.is_deleted', 0);
         $this->db->order_by('sv.report_date', 'DESC');
 
         $data['sales_visits'] = $this->db->get()->result();
@@ -77,8 +130,8 @@ class SalesVisits extends CI_Controller
 
     public function add()
     {
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
+        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
         $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
 
 
@@ -91,11 +144,12 @@ class SalesVisits extends CI_Controller
         $this->db->join('sales_users su1', 'su1.id = a.primary_user_id', 'left');
         $this->db->join('sales_users su2', 'su2.id = a.secondary_user_id', 'left');
         $this->db->join('state s', 's.state_id = a.state_id', 'left'); // Assuming you have a states table
+        $this->db->where('a.is_deleted', 0);
         $query = $this->db->get();
         $data['areas'] = $query->result();
 
-        $data['roomtype'] = $this->Common_model->getAllData('roomtype', "");
-        $data['travel_modes'] = $this->Common_model->getAllData('travel_modes', "");
+        $data['roomtype'] = $this->Common_model->getAllData('roomtype', ['is_deleted' => 0]);
+        $data['travel_modes'] = $this->Common_model->getAllData('travel_modes', ['is_deleted' => 0]);
 
 
 
@@ -109,6 +163,12 @@ class SalesVisits extends CI_Controller
     /* ================= ADD SALES VISIT ================= */
     public function insert()
     {
+        $validationError = $this->validateSalesVisitFields();
+        if ($validationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $validationError]);
+            return;
+        }
+
         /* ===================== BASIC INPUTS ===================== */
         $property   = $this->decodeId($this->input->post('property'));
         $type       = $this->decodeId($this->input->post('type', true));
@@ -122,15 +182,20 @@ class SalesVisits extends CI_Controller
         /* ===================== PERSON MET DETAILS ===================== */
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet, 'is_deleted' => 0]
+            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]
         );
 
-        if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata)) {
+        $hotel_data = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property, 'is_deleted' => 0]);
+        $department_data = $this->Common_model->getdata('departments', ['department_id' => $type, 'is_deleted' => 0]);
+        $company = $this->Common_model->getdata('companies', ['company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]);
+        $travelModeData = empty($travelMode) ? true : $this->Common_model->getdata('travel_modes', ['id' => $travelMode, 'is_deleted' => 0]);
+
+        if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata) || empty($hotel_data) || empty($department_data) || empty($company) || empty($travelModeData)) {
             $this->jsonResponse(['status' => false, 'message' => 'Invalid sales visit selection']);
             return;
         }
 
-        $name          = $personMetdata->first_name . $personMetdata->last_name;
+        $name          = trim($personMetdata->first_name . ' ' . $personMetdata->last_name);
         $mobile_number = $personMetdata->mobile_number;
         $email         = $personMetdata->email;
 
@@ -138,9 +203,6 @@ class SalesVisits extends CI_Controller
         if ($this->input->method() === 'post') {
 
             /* ===================== HOTEL & DEPARTMENT ===================== */
-            $hotel_data      = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
-            $department_data = $this->Common_model->getdata('departments', ['department_id' => $type]);
-
             /* ===================== ESCALATION ===================== */
             $escalation_level_1 = $department_data->escalation_level_1;
 
@@ -441,17 +503,23 @@ class SalesVisits extends CI_Controller
                 'creator_user_role' => $assigned_role,
 
                 'status'             => 1,
+                'is_deleted'         => 0,
                 'created_at'         => date('Y-m-d H:i:s'),
                 'updated_at'         => date('Y-m-d H:i:s')
             ];
 
             $insert = $this->db->insert('sales_visits', $data);
+            $visitId = $insert ? $this->db->insert_id() : 0;
+
+            if ($visitId) {
+                $this->logActivity('create', $visitId, 'Created sales visit for company ID '.$companyId);
+            }
 
             /* ===================== VALUABLE GUEST CHECK ===================== */
             $valuableGuest = $this->db
                 ->select('id, disposition, amount')
                 ->from('leads')
-                ->where('phone_number', $phone)
+                ->where('phone_number', $mobile_number)
                 ->where('LOWER(disposition)', 'reservation')
                 ->where('amount >', 0)
                 ->order_by('id', 'DESC')
@@ -477,7 +545,10 @@ class SalesVisits extends CI_Controller
                 curl_close($ch);
             }
 
-            $this->jsonResponse(['status' => true, 'message' => 'Lead created successfully.']);
+            $this->jsonResponse([
+                'status' => (bool) $visitId,
+                'message' => $visitId ? 'Sales visit created successfully.' : 'Unable to create sales visit.'
+            ]);
         } else {
             show_404();
         }
@@ -493,24 +564,22 @@ class SalesVisits extends CI_Controller
             show_404();
         }
 
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
+        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
         $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
-        $data['roomtype'] = $this->Common_model->getAllData('roomtype', "");
-        $data['travel_modes'] = $this->Common_model->getAllData('travel_modes', "");
+        $data['roomtype'] = $this->Common_model->getAllData('roomtype', ['is_deleted' => 0]);
+        $data['travel_modes'] = $this->Common_model->getAllData('travel_modes', ['is_deleted' => 0]);
 
+        // Keep lead-specific fields available, but let the sales visit values win
+        // when both tables contain columns such as property, type or status.
         $this->db->select('
+    l.*,
     sv.*,
-
+    l.status AS lead_status,
     c.company_name,
-
     cc.first_name,
     cc.last_name,
-
-    su.full_name AS sales_user_name,
-
-    l.*,
-   
+    su.full_name AS sales_user_name
 ');
 
         $this->db->from('sales_visits sv');
@@ -523,10 +592,16 @@ class SalesVisits extends CI_Controller
         $this->db->join('leads l', 'l.id = sv.lead_id_againts_visit', 'left');
 
         $this->db->where('sv.status', 1);
+        $this->db->where('sv.is_deleted', 0);
         $this->db->where('sv.visit_id', $visit_id);
         $this->db->order_by('sv.report_date', 'DESC');
 
         $data['sales_visit'] = $this->db->get()->row();
+
+        if (empty($data['sales_visit'])) {
+            show_404();
+            return;
+        }
 
 
 
@@ -839,6 +914,8 @@ class SalesVisits extends CI_Controller
         $this->db->select('sv.*, c.company_name');
         $this->db->from('sales_visits sv');
         $this->db->join('companies c', 'c.company_id = sv.company_id', 'left');
+        $this->db->where('sv.status', 1);
+        $this->db->where('sv.is_deleted', 0);
         $this->db->order_by('sv.visit_id', 'DESC');
 
         $data['sales_visits'] = $this->db->get()->result();
@@ -853,6 +930,8 @@ class SalesVisits extends CI_Controller
         $id = $this->input->post('id');
 
         $this->db->where('visit_id', $id);
+        $this->db->where('status', 1);
+        $this->db->where('is_deleted', 0);
         $visit = $this->db->get('sales_visits')->row();
 
         if ($visit) {
@@ -876,9 +955,17 @@ class SalesVisits extends CI_Controller
             show_404();
         }
 
+        $validationError = $this->validateSalesVisitFields();
+        if ($validationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $validationError]);
+            return;
+        }
+
         $visit_id = $this->decodeId($visit_id);
         $sales_visit = $this->db
             ->where('visit_id', $visit_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
             ->get('sales_visits')
             ->row();
 
@@ -895,22 +982,24 @@ class SalesVisits extends CI_Controller
 
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet, 'is_deleted' => 0]
+            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]
         );
 
-        if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata)) {
+        $hotel_data = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property, 'is_deleted' => 0]);
+        $department_data = $this->Common_model->getdata('departments', ['department_id' => $type, 'is_deleted' => 0]);
+        $company = $this->Common_model->getdata('companies', ['company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]);
+        $travelModeData = empty($travelMode) ? true : $this->Common_model->getdata('travel_modes', ['id' => $travelMode, 'is_deleted' => 0]);
+
+        if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata) || empty($hotel_data) || empty($department_data) || empty($company) || empty($travelModeData)) {
             $this->jsonResponse(['status' => false, 'message' => 'Invalid sales visit selection']);
             return;
         }
 
-        $name          = $personMetdata->first_name . $personMetdata->last_name;
+        $name          = trim($personMetdata->first_name . ' ' . $personMetdata->last_name);
         $mobile_number = $personMetdata->mobile_number;
         $email         = $personMetdata->email;
 
         $lead_id = $sales_visit->lead_id_againts_visit;
-
-        $hotel_data      = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
-        $department_data = $this->Common_model->getdata('departments', ['department_id' => $type]);
 
         $escalation_level_1 = $department_data->escalation_level_1;
 
@@ -1091,7 +1180,18 @@ class SalesVisits extends CI_Controller
             'updated_at'         => date('Y-m-d H:i:s')
         ];
 
-        $this->db->where('visit_id', $visit_id)->update('sales_visits', $visitData);
+        $visitUpdated = $this->db
+            ->where('visit_id', $visit_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->update('sales_visits', $visitData);
+
+        if (!$visitUpdated) {
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update sales visit']);
+            return;
+        }
+
+        $this->logActivity('update', $visit_id, 'Updated sales visit for company ID '.$companyId);
 
         $this->jsonResponse([
             'status'  => true,
@@ -1108,25 +1208,41 @@ class SalesVisits extends CI_Controller
 
         if (empty($id)) {
             $this->jsonResponse([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Invalid visit ID'
             ]);
             return;
         }
 
-        $deleted = $this->db
+        $visit = $this->db
             ->where('visit_id', $id)
-            ->update('sales_visits', ['status' => 0]);
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->get('sales_visits')
+            ->row();
+
+        if (empty($visit)) {
+            $this->jsonResponse(['status' => false, 'message' => 'Sales visit not found or already deleted']);
+            return;
+        }
+
+        $deleteQuery = $this->db
+            ->where('visit_id', $id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->update('sales_visits', ['is_deleted' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+        $deleted = $deleteQuery && $this->db->affected_rows() === 1;
 
         if ($deleted) {
+            $this->logActivity('delete', $id, 'Soft deleted sales visit for company ID '.$visit->company_id);
             $this->jsonResponse([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Sales visit deleted successfully'
             ]);
         } else {
             $this->jsonResponse([
-                'status' => 'error',
-                'message' => 'Failed to delete sales visit'
+                'status' => false,
+                'message' => $deleteQuery ? 'Sales visit not found or already deleted' : 'Unable to delete sales visit'
             ]);
         }
     }
@@ -1140,6 +1256,7 @@ class SalesVisits extends CI_Controller
         $company = !empty($company_id)
             ? $this->Common_model->getdata('companies', [
                 'company_id' => $company_id,
+                'status' => 1,
                 'is_deleted' => 0
             ])
             : null;
@@ -1232,6 +1349,7 @@ class SalesVisits extends CI_Controller
         $this->db->join('leads l', 'l.id = sv.lead_id_againts_visit', 'left');
 
         $this->db->where('sv.status', 1);
+        $this->db->where('sv.is_deleted', 0);
         $this->db->where('sv.visit_id', $visit_id);
         $this->db->order_by('sv.report_date', 'DESC');
 

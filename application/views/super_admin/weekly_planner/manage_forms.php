@@ -1,18 +1,57 @@
-<!-- Content Wrapper -->
 <style>
     .error-label {
         font-size: 0.875rem;
         margin-top: 4px;
         display: none;
     }
-</style>
 
-<!-- Content Wrapper -->
-<style>
-    .error-label {
-        font-size: 0.875rem;
-        margin-top: 4px;
-        display: none;
+    #plannerModal .select2-container,
+    #editPlannerModal .select2-container {
+        width: 100% !important;
+    }
+
+    #plannerModal .select2-container .select2-selection--single,
+    #editPlannerModal .select2-container .select2-selection--single {
+        display: flex;
+        align-items: center;
+        height: 38px !important;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+    }
+
+    #plannerModal .select2-selection--single .select2-selection__rendered,
+    #editPlannerModal .select2-selection--single .select2-selection__rendered {
+        width: 100%;
+        padding: 0 42px 0 14px;
+        color: #4f4f5f;
+        line-height: 36px !important;
+    }
+
+    #plannerModal .select2-selection--single .select2-selection__arrow,
+    #editPlannerModal .select2-selection--single .select2-selection__arrow {
+        top: 0;
+        right: 10px;
+        height: 36px !important;
+    }
+
+    #plannerModal .select2-container--open .select2-selection--single,
+    #editPlannerModal .select2-container--open .select2-selection--single {
+        border-color: #9b87e8;
+        box-shadow: 0 0 0 2px rgba(155, 135, 232, 0.12);
+    }
+
+    #account_type + .select2-container,
+    #edit_account_type + .select2-container {
+        margin-bottom: 8px;
+    }
+
+    #plannerModal .select2-dropdown,
+    #editPlannerModal .select2-dropdown {
+        border-color: #d9d9d9;
+        border-radius: 6px;
+        overflow: hidden;
     }
 </style>
 
@@ -167,7 +206,7 @@
                                         <option value="">Select Company</option>
                                         <?php foreach ($companies as $c) { ?>
                                             <option value="<?= encrypt_id($c->company_id) ?>">
-                                                <?= $c->company_name ?>
+                                                <?= html_escape($c->company_name) ?>
                                             </option>
                                         <?php } ?>
                                     </select>
@@ -311,7 +350,7 @@
                                         <option value="">Select Company</option>
                                         <?php foreach ($companies as $c) { ?>
                                             <option value="<?= encrypt_id($c->company_id) ?>">
-                                                <?= $c->company_name ?>
+                                                <?= html_escape($c->company_name) ?>
                                             </option>
                                         <?php } ?>
                                     </select>
@@ -374,6 +413,7 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 <script>
@@ -422,6 +462,33 @@
         }
     }
 
+    function initializePlannerSelects() {
+        var addStatic = '#activity_type, #account_type, #other_activity';
+        var editStatic = '#edit_activity_type, #edit_account_type, #edit_other_activity';
+
+        if (!$.fn.select2) return;
+
+        $(addStatic).not('.select2-hidden-accessible').select2({
+            dropdownParent: $('#plannerModal'),
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        });
+        $('#company_id, #contact_id').not('.select2-hidden-accessible').select2({
+            dropdownParent: $('#plannerModal'),
+            width: '100%'
+        });
+
+        $(editStatic).not('.select2-hidden-accessible').select2({
+            dropdownParent: $('#editPlannerModal'),
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        });
+        $('#edit_company_id, #edit_contact_id').not('.select2-hidden-accessible').select2({
+            dropdownParent: $('#editPlannerModal'),
+            width: '100%'
+        });
+    }
+
     function ensureSelectValue(selector, value, label) {
         if (!value) return;
 
@@ -429,12 +496,13 @@
             $(selector).append(new Option(label || 'Selected', value, true, true));
         }
 
-        $(selector).val(value);
+        $(selector).val(value).trigger('change.select2');
     }
 
     function loadPlannerContacts(companySelector, contactSelector, selectedContact) {
         let company_id = $(companySelector).val();
-        $(contactSelector).html('<option value="">Loading...</option>');
+        let $contact = $(contactSelector);
+        $contact.empty().append(new Option('Loading...', '')).trigger('change.select2');
 
         if (company_id !== '') {
             $.ajax({
@@ -448,28 +516,35 @@
                 success: function(res) {
                     refreshCsrf(res);
 
-                    let options = '<option value="">Select Person</option>';
+                    $contact.empty().append(new Option('Select Person', ''));
 
                     if (res.status === 'success') {
                         $.each(res.data, function(i, row) {
-                            let selected = selectedContact && row.contact_id == selectedContact ? 'selected' : '';
-                            options += `<option ${selected} value="${row.contact_id}">
-                                ${row.first_name} ${row.last_name} (${row.mobile_number})
-                            </option>`;
+                            let contactName = $.trim(row.first_name + ' ' + row.last_name);
+                            let label = contactName + (row.mobile_number ? ' (' + row.mobile_number + ')' : '');
+                            let selected = selectedContact && row.contact_id == selectedContact;
+                            $contact.append(new Option(label, row.contact_id, false, selected));
                         });
                     } else {
-                        options += '<option value="">No contacts found</option>';
+                        $contact.append(new Option('No contacts found', ''));
                     }
 
-                    $(contactSelector).html(options);
+                    $contact.trigger('change.select2');
+                },
+                error: function(xhr) {
+                    let response = xhr.responseJSON || {};
+                    refreshCsrf(response);
+                    $contact.empty().append(new Option('Unable to load contacts', '')).trigger('change.select2');
+                    toastr.error(response.message || 'Unable to load company contacts');
                 }
             });
         } else {
-            $(contactSelector).html('<option value="">Select Person</option>');
+            $contact.empty().append(new Option('Select Person', '')).trigger('change.select2');
         }
     }
 
     $(document).ready(function() {
+        initializePlannerSelects();
 
         $('#company_id').change(function() {
             loadPlannerContacts('#company_id', '#contact_id');
@@ -482,6 +557,8 @@
         $('#open-add-modal').click(function() {
 
             $('#plannerForm')[0].reset();
+            $('#plannerForm select').val('').trigger('change.select2');
+            $('#contact_id').empty().append(new Option('Select Person', '')).trigger('change.select2');
             $('#planner_id').val('');
             $('#modalTitle').text('Add Weekly Planner');
             $('#visit_section, #other_section, #existing_section, #new_section').hide();
@@ -541,25 +618,39 @@
 
 
     $(document).on('click', '.delete-weekly-planner', function() {
-
         let id = $(this).data('record_id');
 
-        if (!confirm('Are you sure you want to delete this weekly planner record?')) return;
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This planner will be removed from the active weekly planner list.',
+            icon: 'question',
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Yes Delete it',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
 
-        $.ajax({
-            url: "<?= base_url('superAdmin/WeeklyPlanner/delete') ?>",
-            type: "POST",
-            data: csrfData({
-                id: id
-            }),
-            dataType: "json",
-            success: function(response) {
-                refreshCsrf(response);
-                if (response.status === 'success') {
-                    toastr.success(response.message);
-                    fetchPlannerTable();
+            $.ajax({
+                url: "<?= base_url('superAdmin/WeeklyPlanner/delete') ?>",
+                type: "POST",
+                data: csrfData({ id: id }),
+                dataType: "json",
+                success: function(response) {
+                    refreshCsrf(response);
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                        fetchPlannerTable();
+                    } else {
+                        toastr.error(response.message || 'Delete failed');
+                    }
+                },
+                error: function(xhr) {
+                    let response = xhr.responseJSON || {};
+                    refreshCsrf(response);
+                    toastr.error(response.message || 'Unable to delete weekly planner');
                 }
-            }
+            });
         });
     });
 
@@ -599,12 +690,12 @@
 
                         $('#edit_id').val(d.id);
                         $('#edit_planner_date').val(d.planner_date);
-                        $('#edit_activity_type').val(d.activity_type);
-                        $('#edit_account_type').val(d.account_type);
+                        $('#edit_activity_type').val(d.activity_type).trigger('change.select2');
+                        $('#edit_account_type').val(d.account_type).trigger('change.select2');
                         ensureSelectValue('#edit_company_id', d.company_id, d.company_name);
                         $('#edit_new_person_name').val(d.new_person_name);
                         $('#edit_new_person_mobile').val(d.new_person_mobile);
-                        $('#edit_other_activity').val(d.other_activity);
+                        $('#edit_other_activity').val(d.other_activity).trigger('change.select2');
                         $('#edit_description').val(d.description);
 
                         $('#edit_visit_section, #edit_other_section').hide();

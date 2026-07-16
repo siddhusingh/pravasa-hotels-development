@@ -2,22 +2,6 @@
     #category-crud-modal .select2-container { width: 100% !important; }
     #category-crud-modal .select2-selection--single { height: 38px; padding: 5px 8px; }
     #category-crud-modal .select2-selection__arrow { height: 36px; }
-    #category-crud-modal .select2-search--dropdown { padding: 8px; }
-    #category-crud-modal .select2-search--dropdown .select2-search__field {
-        height: 48px;
-        padding: 10px 14px;
-        border: 1px solid #d9d9d9;
-        border-radius: 8px;
-        background-color: #fff;
-        color: #1f1f2e;
-        font-size: 16px;
-        outline: none;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-    }
-    #category-crud-modal .select2-search--dropdown .select2-search__field:focus {
-        border-color: #9b87e8;
-        box-shadow: 0 0 0 2px rgba(155, 135, 232, 0.15);
-    }
 </style>
 
 <div class="content-wrapper">
