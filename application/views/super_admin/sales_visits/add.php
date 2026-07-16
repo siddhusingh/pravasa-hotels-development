@@ -840,7 +840,9 @@
             /* ========== SALES VISIT DATA ========== */
             formData.append('report_date', report_date);
             formData.append('company_id', company_id);
-            formData.append('person_met', person_met);
+            $.each(person_met, function(i, value) {
+    formData.append('person_met[]', value);
+});
             formData.append('agenda', agenda);
             formData.append('discussion_summary', discussion_summary);
             formData.append('conclusion', conclusion);
@@ -928,40 +930,60 @@
 </script>
 
 <script>
-    $('#company_id').change(function() {
-        let company_id = $(this).val();
+    $('#company_id').change(function () {
 
-        $('#person_met').html('<option value="">Loading...</option>');
+    let company_id = $(this).val();
 
-        if (company_id !== '') {
-            $.ajax({
-                url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
-                type: "POST",
-                data: csrfData({
-                    company_id: company_id
-                }),
-                dataType: "json",
-                success: function(res) {
-                    refreshCsrf(res);
-                    let options = '<option value="">Select Person</option>';
+    if (company_id != '') {
 
-                    if (res.status === 'success') {
-                        $.each(res.data, function(i, row) {
-                            options += `<option value="${row.contact_id}">
-                                            ${row.first_name} ${row.last_name} (${row.mobile_number})
-                                        </option>`;
-                        });
-                    } else {
-                        options += '<option value="">No contacts found</option>';
-                    }
+        $.ajax({
 
-                    $('#person_met').html(options);
+            url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
+            type: "POST",
+            data: csrfData({
+                company_id: company_id
+            }),
+            dataType: "json",
+
+            success: function (res) {
+
+                refreshCsrf(res);
+
+                let options = '';
+
+                if (res.status == 'success') {
+
+                    $.each(res.data, function(i,row){
+
+                        options += `
+                        <option value="${row.contact_id}">
+                            ${row.first_name} ${row.last_name} (${row.mobile_number})
+                        </option>`;
+                    });
+
                 }
-            });
-        } else {
-            $('#person_met').html('<option value="">Select Person</option>');
-        }
-    });
+
+                $('#person_met').multiselect('destroy');
+
+                $('#person_met').html(options);
+
+                initMultiCheckbox('#person_met');
+
+            }
+
+        });
+
+    } else {
+
+        $('#person_met').multiselect('destroy');
+
+        $('#person_met').html('');
+
+        initMultiCheckbox('#person_met');
+
+    }
+
+});
 
 
 
