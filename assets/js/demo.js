@@ -221,11 +221,11 @@ jQuery("#radio2").click(function () {
       + '</label>'
       + '<label>'      
       + '<input type="radio" id="radio2" name="" />'
-      + '<img class="model_img me-10" src="../../../crm/images/light-layout.png"/>'
+      // + '<img class="model_img me-10" src="../../assets/images/light-layout.png"/>'
       + '</label>'      
       + '<label>'
       + '<input type="radio" id="radio1" name=""/>'
-      + '<img class="model_img" src="../../../crm/images/dark-layout.png"/>'
+      // + '<img class="model_img" src="../../../assets/images/dark-layout.png"/>'
       + '</label>'  
     + '</div>'  
   )
@@ -251,11 +251,11 @@ jQuery("#radio2").click(function () {
       + '</label>'
       + '<label>'      
         + '<input type="radio" id="rtl-button" name="" />'
-        + '<img class="model_img me-10" src="../../../crm/images/rtl-layout.png"/>'
+        // + '<img class="model_img me-10" src="../../../assets/images/rtl-layout.png"/>'
       + '</label>'      
       + '<label>'
         + '<input type="radio" id="ltr-button" name=""/>'
-        + '<img class="model_img" src="../../../crm/images/ltr-layout.png"/>'
+        // + '<img class="model_img" src="../../../assets/images/ltr-layout.png"/>'
       + '</label>'    
     + '</div>'
   )
@@ -359,12 +359,16 @@ $(function () {
   const pinTitle = document.querySelector(".pin-title");
   let pinIcon = document.querySelectorAll(".sidebar-menu .fa-thumb-tack");
   function togglePinnedName() {
+    if (!pinTitle) return;
+
     if (document.getElementsByClassName("pined").length) {
-      if (!pinTitle.classList.contains("show")) pinTitle.classList.add("show");
+        if (!pinTitle.classList.contains("show")) {
+            pinTitle.classList.add("show");
+        }
     } else {
-      pinTitle.classList.remove("show");
+        pinTitle.classList.remove("show");
     }
-  }
+}
 
   pinIcon.forEach((item, index) => {
     var linkName = item.parentNode.querySelector("span").innerHTML;

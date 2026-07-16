@@ -62,246 +62,246 @@ $(function () {
     // data for the sparklines that appear below header area
     var sparklineData = [47, 45, 54, 38, 56, 24, 65, 31, 37, 39, 62, 51, 35, 41, 35, 27, 93, 53, 61, 27, 54, 43, 19, 46];
     
-    var spark1 = {
-      chart: {
-      id: 'spark1',
-      group: 'sparks',
-      type: 'area',
-      height: 160,
-      sparkline: {
-        enabled: true
-      },
-      dropShadow: {
-        enabled: true,
-        top: 1,
-        left: 1,
-        blur: 2,
-        opacity: 0.2,
-      }
-      },
-      series: [{
-      data: randomizeArray(sparklineData)
-      }],
-      stroke: {
-      curve: 'smooth'
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 0.5,
-          inverseColors: false,
-          opacityFrom: 0.8,
-          opacityTo: 0,
-          stops: [0, 100]
-        },
-      },
-      markers: {
-      size: 0
-      },
-      grid: {
-      padding: {
-        top: 10,
-        bottom: 10,
-        left: 0
-      }
-      },
-      tooltip: {
-      x: {
-        show: false
-      },
-      y: {
-        title: {
-        formatter: function formatter(val) {
-          return '';
-        }
-        }
-      }
-      }
-    }
+    // var spark1 = {
+    //   chart: {
+    //   id: 'spark1',
+    //   group: 'sparks',
+    //   type: 'area',
+    //   height: 160,
+    //   sparkline: {
+    //     enabled: true
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 1,
+    //     left: 1,
+    //     blur: 2,
+    //     opacity: 0.2,
+    //   }
+    //   },
+    //   series: [{
+    //   data: randomizeArray(sparklineData)
+    //   }],
+    //   stroke: {
+    //   curve: 'smooth'
+    //   },
+    //   fill: {
+    //     type: 'gradient',
+    //     gradient: {
+    //       shadeIntensity: 0.5,
+    //       inverseColors: false,
+    //       opacityFrom: 0.8,
+    //       opacityTo: 0,
+    //       stops: [0, 100]
+    //     },
+    //   },
+    //   markers: {
+    //   size: 0
+    //   },
+    //   grid: {
+    //   padding: {
+    //     top: 10,
+    //     bottom: 10,
+    //     left: 0
+    //   }
+    //   },
+    //   tooltip: {
+    //   x: {
+    //     show: false
+    //   },
+    //   y: {
+    //     title: {
+    //     formatter: function formatter(val) {
+    //       return '';
+    //     }
+    //     }
+    //   }
+    //   }
+    // }
 
-    var spark2 = {
-      chart: {
-      id: 'spark2',
-      group: 'sparks',
-      type: 'area',
-      height: 160,
-      sparkline: {
-        enabled: true
-      },
-      dropShadow: {
-        enabled: true,
-        top: 1,
-        left: 1,
-        blur: 2,
-        opacity: 0.2,
-      }
-      },
-      series: [{
-      data: randomizeArray(sparklineData)
-      }],
-      stroke: {
-      curve: 'smooth'
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 0.5,
-          inverseColors: false,
-          opacityFrom: 0.8,
-          opacityTo: 0,
-          stops: [0, 100]
-        },
-      },
-      grid: {
-      padding: {
-        top: 10,
-        bottom: 10,
-        left: 0
-      }
-      },
-      markers: {
-      size: 0
-      },
-      colors: ['#ff9920'],
-      tooltip: {
-      x: {
-        show: false
-      },
-      y: {
-        title: {
-        formatter: function formatter(val) {
-          return '';
-        }
-        }
-      }
-      }
-    }
+    // var spark2 = {
+    //   chart: {
+    //   id: 'spark2',
+    //   group: 'sparks',
+    //   type: 'area',
+    //   height: 160,
+    //   sparkline: {
+    //     enabled: true
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 1,
+    //     left: 1,
+    //     blur: 2,
+    //     opacity: 0.2,
+    //   }
+    //   },
+    //   series: [{
+    //   data: randomizeArray(sparklineData)
+    //   }],
+    //   stroke: {
+    //   curve: 'smooth'
+    //   },
+    //   fill: {
+    //     type: 'gradient',
+    //     gradient: {
+    //       shadeIntensity: 0.5,
+    //       inverseColors: false,
+    //       opacityFrom: 0.8,
+    //       opacityTo: 0,
+    //       stops: [0, 100]
+    //     },
+    //   },
+    //   grid: {
+    //   padding: {
+    //     top: 10,
+    //     bottom: 10,
+    //     left: 0
+    //   }
+    //   },
+    //   markers: {
+    //   size: 0
+    //   },
+    //   colors: ['#ff9920'],
+    //   tooltip: {
+    //   x: {
+    //     show: false
+    //   },
+    //   y: {
+    //     title: {
+    //     formatter: function formatter(val) {
+    //       return '';
+    //     }
+    //     }
+    //   }
+    //   }
+    // }
 
-    var spark3 = {
-      chart: {
-      id: 'spark3',
-      group: 'sparks',
-      type: 'area',
-      height: 160,
-      sparkline: {
-        enabled: true
-      },
-      dropShadow: {
-        enabled: true,
-        top: 1,
-        left: 1,
-        blur: 2,
-        opacity: 0.2,
-      }
-      },
-      series: [{
-      data: randomizeArray(sparklineData)
-      }],
-      stroke: {
-      curve: 'smooth'
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 0.5,
-          inverseColors: false,
-          opacityFrom: 0.8,
-          opacityTo: 0,
-          stops: [0, 100]
-        },
-      },
-      markers: {
-      size: 0
-      },
-      grid: {
-      padding: {
-        top: 10,
-        bottom: 10,
-        left: 0
-      }
-      },
-      colors: ['#fc696a'],
-      xaxis: {
-      crosshairs: {
-        width: 1
-      },
-      },
-      tooltip: {
-      x: {
-        show: false
-      },
-      y: {
-        title: {
-        formatter: function formatter(val) {
-          return '';
-        }
-        }
-      }
-      }
-    }
+    // var spark3 = {
+    //   chart: {
+    //   id: 'spark3',
+    //   group: 'sparks',
+    //   type: 'area',
+    //   height: 160,
+    //   sparkline: {
+    //     enabled: true
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 1,
+    //     left: 1,
+    //     blur: 2,
+    //     opacity: 0.2,
+    //   }
+    //   },
+    //   series: [{
+    //   data: randomizeArray(sparklineData)
+    //   }],
+    //   stroke: {
+    //   curve: 'smooth'
+    //   },
+    //   fill: {
+    //     type: 'gradient',
+    //     gradient: {
+    //       shadeIntensity: 0.5,
+    //       inverseColors: false,
+    //       opacityFrom: 0.8,
+    //       opacityTo: 0,
+    //       stops: [0, 100]
+    //     },
+    //   },
+    //   markers: {
+    //   size: 0
+    //   },
+    //   grid: {
+    //   padding: {
+    //     top: 10,
+    //     bottom: 10,
+    //     left: 0
+    //   }
+    //   },
+    //   colors: ['#fc696a'],
+    //   xaxis: {
+    //   crosshairs: {
+    //     width: 1
+    //   },
+    //   },
+    //   tooltip: {
+    //   x: {
+    //     show: false
+    //   },
+    //   y: {
+    //     title: {
+    //     formatter: function formatter(val) {
+    //       return '';
+    //     }
+    //     }
+    //   }
+    //   }
+    // }
 
-    var spark4 = {
-      chart: {
-      id: 'spark4',
-      group: 'sparks',
-      type: 'area',
-      height: 160,
-      sparkline: {
-        enabled: true
-      },
-      dropShadow: {
-        enabled: true,
-        top: 1,
-        left: 1,
-        blur: 2,
-        opacity: 0.2,
-      }
-      },
-      series: [{
-      data: randomizeArray(sparklineData)
-      }],
-      stroke: {
-      curve: 'smooth'
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 0.5,
-          inverseColors: false,
-          opacityFrom: 0.8,
-          opacityTo: 0,
-          stops: [0, 100]
-        },
-      },
-      markers: {
-      size: 0
-      },
-      grid: {
-      padding: {
-        top: 10,
-        bottom: 10,
-        left:0
-      }
-      },
-      colors: ['#198754'],
-      xaxis: {
-      crosshairs: {
-        width: 1
-      },
-      },
-      tooltip: {
-      x: {
-        show: false
-      },
-      y: {
-        title: {
-        formatter: function formatter(val) {
-          return '';
-        }
-        }
-      }
-      }
-    }
+    // var spark4 = {
+    //   chart: {
+    //   id: 'spark4',
+    //   group: 'sparks',
+    //   type: 'area',
+    //   height: 160,
+    //   sparkline: {
+    //     enabled: true
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 1,
+    //     left: 1,
+    //     blur: 2,
+    //     opacity: 0.2,
+    //   }
+    //   },
+    //   series: [{
+    //   data: randomizeArray(sparklineData)
+    //   }],
+    //   stroke: {
+    //   curve: 'smooth'
+    //   },
+    //   fill: {
+    //     type: 'gradient',
+    //     gradient: {
+    //       shadeIntensity: 0.5,
+    //       inverseColors: false,
+    //       opacityFrom: 0.8,
+    //       opacityTo: 0,
+    //       stops: [0, 100]
+    //     },
+    //   },
+    //   markers: {
+    //   size: 0
+    //   },
+    //   grid: {
+    //   padding: {
+    //     top: 10,
+    //     bottom: 10,
+    //     left:0
+    //   }
+    //   },
+    //   colors: ['#198754'],
+    //   xaxis: {
+    //   crosshairs: {
+    //     width: 1
+    //   },
+    //   },
+    //   tooltip: {
+    //   x: {
+    //     show: false
+    //   },
+    //   y: {
+    //     title: {
+    //     formatter: function formatter(val) {
+    //       return '';
+    //     }
+    //     }
+    //   }
+    //   }
+    // }
 
     
 
@@ -657,12 +657,16 @@ $(function () {
         }]
       };
 
-    zingchart.render({
-      id: 'myChart',
-      data: myConfig,
-      height: 305,
-      width: '100%'
-    });
+//    if (typeof zingchart !== "undefined") {
+
+//     zingchart.render({
+//         id:'myChart',
+//         data:myConfig,
+//         height:305,
+//         width:'100%'
+//     });
+
+// }
   
   
   
@@ -826,77 +830,72 @@ $(function () {
   
   
   
-  var ts2 = 1484418600000;
-      var dates = [];
-      var spikes = [5, -5, 3, -3, 8, -8]
-      for (var i = 0; i < 120; i++) {
-        ts2 = ts2 + 86400000;
-        var innerArr = [ts2, dataSeries[1][i].value];
-        dates.push(innerArr)
-      }
+  // var ts2 = 1484418600000;
+  //     var dates = [];
+  //     var spikes = [5, -5, 3, -3, 8, -8]
+  //     for (var i = 0; i < 120; i++) {
+  //       ts2 = ts2 + 86400000;
+  //       // var innerArr = [ts2, dataSeries[1][i].value];
+  //       // dates.push(innerArr)
+  //     }
 
-      var options = {
-        chart: {
-        type: 'area',
-        stacked: false,
-        height: 268,
-        zoom: {
-          type: 'x',
-          enabled: true
-        },
-        toolbar: {
-          autoSelected: 'zoom'
-        }
-        },
-        dataLabels: {
-        enabled: false
-        },
-        series: [{
-        name: 'Stock',
-        data: dates
-        }],
-        markers: {
-        size: 0,
-        },
-        fill: {
-        gradient: {
-          enabled: true,
-          shadeIntensity: 1,
-          inverseColors: false,
-          opacityFrom: 0.9,
-          opacityTo: 0.2,
-          stops: [0, 90, 100]
-        },
-        },
-        yaxis: {
-        min: 20000000,
-        max: 250000000,
-        labels: {
-          formatter: function (val) {
-          return (val / 1000000).toFixed(0);
-          },
-        },
-        },
+  //     var options = {
+  //       chart: {
+  //       type: 'area',
+  //       stacked: false,
+  //       height: 268,
+  //       zoom: {
+  //         type: 'x',
+  //         enabled: true
+  //       },
+  //       toolbar: {
+  //         autoSelected: 'zoom'
+  //       }
+  //       },
+  //       dataLabels: {
+  //       enabled: false
+  //       },
+  //       series: [{
+  //       name: 'Stock',
+  //       data: dates
+  //       }],
+  //       markers: {
+  //       size: 0,
+  //       },
+  //       fill: {
+  //       gradient: {
+  //         enabled: true,
+  //         shadeIntensity: 1,
+  //         inverseColors: false,
+  //         opacityFrom: 0.9,
+  //         opacityTo: 0.2,
+  //         stops: [0, 90, 100]
+  //       },
+  //       },
+  //       yaxis: {
+  //       min: 20000000,
+  //       max: 250000000,
+  //       labels: {
+  //         formatter: function (val) {
+  //         return (val / 1000000).toFixed(0);
+  //         },
+  //       },
+  //       },
         
-        xaxis: {
-        type: 'datetime',
-        },
+  //       xaxis: {
+  //       type: 'datetime',
+  //       },
         
         
-        tooltip: {
-        shared: false,
-        y: {
-          formatter: function (val) {
-          return (val / 1000000).toFixed(0)
-          }
-        }
-        }
-      }
-
-    
-  
-  
-  
+  //       tooltip: {
+  //       shared: false,
+  //       y: {
+  //         formatter: function (val) {
+  //         return (val / 1000000).toFixed(0)
+  //         }
+  //       }
+  //       }
+  //     }
   
   am4core.ready(function() {
 

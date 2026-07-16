@@ -157,7 +157,7 @@ $profile_data = $this->Comman_model->get_single_record('super_admin', ['id' => $
 .profile_drawer .modal-body{
     position: relative;
     height: 100%;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     padding: 20px;
     background:
     radial-gradient(circle at top right,#F8F5FF 0%,#ffffff 45%);
@@ -541,7 +541,7 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
 <script src="<?php echo base_url('assets/') ?>/js/vendors.min.js"></script>
 
 <!-- ✅ Flot Charts (before dashboard.js to avoid $.plot error) -->
-<script src="<?php echo base_url('assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
+<script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.resize.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.pie.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.categories.js"></script>
@@ -552,9 +552,22 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
 <script src="<?php echo base_url('assets/assets/') ?>icons/feather-icons/feather.min.js"></script>
 
 <!-- ✅ AmCharts (optional if used in dashboard) -->
-<script src="<?php echo base_url('assets/') ?>/lib/4/core.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/maps.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/themes/animated.js"></script>
+<!-- <script src="<?php echo base_url('assets') ?>/lib/4/core.js"></script>
+<script src="<?php echo base_url('assets') ?>/lib/4/maps.js"></script>
+<script src="<?php echo base_url('assets') ?>/lib/4/charts.js"></script>
+<script src="<?php echo base_url('assets') ?>/lib/4/themes/animated.js"></script>
+<script src="<?php echo base_url('assets') ?>/lib/4/geodata/worldLow.js"></script>
+<script src="<?php echo base_url('assets') ?>/lib/4/themes/dataviz.js"></script> -->
+
+<script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
+
+<script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
+
+<script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/dataviz.js"></script>
+
 
 <!-- ✅ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -579,6 +592,10 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
 
 <script>
    $(document).ready(function() {
@@ -595,6 +612,7 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
       });
    });
 </script>
+
 
 
 
