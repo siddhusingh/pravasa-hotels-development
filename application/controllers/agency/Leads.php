@@ -235,6 +235,7 @@ class Leads extends CI_Controller
                 ->where('phone_number', $phone)
                 ->where('created_at >=', $twoHoursAgo)
                 ->where('status !=', 'Closed')
+                ->where('is_deleted', 0)
                 ->order_by('id', 'DESC')
                 ->get('leads')
                 ->row();
@@ -269,6 +270,7 @@ class Leads extends CI_Controller
             $valuableGuest = $this->db
                 ->select('id, disposition, amount')  // revenue_amount = your amount column
                 ->from('leads')
+                ->where('is_deleted', 0)
                 ->where('phone_number', $phone)
                 ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
                 ->where('amount >', 0)                // has revenue

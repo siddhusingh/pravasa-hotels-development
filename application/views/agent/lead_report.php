@@ -2721,7 +2721,7 @@ ${data.bill_attachment ? `
 
         Swal.fire({
             title: "Are you sure?",
-            text: "This lead will be permanently deleted!",
+            text: "This lead will be removed from active leads.",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",

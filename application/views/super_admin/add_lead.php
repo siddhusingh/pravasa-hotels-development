@@ -8,7 +8,7 @@
         <div class="custom-page-header">
             <div class="header-left">
                 <div class="header-icon-box">
-                    <i class="fa fa-"></i>
+                    <i class="fa fa-phone-volume" aria-hidden="true"></i>
                 </div>
                 <div class="header-content">
                     <h2 class="header-title">Create New Lead</h2>
@@ -41,13 +41,13 @@
                             <div class="container mt-1">
                                 <!-- Include Bootstrap & FontAwesome CDN (if not already included) -->
 
-                                <form id="leadForm">
+                                <form id="leadForm" novalidate>
                                     <div class="row g-3">
 
                                         <!-- Phone Number -->
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number</label>
+                                                <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number <span class="required-marker">*</span></label>
                                                 <input type="number" name="phone_number" id="phone_number" class="form-control" placeholder="Enter phone number" required
                                                     value="<?php if (!empty($_GET['phone'])) {
                                                                 echo $_GET['phone'];
@@ -59,7 +59,7 @@
                                         <!-- Username -->
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name</label>
+                                                <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name <span class="required-marker" id="guestNameRequiredMarker">*</span></label>
                                                 <input type="text" name="username" id="username" class="form-control" placeholder="Enter username">
                                                 <span id="username_error" class="text-danger small"></span>
                                             </div>
@@ -86,7 +86,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="property">
-                                                    <i class="fa fa-hotel me-1 text-danger"></i>Hotel (Property)
+                                                    <i class="fa fa-hotel me-1 text-danger"></i>Hotel (Property) <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select name="property" id="property" class="form-control" required>
@@ -110,7 +110,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="type">
-                                                    <i class="fa fa-sitemap me-1 text-muted"></i>Department (Type)
+                                                    <i class="fa fa-sitemap me-1 text-muted"></i>Department (Type) <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select name="type" id="type" class="form-control" required>
@@ -179,7 +179,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="user_channel">
-                                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source
+                                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select name="user_channel" id="user_channel" class="form-control">
@@ -235,7 +235,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="disposition">
-                                                    <i class="fa fa-list me-1 text-dark"></i>Stage
+                                                    <i class="fa fa-list me-1 text-dark"></i>Stage <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select class="form-control" name="disposition" id="disposition">
@@ -258,7 +258,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status</label>
+                                                <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status <span class="required-marker">*</span></label>
                                                 <input type="hidden" id="leadDepartment" name="leadDepartment">
                                                 <select name="lead_status" id="lead_status" class="form-control" disabled>
                                                     <option value="Open" selected>Open</option>
@@ -273,7 +273,7 @@
 
 
 
-                                        <div id="dynamicFields" class="row g3"></div>
+                                        <div id="dynamicFields" class="row g-3"></div>
 
 
 
@@ -281,7 +281,7 @@
                                         <!-- Query -->
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="query"><i class="fa fa-question-circle me-1 text-primary"></i>Query</label>
+                                                <label for="query"><i class="fa fa-question-circle me-1 text-primary"></i>Query <span class="required-marker">*</span></label>
                                                 <textarea name="query" id="query" class="form-control" rows="1" placeholder="Enter query" required></textarea>
                                                 <span id="query_error" class="text-danger small"></span>
                                             </div>
@@ -338,25 +338,148 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <style>
-    .select2-dropdown .table-option {
-        display: flex;
+    /* The shared new_table_box style sets label icons to white. Keep them visible here. */
+    .box.new_table_box #leadForm .form-group label i.fa {
+        color: #8f79e8 !important;
+        display: inline-block;
+        width: 18px;
+        margin-right: 6px !important;
+        text-align: center;
+    }
+
+    #leadForm .required-marker {
+        color: #dc3545;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    #leadForm .select2-container--default .select2-selection--single {
+        height: 46px !important;
+        padding: 11px 14px;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        background-color: #fff !important;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px !important;
+    }
+
+    #leadForm .select2-container--default .select2-selection--single .select2-selection__rendered {
+        margin-top: 0;
+        line-height: 22px;
+    }
+
+    #leadForm .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px;
+    }
+
+    #leadForm .table-multiselect-source {
+        display: none !important;
+    }
+
+    #leadForm .table-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #leadForm .table-multiselect-toggle {
         align-items: center;
-        gap: 0.5rem;
-        padding-right: 0.5rem;
+        background: #fff !important;
+        border: 1px solid #b8c0cc !important;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057 !important;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
     }
 
-    .select2-dropdown .table-checkbox {
-        pointer-events: auto;
+    #leadForm .table-multiselect-source.is-invalid + .table-multiselect .table-multiselect-toggle {
+        border-color: #dc3545 !important;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-toggle,
+    #leadForm .table-multiselect-toggle:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+        outline: 0;
+    }
+
+    #leadForm .table-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #leadForm .table-multiselect-menu {
+        background: #d2d2d2;
+        border: 1px solid #c5c5c5;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1055;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-menu {
+        display: block;
+    }
+
+    #leadForm .table-multiselect-option {
+        align-items: center;
         cursor: pointer;
+        display: flex;
+        gap: 9px;
         margin: 0;
+        padding: 8px 12px;
     }
 
-    .select2-container--default .select2-results__option[aria-selected="true"] .table-checkbox {
-        accent-color: #0d6efd;
+    #leadForm .table-multiselect-option:hover {
+        background: rgba(255, 255, 255, 0.35);
     }
 
-    .select2-container--default .select2-results__option[aria-selected="true"] {
-        background-color: rgba(13, 110, 253, 0.08);
+    #leadForm .table-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #leadForm .table-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #leadForm .table-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
     }
 </style>
 
@@ -380,7 +503,35 @@
     }
 </script>
 <script>
+    function initializeSingleSelect2(scope) {
+        const $scope = scope ? $(scope) : $('#leadForm');
+        const $selects = $scope.is('select')
+            ? $scope.filter('select:not([multiple])')
+            : $scope.find('select:not([multiple])');
+
+        $selects.each(function() {
+            const $select = $(this);
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                $select.select2({
+                    width: '100%'
+                });
+            }
+
+            if ($select.is('#property, #type, #disposition')) {
+                $select
+                    .off('.leadDynamicFields')
+                    .on(
+                        'change.leadDynamicFields select2:select.leadDynamicFields select2:clear.leadDynamicFields',
+                        scheduleDynamicFieldsRefresh
+                    );
+            }
+        });
+    }
+
     $(document).ready(function() {
+
+        initializeSingleSelect2('#leadForm');
 
         // Username
         $('#username').focusout(function() {
@@ -495,27 +646,14 @@
     });
 
 
-    $("#disposition").change(function() {
+    let dynamicFieldsRefreshTimer = null;
 
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
-
-    $("#type").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
-
-    $("#property").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
-
+    function scheduleDynamicFieldsRefresh() {
+        clearTimeout(dynamicFieldsRefreshTimer);
+        dynamicFieldsRefreshTimer = setTimeout(function() {
+            updateDynamicFields("");
+        }, 0);
+    }
 
     $(document).on('change', '#assigned_to', function() {
 
@@ -626,6 +764,10 @@
     }
 
     function resetDynamicFields() {
+        $('#dynamicFields select.select2-hidden-accessible:not([multiple])').each(function() {
+            $(this).select2('destroy');
+        });
+
         if ($('#table_id').length && $('#table_id').hasClass('select2-hidden-accessible')) {
             $('#table_id').select2('destroy');
         }
@@ -638,6 +780,7 @@
     function updateDynamicFields(data = "") {
 
         const disposition = $("#disposition").val();
+        $('#guestNameRequiredMarker').toggle(disposition !== 'Not Contacted');
         let property = $("#property").val();
         let department = normalizeDepartmentName($('#type').find(':selected').data('name'));
         let department_id = $('#type').val();
@@ -686,7 +829,7 @@
 
 
             <div class="col-md-3 mb-3">
-                <label class="form-label">Reason</label>
+                <label class="form-label">Reason <span class="required-marker">*</span></label>
                 <select name="reason" class="form-select filter-input" id="reason" required>
                     <option value="">Select Reason</option>
                     <option value="Budget Issue">Budget Issue</option>
@@ -931,9 +1074,9 @@
 
                 loadSlotTypes(existingLeadData);
 
-                // Initialize Select2 for tables (as fallback)
+                // Initialize the checkbox multi-select for tables.
                 setTimeout(() => {
-                    initializeTableSelect2();
+                    initializeTableMultiSelect();
                 }, 100);
             }
 
@@ -1145,12 +1288,12 @@
             }
 
             container.append(`
-                <div class="col-md-4 mb-3">
+                <div class="col-md-4 mt-3 mb-4">
         <label class="form-label">Follow-up Date</label>
         <input type="date" name="followup_date" class="form-control">
     </div>
 
-    <div class="col-md-4 mb-3">
+    <div class="col-md-4 mt-3 mb-4">
         <label class="form-label">2nd Follow-up Date</label>
         <input type="date" name="second_followup_date" class="form-control">
     </div>
@@ -1216,7 +1359,17 @@
             }
         }
 
+        initializeSingleSelect2(container);
+        container.find('select:not([multiple])').trigger('change.select2');
+        $('#lead_status').trigger('change.select2');
+
     }
+
+    $(document).ajaxComplete(function() {
+        const $singleDynamicSelects = $('#dynamicFields select:not([multiple])');
+        initializeSingleSelect2($singleDynamicSelects);
+        $singleDynamicSelects.trigger('change.select2');
+    });
 
 
     function loadRestaurants(hotel_id, existingLeadData) {
@@ -1240,9 +1393,27 @@
                     });
                 }
 
-                $('#restaurant_id').html(html);
+                const $restaurant = $('#restaurant_id').html(html);
                 if (typeof existingLeadData !== "undefined" && existingLeadData.restaurant_id) {
-                    $('#restaurant_id').val(existingLeadData.restaurant_id);
+                    $restaurant.val(existingLeadData.restaurant_id);
+                } else {
+                    const $availableRestaurants = $restaurant.find('option').filter(function() {
+                        return String(this.value).trim() !== '';
+                    });
+
+                    if ($availableRestaurants.length === 1) {
+                        $restaurant.val($availableRestaurants.first().val());
+                    }
+                }
+
+                $restaurant.trigger('change.select2');
+
+                // This field is rendered dynamically, so load its dependency
+                // directly instead of relying on a delegated change event.
+                if ($restaurant.val()) {
+                    loadTableCategories($restaurant.val());
+                } else {
+                    $('#table_category_id').html('<option value="">Select Category</option>');
                 }
             }
         });
@@ -1390,23 +1561,31 @@
                     });
                 }
 
-                $('#slot_type_id').html(html);
+                const $slotType = $('#slot_type_id').html(html);
                 if (typeof existingLeadData !== "undefined" && existingLeadData.slot_type_id) {
-                    $('#slot_type_id').val(existingLeadData.slot_type_id);
+                    $slotType.val(existingLeadData.slot_type_id);
+                }
+
+                // The Slot Type field is created dynamically. Bind directly so a
+                // user selection always loads its dependent time slots.
+                $slotType
+                    .off('change.leadTimeSlots')
+                    .on('change.leadTimeSlots', function() {
+                        const slotTypeId = $(this).val();
+
+                        if (slotTypeId) {
+                            loadTimeSlots(slotTypeId);
+                        } else {
+                            $('#time_slot_id').html('<option value="">Select Time Slot</option>');
+                        }
+                    });
+
+                if ($slotType.val()) {
+                    loadTimeSlots($slotType.val());
                 }
             }
         });
     }
-
-    $(document).on('change', '#slot_type_id', function() {
-        let slotTypeId = $(this).val();
-
-        if (slotTypeId) {
-            loadTimeSlots(slotTypeId);
-        } else {
-            $('#time_slot_id').html('<option value="">Select Time Slot</option>');
-        }
-    });
 
 
     function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
@@ -1480,11 +1659,30 @@
                     });
                 }
 
-                $('#table_category_id').html(html);
+                const $category = $('#table_category_id').html(html);
 
                 // ✅ For edit case
                 if (selectedCategoryId !== null && selectedCategoryId !== "") {
-                    $('#table_category_id').val(selectedCategoryId);
+                    $category.val(selectedCategoryId);
+                } else {
+                    const $availableCategories = $category.find('option').filter(function() {
+                        return String(this.value).trim() !== '';
+                    });
+
+                    if ($availableCategories.length === 1) {
+                        $category.val($availableCategories.first().val());
+                    }
+                }
+
+                $category.trigger('change.select2');
+
+                // Continue the dynamic dependency chain directly.
+                const restaurantId = $('#restaurant_id').val();
+                if ($category.val() && restaurantId) {
+                    loadTables(restaurantId, $category.val());
+                } else {
+                    $('#table_id').html('<option value="">Select Table</option>');
+                    initializeTableMultiSelect();
                 }
             }
         });
@@ -1499,91 +1697,123 @@
             loadTables(restaurantId, categoryId);
         } else {
             $('#table_id').html('<option value="">Select Table</option>');
+            initializeTableMultiSelect();
         }
     });
 
 
+    function syncTableMultiSelect($select, $widget) {
+        const selectedValues = ($select.val() || []).map(String);
+        const total = $widget.find('.table-multiselect-item').length;
+        const selectedCount = selectedValues.length;
 
-    // Format dropdown option with checkbox
-    function formatTableState(state) {
+        $widget.find('.table-multiselect-item').each(function() {
+            $(this).prop('checked', selectedValues.includes(String($(this).val())));
+        });
 
-        if (!state.id) {
-            return state.text;
+        const $selectAll = $widget.find('.table-multiselect-all');
+        $selectAll.prop('checked', total > 0 && selectedCount === total);
+        $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+        let summary = 'Select Table';
+        if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+        } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
         }
 
-        let checked = ($('#table_id').val() || [])
-            .map(String)
-            .includes(state.id.toString());
-
-        let $state = $(`
-            <span class="table-option">
-                <input type="checkbox"
-                       class="table-checkbox"
-                       data-id="${state.id}"
-                       ${checked ? 'checked' : ''} />
-                <span>${state.text}</span>
-            </span>
-        `);
-
-        return $state;
+        $widget.find('.table-multiselect-summary').text(summary);
     }
 
-    // Handle checkbox click inside Select2 dropdown
-    $(document).on('click', '.table-checkbox', function(e) {
+    // Page-only checkbox multi-select. The original table_id[] select remains the
+    // form value source, so submission and database storage are unchanged.
+    function initializeTableMultiSelect() {
+        const $select = $('#table_id');
+        if (!$select.length) return;
 
-        e.stopPropagation();
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
 
-        let value = $(this).data('id').toString();
+        $select.next('.table-multiselect').remove();
+        $select.addClass('table-multiselect-source');
 
-        let currentValues =
-            $('#table_id').val() || [];
+        const $widget = $('<div>', { class: 'table-multiselect' });
+        const $toggle = $('<button>', {
+            type: 'button',
+            class: 'table-multiselect-toggle',
+            'aria-expanded': 'false'
+        }).append($('<span>', { class: 'table-multiselect-summary', text: 'Select Table' }));
+        const $menu = $('<div>', { class: 'table-multiselect-menu' });
+        const availableOptions = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '';
+        });
 
-        if ($(this).is(':checked')) {
-            if (!currentValues.includes(value)) {
-                currentValues.push(value);
-            }
+        if (availableOptions.length) {
+            const $selectAll = $('<input>', {
+                type: 'checkbox',
+                class: 'table-multiselect-all'
+            });
+            $menu.append(
+                $('<label>', { class: 'table-multiselect-option table-multiselect-select-all' })
+                    .append($selectAll, $('<span>', { text: 'Select all' }))
+            );
+
+            availableOptions.each(function() {
+                const $checkbox = $('<input>', {
+                    type: 'checkbox',
+                    class: 'table-multiselect-item',
+                    value: this.value
+                });
+                $menu.append(
+                    $('<label>', { class: 'table-multiselect-option' })
+                        .append($checkbox, $('<span>').text($(this).text().trim()))
+                );
+            });
         } else {
-            currentValues =
-                currentValues.filter(v => v != value);
+            $menu.append($('<div>', {
+                class: 'table-multiselect-empty',
+                text: 'No tables available'
+            }));
         }
 
-        $('#table_id')
-            .val(currentValues)
-            .trigger('change');
-    });
+        $widget.append($toggle, $menu);
+        $select.after($widget);
 
-
-    // Initialize Select2
-    function initializeTableSelect2() {
-
-        // Destroy old instance
-        if ($('#table_id').hasClass('select2-hidden-accessible')) {
-            $('#table_id').select2('destroy');
-        }
-
-        $('#table_id').select2({
-            placeholder: 'Select Table',
-            closeOnSelect: false,
-            width: '100%',
-            dropdownCssClass: 'table-dropdown',
-
-            // Checkbox dropdown UI
-            templateResult: formatTableState,
-
-            // Show selected values as normal tags
-            templateSelection: function(selection) {
-                return selection.text;
-            },
-
-            escapeMarkup: function(markup) {
-                return markup;
-            }
+        $toggle.on('click', function() {
+            const isOpen = !$widget.hasClass('is-open');
+            $('.table-multiselect').not($widget).removeClass('is-open')
+                .find('.table-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', isOpen);
+            $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
         });
 
-        $(document).on('mousedown', '.table-checkbox', function(e) {
-            e.stopPropagation();
+        $widget.on('change', '.table-multiselect-all', function() {
+            const values = this.checked
+                ? $widget.find('.table-multiselect-item').map(function() { return this.value; }).get()
+                : [];
+            $select.val(values).trigger('change');
         });
+
+        $widget.on('change', '.table-multiselect-item', function() {
+            const values = $widget.find('.table-multiselect-item:checked')
+                .map(function() { return this.value; }).get();
+            $select.val(values).trigger('change');
+        });
+
+        $select.off('change.tableMultiSelect').on('change.tableMultiSelect', function() {
+            syncTableMultiSelect($select, $widget);
+        });
+
+        syncTableMultiSelect($select, $widget);
     }
+
+    $(document).off('click.tableMultiSelect').on('click.tableMultiSelect', function(e) {
+        if (!$(e.target).closest('.table-multiselect').length) {
+            $('.table-multiselect').removeClass('is-open')
+                .find('.table-multiselect-toggle').attr('aria-expanded', 'false');
+        }
+    });
 
 
     // Load tables
@@ -1621,8 +1851,8 @@
 
                 $('#table_id').html(html);
 
-                // Initialize select2 with checkbox UI
-                initializeTableSelect2();
+                // Rebuild the checkbox list with the loaded tables.
+                initializeTableMultiSelect();
 
                 // Edit case (multiple selected tables)
                 if (selectedTableId !== null && selectedTableId !== "") {
@@ -1673,11 +1903,117 @@
 
     });
 
+    function leadField(field) {
+        return field === 'table_id' ? $('#table_id') : $('[name="' + field + '"]').first();
+    }
+
+    function showLeadFieldError(field, message) {
+        const input = leadField(field);
+        let error = $('#' + field + '_error');
+
+        input.addClass('is-invalid').attr('aria-invalid', 'true');
+        if (!error.length) {
+            error = $('<div>', {
+                id: field + '_error',
+                class: 'text-danger small lead-validation-error'
+            });
+            input.closest('.form-group, .mb-3, [class*="col-"]').first().append(error);
+        }
+        error.text(message);
+    }
+
+    function clearLeadValidation() {
+        $('#leadForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
+        $('#leadForm [id$="_error"]').text('');
+        $('#leadForm .lead-validation-error').text('');
+    }
+
+    function showLeadValidationErrors(errors) {
+        clearLeadValidation();
+        let firstField = null;
+
+        $.each(errors, function(field, message) {
+            showLeadFieldError(field, message);
+            if (!firstField) {
+                firstField = leadField(field);
+            }
+        });
+
+        if (firstField && firstField.length) {
+            $('html, body').animate({
+                scrollTop: Math.max(firstField.offset().top - 140, 0)
+            }, 250);
+            firstField.trigger('focus');
+        }
+    }
+
+    function validateLeadForm() {
+        const errors = {};
+        const value = function(name) {
+            return $.trim(String($('[name="' + name + '"]').first().val() || ''));
+        };
+        const phone = value('phone_number').replace(/^(\+91|91)/, '');
+        const email = value('email');
+        const disposition = value('disposition');
+        const department = normalizeDepartmentName($('#leadDepartment').val());
+
+        if (!/^[6-9][0-9]{9}$/.test(phone)) {
+            errors.phone_number = phone ? 'Enter a valid 10-digit Indian mobile number.' : 'Phone number is required.';
+        }
+        if (disposition !== 'Not Contacted' && !value('username')) {
+            errors.username = 'Guest name is required.';
+        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.email = 'Enter a valid email address.';
+        }
+        if (!value('property')) errors.property = 'Please select a hotel.';
+        if (!value('type')) errors.type = 'Please select a department.';
+        if (!value('user_channel')) errors.user_channel = 'Please select a lead source.';
+        if (!disposition) errors.disposition = 'Please select a stage.';
+        if (!value('lead_status')) errors.lead_status = 'Please select a lead status.';
+        if (!value('query')) errors.query = 'Query is required.';
+
+        if (disposition === 'Lead Lost' && !value('reason')) {
+            errors.reason = 'Please select a reason.';
+        }
+
+        if (disposition === 'Quotation Sent') {
+            if ((department === 'rooms' || department === 'wedding') && !value('meal_plan')) {
+                errors.meal_plan = 'Please select a meal plan.';
+            }
+            if ((department === 'banquet' || department === 'wedding') && !value('banquet_id')) {
+                errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'restaurant') {
+                if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
+                if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
+                if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';
+                if (!value('table_category_id')) errors.table_category_id = 'Please select a table category.';
+                if (!$('#table_id').val() || $('#table_id').val().length === 0) errors.table_id = 'Please select at least one table.';
+                if (!value('table_reservation_status')) errors.table_reservation_status = 'Please select a reservation status.';
+            }
+        }
+
+        showLeadValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    }
+
+    $(document).on('input change', '#leadForm input, #leadForm select, #leadForm textarea', function() {
+        const field = this.id === 'table_id' ? 'table_id' : ($(this).attr('name') || '').replace('[]', '');
+        $(this).removeClass('is-invalid').removeAttr('aria-invalid');
+        if (field) $('#' + field + '_error').text('');
+    });
+
     $('#leadForm').on('submit', function(e) {
 
         e.preventDefault();
 
         $("#lead_status").prop('disabled', false);
+
+        if (!validateLeadForm()) {
+            $("#lead_status").prop('disabled', true);
+            return false;
+        }
 
         // Grab field values
         let username = $('input[name="username"]').val().trim();
@@ -1685,18 +2021,6 @@
 
         phone = phone.trim();
         phone = phone.replace(/^(\+91|91)/, '');
-
-        let phoneRegex = /^[6-9][0-9]{9}$/;
-
-        if (phone === "") {
-            $('#phone_number_error').html('Please Enter Phone Number');
-            return false;
-        } else if (!phoneRegex.test(phone)) {
-            $('#phone_number_error').html('Invalid Indian Mobile Number');
-            return false;
-        } else {
-            $('#phone_number_error').html('');
-        }
 
         let email = $('input[name="email"]').val().trim();
         let userChannel = $('select[name="user_channel"]').val();
@@ -1718,15 +2042,6 @@
 
         if (disposition == null) {
             disposition = "";
-        }
-
-        // Validate tables selection for restaurant department
-        if (leadDepartment === 'restaurant') {
-            let selectedTables = $('#table_id').val();
-            if (!selectedTables || selectedTables.length === 0) {
-                alert('Please select at least one table for restaurant leads');
-                return false;
-            }
         }
 
         // Simple validation condition
@@ -1819,13 +2134,18 @@
                 error: function(xhr) {
                     let message = 'Unable to submit lead. Please try again.';
 
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        showLeadValidationErrors(xhr.responseJSON.errors);
+                    }
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         message = xhr.responseJSON.message;
                     } else if (xhr.responseText) {
                         message = xhr.responseText;
                     }
 
-                    alert(message);
+                    if (!xhr.responseJSON || !xhr.responseJSON.errors) {
+                        alert(message);
+                    }
                 },
                 complete: function() {
                     $('#submitBtn').prop('disabled', false).text('Submit');
