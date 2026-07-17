@@ -10985,7 +10985,7 @@ li.treeview.active.menu-open ul.treeview-menu li.active a,li.treeview.active.men
 .dark-skin .switch-off {
   color:#fff;
 }
-.quick-filter-box .box-header {
+.dark-skin .quick-filter-box .box-header {
     padding: 18px 20px 10px;
     border-bottom: 0px solid #eef2f7;
     background: #0D1219!important;
