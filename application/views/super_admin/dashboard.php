@@ -161,7 +161,7 @@
 											display: flex;
 											align-items: center;
 											justify-content: center;
-											border-radius: 12px;
+											border-radius: 8px;
 											font-size: 15px;
 											font-weight: 700;
 											padding: 0 15px;

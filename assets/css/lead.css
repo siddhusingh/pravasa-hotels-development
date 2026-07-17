@@ -1,0 +1,1528 @@
+   /*=========================================================
+        PREMIUM CALL CONFIRMATION MODAL
+=========================================================*/
+
+#confirmCallModal .modal-dialog{
+    max-width:420px;
+    margin:2rem auto;
+}
+
+#confirmCallModal .modal-content{
+
+    border:none;
+    border-radius:30px;
+    overflow:hidden;
+
+    background:#fff;
+
+    box-shadow:
+    0 25px 70px rgba(0,0,0,.18);
+
+    position:relative;
+
+}
+
+/* Glow */
+
+#confirmCallModal .modal-content:before{
+
+content:"";
+
+position:absolute;
+
+top:-120px;
+right:-80px;
+
+width:240px;
+height:240px;
+
+background:#9F8BE7;
+
+opacity:.15;
+
+filter:blur(70px);
+
+}
+
+/* Header */
+
+#confirmCallModal .modal-header{
+
+border:none;
+
+padding:30px 30px 15px;
+
+display:block;
+
+text-align:center;
+
+position:relative;
+
+}
+
+/* Phone Circle */
+
+#confirmCallModal .modal-header::before{
+
+content:"☎";
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+margin:0 auto 18px;
+
+width:95px;
+height:95px;
+
+border-radius:50%;
+
+background:#9F8BE7;
+
+font-size:42px;
+
+color:#fff;
+
+box-shadow:
+
+0 18px 40px rgba(112,83,244,.35);
+
+animation:phonePulse 2s infinite;
+
+}
+
+/* Title */
+
+#confirmCallModal .modal-title{
+
+font-size:28px;
+
+font-weight:700;
+
+color:#222;
+
+}
+
+/* Close */
+
+#confirmCallModal .btn-close{
+
+position:absolute;
+
+right:20px;
+
+top:20px;
+
+}
+
+
+/* Body */
+
+#confirmCallModal .modal-body{
+
+padding:10px 35px 30px;
+
+text-align:center;
+
+font-size:17px;
+
+line-height:32px;
+
+color:#666;
+
+}
+
+/* Number */
+
+#call-number{
+
+display:block;
+
+margin-top:18px;
+
+font-size:30px;
+
+font-weight:700;
+
+color:#111;
+
+letter-spacing:2px;
+
+padding:15px;
+
+border-radius:16px;
+
+background:#F6F4FF;
+
+border:1px solid #ECE6FF;
+
+}
+
+
+/* Footer */
+
+#confirmCallModal .modal-footer{
+
+border:none;
+
+padding:25px;
+
+display:flex;
+
+gap:15px;
+
+justify-content:center;
+
+}
+
+
+/* Buttons */
+
+#confirmCallModal .btn{
+
+flex:1;
+
+height:52px;
+
+border-radius:16px;
+
+font-size:16px;
+
+font-weight:700;
+
+transition:.3s;
+
+}
+
+
+/* Cancel */
+
+#confirmCallModal .btn-secondary{
+
+background:#F4F5F8;
+
+border:none;
+
+color:#555;
+
+}
+
+#confirmCallModal .btn-secondary:hover {
+    background: #9F8BE7!important;
+    color: #fff!important;
+}
+
+
+/* Call */
+
+#confirmCallModal .btn-primary{
+
+background:#9F8BE7;
+
+border:none;
+
+box-shadow:
+
+0 12px 30px rgba(111,82,242,.30);
+
+}
+
+#confirmCallModal .btn-primary:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+
+0 20px 40px rgba(111,82,242,.35);
+
+}
+
+
+/* Backdrop */
+
+.modal-backdrop.show{
+
+backdrop-filter:blur(5px);
+
+opacity:.65;
+
+}
+
+
+/* Animation */
+
+@keyframes phonePulse{
+
+0%{
+
+transform:scale(1);
+
+}
+
+50%{
+
+transform:scale(1.08);
+
+}
+
+100%{
+
+transform:scale(1);
+
+}
+
+}
+
+
+/* Mobile */
+
+@media(max-width:576px){
+
+#confirmCallModal .modal-dialog{
+
+margin:15px;
+
+}
+
+#confirmCallModal .modal-body{
+
+padding:10px 20px 25px;
+
+}
+
+#call-number{
+
+font-size:24px;
+
+}
+
+}
+
+
+
+
+  /*=====================================================
+        PREMIUM CALL PROGRESS MODALx
+======================================================*/
+
+#callProgressModal .modal-dialog{
+    max-width:430px;
+    margin:2rem auto;
+}
+
+#callProgressModal .modal-content {
+    border: none;
+    border-radius: 35px;
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    position: relative;
+    box-shadow: rgba(240, 243, 245, 0.3) 0px 1px 2px 0px, rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
+    box-shadow: rgb(255 255 255 / 49%) 0px 3px 12px, rgb(255 255 255 / 45%) 0px 3px 14px;
+}
+
+
+/* Decorative Glow */
+
+#callProgressModal .modal-content::before{
+
+content:"";
+
+position:absolute;
+
+top:-80px;
+left:-80px;
+
+width:220px;
+height:220px;
+
+background:#9F8BE7;
+
+filter:blur(120px);
+
+opacity:.35;
+
+}
+
+#callProgressModal .modal-content::after{
+
+content:"";
+
+position:absolute;
+
+bottom:-100px;
+right:-80px;
+
+width:250px;
+height:250px;
+
+background:#5B6CFF;
+
+filter:blur(120px);
+
+opacity:.25;
+
+}
+
+
+/* Header */
+
+#callProgressModal .modal-header{
+
+background:transparent;
+
+border:none;
+
+justify-content:center;
+
+padding-top:28px;
+
+padding-bottom:10px;
+
+position:relative;
+
+z-index:5;
+
+}
+
+#callProgressModal .modal-title{
+
+font-size:28px;
+
+font-weight:700;
+
+color:#000;
+
+letter-spacing:1px;
+
+}
+
+#callProgressModal .btn-close {
+    /* filter: invert(1); */
+    position: absolute;
+    right: 0;
+    top: 0;
+    /* filter: invert(1); */
+    opacity: .8;
+    background: #000000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    height: 30px;
+    width: 30px;
+    line-height: normal;
+    border-radius: 30%!important;
+    font-size: 21px;
+}
+
+
+/* Body */
+
+#callProgressModal .modal-body{
+
+padding:10px 35px 45px;
+
+position:relative;
+
+z-index:5;
+
+}
+
+
+/* Phone Circle */
+
+.call-animation{
+
+width:150px;
+height:150px;
+
+margin:20px auto;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:72px;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#9F8BE7,#6D4BFF);
+
+box-shadow:
+
+0 0 0 12px rgba(159,139,231,.10),
+
+0 0 0 24px rgba(159,139,231,.08),
+
+0 25px 45px rgba(111,75,255,.45);
+
+position:relative;
+
+animation:phonePulse 2s infinite;
+
+}
+
+
+/* Ring */
+
+.call-animation::before{
+
+content:"";
+
+position:absolute;
+
+width:180px;
+height:180px;
+
+border-radius:50%;
+
+border:2px solid rgba(159,139,231,.45);
+
+animation:ringOne 2s infinite;
+
+}
+
+.call-animation::after{
+
+content:"";
+
+position:absolute;
+
+width:220px;
+height:220px;
+
+border-radius:50%;
+
+border:2px solid rgba(159,139,231,.25);
+
+animation:ringTwo 2s infinite;
+
+}
+
+
+/* Calling */
+
+#callProgressModal h4{
+
+margin-top:35px;
+
+font-size:18px;
+
+font-weight:500;
+
+color:#676974;
+
+}
+
+
+/* Number */
+
+#progress-number{
+
+display:block;
+
+margin-top:12px;
+
+font-size:34px;
+
+font-weight:700;
+
+letter-spacing:2px;
+
+color:#000;
+
+}
+
+
+/* Timer */
+
+#callProgressModal h5{
+
+margin-top:25px;
+
+font-size:16px;
+
+font-weight:500;
+
+color:#000;
+
+}
+
+#call-timer {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 12px 30px;
+    border-radius: 50px;
+    background: rgb(65 57 57 / 8%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 24px;
+    font-weight: 700;
+    color: #000000;
+    margin-left: 7px;
+}
+
+
+/* Calling Text */
+
+#callProgressModal h4::before{
+
+content:"●";
+
+color:#00E676;
+
+margin-right:10px;
+
+animation:blink 1s infinite;
+
+}
+
+
+/* Animation */
+
+@keyframes phonePulse{
+
+0%{
+
+transform:scale(1);
+
+}
+
+50%{
+
+transform:scale(1.08);
+
+}
+
+100%{
+
+transform:scale(1);
+
+}
+
+}
+
+@keyframes ringOne{
+
+0%{
+
+transform:scale(.8);
+
+opacity:1;
+
+}
+
+100%{
+
+transform:scale(1.35);
+
+opacity:0;
+
+}
+
+}
+
+@keyframes ringTwo{
+
+0%{
+
+transform:scale(.8);
+
+opacity:.7;
+
+}
+
+100%{
+
+transform:scale(1.6);
+
+opacity:0;
+
+}
+
+}
+
+@keyframes blink{
+
+50%{
+
+opacity:.2;
+
+}
+
+}
+
+
+/* Backdrop */
+
+.modal-backdrop.show{
+
+opacity:.75;
+
+backdrop-filter:blur(7px);
+
+}
+
+
+/* Responsive */
+
+@media(max-width:576px){
+
+.call-animation{
+
+width:120px;
+height:120px;
+
+font-size:58px;
+
+}
+
+.call-animation::before{
+
+width:150px;
+height:150px;
+
+}
+
+.call-animation::after{
+
+width:185px;
+height:185px;
+
+}
+
+#progress-number{
+
+font-size:28px;
+
+}
+
+#call-timer{
+
+font-size:20px;
+
+}
+
+}
+
+  /*=====================================================
+        PREMIUM CALL PROGRESS MODALx
+======================================================*/
+
+#callProgressModal .modal-dialog{
+    max-width:430px;
+    margin:2rem auto;
+}
+
+#callProgressModal .modal-content {
+    border: none;
+    border-radius: 35px;
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    position: relative;
+    box-shadow: rgba(240, 243, 245, 0.3) 0px 1px 2px 0px, rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
+    box-shadow: rgb(255 255 255 / 49%) 0px 3px 12px, rgb(255 255 255 / 45%) 0px 3px 14px;
+}
+
+
+/* Decorative Glow */
+
+#callProgressModal .modal-content::before{
+
+content:"";
+
+position:absolute;
+
+top:-80px;
+left:-80px;
+
+width:220px;
+height:220px;
+
+background:#9F8BE7;
+
+filter:blur(120px);
+
+opacity:.35;
+
+}
+
+#callProgressModal .modal-content::after{
+
+content:"";
+
+position:absolute;
+
+bottom:-100px;
+right:-80px;
+
+width:250px;
+height:250px;
+
+background:#5B6CFF;
+
+filter:blur(120px);
+
+opacity:.25;
+
+}
+
+
+/* Header */
+
+#callProgressModal .modal-header{
+
+background:transparent;
+
+border:none;
+
+justify-content:center;
+
+padding-top:28px;
+
+padding-bottom:10px;
+
+position:relative;
+
+z-index:5;
+
+}
+
+#callProgressModal .modal-title{
+
+font-size:28px;
+
+font-weight:700;
+
+color:#000;
+
+letter-spacing:1px;
+
+}
+
+#callProgressModal .btn-close {
+    /* filter: invert(1); */
+    position: absolute;
+    right: 0;
+    top: 0;
+    /* filter: invert(1); */
+    opacity: .8;
+    background: #000000;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    height: 30px;
+    width: 30px;
+    line-height: normal;
+    border-radius: 30%!important;
+    font-size: 21px;
+}
+
+
+/* Body */
+
+#callProgressModal .modal-body{
+
+padding:10px 35px 45px;
+
+position:relative;
+
+z-index:5;
+
+}
+
+
+/* Phone Circle */
+
+.call-animation{
+
+width:150px;
+height:150px;
+
+margin:20px auto;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:72px;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#9F8BE7,#6D4BFF);
+
+box-shadow:
+
+0 0 0 12px rgba(159,139,231,.10),
+
+0 0 0 24px rgba(159,139,231,.08),
+
+0 25px 45px rgba(111,75,255,.45);
+
+position:relative;
+
+animation:phonePulse 2s infinite;
+
+}
+
+
+/* Ring */
+
+.call-animation::before{
+
+content:"";
+
+position:absolute;
+
+width:180px;
+height:180px;
+
+border-radius:50%;
+
+border:2px solid rgba(159,139,231,.45);
+
+animation:ringOne 2s infinite;
+
+}
+
+.call-animation::after{
+
+content:"";
+
+position:absolute;
+
+width:220px;
+height:220px;
+
+border-radius:50%;
+
+border:2px solid rgba(159,139,231,.25);
+
+animation:ringTwo 2s infinite;
+
+}
+
+
+/* Calling */
+
+#callProgressModal h4{
+
+margin-top:35px;
+
+font-size:18px;
+
+font-weight:500;
+
+color:#676974;
+
+}
+
+
+/* Number */
+
+#progress-number{
+
+display:block;
+
+margin-top:12px;
+
+font-size:34px;
+
+font-weight:700;
+
+letter-spacing:2px;
+
+color:#000;
+
+}
+
+
+/* Timer */
+
+#callProgressModal h5{
+
+margin-top:25px;
+
+font-size:16px;
+
+font-weight:500;
+
+color:#000;
+
+}
+
+#call-timer {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 12px 30px;
+    border-radius: 50px;
+    background: rgb(65 57 57 / 8%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 24px;
+    font-weight: 700;
+    color: #000000;
+    margin-left: 7px;
+}
+
+
+/* Calling Text */
+
+#callProgressModal h4::before{
+
+content:"●";
+
+color:#00E676;
+
+margin-right:10px;
+
+animation:blink 1s infinite;
+
+}
+
+
+/* Animation */
+
+@keyframes phonePulse{
+
+0%{
+
+transform:scale(1);
+
+}
+
+50%{
+
+transform:scale(1.08);
+
+}
+
+100%{
+
+transform:scale(1);
+
+}
+
+}
+
+@keyframes ringOne{
+
+0%{
+
+transform:scale(.8);
+
+opacity:1;
+
+}
+
+100%{
+
+transform:scale(1.35);
+
+opacity:0;
+
+}
+
+}
+
+@keyframes ringTwo{
+
+0%{
+
+transform:scale(.8);
+
+opacity:.7;
+
+}
+
+100%{
+
+transform:scale(1.6);
+
+opacity:0;
+
+}
+
+}
+
+@keyframes blink{
+
+50%{
+
+opacity:.2;
+
+}
+
+}
+
+
+/* Backdrop */
+
+.modal-backdrop.show{
+
+opacity:.75;
+
+backdrop-filter:blur(7px);
+
+}
+
+
+/* Responsive */
+
+@media(max-width:576px){
+
+.call-animation{
+
+width:120px;
+height:120px;
+
+font-size:58px;
+
+}
+
+.call-animation::before{
+
+width:150px;
+height:150px;
+
+}
+
+.call-animation::after{
+
+width:185px;
+height:185px;
+
+}
+
+#progress-number{
+
+font-size:28px;
+
+}
+
+#call-timer{
+
+font-size:20px;
+
+}
+
+}
+
+
+  /* ===========================
+   LEAD DETAILS MODAL
+=========================== */
+
+#viewLeadModal .modal-dialog{
+    max-width:1200px;
+}
+
+#viewLeadModal .modal-content{
+    border:none;
+    border-radius:22px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+
+
+/* Header */
+
+#viewLeadModal .modal-header{
+
+    background:#fff;
+    color:#fff;
+    padding:20px 30px;
+    border:none;
+
+}
+
+#viewLeadModal .modal-title{
+
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:.5px;
+
+}
+
+#viewLeadModal .btn-close {
+    /* filter: invert(1); */
+    opacity: 1;
+    background-color: #9F8BE7;
+    color: #fff;
+}
+
+
+/* Body */
+
+#viewLeadModal .modal-body{
+
+    background:#f6f8fc;
+    padding:30px;
+
+}
+
+
+/* Container */
+
+.ticket-container{
+
+    background:#fff;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 35px rgba(0,0,0,.08);
+
+}
+
+
+/* Section */
+
+.ticket-section{
+
+    margin-bottom:25px;
+    padding:22px;
+    border-radius:18px;
+    background:#fff;
+    border:1px solid #edf0f6;
+    box-shadow:0 8px 20px rgba(0,0,0,.04);
+
+}
+
+.ticket-section:last-child{
+    margin-bottom:0;
+}
+
+
+/* Label */
+
+.ticket-label{
+
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#8c8c8c;
+    margin-bottom:8px;
+
+}
+
+.ticket-label strong{
+
+    font-weight:600;
+
+}
+
+
+/* Value */
+
+.ticket-value{
+
+    background:#fafbff;
+    border:1px solid #e9ecf5;
+    border-radius:12px;
+    padding:14px 16px;
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    font-size:15px;
+    color:#222;
+    font-weight:600;
+    transition:.3s;
+
+}
+
+.ticket-value:hover{
+
+    border-color:#9F8BE7;
+    box-shadow:0 0 0 3px rgba(159,139,231,.15);
+
+}
+
+
+/* Grid Spacing */
+
+.ticket-section .col-md-4,
+.ticket-section .col-md-6{
+
+    margin-bottom:18px;
+
+}
+
+
+
+/* Scroll */
+
+#viewLeadModal .modal-body::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+#viewLeadModal .modal-body::-webkit-scrollbar-thumb{
+
+    background:#9F8BE7;
+    border-radius:20px;
+
+}
+
+
+/* Responsive */
+
+@media(max-width:768px){
+
+#viewLeadModal .modal-body{
+
+padding:15px;
+
+}
+
+.ticket-container{
+
+padding:15px;
+
+}
+
+.ticket-section{
+
+padding:15px;
+
+}
+
+.ticket-value{
+
+font-size:14px;
+
+}
+
+}
+
+  /*=========================================================
+        WHATSAPP TEMPLATE MODAL
+=========================================================*/
+
+#whatsappTemplateModal .modal-dialog{
+    max-width:650px;
+}
+
+#whatsappTemplateModal .modal-content{
+
+    border:none;
+    border-radius:24px;
+    overflow:hidden;
+
+    background:#fff;
+
+    box-shadow:
+    0 25px 70px rgba(0,0,0,.15);
+
+}
+
+
+/*================ HEADER =================*/
+
+#whatsappTemplateModal .modal-header{
+
+    background:linear-gradient(135deg,#25D366,#128C7E);
+
+    color:#fff;
+
+    border:none;
+
+    padding:22px 30px;
+
+}
+
+#whatsappTemplateModal .modal-title{
+
+    font-size:24px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+#whatsappTemplateModal .modal-title i{
+
+    color:#fff !important;
+
+    font-size:34px;
+
+}
+
+#whatsappTemplateModal .btn-close{
+
+    filter:invert(1);
+
+    opacity:1;
+
+}
+
+
+/*================ BODY =================*/
+
+#whatsappTemplateModal .modal-body{
+
+    padding:35px;
+
+    background:#F8FAFC;
+
+}
+
+
+/* Label */
+
+#whatsappTemplateModal .form-label{
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:#444;
+
+    margin-bottom:10px;
+
+}
+
+
+/* Select */
+
+#whatsappTemplateModal .form-control{
+
+    height:56px;
+
+    border-radius:14px;
+
+    border:2px solid #E5E7EB;
+
+    font-size:15px;
+
+    padding:0 18px;
+
+    box-shadow:none;
+
+    transition:.3s;
+
+    background:#fff;
+
+}
+
+#whatsappTemplateModal .form-control:focus{
+
+    border-color:#25D366;
+
+    box-shadow:0 0 0 4px rgba(37,211,102,.15);
+
+}
+
+
+/*================ SEND BUTTON =================*/
+
+#sendWhatsappMessage{
+
+    min-width:220px;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:linear-gradient(135deg,#25D366,#128C7E);
+
+    font-size:16px;
+
+    font-weight:700;
+
+    transition:.3s;
+
+    box-shadow:0 12px 30px rgba(18,140,126,.25);
+
+}
+
+#sendWhatsappMessage:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 20px 35px rgba(18,140,126,.35);
+
+}
+
+
+/*================ FOOTER =================*/
+
+#whatsappTemplateModal .modal-footer{
+
+    border:none;
+
+    background:#fff;
+
+    padding:20px 30px;
+
+}
+
+#whatsappTemplateModal .btn-secondary{
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:10px 24px;
+
+    background:#ECEFF3;
+
+    color:#555;
+
+    font-weight:600;
+
+}
+
+#whatsappTemplateModal .btn-secondary:hover{
+
+    background: #9f8be7 !important;;
+    color: #fff !important;;
+
+
+}
+
+
+/*================ SCROLLBAR =================*/
+
+#whatsappTemplateModal .modal-body::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+#whatsappTemplateModal .modal-body::-webkit-scrollbar-thumb{
+
+    background:#25D366;
+
+    border-radius:20px;
+
+}
+
+
+/*================ MOBILE =================*/
+
+@media(max-width:768px){
+
+#whatsappTemplateModal .modal-body{
+
+padding:20px;
+
+}
+
+#sendWhatsappMessage{
+
+width:100%;
+
+}
+
+}
