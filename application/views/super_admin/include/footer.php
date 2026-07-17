@@ -614,7 +614,45 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
 </script>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.2/js/bootstrap-multiselect.min.js"></script>
+<script>
+function initMultiCheckbox(selector) {
 
+    $(selector).multiselect({
+
+        includeSelectAllOption: true,
+        enableFiltering: true,
+        enableCaseInsensitiveFiltering: true,
+        buttonWidth: '100%',
+        maxHeight: 300,
+        nonSelectedText: 'Select Person',
+        filterPlaceholder: 'Search Person...',
+        selectAllText: 'Select All',
+        allSelectedText: 'All Selected',
+
+        buttonText: function(options, select) {
+
+    if (options.length === 0) {
+        return 'Select Person';
+    }
+
+    if (options.length > 3) {
+        return options.length + ' Persons Selected';
+    }
+
+    var labels = [];
+
+    options.each(function() {
+        labels.push($(this).text());
+    });
+
+    return labels.join(', ');
+}
+
+    });
+
+}
+</script>
 
 
 
