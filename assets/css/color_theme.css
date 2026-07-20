@@ -540,14 +540,18 @@ Theme Primary Color
 .theme-primary.dark-skin.sidebar-mini.sidebar-collapse .sidebar-menu > li.active > a > span {
   background: #23211d !important; }
 .theme-primary.light-skin .sidebar-menu > li:hover, .theme-primary.light-skin .sidebar-menu > li:active, .theme-primary.light-skin .sidebar-menu > li.active {
-  background-color: rgba(0, 82, 204, 0);
-  color: #23211d;
-      background-color: #9F8BE7;
-    border-radius: 20px;
+    background-color: rgba(0, 82, 204, 0);
+    color: #23211d;
+    background-color: #9F8BE7;
+    border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     color: #fff;
-    
-/*  border-left: 5px solid rgba(0, 82, 204, 0); */
+    /*border-left: 5px solid rgba(0, 82, 204, 0);
+    */
+    -webkit-border-radius: 1px;
+    -moz-border-radius: 1px;
+    -ms-border-radius: 1px;
+    -o-border-radius: 1px;
 }
   .theme-primary.light-skin .sidebar-menu > li:active a, .theme-primary.light-skin .sidebar-menu > li.active a {
     color: #ffffff; }
