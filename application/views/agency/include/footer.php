@@ -70,9 +70,9 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
                            <div class="ps-20">
                               <h5 class="mb-0"><?php echo $profile_data->contact_person; ?></h5>
                               <p class="my-5 text-fade">Agency : <?php echo $profile_data->agency_name; ?> </p>
-                              <p><a href="javascript:void(0)"><span class="icon-Mail-notification me-5 text-success"><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->email; ?></a></p>
+                              <p><a href="javascript:void(0)"><span class="icon-Mail-notification me-5 "><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->email; ?></a></p>
                               <p>
-                                 <a href="javascript:void(0)"><span class="fa fa-phone me-5 text-success"><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->phone; ?></a>
+                                 <a href="javascript:void(0)"><span class="fa fa-phone me-5 "><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->phone; ?></a>
                               </p>
 
                               <a class="btn btn-danger-light btn-sm mt-5" href="<?php echo base_url('agency-sign-out') ?>">

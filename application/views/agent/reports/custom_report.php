@@ -1,9 +1,7 @@
 <!-- Content Wrapper. Contains page content -->
 <style>
-    .theme-primary .dt-buttons .dt-button {
-        background-color: #f3f1edff !important
-    }
-
+  
+  
     .theme-primary .dataTables_wrapper .dataTables_paginate .paginate_button.current {
         border: 1px solid #23211d;
         background-color: #ffffff;
@@ -12,6 +10,19 @@
 <div class="content-wrapper">
     <div class="container-full">
         <!-- Content Header (Page header) -->
+         <div class="custom-page-header">
+            <div class="header-left">
+                <div class="header-icon-box"><i class="fa fa-file-text"></i></div>
+                <div class="header-content">
+                    <h2 class="header-title">Lead Reports</h2>
+                    <ol class="custom-breadcrumb">
+                        <li><i class="fa fa-home"></i></li><li>Agent Admin</li>
+                        <li><i class="fa fa-angle-right"></i></li><li class="active"> Custom Report</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="header-banner"><img src="<?= base_url('assets/new_img-add.png'); ?>" alt=""></div>
+        </div>
         <!-- Main content -->
         <section class="content">
             <div class="row">
@@ -37,7 +48,7 @@
                             <div>
 
                                 <form method="GET" action="<?= base_url('reports-agent'); ?>" class="mb-4 px-3">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row g-3 align-items-end" >
                                         <!-- Existing filters (City, Property, etc.) -->
 
 
@@ -92,8 +103,8 @@
                                             <label for="end_date" class="form-label">End Date</label>
                                             <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
                                         </div>
-                                        <div class="col-md-2 d-grid">
-                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        <div class="-10">
+                                            <button type="submit" class="btn btn-primary p_l_r-10">Filter</button>
                                         </div>
 
                                     </div>
@@ -106,8 +117,6 @@
                             </div>
 
                             <div class="table-responsive" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
-
-
                                 <div class="container mt-4">
                                     <table id="leadReportTable" class="display nowrap table table-bordered" style="width:100%">
                                         <thead>

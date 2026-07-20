@@ -22,10 +22,10 @@
 
 				<!-- quick filters -->
 
-				<div class="col-xxl-6 col-12">
+				<div class="col-xxl-12 col-12">
 
 
-					<div class="box">
+					<div class="box_supar_admin">
 						<div class="box-header no-border pb-0">
 						</div>
 						<div class="box-body">
@@ -36,11 +36,11 @@
 										/* ===== Professional Filter Panel UI ===== */
 
 										#filter_lead_stats_count {
-											background: #ffffff;
+											/* background: #ffffff;
 											border: 1px solid #e9eef5;
 											border-radius: 18px;
 											padding: 18px;
-											box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+											box-shadow: 0 8px 24px rgba(0, 0, 0, .05); */
 											margin-bottom: 20px;
 										}
 
@@ -54,11 +54,11 @@
 
 										#filter_lead_stats_count .form-control,
 										#filter_lead_stats_count .form-select {
-											border-radius: 12px;
+											/* border-radius: 12px;
 											border: 1px solid #dbe3ee;
 											font-size: 14px;
 											box-shadow: none !important;
-											transition: .25s ease;
+											transition: .25s ease; */
 										}
 
 										#filter_lead_stats_count .form-control:focus,
@@ -185,7 +185,7 @@
 											</div>
 
 											<!-- Stage -->
-											<div class="col-md-2">
+											<div class="col-md-3">
 												<label for="top_filter_disposition" class="form-label">Stage</label>
 												<select name="disposition" id="top_filter_disposition" class="form-select filter-input">
 													<option value="">All Stages</option>
@@ -221,7 +221,7 @@
 											</div>
 
 											<!-- Total Leads -->
-											<div class="col-md-3">
+											<div class="col-md-2">
 												<h5>Total Leads : <span id="totalLeads"><?= $total_leads ?></span></h5>
 											</div>
 
@@ -359,134 +359,6 @@
 
 							</div>
 
-
-
-
-							<style>
-								/* ===== Modern Horizontal KPI Card ===== */
-
-								.stage-card {
-									background: #ffffff;
-									border-radius: 18px;
-									padding: 16px 18px;
-									border: 1px solid #edf1f7;
-									box-shadow: 0 8px 22px rgba(0, 0, 0, .05);
-									transition: .30s ease;
-									height: 100%;
-									position: relative;
-									overflow: hidden;
-								}
-
-								.stage-card:hover {
-									transform: translateY(-4px);
-									box-shadow: 0 14px 28px rgba(0, 0, 0, .08);
-								}
-
-								.stage-card:before {
-									content: "";
-									position: absolute;
-									top: 0;
-									left: 0;
-									width: 5px;
-									height: 100%;
-									border-radius: 20px;
-								}
-
-								.border-blue:before {
-									background: #2563eb;
-								}
-
-								.border-orange:before {
-									background: #ea580c;
-								}
-
-								.border-cyan:before {
-									background: #0891b2;
-								}
-
-								.border-purple:before {
-									background: #7c3aed;
-								}
-
-								.stage-flex {
-									display: flex;
-									align-items: center;
-									justify-content: space-between;
-									gap: 15px;
-								}
-
-								.left-content {
-									flex: 1;
-								}
-
-								.stage-title {
-									font-size: 13px;
-									font-weight: 700;
-									color: #6b7280;
-									text-transform: uppercase;
-									margin-bottom: 6px;
-									letter-spacing: .5px;
-								}
-
-								.lead-count {
-									font-size: 28px;
-									font-weight: 800;
-									line-height: 1;
-									margin-bottom: 8px;
-								}
-
-								.revenue-box {
-									display: inline-block;
-									font-size: 12px;
-									font-weight: 700;
-									padding: 5px 10px;
-									border-radius: 30px;
-									background: #f0fdf4;
-									color: #16a34a;
-								}
-
-								.icon-box {
-									width: 58px;
-									height: 58px;
-									border-radius: 16px;
-									display: flex;
-									align-items: center;
-									justify-content: center;
-									font-size: 24px;
-									color: #fff;
-									flex-shrink: 0;
-								}
-
-								/* Colors */
-								.bg-blue {
-									background: linear-gradient(135deg, #3b82f6, #2563eb);
-								}
-
-								.bg-orange {
-									background: linear-gradient(135deg, #f59e0b, #ea580c);
-								}
-
-								.bg-cyan {
-									background: linear-gradient(135deg, #06b6d4, #0891b2);
-								}
-
-								.bg-purple {
-									background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-								}
-
-								@media(max-width:768px) {
-									.lead-count {
-
-										font-size: 22px;
-									}
-
-									.icon-box {
-										width: 48px;
-										height: 48px;
-										font-size: 20px;
-									}
-								}
-							</style>
 
 
 
@@ -743,9 +615,9 @@
 					}
 
 					.quick-filter-box .box-header {
-						padding: 18px 20px 10px;
+						/* padding: 18px 20px 10px;
 						border-bottom: 1px solid #eef2f7;
-						background: linear-gradient(135deg, #f8fafc, #ffffff);
+						background: linear-gradient(135deg, #f8fafc, #ffffff); */
 					}
 
 					.quick-filter-box .box-title {
@@ -769,11 +641,11 @@
 					.quick-filter-box .form-control,
 					.quick-filter-box .form-select {
 
-						border-radius: 12px;
+						/* border-radius: 12px;
 						border: 1px solid #dbe3ee;
 						font-size: 14px;
 						box-shadow: none !important;
-						transition: .25s ease;
+						transition: .25s ease; */
 					}
 
 					.quick-filter-box .form-control:focus,
@@ -812,8 +684,8 @@
 
 
 
-				<div class="col-xxl-6 col-12">
-					<div class="box">
+				<div class="col-xxl-12 col-12">
+					<div class="box quick-filter-box">
 						<div class="box-header no-border pb-0">
 							<h4 class="box-title">Quick Filters for Charts </h4>
 						</div>
