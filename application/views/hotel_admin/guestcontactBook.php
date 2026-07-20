@@ -2,46 +2,50 @@
 <div class="content-wrapper">
     <div class="container-full">
         <!-- Content Header (Page header) -->
-        <div class="content-header">
-            <div class="d-flex align-items-center">
-                <div class="me-auto">
-                    <h4 class="page-title">Guest Contact Book</h4>
-                    <div class="d-inline-block align-items-center">
-                        <nav>
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                                <li class="breadcrumb-item" aria-current="page">Hotel Admin</li>
-                                <li class="breadcrumb-item active" aria-current="page">Guest Contact Book</li>
-                            </ol>
-                        </nav>
-                    </div>
+        <div class="custom-page-header">
+            <div class="header-left">
+                <div class="header-icon-box">
+                    <i class="fa fa-address-book"></i>
                 </div>
+                <div class="header-content">
+                    <h2 class="header-title">Guest Contact Book</h2>
+                    <ol class="custom-breadcrumb">
+                        <li><i class="fa fa-home"></i></li>
+                        <li>Hotel Admin</li>
+                        <li><i class="fa fa-angle-right"></i></li>
+                        <li class="active">Guest Contact Book</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="header-banner">
+                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
             </div>
         </div>
         <!-- Main content -->
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box new_table_box">
                         <div class="box-header">
                             <h4 class="box-title">Guest Contact Book</h4>
                             <div class="float-right" style="float:right;">
-                                <a href="<?php echo base_url('add-lead-admin'); ?>" class="btn btn-primary-light btn-sm">
+                                <a href="<?php echo base_url('add-lead-admin'); ?>" class="new_button">
                                     Add +
                                 </a>
                             </div>
                         </div>
                         <div class="box-body">
                             <div class="table-responsive">
-                                <table id="complex_header" class="text-fade table table-bordered display" style="width:100%">
+                                <table id="complex_header" class="text-fade table table-bordered display dataTable no-footer" style="width:100%">
                                     <thead>
                                         <tr class="text-dark">
                                             <th>Sr. No.</th>
 
                                             <th>Name</th>
                                             <th>Phone</th>
-                                            <th>Email</th>
                                             <th>City</th>
+                                            <th>Email</th>
+                                            <th>Hotel Name</th>
                                             <th>Total Leads</th>
                                             <th>View Leads</th>
 
@@ -54,20 +58,18 @@
                                             foreach ($guestcontactBook as $each) { ?>
                                                 <tr>
                                                     <td><?php echo $number++; ?></td>
-                                                    <td><?= $each->user_name ?></td>
-                                                    <td><?= $each->phone_number ?></td>
-
-                                                    <td><?php if (!empty($each->email)) {
-                                                            echo $each->email;
+                                                    <td><?= htmlspecialchars($each->user_name ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?= htmlspecialchars($each->phone_number ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?= htmlspecialchars($each->city_name ?? 'NA', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?php if (!empty($each->email ?? '')) {
+                                                            echo htmlspecialchars($each->email, ENT_QUOTES, 'UTF-8');
                                                         } else {
                                                             echo "NA";
                                                         } ?></td>
-
-                                                    <td><?= $each->city_name ?></td>
-
-                                                    <td><?= $each->total_leads ?></td>
+                                                    <td><?= htmlspecialchars($each->hotel_name ?? 'NA', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?= (int) $each->total_leads ?></td>
                                                     <td>
-                                                        <a href="<?php echo base_url('view-leads?phone=') ?><?= $each->phone_number ?>"><button class="btn btn-sm btn-warning">View Leads</button>
+                                                        <a href="<?php echo base_url('view-leads?phone=' . rawurlencode($each->phone_number)); ?>"><button type="button" class="btn btn-sm btn-warning">View Leads</button>
                                                         </a>
                                                     </td>
 

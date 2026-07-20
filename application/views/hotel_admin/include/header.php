@@ -45,12 +45,8 @@
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	<style type="text/css">
 		#loader {
-			position: fixed;
-			width: 100%;
-			height: 100vh;
-			z-index: 999999;
-			overflow: visible;
-			background: #fff url("https://www.icegif.com/wp-content/uploads/2023/07/icegif-1262.gif") no-repeat center center
+			display: none !important;
+			background: none !important;
 		}
 
 		.sidebar .fa {

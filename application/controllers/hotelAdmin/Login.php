@@ -27,14 +27,13 @@ class Login extends CI_Controller
 
     public function login_check()
     {
-        $email = $this->input->post('email');
+        $email = trim((string) $this->input->post('email'));
         $password = $this->input->post('password');
-        $role_as = $this->input->post('role_as');
 
-        // Initialize response array
         $response = [
             'response_message' => '',
-            'redirect_url' => ''
+            'redirect_url' => '',
+            'csrfHash' => $this->security->get_csrf_hash()
         ];
 
         // Fetch user data based on email

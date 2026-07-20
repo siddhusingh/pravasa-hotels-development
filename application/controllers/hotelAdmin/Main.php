@@ -123,8 +123,6 @@ class Main extends CI_Controller
 
 
 
-
-
             $this->load->view('hotel_admin/include/header');
             $this->load->view('hotel_admin/include/sidebar');
             $this->load->view('hotel_admin/dashboard', $data);
@@ -492,6 +490,8 @@ class Main extends CI_Controller
         ];
 
 
+        $data['csrfHash'] = $this->security->get_csrf_hash();
+
         echo json_encode($data);
     }
 
@@ -500,7 +500,7 @@ class Main extends CI_Controller
     // Chart Data Endpoints
     public function department_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
 
 
@@ -513,7 +513,7 @@ class Main extends CI_Controller
 
     public function disposition_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('disposition', $filters);
         $this->send_static_chart_data($data, 'disposition');
@@ -521,7 +521,7 @@ class Main extends CI_Controller
 
     public function template_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('template_name', $filters);
         $this->send_static_chart_data($data, 'template_name');
@@ -529,7 +529,7 @@ class Main extends CI_Controller
 
     public function source_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('user_channel', $filters);
         $this->send_static_chart_data($data, 'user_channel');
@@ -537,7 +537,7 @@ class Main extends CI_Controller
 
     public function status_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('status', $filters);
         $this->send_static_chart_data($data, 'status');
@@ -545,7 +545,7 @@ class Main extends CI_Controller
 
     public function guest_type_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->getDashboardChartFilters();
 
         $data = $this->Dashboard_model->get_guest_type_data($filters);
 
@@ -567,6 +567,15 @@ class Main extends CI_Controller
 
 
 
+
+    private function getDashboardChartFilters()
+    {
+        $filters = (array) $this->input->get();
+        $hotel_session = $this->session->userdata('hotel_admin_session');
+        $filters['property'] = $hotel_session['id'];
+
+        return $filters;
+    }
 
     // Reusable method for grouped charts
     private function send_chart_data($model_method, $table, $where_col, $group_col, $label_col, $filters)
@@ -637,56 +646,104 @@ class Main extends CI_Controller
     /*load user profile detail*/
     public function update_profile()
     {
-
-        $id = $this->input->post('id');
-        $full_name = $this->input->post('full_name');
-        $phone = $this->input->post('phone');
-        $email = $this->input->post('email');
-
-        $password = md5($this->input->post('password'));
-
-        $this->session->set_userdata('logged_in_username', $full_name);
-
-        $table = 'hotel_admins';
-
-        $data = array(
-            'name' => $full_name,
-            'email' => $email,
-            'phone' => $phone,
-
-        );
-
-        if (!empty($this->input->post('password'))) {
-            $data['password'] = $password;
+        if ($this->input->method() !== 'post') {
+            show_404();
+            return;
         }
 
-        $this->session->set_userdata('logged_in_username', $full_name);
+        $hotel_session = $this->session->userdata('hotel_admin_session');
+        $hotel_id = (int) ($hotel_session['id'] ?? 0);
+        $profile = $this->Comman_model->get_single_record('hotel_admins', [
+            'hotel_id' => $hotel_id,
+            'is_deleted' => 0
+        ]);
 
-        $session_data = [
-            'id' => $id,
-            'logged_in' => true,
-            'user_name' => $full_name,
+        if (!$profile) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(404)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Hotel admin profile not found.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $full_name = trim((string) $this->input->post('full_name', true));
+        $phone = trim((string) $this->input->post('phone', true));
+        $email = trim((string) $this->input->post('email', true));
+        $password = (string) $this->input->post('password');
+        $errors = [];
+
+        if (mb_strlen($full_name) < 3) {
+            $errors['full_name'] = 'Full name must be at least 3 characters.';
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please enter a valid email address.';
+        }
+        if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+            $errors['phone'] = 'Please enter a valid 10-digit Indian mobile number.';
+        }
+        if ($password !== '' && !preg_match('/^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/', $password)) {
+            $errors['password'] = 'Password must contain at least 6 characters, one number and one special character.';
+        }
+
+        if (!empty($errors)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $data = [
+            'name' => $full_name,
+            'email' => $email,
             'phone' => $phone
         ];
 
+        if ($password !== '') {
+            // Keep compatibility with the existing hotel-admin login scheme.
+            $data['password'] = md5($password);
+        }
 
+        $updated = $this->Comman_model->UpdateRecord('hotel_admins', $data, [
+            'id' => $profile->id,
+            'hotel_id' => $hotel_id
+        ]);
 
+        if (!$updated) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(500)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Unable to update the profile.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
+        // Preserve the fixed hotel/property ID and every existing session key.
+        $hotel_session['user_name'] = $full_name;
+        $hotel_session['phone'] = $phone;
+        $hotel_session['email'] = $email;
+        $this->session->set_userdata('logged_in_username', $full_name);
+        $this->session->set_userdata('hotel_admin_session', $hotel_session);
+        $this->session->set_flashdata('profile_success', 'Your profile has been updated successfully.');
 
-        $this->session->set_userdata('hotel_admin_session', $session_data);
-
-
-
-        $result = $this->Comman_model->UpdateRecord($table, $data, array('id' => $id));
-
-        $response_json['status'] = true;
-        $response_json['message'] = "senior_managers data has been updated successfully";
-        $response_json['record_id'] = $record_id;
-
-        $this->session->set_flashdata('profile_success', "Your profile has been updated successfully.");
-
-
-        echo json_encode($response_json);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_status_header(200)
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Your profile has been updated successfully.',
+                'record_id' => (int) $profile->id,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
     }
 
 

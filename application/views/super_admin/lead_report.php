@@ -1,3 +1,12 @@
+<?php
+$is_hotel_lead_view = !empty($hotel_lead_view);
+$fixed_property_id = $is_hotel_lead_view ? (int) ($fixed_property_id ?? 0) : 0;
+$lead_add_url = $is_hotel_lead_view ? 'add-lead-admin' : 'add-lead';
+$lead_update_url = $is_hotel_lead_view ? 'update-lead-admin' : 'update-lead-super-admin';
+$lead_fetch_url = $is_hotel_lead_view ? 'hotelAdmin/Leads/fetch_leads_ajax' : 'LeadController/fetch_leads_ajax/';
+$lead_session = $this->session->userdata($is_hotel_lead_view ? 'hotel_admin_session' : 'super_admin_session');
+$lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : '';
+?>
 <style>
    .review-card {
       border-radius: 15px;
@@ -506,7 +515,7 @@
                                  <i class="fa fa-filter" aria-hidden="true"></i>
                                  Filters
                               </button>
-                              <a href="<?php echo base_url('add-lead') ?>">
+                              <a href="<?php echo base_url($lead_add_url) ?>">
                                  <button type="button" class="btn btn-primary-light btn-sm ">
                                     Add +
                                  </button>
@@ -525,10 +534,10 @@
                            <div class="row g-3 align-items-end">
                               <!-- Property -->
                               <div class="col-md-3">
-                                 <label for="property" class="form-label">Property</label>
-                                 <select name="property[]" class="filter-input lead-filter-multiselect-source" multiple id="property">
+                                 <label for="property" class="form-label"><?= $is_hotel_lead_view ? 'Hotel (Property)' : 'Property'; ?></label>
+                                 <select name="property[]" class="filter-input lead-filter-multiselect-source" multiple id="property" <?= $is_hotel_lead_view ? 'disabled aria-readonly="true"' : ''; ?>>
                                     <?php foreach ($properties as $property) { ?>
-                                       <option value="<?= $property->hotel_id; ?>"><?= $property->hotel_name; ?></option>
+                                       <option value="<?= $property->hotel_id; ?>" <?= $is_hotel_lead_view && (int) $property->hotel_id === $fixed_property_id ? 'selected' : ''; ?>><?= htmlspecialchars($property->hotel_name); ?></option>
                                     <?php } ?>
                                  </select>
                               </div>
@@ -935,7 +944,7 @@
       });
 
       // Confirm Call
-      $("#confirmCall").click(function() {
+      $("#confirmCall").click(function(event) {
          $("#confirmCallModal").modal("hide");
          $("#progress-number").text(phoneNumber);
          $("#callProgressModal").modal("show");
@@ -980,7 +989,7 @@
                      }
                   ],
                   "participants": [{
-                     "participantAddress": <?php echo $this->session->userdata('super_admin_session')['phone'] ?>,
+                     "participantAddress": <?= json_encode((string) $lead_caller_phone); ?>,
                      "callerId": 8048248828,
                      "participantName": "A",
                      "maxRetries": 1,
@@ -1174,13 +1183,13 @@
                   </div>
                   <!-- Property -->
                   <div class="col-md-4">
-                     <label>Property <span class="required-marker">*</span></label>
-                     <select name="property" class="form-control" required id="edit_property">
+                     <label><?= $is_hotel_lead_view ? 'Hotel (Property)' : 'Property'; ?> <span class="required-marker">*</span></label>
+                     <select name="property" class="form-control" required id="edit_property" <?= $is_hotel_lead_view ? 'disabled aria-readonly="true"' : ''; ?>>
                         <?php foreach ($properties as $property) { ?>
                            <option
                               value="<?= $property->hotel_id; ?>"
                               data-hotel_code="<?= htmlspecialchars($property->hotel_code); ?>"
-                              <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
+                              <?= $is_hotel_lead_view && (int) $property->hotel_id === $fixed_property_id ? 'selected' : (($this->input->get('property') == $property->hotel_id) ? 'selected' : ''); ?>>
                               <?= htmlspecialchars($property->hotel_name); ?>
                            </option>
                         <?php } ?>
@@ -3014,7 +3023,7 @@
 
          // AJAX request
          csrfAjax({
-            url: '<?php echo base_url("update-lead-super-admin"); ?>',
+            url: '<?php echo base_url($lead_update_url); ?>',
             type: 'POST',
             data: formData,
             processData: false,
@@ -3127,7 +3136,9 @@
          $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
 
          let summary = 'Select Options';
-         if (selectedCount > 0 && selectedCount === total) {
+         if ($select.prop('disabled') && selectedCount === 1) {
+            summary = $select.find('option:selected').text().trim();
+         } else if (selectedCount > 0 && selectedCount === total) {
             summary = `All selected (${selectedCount})`;
          } else if (selectedCount > 0) {
             summary = `${selectedCount} selected`;
@@ -3150,7 +3161,8 @@
          const $toggle = $('<button>', {
             type: 'button',
             class: 'lead-filter-multiselect-toggle',
-            'aria-expanded': 'false'
+            'aria-expanded': 'false',
+            disabled: $select.prop('disabled')
          }).append($('<span>', {
             class: 'lead-filter-multiselect-summary',
             text: 'Select Options'
@@ -3297,7 +3309,7 @@
          let assignedUser = getUserFilterData('#assigned_to_filter');
 
          let filters = {
-            property: $('#property').val(),
+            property: <?= $is_hotel_lead_view ? '["' . $fixed_property_id . '"]' : "$('#property').val()"; ?>,
             department: $('#department').val(),
             status: $('#status').val(),
             channel: $('#channel').val(),
@@ -3325,7 +3337,7 @@
          }
 
          csrfAjax({
-            url: "<?= base_url('LeadController/fetch_leads_ajax/') ?>",
+            url: "<?= base_url($lead_fetch_url) ?>",
             method: "POST",
             data: filters,
             dataType: "json",

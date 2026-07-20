@@ -2,21 +2,21 @@
   <div class="content-wrapper">
     <div class="container-full">
       <!-- Content Header (Page header) -->
-      <div class="content-header">
-        <div class="d-flex align-items-center">
-          <div class="me-auto">
-            <h4 class="page-title">My Profile</h4>
-            <div class="d-inline-block align-items-center">
-              <nav>
-                <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                  <li class="breadcrumb-item" aria-current="page">My</li>
-                  <li class="breadcrumb-item active" aria-current="page">Profile</li>
-                </ol>
-              </nav>
-            </div>
+      <div class="custom-page-header">
+        <div class="header-left">
+          <div class="header-icon-box"><i class="fa fa-user"></i></div>
+          <div class="header-content">
+            <h2 class="header-title">My Profile</h2>
+            <ol class="custom-breadcrumb">
+              <li><i class="fa fa-home"></i></li>
+              <li>Hotel Admin</li>
+              <li><i class="fa fa-angle-right"></i></li>
+              <li class="active">My Profile</li>
+            </ol>
           </div>
-
+        </div>
+        <div class="header-banner">
+          <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
         </div>
       </div>
 
@@ -28,25 +28,17 @@
           <div class="col-xl-12 col-lg-12">
             <div class="card">
               <div class="card-body">
-                <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
-
-                  <li class="nav-item">
-                    <a href="#settings" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 active">
-                      Settings
-                    </a>
-                  </li>
-                </ul>
                 <div class="tab-content">
 
 
                   <div class="tab-pane show active" id="settings">
 
-                    <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Personal Info</h5>
+                    <h5 class="mb-4 text-uppercase"><i class="fa fa-user-circle me-1"></i> Personal Info</h5>
                     <div class="row">
                       <div class="col-md-6">
                         <div class="mb-3">
                           <label for="full_name" class="form-label">Full Name</label>
-                          <input type="text" class="form-control" id="full_name" value="<?php echo $profile_data->name; ?>">
+                          <input type="text" class="form-control" id="full_name" value="<?= htmlspecialchars($profile_data->name, ENT_QUOTES, 'UTF-8'); ?>" autocomplete="name">
                           <input type="hidden" name="" value="<?php echo $profile_data->id; ?>" id="record_id">
                           <span class="text-danger" id="full_name_error"></span>
 
@@ -56,7 +48,7 @@
                       <div class="col-md-6">
                         <div class="mb-3">
                           <label for="useremail" class="form-label">Email Address</label>
-                          <input type="email" class="form-control" id="email" value="<?php echo $profile_data->email; ?>">
+                          <input type="email" class="form-control" id="email" value="<?= htmlspecialchars($profile_data->email, ENT_QUOTES, 'UTF-8'); ?>" autocomplete="email">
                           <span class="text-danger" id="email_error"></span>
 
 
@@ -65,7 +57,7 @@
                       <div class="col-md-6">
                         <div class="mb-3">
                           <label for="useremail" class="form-label">Phone Number</label>
-                          <input type="Number" class="form-control" id="phone" value="<?php echo $profile_data->phone; ?>">
+                          <input type="tel" class="form-control" id="phone" value="<?= htmlspecialchars($profile_data->phone, ENT_QUOTES, 'UTF-8'); ?>" inputmode="numeric" maxlength="10" autocomplete="tel">
                           <span class="text-danger" id="phone_error"></span>
 
 
@@ -74,7 +66,7 @@
                       <div class="col-md-6">
                         <div class="mb-3">
                           <label for="userpassword" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="password">
+                          <input type="password" class="form-control" id="password" placeholder="Leave blank to keep current password" autocomplete="new-password">
                           <span class="text-danger" id="password_error"></span>
 
 
@@ -85,7 +77,7 @@
 
 
                     <div class="text-end">
-                      <button type="button" class="btn btn-primary mt-2 " id="updateBtn"><i class="mdi mdi-content-save"></i> Save Changes</button>
+                      <button type="button" class="btn btn-primary mt-2 " id="updateBtn"><i class="fa fa-save"></i> Save Changes</button>
                     </div>
 
                   </div>
@@ -138,13 +130,8 @@
     } ?>
   </script>
   <script type="text/javascript">
-    // add Senior Managers code start from here
-
-
-
-
-
-    // validation rules
+    var profileCsrfName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+    var profileCsrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
 
     /* FULL NAME */
     $('#full_name').focusout(function() {
@@ -180,13 +167,13 @@
     /* PHONE */
     $('#phone').focusout(function() {
       let value = $(this).val().trim();
-      let phoneRegex = /^[0-9]{10}$/;
+      let phoneRegex = /^[6-9][0-9]{9}$/;
 
       if (value === '') {
         $('#phone_error').html('Phone number is required');
         $(this).val('');
       } else if (!phoneRegex.test(value)) {
-        $('#phone_error').html('Phone number must be exactly 10 digits');
+        $('#phone_error').html('Please enter a valid 10-digit Indian mobile number');
       } else {
         $('#phone_error').html('');
       }
@@ -204,8 +191,7 @@
           $('#password_error').html('');
         }
       } else {
-        $('#password_error').html('Please Enter Password');
-        $('#password').val('');
+        $('#password_error').html('');
       }
     });
 
@@ -214,7 +200,6 @@
 
       var isValid = true; // Flag to check if form is valid
 
-      var record_id = $("#record_id").val();
       var full_name = $('#full_name').val().trim();
       var email = $('#email').val().trim();
       var password = $('#password').val();
@@ -223,30 +208,38 @@
       var passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/; // At least 6 characters, one number, one special character
 
       // Validate full_name
-      if (full_name == '') {
-        $('#full_name_error').html('Please Enter Full Name');
+      if (full_name.length < 3) {
+        $('#full_name_error').html('Full name must be at least 3 characters');
         isValid = false;
       } else {
         $('#full_name_error').html('');
       }
 
       // Validate email
-      if (email == '') {
-        $('#email_error').html('Please Enter Email');
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        $('#email_error').html('Please enter a valid email address');
         isValid = false;
       } else {
         $('#email_error').html('');
       }
 
       // Validate phone
-      if (phone == '') {
-        $('#phone_error').html('Please Enter Phone Number');
+      var phoneRegex = /^[6-9][0-9]{9}$/;
+      if (!phoneRegex.test(phone)) {
+        $('#phone_error').html('Please enter a valid 10-digit Indian mobile number');
         isValid = false;
       } else {
         $('#phone_error').html('');
       }
 
-      // Validate password
+      // Password is optional; validate it only when the user enters one.
+      if (password !== '' && !passwordRegex.test(password)) {
+        $('#password_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
+        isValid = false;
+      } else {
+        $('#password_error').html('');
+      }
 
 
       // If all validations passed, then submit via Ajax
@@ -257,7 +250,7 @@
         formData.append('email', email);
         formData.append('password', password);
         formData.append('phone', phone);
-        formData.append('id', record_id);
+        formData.append(profileCsrfName, profileCsrfHash);
 
         $.ajax({
           url: '<?php echo base_url("update-hotel-admin-profile") ?>',
@@ -270,7 +263,35 @@
             $('#updateBtn').html('Updating...').attr('disabled', true);
           },
           success: function(response) {
-            window.location.reload();
+            if (response.csrfHash) {
+              profileCsrfHash = response.csrfHash;
+            }
+            if (response.status) {
+              toastr.success(response.message || 'Your profile has been updated successfully.');
+              window.setTimeout(function() {
+                window.location.reload();
+              }, 500);
+              return;
+            }
+
+            toastr.error(response.message || 'Unable to update the profile.');
+          },
+          error: function(xhr) {
+            var response = xhr.responseJSON || {};
+            var errors = response.errors || {};
+
+            if (response.csrfHash) {
+              profileCsrfHash = response.csrfHash;
+            }
+
+            $.each(errors, function(field, message) {
+              $('#' + field + '_error').html(message);
+            });
+
+            toastr.error(response.message || 'Unable to update the profile.');
+          },
+          complete: function() {
+            $('#updateBtn').html('<i class="fa fa-save"></i> Save Changes').attr('disabled', false);
           }
         });
       }

@@ -52,7 +52,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <div class="modal modal-right fade" id="quick_user_toggle" tabindex="-1">
    <div class="modal-dialog">
       <div class="modal-content slim-scroll3">
-         <div class="modal modal-right fade show" id="quick_user_toggle" tabindex="-1" aria-modal="true" role="dialog" style="display: block;">
+         <div class="modal modal-right fade show" id="quick_user_toggle_panel" tabindex="-1" aria-modal="true" role="dialog" style="display: block;">
             <div class="modal-dialog">
                <div class="modal-content slim-scroll3 ps ps--active-y">
                   <div class="modal-body  bg-white">
@@ -148,7 +148,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
          <div class="media-list media-list-hover mt-20">
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-success" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/1.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/1.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -160,7 +160,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-danger" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/2.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/2.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -172,7 +172,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-warning" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/3.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/3.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -184,7 +184,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-primary" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/4.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/avatar-13.png'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -196,7 +196,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-success" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/1.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/1.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -208,7 +208,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-danger" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/2.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/2.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -220,7 +220,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-warning" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/3.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/3.jpg'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -232,7 +232,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-primary" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/4.jpg" alt="...">
+                  <img src="<?php echo base_url('assets/images/avatar/avatar-13.png'); ?>" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -396,8 +396,10 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <!-- ✅ Core Vendors -->
 <script src="<?php echo base_url('assets/') ?>/js/vendors.min.js"></script>
 
+<?php $is_hotel_dashboard = $this->uri->segment(1) === 'hotel-admin-dashbaord'; ?>
+<?php if ($is_hotel_dashboard): ?>
 <!-- ✅ Flot Charts (before dashboard.js to avoid $.plot error) -->
-<script src="<?php echo base_url('assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
+<script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.resize.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.pie.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.categories.js"></script>
@@ -406,16 +408,19 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/apexcharts-bundle/irregular-data-series.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/apexcharts-bundle/dist/apexcharts.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/zingchart_branded_version/zingchart.min.js"></script>
+<?php endif; ?>
 
 <!-- ✅ Feather Icons -->
 <script src="<?php echo base_url('assets/assets/') ?>icons/feather-icons/feather.min.js"></script>
 
 <!-- ✅ AmCharts (optional if used in dashboard) -->
+<?php if ($is_hotel_dashboard): ?>
 <script src="<?php echo base_url('assets/') ?>/lib/4/core.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/maps.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/geodata/worldLow.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/themes/dataviz.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/themes/animated.js"></script>
+<?php endif; ?>
 
 <!-- ✅ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -430,7 +435,9 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <script src="<?php echo base_url('assets/') ?>/js/demo.js"></script>
 
 <!-- ✅ Dashboard JS should come at last -->
+<?php if ($is_hotel_dashboard): ?>
 <script src="<?php echo base_url('assets/') ?>/js/pages/dashboard.js"></script>
+<?php endif; ?>
 
 
 <!-- ✅ DataTables CSS & Buttons CSS -->

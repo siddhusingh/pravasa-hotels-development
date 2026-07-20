@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Mirrored from tresto-admin-template.multipurposethemes.com/bs5/template/vertical/main/auth_login.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 27 Dec 2024 15:28:51 GMT -->
-
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -22,10 +20,6 @@
     ->get()
     ->row();
 
-  $logoimg = !empty($branding->logo)
-    ? base_url($branding->logo)
-    : base_url('assets/defaul_logo.png');
-
   $loginBg = !empty($branding->login_bg_image)
     ? base_url($branding->login_bg_image)
     : base_url('assets/login_bg.avif');
@@ -38,8 +32,6 @@
 
   <title><?php echo $branding->site_title ?> Hotel Admin - Log in</title>
   <link rel="shortcut icon" type="image/x-icon" href="<?= $favicon ?>">
-
-  <link href="https://assets.simplotel.com/simplotel/image/upload/x_138,y_0,w_312,h_312,c_crop/w_32,h_32,c_scale/crescent-spa-resorts/CRESCENT_LOGO_OPEN_rksvbu" rel="shortcut icon">
 
   <link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/vendors_css.css">
 
@@ -135,41 +127,43 @@
               </div>
               <div class="p-40">
 
-                <div class="form-group">
-                  <div class="input-group mb-3">
-                    <span class="input-group-text bg-transparent"><i class="text-fade ti-user"></i></span>
-                    <input type="text" class="form-control ps-15 bg-transparent" placeholder="Username" id="email">
-
-                  </div>
-                  <span class="text-danger" id="email-err"></span>
-                </div>
-                <div class="form-group">
-                  <div class="input-group mb-3">
-                    <span class="input-group-text  bg-transparent"><i class="text-fade ti-lock"></i></span>
-                    <input type="password" class="form-control ps-15 bg-transparent" placeholder="Password" id="password">
-
-                  </div>
-                  <span class="text-danger" id="password-err"></span>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    <!-- <div class="checkbox">
-											<input type="checkbox" id="basic_checkbox_1" >
-											<label for="basic_checkbox_1">Remember Me</label>
-										  </div> -->
-                  </div>
-                  <!-- /.col -->
-                  <div class="col-6">
-                    <div class="fog-pwd text-end">
-
+                <form id="login-form" novalidate>
+                    <div class="form-group">
+                        <div class="input-group mb-3" id="email-group">
+                            <span class="input-group-text bg-transparent"><i class="text-fade ti-user"></i></span>
+                            <input
+                                type="email"
+                                class="form-control ps-15 bg-transparent"
+                                placeholder="Email address"
+                                id="email"
+                                name="email"
+                                autocomplete="username"
+                            >
+                        </div>
+                        <span class="text-danger" id="email-err"></span>
                     </div>
-                  </div>
-                  <!-- /.col -->
-                  <div class="col-12 text-center">
-                    <button type="button" id="sign-in-btn" class="btn btn-primary w-p100 mt-10">SIGN IN</button>
-                  </div>
-                  <!-- /.col -->
-                </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3" id="password-group">
+                            <span class="input-group-text bg-transparent"><i class="text-fade ti-lock"></i></span>
+                            <input
+                                type="password"
+                                class="form-control ps-15 bg-transparent"
+                                placeholder="Password"
+                                id="password"
+                                name="password"
+                                autocomplete="current-password"
+                            >
+                        </div>
+                        <span class="text-danger" id="password-err"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button type="submit" id="sign-in-btn" class="btn btn-primary w-p100 mt-10">
+                                SIGN IN
+                            </button>
+                        </div>
+                    </div>
+                </form>
 
 
               </div>
@@ -185,151 +179,139 @@
     <script src="<?php echo base_url('assets/') ?>js/pages/chat-popup.js"></script>
     <script src="<?php echo base_url('assets/') ?>assets/icons/feather-icons/feather.min.js"></script>
 
+<script>
+    window.CSRF = {
+        name: "<?= $this->security->get_csrf_token_name(); ?>",
+        hash: "<?= $this->security->get_csrf_hash(); ?>"
+    };
+
+    $(function () {
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        var isRedirecting = false;
+        var $form = $('#login-form');
+        var $email = $('#email');
+        var $password = $('#password');
+        var $submitButton = $('#sign-in-btn');
+
+        function setFieldState($field, errorMessage) {
+            var errorSelector = '#' + $field.attr('id') + '-err';
+            var groupSelector = '#' + $field.attr('id') + '-group';
+
+            $field.toggleClass('is-invalid', Boolean(errorMessage));
+            $field.toggleClass('is-valid', !errorMessage && $.trim($field.val()) !== '');
+            $(groupSelector).toggleClass('mb-3', !errorMessage);
+            $(errorSelector).text(errorMessage || '');
+        }
+
+        function validateEmail() {
+            var email = $.trim($email.val());
+            var errorMessage = '';
+
+            if (email === '') {
+                errorMessage = 'Please enter your email address.';
+            } else if (!emailPattern.test(email)) {
+                errorMessage = 'Please enter a valid email address.';
+            }
+
+            setFieldState($email, errorMessage);
+            return errorMessage === '';
+        }
+
+        function validatePassword() {
+            var errorMessage = $password.val() === '' ? 'Please enter your password.' : '';
+
+            setFieldState($password, errorMessage);
+            return errorMessage === '';
+        }
+
+        function setProcessing(isProcessing) {
+            $submitButton.prop('disabled', isProcessing);
+            $submitButton.html(isProcessing
+                ? '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing in...'
+                : 'SIGN IN'
+            );
+        }
+
+        $email.on('blur', validateEmail);
+        $password.on('blur', validatePassword);
+
+        $email.on('input', function () {
+            if ($(this).hasClass('is-invalid')) {
+                validateEmail();
+            }
+        });
+
+        $password.on('input', function () {
+            if ($(this).hasClass('is-invalid')) {
+                validatePassword();
+            }
+        });
+
+        $form.on('submit', function (event) {
+            event.preventDefault();
+
+            var isEmailValid = validateEmail();
+            var isPasswordValid = validatePassword();
+
+            if (!isEmailValid || !isPasswordValid) {
+                $form.find('.is-invalid').first().trigger('focus');
+                return;
+            }
+
+            var requestData = {
+                email: $.trim($email.val()),
+                password: $password.val()
+            };
+            requestData[window.CSRF.name] = window.CSRF.hash;
+
+            $.ajax({
+                url: '<?= base_url('hotelAdmin/login/login_check'); ?>',
+                type: 'POST',
+                data: requestData,
+                dataType: 'json',
+                beforeSend: function () {
+                    setProcessing(true);
+                },
+                success: function (result) {
+                    if (result.csrfHash) {
+                        window.CSRF.hash = result.csrfHash;
+                    }
+
+                    switch (result.response_message) {
+                        case 'account404':
+                            setFieldState($email, "Sorry, we couldn't find an account with this email.");
+                            break;
+                        case 'WRONGPASS':
+                            setFieldState($password, 'The password you entered is incorrect.');
+                            break;
+                        case 'disabled':
+                            setFieldState($email, 'Your account is disabled. Please contact the administrator.');
+                            break;
+                        case 'logginSCS':
+                            isRedirecting = true;
+                            $submitButton.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Redirecting...');
+                            window.location.href = '<?= base_url(); ?>' + result.redirect_url;
+                            break;
+                        default:
+                            setFieldState($email, 'Unable to sign in. Please try again.');
+                    }
+                },
+                error: function (xhr) {
+                    var message = xhr.status === 403
+                        ? 'Your session expired. Please refresh the page and try again.'
+                        : 'Unable to sign in right now. Please try again.';
+
+                    setFieldState($email, message);
+                },
+                complete: function () {
+                    if (!isRedirecting) {
+                        setProcessing(false);
+                    }
+                }
+            });
+        });
+    });
+</script>
 </body>
 
-<!-- Mirrored from tresto-admin-template.multipurposethemes.com/bs5/template/vertical/main/auth_login.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 27 Dec 2024 15:28:52 GMT -->
-
 </html>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('#togglePassword').click(function() {
-      var passwordInput = $('#password');
-      var passwordToggle = $('#togglePassword i');
-
-      // Toggle password visibility
-      if (passwordInput.attr('type') === 'password') {
-        passwordInput.attr('type', 'text');
-        $(this).removeClass('fa-eye');
-        $(this).addClass('fa-eye-slash');
-      } else {
-        passwordInput.attr('type', 'password');
-        $(this).removeClass('fa-eye-slash');
-        $(this).addClass('fa-eye');
-      }
-    });
-  });
-</script>
-
-<script>
-  $(document).on('focusout', '#email', function() {
-    var reg_email = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
-    if ($(this).val() != "") {
-      if (!reg_email.test($(this).val())) {
-        $(this).addClass("is-invalid");
-        $(this).parent().removeClass("mb-3");
-        $("#email-err").text("Enter valid email address.*");
-      } else {
-        $(this).removeClass("is-invalid");
-        $(this).addClass("is-valid");
-        $(this).parent().addClass("mb-3");
-        $("#email-err").text("");
-      }
-    } else {
-      $(this).removeClass("is-invalid");
-      $(this).removeClass("is-valid");
-      $(this).parent().addClass("mb-3");
-      $("#email-err").text("");
-    }
-  })
-</script>
-<script>
-  $(document).on('click', '#sign-in-btn', function() {
-    var reg_email = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
-    var email = $("#email").val();
-    var password = $("#password").val();
-    var role_as = 'super_admin';
-    if (email != "" && password != "" && reg_email.test(email)) {
-      $("#email").removeClass("is-invalid");
-      $("#email").addClass("is-valid");
-      $("#email").parent().addClass("mb-3");
-      $("#email-err").text("");
-      $("#password").removeClass("is-invalid");
-      $("#password").addClass("is-valid");
-      $("#password").parent().addClass("mb-3");
-      $("#password-err").text("");
-      proceed_to_login();
-    } else if (email == "") {
-      $("#email").addClass("is-invalid");
-      $("#email").parent().removeClass("mb-3");
-      $("#email-err").text("Enter email address.*");
-    } else if (role_as == "select") {
-      $("#role_as").addClass("is-invalid");
-      $("#role_as").parent().removeClass("mb-3");
-      $("#role_as-err").text("Select One.*");
-    } else if (!reg_email.test(email)) {
-      $("#email").addClass("is-invalid");
-      $("#email").parent().removeClass("mb-3");
-      $("#email-err").text("Enter valid email address.*");
-    } else if (password == "") {
-      $("#password").addClass("is-invalid");
-      $("#password").parent().removeClass("mb-3");
-      $("#password-err").text("Enter your password.*");
-    }
-
-  })
-</script>
-<script>
-  function proceed_to_login() {
-    var email = $("#email").val();
-    var passsword = $("#password").val();
-    var role_as = $("#role_as").val();
-
-
-
-    //console.log(role_as);return;
-
-    $.ajax({
-      url: '<?= base_url('hotelAdmin/login/login_check') ?>',
-      type: 'post',
-      data: {
-        email: email,
-        password: passsword,
-        role_as: role_as
-      },
-      dataType: 'JSON',
-      beforeSend: function() {
-        $("#acc-deact-err").text("");
-        $("#password").removeClass("is-invalid");
-        $("#password").parent().addClass("mb-3");
-        $("#password-err").text("");
-        $("#email").removeClass("is-invalid");
-        $("#email").parent().addClass("mb-3");
-        $("#email-err").text("");
-        $("#sign-btn-container").html('<div class="spinner-border text-warning text-right"></div>');
-      },
-      success: function(result) {
-        //console.log(response);  
-        response = result.response_message;
-
-        if (response == "account404") {
-          $("#email").addClass("is-invalid");
-          $("#email").parent().removeClass("mb-3");
-          $("#email-err").text("Sorry,we couldn't find an account.");
-        }
-        if (response == "ACC0") {
-          $("#acc-deact-err").text("Account not active contact admin.!");
-        }
-        if (response == "WRONGPASS") {
-          $("#password").addClass("is-invalid");
-          $("#password").parent().removeClass("mb-3");
-          $("#password-err").text("Wrong Password.*");
-        }
-
-        if (response == "disabled") {
-          $("#password").addClass("is-invalid");
-          $("#password").parent().removeClass("mb-3");
-          $("#password-err").text("Your Account is disabled please check with admin*");
-        }
-        if (response == "logginSCS") {
-          redirect_url = result.redirect_url;
-          window.location.href = "<?= base_url() ?>" + redirect_url;
-        }
-      },
-      complete: function(data) {
-        $("#sign-btn-container").html('<button type="button" class="btn btn-warning btn-block" id="sign-in-btn">Sign In</button>');
-      }
-    });
-  }
-</script>
-
-<script type="text/javascript"></script>

@@ -813,64 +813,32 @@
 							<h4 class="box-title">Quick Filters for Charts </h4>
 						</div>
 						<div class="box-body">
-							<div class="row">
-								<div id="">
-
-									<form>
-										<div class="row g-3 align-items-end">
-											<form method="GET" action="<?= base_url('view-leads'); ?>" class="mb-4 px-3">
-												<div class="row g-3 align-items-end">
-													<!-- Existing filters (City, Property, etc.) -->
-													<input type="hidden" value="<?php
-																				$hotel_session = $this->session->userdata('hotel_admin_session');
-
-
-																				$property = $hotel_session['id'];
-
-																				echo $property;
-
-																				?>" name="property_bottom">
-													<div class="col-md-2">
-														<label for="department" class="form-label">Department</label>
-														<select name="department_bottom" class="form-select">
-															<option value="">All Departments</option>
-															<?php foreach ($departments as $dept) { ?>
-																<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
-																	<?= $dept->department_name; ?>
-																</option>
-															<?php } ?>
-														</select>
-													</div>
-
-
-
-
-
-													<!-- Date Filters -->
-													<!-- 🆕 Date Filters -->
-													<div class="col-md-2">
-														<label for="start_date" class="form-label">Start Date</label>
-														<input type="date" name="start_date_bottom" class="form-control" value="<?= $this->input->get('start_date'); ?>">
-													</div>
-													<div class="col-md-2">
-														<label for="end_date" class="form-label">End Date</label>
-														<input type="date" name="end_date_bottom" class="form-control" value="<?= $this->input->get('end_date'); ?>">
-													</div>
-													<div class="col-md-2 d-grid">
-														<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
-													</div>
-
-												</div>
-											</form>
-
-
-
-										</div>
-									</form>
-
-
+							<form id="chart-filter-form" class="mb-4 px-3">
+								<div class="row g-3 align-items-end">
+									<div class="col-md-2">
+										<label for="department_bottom" class="form-label">Department</label>
+										<select name="department_bottom" id="department_bottom" class="form-select">
+											<option value="">All Departments</option>
+											<?php foreach ($departments as $dept) { ?>
+												<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
+													<?= $dept->department_name; ?>
+												</option>
+											<?php } ?>
+										</select>
+									</div>
+									<div class="col-md-2">
+										<label for="start_date_bottom" class="form-label">Start Date</label>
+										<input type="date" name="start_date_bottom" id="start_date_bottom" class="form-control" value="<?= $this->input->get('start_date'); ?>">
+									</div>
+									<div class="col-md-2">
+										<label for="end_date_bottom" class="form-label">End Date</label>
+										<input type="date" name="end_date_bottom" id="end_date_bottom" class="form-control" value="<?= $this->input->get('end_date'); ?>">
+									</div>
+									<div class="col-md-2 d-grid">
+										<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
+									</div>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
 				</div>
@@ -926,15 +894,6 @@
 			</div>
 		</section>
 
-		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-		<!-- Highcharts and modules -->
-		<script src="https://code.highcharts.com/highcharts.js"></script>
-		<script src="https://code.highcharts.com/modules/exporting.js"></script>
-		<script src="https://code.highcharts.com/modules/export-data.js"></script>
-		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
 		<style>
 			.chart-container {
 				border: 1px solid #ccc;
@@ -971,6 +930,29 @@
 
 
 		<script>
+			window.CSRF = {
+				name: "<?= $this->security->get_csrf_token_name(); ?>",
+				hash: "<?= $this->security->get_csrf_hash(); ?>"
+			};
+
+			function validateDateRange(startSelector, endSelector) {
+				const startInput = $(startSelector)[0];
+				const endInput = $(endSelector)[0];
+
+				if (!startInput || !endInput) {
+					return true;
+				}
+
+				const isValid = !startInput.value || !endInput.value || startInput.value <= endInput.value;
+				endInput.setCustomValidity(isValid ? '' : 'End date must be on or after the start date.');
+
+				if (!isValid) {
+					endInput.reportValidity();
+				}
+
+				return isValid;
+			}
+
 			function renderHighchart(containerId, title, categories, series, type = 'column') {
 				const isPie = type === 'pie';
 
@@ -1031,13 +1013,12 @@
 
 			function fetchAndRenderChart(endpoint, containerId, title, type) {
 				const filters = {
-					property: $('input[name="property_bottom"]').val(),
 					type: $('select[name="department_bottom"]').val(),
 					start_date: $('input[name="start_date_bottom"]').val(),
 					end_date: $('input[name="end_date_bottom"]').val()
 				};
 
-				$.ajax({
+				return $.ajax({
 					url: endpoint,
 					type: 'GET',
 					data: filters,
@@ -1104,20 +1085,9 @@
 					}
 				];
 
-				chartConfigs.forEach(config => {
-					fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
-
-					$('#' + config.startId + ', #' + config.endId).on('change', function() {
-						const start = $('#' + config.startId).val();
-						const end = $('#' + config.endId).val();
-						fetchAndRenderChart(config.endpoint, config.id, config.title, config.type, start, end);
-					});
-				});
-
-
 				function reloadAllCharts() {
-					chartConfigs.forEach(config => {
-						fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
+					return chartConfigs.map(config => {
+						return fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
 					});
 				}
 
@@ -1127,14 +1097,93 @@
 				// Global filter button
 				$('#filter_bottom_button').on('click', function(e) {
 					e.preventDefault();
-					reloadAllCharts();
+
+					if (!validateDateRange('#start_date_bottom', '#end_date_bottom')) {
+						return;
+					}
+
+					const $button = $(this);
+					$button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Filtering...');
+
+					const requests = reloadAllCharts();
+					let completedRequests = 0;
+
+					requests.forEach(function(request) {
+						request.always(function() {
+							completedRequests++;
+
+							if (completedRequests === requests.length) {
+								$button.prop('disabled', false).text('Filter');
+							}
+						});
+					});
 				});
 			});
 		</script>
 
 
 		<script>
+			let topFilterRequest = null;
+			let topFilterQueued = false;
+			let topFilterTimer = null;
+
+			function initializeDashboardSelects() {
+				if (!$.fn.select2) {
+					return;
+				}
+
+				$('#filter_lead_stats_count select, .quick-filter-box select').each(function() {
+					const $select = $(this);
+					this.style.setProperty('height', '56px', 'important');
+					this.style.setProperty('min-height', '56px', 'important');
+					this.style.setProperty('max-height', '56px', 'important');
+
+					if (!$select.hasClass('select2-hidden-accessible')) {
+						$select.select2({
+							width: '100%',
+							minimumResultsForSearch: 0
+						});
+					}
+
+					const $container = $select.next('.select2-container');
+					const $selection = $container.find('.select2-selection--single');
+					const $rendered = $selection.find('.select2-selection__rendered');
+					const $arrow = $selection.find('.select2-selection__arrow');
+
+					[$container, $selection].forEach(function($element) {
+						if ($element.length) {
+							$element[0].style.setProperty('height', '56px', 'important');
+							$element[0].style.setProperty('min-height', '56px', 'important');
+							$element[0].style.setProperty('max-height', '56px', 'important');
+							$element[0].style.setProperty('box-sizing', 'border-box', 'important');
+						}
+					});
+
+					if ($selection.length) {
+						$selection[0].style.setProperty('padding', '0 14px', 'important');
+					}
+
+					if ($rendered.length) {
+						$rendered[0].style.setProperty('height', '54px', 'important');
+						$rendered[0].style.setProperty('line-height', '54px', 'important');
+						$rendered[0].style.setProperty('padding-top', '0', 'important');
+						$rendered[0].style.setProperty('padding-bottom', '0', 'important');
+					}
+
+					if ($arrow.length) {
+						$arrow[0].style.setProperty('height', '54px', 'important');
+						$arrow[0].style.setProperty('top', '0', 'important');
+					}
+				});
+			}
+
+			function scheduleTopFilters() {
+				window.clearTimeout(topFilterTimer);
+				topFilterTimer = window.setTimeout(applyTopFilters, 250);
+			}
+
 			$(document).ready(function() {
+				initializeDashboardSelects();
 
 				/* =========================================
 				   AUTO FILTER ON CHANGE
@@ -1147,9 +1196,9 @@
        #top_filter_end_date, \
        #top_filter_created_by, \
        #top_filter_assigned_to')
-					.on('change', function() {
-						applyTopFilters();
-					});
+					.on('change', scheduleTopFilters);
+
+				applyTopFilters();
 
 			});
 
@@ -1176,20 +1225,27 @@
 				};
 			}
 
-			applyTopFilters();
-
 			/* =========================================
 			   MAIN FILTER FUNCTION
 			========================================= */
 			function applyTopFilters() {
+				if (!validateDateRange('#top_filter_start_date', '#top_filter_end_date')) {
+					return;
+				}
 
-				let createdUser = getUserFilterData('#top_filter_created_by');
-				let assignedUser = getUserFilterData('#top_filter_assigned_to');
+				if (topFilterRequest && topFilterRequest.readyState !== 4) {
+					topFilterQueued = true;
+					return;
+				}
+
+				topFilterQueued = false;
+
+				const createdUser = getUserFilterData('#top_filter_created_by');
+				const assignedUser = getUserFilterData('#top_filter_assigned_to');
 
 
-				let filters = {
+				const filters = {
 
-					property: $('#top_filter_property').val(),
 					department: $('#top_filter_department').val(),
 					channel: $('#top_filter_channel').val(),
 					disposition: $('#top_filter_disposition').val(),
@@ -1203,21 +1259,26 @@
 					assigned_id: assignedUser.id,
 					assigned_role: assignedUser.role
 				};
+				const previousTotalLeads = $('#totalLeads').text();
+				let requestSucceeded = false;
+				filters[window.CSRF.name] = window.CSRF.hash;
 
-				console.log(filters)
-
-
-				$.ajax({
-					type: "POST",
-					url: "<?= base_url('hotelAdmin/Main/dashboard_top_filter') ?>",
+				topFilterRequest = $.ajax({
+					type: 'POST',
+					url: "<?= base_url('hotelAdmin/Main/dashboard_top_filter'); ?>",
 					data: filters,
-					dataType: "json",
+					dataType: 'json',
 
 					beforeSend: function() {
 						$('#totalLeads').html('...');
 					},
 
 					success: function(response) {
+						requestSucceeded = true;
+
+						if (response.csrfHash) {
+							window.CSRF.hash = response.csrfHash;
+						}
 
 						/* =========================
 						   OVERALL STATUS COUNTS
@@ -1252,30 +1313,25 @@
 
 						$('[data-lead-status="total_revenue"]').text(formatIndianCurrency(response.total_revenue));
 
-						$('#totalLeads').html(response.total_leads);
+						$('#totalLeads').text(response.total_leads);
 					},
 
-					error: function(xhr, status, error) {
-						console.log(error);
+					error: function(xhr) {
+						$('#totalLeads').text(previousTotalLeads);
+						console.error('Unable to apply dashboard filters.', xhr.status);
+					},
+
+					complete: function() {
+						topFilterRequest = null;
+
+						if (topFilterQueued && requestSucceeded) {
+							topFilterQueued = false;
+							scheduleTopFilters();
+						}
 					}
 				});
 
 			}
-
-			function numberFormat(amount) {
-
-				amount = parseFloat(amount);
-
-				if (isNaN(amount)) {
-					amount = 0;
-				}
-
-				return amount.toLocaleString('en-IN', {
-					minimumFractionDigits: 0,
-					maximumFractionDigits: 2
-				});
-			}
-
 
 			function formatIndianCurrency(amount) {
 

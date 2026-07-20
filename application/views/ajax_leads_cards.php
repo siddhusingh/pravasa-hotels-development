@@ -46,7 +46,8 @@
 
             <div style="margin-left:100px">
                 <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
-                    <a class="badge bg-warning-light text-dark" href="<?= base_url('manage-leads?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
+                    <?php $lead_history_route = $this->session->userdata('role_as') === 'super_admin' ? 'manage-leads' : 'view-leads'; ?>
+                    <a class="badge bg-warning-light text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
                 <?php else: ?>
                     <span class="badge bg-secondary-light">New Guest</span>
                 <?php endif; ?>
@@ -73,7 +74,7 @@
                             ($lead['assigned_to'] == $logged_in_user_id)
                         )
                         ||
-                        in_array($logged_in_role, ['super_admin', 'hotel_admin'])
+                        in_array($logged_in_role, ['super_admin', 'hotel_admin', 'admin'])
                     )
                     &&
                     ($lead_status !== 'closed');
