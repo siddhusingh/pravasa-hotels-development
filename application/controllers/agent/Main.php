@@ -39,45 +39,45 @@ class Main extends CI_Controller
             $data = [
 
                 'lead_status_counts'   => [
-                    'Open'        => $this->LeadModel->get_lead_count_by_status('Open', $property, $department),
-                    'In Progress' => $this->LeadModel->get_lead_count_by_status('In Progress', $property, $department),
-                    'On Hold'     => $this->LeadModel->get_lead_count_by_status('On Hold', $property, $department),
-                    'Closed'      => $this->LeadModel->get_lead_count_by_status('Closed', $property, $department),
-                    'Not_Assigned'      => $this->LeadModel->get_lead_count_for_not_assigned(''),
-                    'Not_Contacted'        => $this->LeadModel->get_lead_count_by_disposition('Not Contacted', $property, $department),
-                    'Quotation_Sent' => $this->LeadModel->get_lead_count_by_disposition('Quotation Sent', $property, $department),
-                    'Negotiations'     => $this->LeadModel->get_lead_count_by_disposition('Negotiations', $property, $department),
-                    'Contract_Done'      => $this->LeadModel->get_lead_count_by_disposition('Contract Done', $property, $department),
-                    'Advance_Received'      => $this->LeadModel->get_lead_count_by_disposition('Advance Received', $property, $department),
-                    'Lead_Won'      => $this->LeadModel->get_lead_count_by_disposition('Lead Won', $property, $department),
-                    'Lead_Lost'      => $this->LeadModel->get_lead_count_by_disposition('Lead Lost', $property, $department),
+                    'Open' => $this->LeadModel->get_lead_count_by_status('Open', $property),
+                    'In Progress' => $this->LeadModel->get_lead_count_by_status('In Progress', $property),
+                    'On Hold' => $this->LeadModel->get_lead_count_by_status('On Hold', $property),
+                    'Closed' => $this->LeadModel->get_lead_count_by_status('Closed', $property),
+                    'Not_Assigned' => $this->LeadModel->get_lead_count_for_not_assigned('', $property),
+                    'Not_Contacted' => $this->LeadModel->get_lead_count_by_disposition('Not Contacted', $property),
+                    'Quotation_Sent' => $this->LeadModel->get_lead_count_by_disposition('Quotation Sent', $property),
+                    'Negotiations' => $this->LeadModel->get_lead_count_by_disposition('Negotiations', $property),
+                    'Contract_Done' => $this->LeadModel->get_lead_count_by_disposition('Contract Done', $property),
+                    'Advance_Received' => $this->LeadModel->get_lead_count_by_disposition('Advance Received', $property),
+                    'Lead_Won' => $this->LeadModel->get_lead_count_by_disposition('Lead Won', $property),
+                    'Lead_Lost' => $this->LeadModel->get_lead_count_by_disposition('Lead Lost', $property),
 
 
                 ],
                 'lead_revenue' => [
 
-                    'Not_Contacted'   => $this->LeadModel->get_lead_revenue_by_disposition('Not Contacted', $property, $department),
+                    'Not_Contacted' => $this->LeadModel->get_lead_revenue_by_disposition('Not Contacted', $property),
 
-                    'Quotation_Sent'  => $this->LeadModel->get_lead_revenue_by_disposition('Quotation Sent', $property, $department),
+                    'Quotation_Sent' => $this->LeadModel->get_lead_revenue_by_disposition('Quotation Sent', $property),
 
-                    'Negotiations'    => $this->LeadModel->get_lead_revenue_by_disposition('Negotiations', $property, $department),
+                    'Negotiations' => $this->LeadModel->get_lead_revenue_by_disposition('Negotiations', $property),
 
-                    'Contract_Done'   => $this->LeadModel->get_lead_revenue_by_disposition('Contract Done', $property, $department),
+                    'Contract_Done' => $this->LeadModel->get_lead_revenue_by_disposition('Contract Done', $property),
 
-                    'Advance_Received' => $this->LeadModel->get_lead_revenue_by_disposition('Advance Received', $property, $department),
+                    'Advance_Received' => $this->LeadModel->get_lead_revenue_by_disposition('Advance Received', $property),
 
-                    'Lead_Won'        => $this->LeadModel->get_lead_revenue_by_disposition('Lead Won', $property, $department),
+                    'Lead_Won' => $this->LeadModel->get_lead_revenue_by_disposition('Lead Won', $property),
 
-                    'Lead_Lost'       => $this->LeadModel->get_lead_revenue_by_disposition('Lead Lost', $property, $department)
+                    'Lead_Lost' => $this->LeadModel->get_lead_revenue_by_disposition('Lead Lost', $property)
 
                 ]
             ];
 
 
 
-            $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property, 'type' => $department]);
+            $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property]);
 
-            $data['total_revenue'] = $this->Common_model->get_total_revenue_from_leads('leads', ['property' => $property, 'type' => $department]);
+            $data['total_revenue'] = $this->Common_model->get_total_revenue_from_leads('leads', ['property' => $property]);
 
 
 
@@ -94,7 +94,10 @@ class Main extends CI_Controller
             $data['departments'] = $this->Common_model->getAllData('departments', '');
             $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
             $data['cities'] = $this->Common_model->getAllData('city', '');
-            $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
+            $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+                'property' => $property,
+                'is_deleted' => 0
+            ]);
 
 
 
@@ -126,7 +129,7 @@ class Main extends CI_Controller
         $end_date = $this->input->post('end_date');
 
         $property = $this->session->userdata('selected_hotel_id');
-        $department = $this->session->userdata('selected_department_id');
+        $department = '';
 
         $created_id    = $this->input->post('created_id');
         $created_role  = $this->input->post('created_role');
@@ -470,8 +473,6 @@ class Main extends CI_Controller
 
 
 
-        $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property, 'type' => $department], $start_date, $end_date);
-
         echo json_encode($data);
     }
 
@@ -480,7 +481,7 @@ class Main extends CI_Controller
     // Chart Data Endpoints
     public function department_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
 
 
@@ -493,7 +494,7 @@ class Main extends CI_Controller
 
     public function disposition_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('disposition', $filters);
         $this->send_static_chart_data($data, 'disposition');
@@ -501,7 +502,7 @@ class Main extends CI_Controller
 
     public function template_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('template_name', $filters);
         $this->send_static_chart_data($data, 'template_name');
@@ -509,7 +510,7 @@ class Main extends CI_Controller
 
     public function source_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('user_channel', $filters);
         $this->send_static_chart_data($data, 'user_channel');
@@ -517,7 +518,7 @@ class Main extends CI_Controller
 
     public function status_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('status', $filters);
         $this->send_static_chart_data($data, 'status');
@@ -525,7 +526,7 @@ class Main extends CI_Controller
 
     public function guest_type_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_guest_type_data($filters);
 
@@ -536,6 +537,15 @@ class Main extends CI_Controller
         ];
 
         echo json_encode($response);
+    }
+
+    private function get_agent_chart_filters()
+    {
+        $filters = $this->input->get();
+        $filters['property'] = $this->session->userdata('selected_hotel_id');
+        $filters['type'] = '';
+
+        return $filters;
     }
 
 

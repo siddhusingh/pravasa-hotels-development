@@ -15,6 +15,11 @@
         margin-left: 5px;
         margin-right: 5px;
     }
+
+    #leadForm .required-marker {
+        color: #dc3545;
+        margin-left: 3px;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -31,7 +36,7 @@
                         <li>
                             <i class="fa fa-home"></i>
                         </li>
-                        <li>Super Admin</li>
+                        <li>Agent</li>
                         <li>
                             <i class="fa fa-angle-right"></i>
                         </li>
@@ -56,17 +61,17 @@
                             <div class="container mt-1">
                                 <!-- Include Bootstrap & FontAwesome CDN (if not already included) -->
 
-                                <form id="leadForm">
+                                <form id="leadForm" novalidate>
                                     <div class="row g-3">
 
                                         <!-- Phone Number -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number</label>
+                                                <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number <span class="required-marker">*</span></label>
                                                 <input type="number" name="phone_number" id="phone_number" class="form-control" placeholder="Enter phone number" required
                                                     value="<?php if (!empty($_GET['phone'])) {
                                                                 echo $_GET['phone'];
-                                                            } ?>"
+                                                            } ?>">
                                                     <span id="phone_number_error" class="text-danger small"></span>
                                             </div>
                                         </div>
@@ -74,7 +79,7 @@
                                         <!-- Username -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name</label>
+                                                <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name <span class="required-marker" id="guestNameRequiredMarker">*</span></label>
                                                 <input type="text" name="username" id="username" class="form-control" placeholder="Enter username">
                                                 <span id="username_error" class="text-danger small"></span>
                                             </div>
@@ -100,7 +105,7 @@
                                         <!-- Hotel -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Hotel (Property)</label>
+                                                <label>Hotel (Property) <span class="required-marker">*</span></label>
                                                 <select name="property" id="property" class="form-control" required disabled>
                                                     <option selected disabled value="">Select Hotel</option>
                                                     <?php
@@ -122,7 +127,7 @@
                                         <!-- Department -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="type"><i class="fa fa-sitemap me-1 text-muted"></i>Department (Type)</label>
+                                                <label for="type"><i class="fa fa-sitemap me-1 text-muted"></i>Department (Type) <span class="required-marker">*</span></label>
                                                 <select name="type" id="type" class="form-control" required>
                                                     <option selected disabled value="">Select Department</option>
                                                     <?php foreach ($departments as $each) { ?>
@@ -183,7 +188,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="user_channel">
-                                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source
+                                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select name="user_channel" id="user_channel" class="form-control">
@@ -239,7 +244,7 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="disposition">
-                                                    <i class="fa fa-list me-1 text-dark"></i>Stage
+                                                    <i class="fa fa-list me-1 text-dark"></i>Stage <span class="required-marker">*</span>
                                                 </label>
 
                                                 <select class="form-control" name="disposition" id="disposition">
@@ -262,7 +267,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status</label>
+                                                <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status <span class="required-marker">*</span></label>
                                                 <input type="hidden" id="leadDepartment" name="leadDepartment">
                                                 <select name="lead_status" id="lead_status" class="form-control" disabled>
                                                     <option value="Open" selected>Open</option>
@@ -285,7 +290,7 @@
                                         <!-- Query -->
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="query"><i class="fa fa-question-circle me-1 text-primary"></i>Query</label>
+                                                <label for="query"><i class="fa fa-question-circle me-1 text-primary"></i>Query <span class="required-marker">*</span></label>
                                                 <textarea name="query" id="query" class="form-control" rows="1" placeholder="Enter query" required></textarea>
                                                 <span id="query_error" class="text-danger small"></span>
                                             </div>
@@ -503,6 +508,89 @@
         $('#assigned_person_email').val(email);
 
     });
+
+    window.CSRF = window.CSRF || {
+        name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+        hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+    };
+    window.CSRF.cookie = <?= json_encode($this->config->item('csrf_cookie_name')); ?>;
+
+    function readCookie(name) {
+        var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+        for (var index = 0; index < cookies.length; index++) {
+            var parts = cookies[index].split('=');
+            var cookieName = decodeURIComponent(parts.shift());
+
+            if (cookieName === name) {
+                return decodeURIComponent(parts.join('='));
+            }
+        }
+
+        return '';
+    }
+
+    function currentCsrfHash() {
+        return readCookie(window.CSRF.cookie) || window.CSRF.hash;
+    }
+
+    function csrfData(data) {
+        data = data || {};
+        data[window.CSRF.name] = currentCsrfHash();
+        return data;
+    }
+
+    function csrfFormData(formData) {
+        if (typeof formData.set === 'function') {
+            formData.set(window.CSRF.name, currentCsrfHash());
+        } else {
+            formData.append(window.CSRF.name, currentCsrfHash());
+        }
+
+        return formData;
+    }
+
+    function refreshCsrf(response) {
+        if (response && response.csrfHash) {
+            window.CSRF.hash = response.csrfHash;
+        }
+    }
+
+    $(document).ajaxComplete(function(event, xhr) {
+        refreshCsrf(xhr.responseJSON);
+    });
+
+    var csrfAjaxQueue = $.Deferred().resolve().promise();
+
+    function csrfAjax(options) {
+        var method = (options.type || options.method || 'GET').toUpperCase();
+
+        if (method !== 'POST') {
+            return $.ajax(options);
+        }
+
+        var runRequest = function() {
+            if (options.data instanceof FormData) {
+                csrfFormData(options.data);
+            } else {
+                options.data = csrfData(options.data);
+            }
+
+            return $.ajax(options);
+        };
+
+        csrfAjaxQueue = csrfAjaxQueue.then(runRequest, runRequest);
+        return csrfAjaxQueue;
+    }
+
+    function normalizeDepartmentName(name) {
+        name = (name || '').toString().trim().toLowerCase();
+
+        if (name === 'restaurants') return 'restaurant';
+        if (name === 'banquets') return 'banquet';
+
+        return name;
+    }
 
 
     function updateDynamicFields(data = "") {
@@ -1072,7 +1160,7 @@
 
         $('#restaurant_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-restaurants') ?>",
             type: "POST",
             data: {
@@ -1102,7 +1190,7 @@
 
         $('#banquet_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-banquets') ?>",
             type: "POST",
             data: {
@@ -1134,7 +1222,7 @@
 
         $('#meal_plan').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-meal-plans') ?>",
             type: "POST",
             data: {
@@ -1164,7 +1252,7 @@
 
         $('#promotional_offers').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-promotional-offers') ?>",
             type: "POST",
             data: {
@@ -1193,7 +1281,7 @@
 
         $('#roomtype').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-room-types') ?>",
             type: "POST",
             data: {
@@ -1262,7 +1350,7 @@
 
         $('#time_slot_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-time-slots') ?>",
             type: "POST",
             data: {
@@ -1285,8 +1373,8 @@
                 $('#time_slot_id').html(html);
 
 
-                if (typeof existingLeadData !== "undefined" && existingLeadData.time_slot_id) {
-                    $('#time_slot_id').val(existingLeadData.time_slot_id);
+                if (selectedTimeSlotId !== null && selectedTimeSlotId !== '') {
+                    $('#time_slot_id').val(selectedTimeSlotId);
                 }
 
 
@@ -1309,7 +1397,7 @@
 
         $('#table_category_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-table-categories') ?>",
             type: "POST",
             data: {
@@ -1356,7 +1444,7 @@
 
         $('#table_id').html('<option value="">Loading...</option>');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('lead/get-tables') ?>",
             type: "POST",
             data: {
@@ -1412,153 +1500,168 @@
 
     });
 
-    $('#leadForm').on('submit', function(e) {
+    function leadField(field) {
+        return $('[name="' + field + '"]').first();
+    }
 
-        e.preventDefault();
+    function showLeadFieldError(field, message) {
+        var input = leadField(field);
+        var error = $('#' + field + '_error');
 
-        $("#lead_status").prop('disabled', false);
-
-
-
-
-
-        // Grab field values
-        let username = $('input[name="username"]').val().trim();
-
-
-
-        let phone = $('input[name="phone_number"]').val().trim();
-
-        phone = phone.trim();
-        phone = phone.replace(/^(\+91|91)/, '');
-
-        let phoneRegex = /^[6-9][0-9]{9}$/;
-
-        if (phone === "") {
-            $('#phone_number_error').html('Please Enter Phone Number');
-            return false;
-        } else if (!phoneRegex.test(phone)) {
-            $('#phone_number_error').html('Invalid Indian Mobile Number');
-            return false;
-        } else {
-            $('#phone_number_error').html('');
-        }
-
-
-        let email = $('input[name="email"]').val().trim();
-
-        let userChannel = $('select[name="user_channel"]').val();
-        let property = $('select[name="property"]').val();
-        let department = $('select[name="type"]').val();
-        let leadStatus = 'Open'
-        let query = $('textarea[name="query"]').val().trim();
-        let remark = $('textarea[name="remark"]').val().trim();
-        let lead_type = $('select[name="lead_type"]').val();
-        let lead_status = $('select[name="lead_status"]').val();
-        let assigned_person_user_role = $('input[name="assigned_person_user_role"]').val();
-
-        let assigned_person_email = $('#assigned_person_email').val();
-
-        let purpose = $('#purpose').val();
-
-        let promotional_offers = $('#promotional_offers').val();
-
-
-
-        let assigned_to = $('select[name="assigned_to"]').val();
-
-
-        leadDepartment = $('#leadDepartment').val();
-        disposition = $('#disposition').val();
-
-        if (disposition == null) {
-            disposition = "";
-        }
-
-
-
-        // collect all dynamic inputs inside container
-
-
-
-
-
-        // Simple validation condition
-        if (
-            phone && userChannel &&
-            property && department && leadStatus && query &&
-            (disposition === 'Not Contacted' || username)
-        ) {
-            let formData = new FormData();
-
-            $('#dynamicFields')
-                .find('input, select, textarea')
-                .each(function() {
-                    let name = $(this).attr('name');
-                    let value;
-
-                    if ($(this).attr('type') === 'file') {
-                        // file input
-                        if (this.files.length > 0) {
-                            formData.append(name, this.files[0]);
-                        }
-                    } else {
-                        value = $(this).val();
-                        formData.append(name, value);
-                    }
-                });
-
-
-            // Append all fields
-            formData.append('user_name', username);
-            formData.append('phone_number', phone);
-            formData.append('email', email);
-            formData.append('disposition', disposition);
-
-            formData.append('assigned_person_user_role', assigned_person_user_role);
-            formData.append('assigned_to', assigned_to);
-            formData.append('assigned_person_email', assigned_person_email);
-
-            formData.append('user_channel', userChannel);
-            formData.append('purpose', purpose);
-
-            formData.append('property', property);
-            formData.append('type', department);
-            formData.append('status', lead_status);
-            formData.append('query', query);
-            formData.append('remark', remark);
-            formData.append('lead_type', lead_type);
-            formData.append('leadDepartment', leadDepartment);
-
-
-
-            $.ajax({
-                url: '<?php echo base_url("LeadController/insert_lead"); ?>',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: 'json',
-                beforeSend: function() {
-                    $('#submitBtn').prop('disabled', true).text('Saving...');
-                },
-                success: function(response) {
-
-                    if (response.duplicate) {
-                        alert('Failed to create lead: ' + response.message);
-                    }
-
-                    if (response.status) {
-                        window.location.href = '<?php echo base_url("view-agents-leads") ?>'
-
-                    } else {
-                        alert('Failed to create lead: ' + response.message);
-                    }
-                }
+        input.addClass('is-invalid').attr('aria-invalid', 'true');
+        if (!error.length) {
+            error = $('<div>', {
+                id: field + '_error',
+                class: 'text-danger small lead-validation-error'
             });
-        } else {
-            alert("Please fill all required fields.");
+            input.closest('.form-group, .mb-3, [class*="col-"]').first().append(error);
         }
+        error.text(message);
+    }
+
+    function clearLeadValidation() {
+        $('#leadForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
+        $('#leadForm [id$="_error"]').text('');
+        $('#leadForm .lead-validation-error').text('');
+    }
+
+    function showLeadValidationErrors(errors) {
+        var firstInvalid = null;
+
+        $.each(errors || {}, function(field, message) {
+            var input = leadField(field);
+            if (!input.length) return;
+
+            showLeadFieldError(field, message);
+
+            if (!firstInvalid) firstInvalid = input;
+        });
+
+        if (firstInvalid) {
+            firstInvalid.trigger('focus');
+            $('html, body').animate({
+                scrollTop: Math.max(firstInvalid.offset().top - 140, 0)
+            }, 250);
+        }
+    }
+
+    function validateLeadForm() {
+        var errors = {};
+        var phone = (leadField('phone_number').val() || '').replace(/\D/g, '').slice(-10);
+        var disposition = leadField('disposition').val() || '';
+        var department = normalizeDepartmentName($('#type option:selected').data('name'));
+        var email = $.trim(leadField('email').val() || '');
+
+        if (!/^[6-9][0-9]{9}$/.test(phone)) {
+            errors.phone_number = 'Enter a valid 10-digit Indian mobile number.';
+        }
+        if (disposition !== 'Not Contacted' && $.trim(leadField('username').val() || '') === '') {
+            errors.username = 'Guest name is required.';
+        }
+        if (email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.email = 'Enter a valid email address.';
+        }
+
+        $.each({
+            property: 'The selected hotel is required.',
+            type: 'Please select a department.',
+            user_channel: 'Please select a lead source.',
+            disposition: 'Please select a stage.',
+            lead_status: 'Please select a lead status.',
+            query: 'Query is required.'
+        }, function(field, message) {
+            if ($.trim(leadField(field).val() || '') === '') errors[field] = message;
+        });
+
+        if (disposition === 'Lead Lost' && $.trim(leadField('reason').val() || '') === '') {
+            errors.reason = 'Please select a reason.';
+        }
+
+        if (disposition === 'Quotation Sent') {
+            if ($.inArray(department, ['rooms', 'wedding']) !== -1 && !leadField('meal_plan').val()) {
+                errors.meal_plan = 'Please select a meal plan.';
+            }
+            if ($.inArray(department, ['banquet', 'wedding']) !== -1 && !leadField('banquet_id').val()) {
+                errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'restaurant') {
+                $.each({
+                    restaurant_id: 'Please select a restaurant.',
+                    slot_type_id: 'Please select a slot type.',
+                    time_slot_id: 'Please select a time slot.',
+                    table_category_id: 'Please select a table category.',
+                    table_id: 'Please select a table.'
+                }, function(field, message) {
+                    if (!leadField(field).val()) errors[field] = message;
+                });
+            }
+        }
+
+        return errors;
+    }
+
+    $(document).on('input change', '#leadForm input, #leadForm select, #leadForm textarea', function() {
+        var field = ($(this).attr('name') || '').replace('[]', '');
+        $(this).removeClass('is-invalid').removeAttr('aria-invalid');
+        if (field) $('#' + field + '_error').text('');
+    });
+
+    $(document).on('change', '#disposition', function() {
+        $('#guestNameRequiredMarker').toggle($(this).val() !== 'Not Contacted');
+    });
+
+    $('#leadForm').on('submit', function(e) {
+        e.preventDefault();
+        clearLeadValidation();
+
+        var leadStatus = $('#lead_status');
+        leadStatus.prop('disabled', false);
+        var errors = validateLeadForm();
+
+        if (Object.keys(errors).length) {
+            showLeadValidationErrors(errors);
+            leadStatus.prop('disabled', true);
+            return;
+        }
+
+        var phone = (leadField('phone_number').val() || '').replace(/\D/g, '').slice(-10);
+        var formData = new FormData(this);
+        formData.set('user_name', $.trim(leadField('username').val() || ''));
+        formData.set('phone_number', phone);
+        formData.set('status', leadStatus.val() || 'Open');
+        formData.set('leadDepartment', normalizeDepartmentName($('#type option:selected').data('name')));
+        csrfFormData(formData);
+
+        csrfAjax({
+            url: '<?php echo base_url("insert-lead-agents"); ?>',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#submitBtn').prop('disabled', true).text('Saving...');
+            },
+            success: function(response) {
+                refreshCsrf(response);
+                if (response.status) {
+                    window.location.href = '<?php echo base_url("view-agents-leads"); ?>';
+                    return;
+                }
+                showLeadValidationErrors(response.errors || {});
+                alert(response.message || 'Failed to create lead.');
+            },
+            error: function(xhr) {
+                var response = xhr.responseJSON || {};
+                refreshCsrf(response);
+                showLeadValidationErrors(response.errors || {});
+                alert(response.message || 'Unable to save the lead. Please try again.');
+            },
+            complete: function() {
+                leadStatus.prop('disabled', true);
+                $('#submitBtn').prop('disabled', false).text('Submit');
+            }
+        });
     });
 
 
@@ -1573,7 +1676,7 @@
             if (/^\d{10}$/.test(cli)) {
                 typingTimer = setTimeout(function() {
                     // Perform AJAX call only for valid 10-digit numbers
-                    $.ajax({
+                    csrfAjax({
                         url: '<?= base_url('LeadController/get_last_lead_by_cli') ?>',
                         type: 'POST',
                         data: {
@@ -1675,7 +1778,7 @@
             return;
         }
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
             type: "POST",
             data: {

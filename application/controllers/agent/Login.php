@@ -27,13 +27,14 @@ class Login extends CI_Controller
 
     public function login_check()
     {
-        $email = $this->input->post('email');
+        $email = trim((string) $this->input->post('email'));
         $password = $this->input->post('password');
 
         $response = [
             'response_message' => '',
             'redirect_url' => '',
-            'hotels' => []
+            'hotels' => [],
+            'csrfHash' => $this->security->get_csrf_hash()
         ];
 
         // Fetch staff member
@@ -112,7 +113,9 @@ class Login extends CI_Controller
             $response['response_message'] = 'account404';
         }
 
-        echo json_encode($response);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($response));
     }
 
 

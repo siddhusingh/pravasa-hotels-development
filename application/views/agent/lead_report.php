@@ -54,6 +54,109 @@
     }
 </style>
 <style>
+    #filter-section .lead-filter-multiselect-source {
+        display: none !important;
+    }
+
+    #filter-section .lead-filter-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #filter-section .lead-filter-multiselect-toggle {
+        align-items: center;
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057;
+        display: flex;
+        height: 60px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #filter-section .lead-filter-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        flex: 0 0 auto;
+        margin-left: 10px;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle,
+    #filter-section .lead-filter-multiselect-toggle:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        outline: 0;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #filter-section .lead-filter-multiselect-menu {
+        background: #fff;
+        border: 1px solid #d2d2d2;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 320px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1080;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-menu {
+        display: block;
+    }
+
+    #filter-section .lead-filter-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 10px;
+        margin: 0;
+        padding: 9px 14px;
+    }
+
+    #filter-section .lead-filter-multiselect-option:hover {
+        background: #f4f4f4;
+    }
+
+    #filter-section .lead-filter-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 20px;
+        height: 20px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 20px !important;
+    }
+
+    #filter-section .lead-filter-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+</style>
+<style>
     /* Timeline Container */
     .timeline {
         position: relative !important;
@@ -188,16 +291,17 @@
                                         <!-- Status -->
                                         <div class="col-md-3">
                                             <label for="status" class="form-label">Status</label>
-                                            <select name="status[]" class="form-select filter-input" multiple id="status">
+                                            <select name="status[]" class="form-select filter-input lead-filter-multiselect-source" multiple id="status">
                                                 <option value="Open">Open</option>
                                                 <option value="In Progress">In Progress</option>
                                                 <option value="Closed">Closed</option>
+                                                <option value="Not Assigned">Not-assigned</option>
                                             </select>
                                         </div>
                                         <!-- Lead Source -->
                                         <div class="col-md-3">
                                             <label for="channel" class="form-label">Lead Source</label>
-                                            <select name="channel[]" class="form-select filter-input" multiple id="channel">
+                                            <select name="channel[]" class="form-select filter-input lead-filter-multiselect-source" multiple id="channel">
                                                 <?php foreach ($user_channel as $channelObj): ?>
                                                     <?php $channel = $channelObj->user_channel; ?>
                                                     <option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
@@ -207,7 +311,7 @@
                                         <!-- Stage -->
                                         <div class="col-md-3">
                                             <label for="disposition" class="form-label">Stage</label>
-                                            <select class="form-select filter-input" name="disposition[]" multiple id="disposition">
+                                            <select class="form-select filter-input lead-filter-multiselect-source" name="disposition[]" multiple id="disposition">
                                                 <option value="" selected disabled>Select Stage</option>
 
                                                 <option value="Not Contacted">Not Contacted</option>
@@ -467,6 +571,84 @@
     } ?>
 </script>
 <script>
+    window.CSRF = window.CSRF || {
+        name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+        hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+    };
+    window.CSRF.cookie = <?= json_encode($this->config->item('csrf_cookie_name')); ?>;
+
+    function readAgentCsrfCookie(name) {
+        var cookies = document.cookie ? document.cookie.split('; ') : [];
+        for (var index = 0; index < cookies.length; index++) {
+            var parts = cookies[index].split('=');
+            if (decodeURIComponent(parts.shift()) === name) {
+                return decodeURIComponent(parts.join('='));
+            }
+        }
+        return '';
+    }
+
+    function currentAgentCsrfHash() {
+        return readAgentCsrfCookie(window.CSRF.cookie) || window.CSRF.hash || '';
+    }
+
+    function refreshAgentCsrf(response) {
+        if (response && response.csrfHash) window.CSRF.hash = response.csrfHash;
+    }
+
+    function agentCsrfData(data) {
+        var payload = data || {};
+        if (!(payload instanceof FormData)) {
+            payload[window.CSRF.name] = currentAgentCsrfHash();
+        }
+        return payload;
+    }
+
+    function agentCsrfFormData(formData) {
+        if (typeof formData.set === 'function') {
+            formData.set(window.CSRF.name, currentAgentCsrfHash());
+        } else {
+            formData.append(window.CSRF.name, currentAgentCsrfHash());
+        }
+        return formData;
+    }
+
+    function isAgentSameOriginRequest(url) {
+        if (!url || url.indexOf('http') !== 0) return true;
+        try {
+            return new URL(url, window.location.href).origin === window.location.origin;
+        } catch (error) {
+            return true;
+        }
+    }
+
+    var agentCsrfAjaxQueue = $.Deferred().resolve().promise();
+
+    function csrfAjax(options) {
+        var requestOptions = $.extend({}, options);
+        var method = (requestOptions.type || requestOptions.method || 'GET').toUpperCase();
+
+        if (method !== 'POST' || !isAgentSameOriginRequest(requestOptions.url)) {
+            return $.ajax(requestOptions);
+        }
+
+        var runRequest = function() {
+            if (requestOptions.data instanceof FormData) {
+                agentCsrfFormData(requestOptions.data);
+            } else {
+                requestOptions.data = agentCsrfData(requestOptions.data);
+            }
+            return $.ajax(requestOptions);
+        };
+
+        agentCsrfAjaxQueue = agentCsrfAjaxQueue.then(runRequest, runRequest);
+        return agentCsrfAjaxQueue;
+    }
+
+    $(document).ajaxComplete(function(event, xhr) {
+        refreshAgentCsrf(xhr.responseJSON);
+    });
+
     $(document).ready(function() {
         let leadId, phoneNumber;
         let callTimer;
@@ -527,7 +709,7 @@
                             }
                         ],
                         "participants": [{
-                            "participantAddress": <?php echo $this->session->userdata('super_admin_session')['phone'] ?>,
+                            "participantAddress": <?= json_encode((string) ($this->session->userdata('agent_session')['phone'] ?? '')); ?>,
                             "callerId": 8048248828,
                             "participantName": "A",
                             "maxRetries": 1,
@@ -550,7 +732,7 @@
 
 
 
-            $.ajax({
+            csrfAjax({
                 url: "https://iqtelephony.airtel.in/gateway/airtel-xchange/v2/execute/workflow",
                 type: "POST",
                 contentType: "application/json",
@@ -563,7 +745,7 @@
 
                     if (response.status === "success" && response.correlationId) {
                         // Send leadId and correlationId to backend to update
-                        $.ajax({
+                        csrfAjax({
                             url: "LeadController/update_correlation_id", // Update this to match your controller route
                             type: "POST",
                             data: {
@@ -593,7 +775,7 @@
 
             let leadId = $(this).data("id");
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('LeadController/get_call_history') ?>",
                 type: "POST",
                 data: {
@@ -641,7 +823,7 @@
 
         console.log("workin")
 
-        $.ajax({
+        csrfAjax({
             url: '<?= base_url("LeadController/get_status_history") ?>',
             type: 'POST',
             data: {
@@ -706,23 +888,22 @@
                         <!-- Phone Number -->
                         <div class="col-md-4">
                             <label>Phone</label>
-                            <input type="number" name="phone_number" id="edit_phone_number" class="form-control" value="<?= $lead->phone_number ?>" required id="phone_number">
+                            <input type="number" name="phone_number" id="edit_phone_number" class="form-control" value="" required>
                         </div>
-                        <input type="hidden" name="lead_id" value="<?= $lead->id ?>">
                         <!-- Guest Name -->
                         <div class="col-md-4">
                             <label>Name</label>
-                            <input type="text" name="user_name" class="form-control" value="<?= $lead->user_name ?>" required id="edit_user_name">
+                            <input type="text" name="user_name" class="form-control" value="" required id="edit_user_name">
                         </div>
                         <!-- Email -->
                         <div class="col-md-4">
                             <label>Email</label>
-                            <input type="email" name="email" class="form-control" value="<?= $lead->email ?>" id="edit_email">
+                            <input type="email" name="email" class="form-control" value="" id="edit_email">
                         </div>
                         <!-- Property -->
                         <div class="col-md-4">
                             <label>Property</label>
-                            <select name="property" class="form-control" required id="edit_property">
+                            <select name="property" class="form-control" required id="edit_property" disabled>
                                 <?php foreach ($properties as $property) { ?>
                                     <option
                                         value="<?= $property->hotel_id; ?>"
@@ -741,7 +922,7 @@
                                 <?php foreach ($departments as $each): ?>
                                     <option value="<?= $each->department_id ?>"
                                         data-name="<?= $each->department_name; ?>"
-                                        <?= ($each->department_id == $lead->type) ? 'selected' : '' ?>>
+                                        >
                                         <?= $each->department_name ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -753,9 +934,9 @@
                                     <i class="fa fa-fire me-1 text-secondary"></i>Lead Type
                                 </label>
                                 <select name="lead_type" id="edit_lead_type" class="form-control">
-                                    <option value="Hot" <?= ($lead->lead_type == 'Hot') ? 'selected' : '' ?>>Hot</option>
-                                    <option value="Warm" <?= ($lead->lead_type == 'Warm') ? 'selected' : '' ?>>Warm</option>
-                                    <option value="Cold" <?= ($lead->lead_type == 'Cold') ? 'selected' : '' ?>>Cold</option>
+                                    <option value="Hot">Hot</option>
+                                    <option value="Warm">Warm</option>
+                                    <option value="Cold" selected>Cold</option>
                                 </select>
                                 <span id="lead_type_error" class="text-danger small"></span>
                             </div>
@@ -764,23 +945,23 @@
                             <div class="form-group">
                                 <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage</label>
                                 <select class="form-control" name="disposition" id="edit_disposition">
-                                    <option value="" disabled <?= empty($lead->disposition) ? 'selected' : '' ?>>Select Stage</option>
+                                    <option value="" disabled selected>Select Stage</option>
 
-                                    <option value="Not Contacted" <?= ($lead->disposition == 'Not Contacted') ? 'selected' : '' ?>>Not Contacted</option>
+                                    <option value="Not Contacted">Not Contacted</option>
 
-                                    <option value="General Information" <?= ($lead->disposition == 'General Information') ? 'selected' : '' ?>>General Information</option>
+                                    <option value="General Information">General Information</option>
 
-                                    <option value="Quotation Sent" <?= ($lead->disposition == 'Quotation Sent') ? 'selected' : '' ?>>Quotation Sent</option>
+                                    <option value="Quotation Sent">Quotation Sent</option>
 
-                                    <option value="Negotiations" <?= ($lead->disposition == 'Negotiations') ? 'selected' : '' ?>>Negotiations</option>
+                                    <option value="Negotiations">Negotiations</option>
 
-                                    <option value="Contract Done" <?= ($lead->disposition == 'Contract Done') ? 'selected' : '' ?>>Contract Done</option>
+                                    <option value="Contract Done">Contract Done</option>
 
-                                    <option value="Advance Received" <?= ($lead->disposition == 'Advance Received') ? 'selected' : '' ?>>Advance Received</option>
+                                    <option value="Advance Received">Advance Received</option>
 
-                                    <option value="Lead Won" <?= ($lead->disposition == 'Lead Won') ? 'selected' : '' ?>>Lead Won</option>
+                                    <option value="Lead Won">Lead Won</option>
 
-                                    <option value="Lead Lost" <?= ($lead->disposition == 'Lead Lost') ? 'selected' : '' ?>>Lead Lost</option>
+                                    <option value="Lead Lost">Lead Lost</option>
                                 </select>
 
                                 <span id="disposition_error" class="text-danger small"></span>
@@ -791,10 +972,10 @@
                             <div class="form-group">
                                 <label>Lead Status</label>
                                 <select name="status" id="edit_lead_status" class="form-control" required disabled>
-                                    <option value="Open" <?= ($lead->status == 'Open') ? 'selected' : '' ?>>Open</option>
-                                    <option value="On Hold" <?= ($lead->status == 'On Hold') ? 'selected' : '' ?>>On Hold</option>
-                                    <option value="In Progress" <?= ($lead->status == 'In Progress') ? 'selected' : '' ?>>In Progress</option>
-                                    <option value="Closed" <?= ($lead->status == 'Closed') ? 'selected' : '' ?>>Closed</option>
+                                    <option value="Open" selected>Open</option>
+                                    <option value="On Hold">On Hold</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Closed">Closed</option>
 
 
                                 </select>
@@ -826,19 +1007,6 @@
                         <input type="hidden" name="assigned_person_user_role" id="assigned_person_user_role">
                         <input type="hidden" name="assigned_person_email" id="assigned_person_email">
 
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="lead_type">
-                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Type
-                                </label>
-                                <select name="lead_type" id="lead_type" class="form-control">
-                                    <option value="Hot">Hot</option>
-                                    <option value="Warm">Warm</option>
-                                    <option value="Cold" selected>Cold</option>
-                                </select>
-                                <span id="lead_type_error" class="text-danger small"></span>
-                            </div>
-                        </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="user_channel">
@@ -906,12 +1074,12 @@
                         <!-- Query -->
                         <div class="col-md-6">
                             <label>Query</label>
-                            <textarea name="query" class="form-control" id="edit_query"><?= $lead->query ?></textarea>
+                            <textarea name="query" class="form-control" id="edit_query"></textarea>
                         </div>
                         <!-- Remark -->
                         <div class="col-md-6">
                             <label>Remark</label>
-                            <textarea name="remark" class="form-control" id="edit_remark"><?= $lead->remark ?></textarea>
+                            <textarea name="remark" class="form-control" id="edit_remark"></textarea>
                         </div>
                         <!-- Submit -->
                         <div class="col-md-12 text-end mt-3">
@@ -947,6 +1115,118 @@
 <script>
     $(document).ready(function() {
 
+
+        function normalizeEditDepartmentName(name) {
+            var department = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+            if (department === 'restaurants') return 'restaurant';
+            if (department === 'banquets') return 'banquet';
+            return department;
+        }
+
+        function editLeadField(field) {
+            var names = {
+                username: 'user_name',
+                lead_status: 'status'
+            };
+            return $('#leadEditForm [name="' + (names[field] || field) + '"]').first();
+        }
+
+        function clearEditLeadValidation() {
+            $('#leadEditForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
+            $('#leadEditForm .edit-lead-validation-error').remove();
+        }
+
+        function showEditLeadFieldError(field, message) {
+            var input = editLeadField(field);
+            if (!input.length) return;
+
+            input.addClass('is-invalid').attr('aria-invalid', 'true');
+            $('<div>', {
+                class: 'text-danger small edit-lead-validation-error',
+                text: message
+            }).appendTo(input.closest('.form-group, [class*="col-"]').first());
+        }
+
+        function showEditLeadValidationErrors(errors) {
+            clearEditLeadValidation();
+            var firstField = null;
+
+            $.each(errors || {}, function(field, message) {
+                showEditLeadFieldError(field, message);
+                if (!firstField) firstField = editLeadField(field);
+            });
+
+            if (firstField && firstField.length) {
+                var modalBody = $('#editLeadDetails .modal-body');
+                var container = firstField.closest('[class*="col-"]');
+                modalBody.animate({
+                    scrollTop: Math.max((container.position() || { top: 0 }).top - 20, 0)
+                }, 200);
+                firstField.trigger('focus');
+            }
+        }
+
+        function validateEditLeadForm() {
+            var errors = {};
+            var value = function(name) {
+                return $.trim(String($('#leadEditForm [name="' + name + '"]').first().val() || ''));
+            };
+            var phone = value('phone_number').replace(/\D/g, '').slice(-10);
+            var email = value('email');
+            var disposition = value('disposition');
+            var department = normalizeEditDepartmentName($('#edit_leadDepartment').val());
+
+            if (!/^[6-9][0-9]{9}$/.test(phone)) {
+                errors.phone_number = phone
+                    ? 'Enter a valid 10-digit Indian mobile number.'
+                    : 'Phone number is required.';
+            }
+            if (disposition !== 'Not Contacted' && !value('user_name')) {
+                errors.username = 'Guest name is required.';
+            }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errors.email = 'Enter a valid email address.';
+            }
+            if (!value('property')) errors.property = 'The selected hotel is required.';
+            if (!value('type')) errors.type = 'Please select a department.';
+            if (!value('user_channel')) errors.user_channel = 'Please select a lead source.';
+            if (!disposition) errors.disposition = 'Please select a stage.';
+            if (!value('status')) errors.lead_status = 'Please select a lead status.';
+            if (!value('query')) errors.query = 'Query is required.';
+
+            if (disposition === 'Lead Lost' && !value('reason')) {
+                errors.reason = 'Please select a reason.';
+            }
+
+            if (disposition === 'Quotation Sent') {
+                if ($.inArray(department, ['rooms', 'wedding']) !== -1 && !value('meal_plan')) {
+                    errors.meal_plan = 'Please select a meal plan.';
+                }
+                if ($.inArray(department, ['banquet', 'wedding']) !== -1 && !value('banquet_id')) {
+                    errors.banquet_id = 'Please select a banquet.';
+                }
+                if (department === 'restaurant') {
+                    $.each({
+                        restaurant_id: 'Please select a restaurant.',
+                        slot_type_id: 'Please select a slot type.',
+                        time_slot_id: 'Please select a time slot.',
+                        table_category_id: 'Please select a table category.',
+                        table_id: 'Please select a table.'
+                    }, function(field, message) {
+                        if (!value(field)) errors[field] = message;
+                    });
+                }
+            }
+
+            showEditLeadValidationErrors(errors);
+            return Object.keys(errors).length === 0;
+        }
+
+        $(document).on('input change', '#leadEditForm input, #leadEditForm select, #leadEditForm textarea', function() {
+            $(this).removeClass('is-invalid').removeAttr('aria-invalid');
+            $(this).closest('.form-group, [class*="col-"]').first()
+                .find('.edit-lead-validation-error').remove();
+        });
 
         // form validation rules
 
@@ -1033,28 +1313,28 @@
         $(document).on("click", ".editLeadDetails", function() {
             let lead_id = $(this).data('lead-id');
 
-            $("#edit_phone_number").val()
-            $("#edit_user_name").val()
-            $("#edit_email").val()
-            $("#edit_type").val()
-            $("#edit_property").val()
-            $("#edit_disposition").val()
+            clearEditLeadValidation();
+            $("#edit_phone_number").val('')
+            $("#edit_user_name").val('')
+            $("#edit_email").val('')
+            $("#edit_type").val('')
+            $("#edit_disposition").val('')
             $("#assigned_to").val('');
 
             $("#assigned_to").val('');
             $("#assigned_to").val('').trigger("change");
             $("#assigned_person_user_role").val('');
             $("#assigned_person_email").val('');
-            $("#edit_lead_status").val()
-            $("#edit_query").val()
-            $("#edit_remark").val()
+            $("#edit_lead_status").val('Open')
+            $("#edit_query").val('')
+            $("#edit_remark").val('')
 
             $("#Edit_dynamicFields").html('')
 
 
 
-            $.ajax({
-                url: "<?= base_url('LeadController/get_lead_details') ?>",
+            csrfAjax({
+                url: "<?= base_url('agent/Leads/get_lead_details') ?>",
                 type: "POST",
                 data: {
                     lead_id: lead_id
@@ -1073,7 +1353,7 @@
                         return; // Stop further execution
                     }
 
-                    data = res.data;
+                    let data = res.data;
 
 
 
@@ -1089,6 +1369,13 @@
                     $("#edit_lead_id").val(data.id);
 
                     $("#edit_purpose").val(data.purpose);
+                    $("#edit_lead_type").val(data.lead_type || 'Cold');
+                    let sourceSelect = $('#leadEditForm select[name="user_channel"]');
+                    let sourceValue = String(data.user_channel || '').toLowerCase();
+                    let matchedSource = sourceSelect.find('option').filter(function() {
+                        return String(this.value || '').toLowerCase() === sourceValue;
+                    }).first().val();
+                    sourceSelect.val(matchedSource || '');
 
 
 
@@ -1116,6 +1403,10 @@
                     $("#editLeadDetails").modal('show')
 
 
+                },
+                error: function(xhr) {
+                    let response = xhr.responseJSON || {};
+                    toastr.error(response.message || 'Unable to load lead details.');
                 },
                 complete: function() {
                     $("#processingLoader").hide(); // Hide loader ALWAYS
@@ -1716,7 +2007,7 @@
 
             $('#edit_restaurant_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-restaurants') ?>",
                 type: "POST",
                 data: {
@@ -1746,7 +2037,7 @@
 
             $('#edit_banquet_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-banquets') ?>",
                 type: "POST",
                 data: {
@@ -1779,7 +2070,7 @@
 
             $('#edit_meal_plan').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-meal-plans') ?>",
                 type: "POST",
                 dataType: "json",
@@ -1807,7 +2098,7 @@
 
             $('#edit_promotional_offers').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-promotional-offers') ?>",
                 type: "POST",
                 data: {
@@ -1837,7 +2128,7 @@
 
             $('#edit_roomtype').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-room-types') ?>",
                 type: "POST",
                 data: {
@@ -1870,7 +2161,7 @@
 
             $('#slot_type_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-slot-types') ?>",
                 type: "GET",
                 dataType: "json",
@@ -1910,7 +2201,7 @@
 
             $('#time_slot_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-time-slots') ?>",
                 type: "POST",
                 data: {
@@ -1957,7 +2248,7 @@
 
             $('#table_category_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-table-categories') ?>",
                 type: "POST",
                 data: {
@@ -2004,7 +2295,7 @@
 
             $('#table_id').html('<option value="">Loading...</option>');
 
-            $.ajax({
+            csrfAjax({
                 url: "<?= base_url('lead/get-tables') ?>",
                 type: "POST",
                 data: {
@@ -2050,35 +2341,31 @@
 
         $('#updateLead').on('click', function(e) {
 
-            $("#edit_lead_status").prop('disabled', false);
             e.preventDefault();
+            var statusField = $("#edit_lead_status");
+            statusField.prop('disabled', false);
+
+            if (!validateEditLeadForm()) {
+                statusField.prop('disabled', true);
+                return;
+            }
 
             // Collect form values
             const formValues = {
                 lead_id: $('#edit_lead_id').val(),
-                user_name: $('input[name="user_name"]').val(),
-                phone_number: $('#edit_phone_number').val(),
+                user_name: $('#edit_user_name').val(),
+                phone_number: ($('#edit_phone_number').val() || '').replace(/\D/g, '').slice(-10),
                 email: $('#edit_email').val(),
-                user_channel: $('input[name="user_channel"]').val(),
+                user_channel: $('#leadEditForm select[name="user_channel"]').val(),
                 property: $('#edit_property').val(),
-                department: $('#edit_type').val(),
+                type: $('#edit_type').val(),
                 status: $('#edit_lead_status').val(),
                 query: $('#edit_query').val(),
                 remark: $('#edit_remark').val(),
                 lead_type: $('#edit_lead_type').val(),
-                lead_status: $('#edit_lead_status').val(),
-                leadDepartment: $('#leadDepartment').val(),
+                leadDepartment: normalizeEditDepartmentName($('#edit_leadDepartment').val()),
                 disposition: $('#edit_disposition').val()
             };
-
-            console.log(formValues);
-
-            // Basic validation
-            if (!formValues.user_name || !formValues.phone_number || !formValues.property ||
-                !formValues.department || !formValues.status || !formValues.query) {
-                alert("Please fill all required fields.");
-                return;
-            }
 
             // Build FormData
             let formData = new FormData();
@@ -2091,7 +2378,7 @@
             });
 
 
-            let assigned_person_user_role = $('input[name="assigned_person_user_role"]').val();
+            let assigned_person_user_role = $('#assigned_person_user_role').val();
 
             let assigned_person_email = $('#assigned_person_email').val();;
 
@@ -2120,46 +2407,40 @@
             });
 
             // AJAX request
-            $.ajax({
-                url: '<?php echo base_url("update-lead-super-admin"); ?>',
+            csrfAjax({
+                url: '<?php echo base_url("update-lead-agent"); ?>',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 dataType: 'json',
+                beforeSend: function() {
+                    $('#updateLead').prop('disabled', true).text('Updating...');
+                },
 
                 success: function(response) {
-
-
-
                     if (response.status) {
                         toastr.success('Lead details has been updated successfully')
-
-                        $("#edit_lead_status").prop('disabled', true);
-
-
-                        updateLeadCard($('#edit_lead_id').val(), response.data);
-
-
-
+                        if (typeof window.fetchAgentLeads === 'function') {
+                            window.fetchAgentLeads(true);
+                        } else {
+                            updateLeadCard($('#edit_lead_id').val(), response.data);
+                        }
                         $("#editLeadDetails").modal('hide')
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.error_message,
-                            confirmButtonColor: '#d33'
-                        });
-
+                        showEditLeadValidationErrors(response.errors || {});
+                        toastr.error(response.message || 'Unable to update lead.');
                     }
-
-
-
                 },
-                error: function() {
-                    alert("An unexpected error occurred. Please try again.");
+                error: function(xhr) {
+                    let response = xhr.responseJSON || {};
+                    showEditLeadValidationErrors(response.errors || {});
+                    toastr.error(response.message || 'An unexpected error occurred. Please try again.');
                 },
-
+                complete: function() {
+                    statusField.prop('disabled', true);
+                    $('#updateLead').prop('disabled', false).text('Update Lead');
+                }
             });
         });
 
@@ -2211,6 +2492,122 @@
         let offset = 0; // pagination offset
         const limit = 100; // initial records to load
 
+        function syncLeadFilterMultiSelect($select, $widget) {
+            const selectedValues = ($select.val() || []).map(String);
+            const $items = $widget.find('.lead-filter-multiselect-item');
+            const total = $items.length;
+            const selectedCount = selectedValues.length;
+
+            $items.each(function() {
+                $(this).prop('checked', selectedValues.includes(String($(this).val())));
+            });
+
+            const $selectAll = $widget.find('.lead-filter-multiselect-all');
+            $selectAll.prop('checked', total > 0 && selectedCount === total);
+            $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+            let summary = 'Select Options';
+            if (selectedCount > 0 && selectedCount === total) {
+                summary = `All selected (${selectedCount})`;
+            } else if (selectedCount > 0) {
+                summary = `${selectedCount} selected`;
+            }
+
+            $widget.find('.lead-filter-multiselect-summary').text(summary);
+        }
+
+        function initializeLeadFilterMultiSelect(select) {
+            const $select = $(select);
+            if (!$select.length) return;
+
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+
+            $select.next('.lead-filter-multiselect').remove();
+
+            const $widget = $('<div>', { class: 'lead-filter-multiselect' });
+            const $toggle = $('<button>', {
+                type: 'button',
+                class: 'lead-filter-multiselect-toggle',
+                'aria-expanded': 'false',
+                'aria-haspopup': 'true'
+            }).append($('<span>', {
+                class: 'lead-filter-multiselect-summary',
+                text: 'Select Options'
+            }));
+            const $menu = $('<div>', {
+                class: 'lead-filter-multiselect-menu',
+                role: 'group'
+            });
+            const $options = $select.find('option').filter(function() {
+                return String(this.value).trim() !== '' && !this.disabled;
+            });
+
+            if ($options.length) {
+                $menu.append(
+                    $('<label>', {
+                        class: 'lead-filter-multiselect-option lead-filter-multiselect-select-all'
+                    }).append(
+                        $('<input>', {
+                            type: 'checkbox',
+                            class: 'lead-filter-multiselect-all'
+                        }),
+                        $('<span>', { text: 'Select all' })
+                    )
+                );
+
+                $options.each(function() {
+                    $menu.append(
+                        $('<label>', { class: 'lead-filter-multiselect-option' }).append(
+                            $('<input>', {
+                                type: 'checkbox',
+                                class: 'lead-filter-multiselect-item',
+                                value: this.value
+                            }),
+                            $('<span>').text($(this).text().trim())
+                        )
+                    );
+                });
+            }
+
+            $widget.append($toggle, $menu);
+            $select.after($widget);
+
+            $toggle.on('click', function() {
+                const isOpen = !$widget.hasClass('is-open');
+                $('.lead-filter-multiselect').not($widget).removeClass('is-open')
+                    .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+                $widget.toggleClass('is-open', isOpen);
+                $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-all', function() {
+                const values = this.checked
+                    ? $widget.find('.lead-filter-multiselect-item').map(function() {
+                        return this.value;
+                    }).get()
+                    : [];
+                $select.val(values).trigger('change');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-item', function() {
+                const values = $widget.find('.lead-filter-multiselect-item:checked')
+                    .map(function() {
+                        return this.value;
+                    }).get();
+                $select.val(values).trigger('change');
+            });
+
+            $select
+                .off('change.leadFilterMultiSelect')
+                .on('change.leadFilterMultiSelect', function() {
+                    syncLeadFilterMultiSelect($select, $widget);
+                });
+
+            syncLeadFilterMultiSelect($select, $widget);
+        }
+
 
         // -------- GET PARAM READER (works for arrays too) --------
         function getUrlParamsArray(param) {
@@ -2221,7 +2618,22 @@
         var statusFromGet = getUrlParamsArray('status');
         var dispositionFromGet = getUrlParamsArray('disposition');
 
-        var phoneFromGet = getUrlParamsArray('phone');
+        var phoneFromGet = new URL(window.location.href).searchParams.get('phone') || '';
+        var csrfTokenName = <?= json_encode($this->security->get_csrf_token_name()); ?>;
+        var csrfCookieName = <?= json_encode($this->config->item('csrf_cookie_name')); ?>;
+
+        function getCookieValue(cookieName) {
+            var encodedName = encodeURIComponent(cookieName) + '=';
+            var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+            for (var index = 0; index < cookies.length; index++) {
+                if (cookies[index].indexOf(encodedName) === 0) {
+                    return decodeURIComponent(cookies[index].substring(encodedName.length));
+                }
+            }
+
+            return '';
+        }
 
 
 
@@ -2230,17 +2642,26 @@
 
         // Pre-select multi-select status dropdown if GET exists
         if (statusFromGet.length > 0) {
-            $("#status").val(statusFromGet).trigger('change'); // for select2 or normal select
-            fetchLeads(true);
-        } else {
-            fetchLeads(true); // default initial load
+            $("#status").val(statusFromGet);
         }
 
 
         if (dispositionFromGet.length > 0) {
-            $("#disposition").val(dispositionFromGet).trigger('change');
-            fetchLeads(true);
+            $("#disposition").val(dispositionFromGet);
         }
+
+        $('#status, #channel, #disposition').each(function() {
+            initializeLeadFilterMultiSelect(this);
+        });
+
+        $(document)
+            .off('click.leadFilterMultiSelect')
+            .on('click.leadFilterMultiSelect', function(event) {
+                if (!$(event.target).closest('.lead-filter-multiselect').length) {
+                    $('.lead-filter-multiselect').removeClass('is-open')
+                        .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+                }
+            });
 
 
         // Function to fetch leads
@@ -2248,14 +2669,7 @@
             if (reset) offset = 0; // reset offset if new filters applied
 
 
-            <?php
-            $property = $this->session->userdata('selected_hotel_id');
-            $department = $this->session->userdata('selected_department_id');
-            ?>
-
             let filters = {
-                property: [<?= $property ?>],
-                department: [<?= $department ?>],
                 status: $('#status').val(),
                 channel: $('#channel').val(),
                 disposition: $('#disposition').val(),
@@ -2272,8 +2686,13 @@
                 limit: limit
             };
 
-            $.ajax({
-                url: "<?= base_url('LeadController/fetch_leads_ajax/') ?>",
+            var currentCsrfHash = getCookieValue(csrfCookieName);
+            if (currentCsrfHash) {
+                filters[csrfTokenName] = currentCsrfHash;
+            }
+
+            csrfAjax({
+                url: "<?= base_url('agent/Leads/fetch_leads_ajax') ?>",
                 method: "POST",
                 data: filters,
                 dataType: "json",
@@ -2282,14 +2701,16 @@
                 },
                 success: function(response) {
 
-                    $('#status_count_open').text('Open (' + response.totalCounts.open + ')');
-                    $('#status_count_in_progress').text('In Progress (' + response.totalCounts.in_progress + ')');
-                    $('#status_count_closed').text('Closed (' + response.totalCounts.closed + ')');
+                    const totalCounts = response.totalCounts || {};
 
-                    $('#status_count_not_assigned').text('Not Assigned (' + response.totalCounts.not_assigned + ')');
+                    $('#status_count_open').text('Open (' + (totalCounts.open || 0) + ')');
+                    $('#status_count_in_progress').text('In Progress (' + (totalCounts.in_progress || 0) + ')');
+                    $('#status_count_closed').text('Closed (' + (totalCounts.closed || 0) + ')');
+
+                    $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
 
 
-                    $('#total_leads_count').text(response.totalCounts.total);
+                    $('#total_leads_count').text(totalCounts.total || 0);
 
 
                     if (reset) {
@@ -2311,24 +2732,31 @@
                 complete: function() {
                     $("#processingLoader").hide(); // Hide loader ALWAYS
                 },
-                // error: function() {
-                //   alert('Something went wrong!');
-                //   $('#load_more_btn').prop('disabled', false).text('Load More');
-                // }
+                error: function(xhr) {
+                    $('#lead_container').html('<div class="alert alert-danger">Unable to load leads. Please refresh and try again.</div>');
+                    $('#load_more_btn').hide();
+                    console.error('Agent leads request failed:', xhr.status, xhr.responseText);
+                }
             });
         }
+
+        window.fetchAgentLeads = fetchLeads;
 
         // Initial load
         fetchLeads(true);
 
         // Trigger fetch when any filter changes
-        $('#property, #department, #status, #channel, #disposition, #start_date, #end_date').on('change', function() {
+        $('#status, #channel, #disposition, #start_date, #end_date').on('change', function() {
             fetchLeads(true);
         });
 
         // Search input
+        let searchTimer;
         $('#lead-search').on('keyup', function() {
-            fetchLeads(true);
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(function() {
+                fetchLeads(true);
+            }, 300);
         });
 
 
@@ -2361,11 +2789,7 @@
 
             // ✅ Always set Select2 value as array (not string)
             var selectedArray = Array.isArray(status) ? status : [status];
-            select.val(selectedArray).trigger('change.select2'); // Works for Select2
-
-
-            // ✅ Trigger reload with updated filter
-            fetchLeads(true);
+            select.val(selectedArray).trigger('change');
         });
 
 
@@ -2390,7 +2814,7 @@
     $(document).on('click', '.view-lead-details', function() {
         var leadId = $(this).data('lead-id');
 
-        $.ajax({
+        csrfAjax({
             url: '<?= base_url("LeadController/get_lead_details_new") ?>',
             type: 'POST',
             data: {
@@ -2732,7 +3156,7 @@ ${data.bill_attachment ? `
 
             if (result.isConfirmed) {
 
-                $.ajax({
+                csrfAjax({
                     url: "<?= base_url('LeadController/deleteLead') ?>", // ✅ CHANGE to your actual controller method
                     type: "POST",
                     data: {
@@ -2949,7 +3373,7 @@ ${data.bill_attachment ? `
             return false;
         }
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
             type: "POST",
             data: {
@@ -3074,7 +3498,7 @@ ${data.bill_attachment ? `
 
         $('#whatsappTemplateModal').modal('show');
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('LeadController/getwhatsappTempByProperty'); ?>",
             type: "POST",
             data: {
@@ -3120,7 +3544,7 @@ ${data.bill_attachment ? `
             return;
         }
 
-        $.ajax({
+        csrfAjax({
             url: "<?= base_url('LeadController/sendwhatsappMessage'); ?>",
             type: "POST",
             data: {

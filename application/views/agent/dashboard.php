@@ -7,6 +7,33 @@
 	text.highcharts-credits {
 		display: none;
 	}
+
+	#filter_lead_stats_count .select2-container {
+		width: 100% !important;
+	}
+
+	#filter_lead_stats_count .select2-container .select2-selection--single {
+		height: 60px;
+		border: 1px solid #d9d9d9;
+		border-radius: 10px;
+	}
+
+	#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__rendered {
+		line-height: 58px;
+		padding-left: 14px;
+		padding-right: 36px;
+	}
+
+	#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__arrow {
+		height: 58px;
+		right: 10px;
+	}
+
+	#filter_lead_stats_count .select2-container--focus .select2-selection--single,
+	#filter_lead_stats_count .select2-container--open .select2-selection--single {
+		border-color: #3b82f6;
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, .08);
+	}
 </style>
 
 <div class="content-wrapper">
@@ -109,7 +136,7 @@
 											<!-- Property -->
 											<div class="col-md-3 d-none">
 												<label for="top_filter_property" class="form-label">Property</label>
-												<select name="property" id="top_filter_property" class="form-select">
+								<select name="property" id="top_filter_property" class="form-select dashboard-filter-select">
 													<option value="">All Properties</option>
 													<?php foreach ($properties as $property) { ?>
 														<option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
@@ -122,7 +149,7 @@
 											<!-- Department -->
 											<div class="col-md-3 d-none">
 												<label for="top_filter_department" class="form-label">Department</label>
-												<select name="department" id="top_filter_department" class="form-select">
+								<select name="department" id="top_filter_department" class="form-select dashboard-filter-select">
 													<option value="">All Departments</option>
 													<?php foreach ($departments as $dept) { ?>
 														<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
@@ -135,7 +162,7 @@
 											<!-- Assigned To -->
 											<div class="col-md-3 d-none">
 												<label for="top_filter_assigned_to d-none" class="form-label">Assigned User</label>
-												<select name="assigned_to" id="top_filter_assigned_to" class="form-control">
+								<select name="assigned_to" id="top_filter_assigned_to" class="form-control dashboard-filter-select">
 													<option value="">All Assigned Users</option>
 
 													<?php foreach ($assigned_users as $user):
@@ -155,7 +182,7 @@
 											<!-- Created By -->
 											<div class="col-md-3 d-none">
 												<label for="top_filter_created_by" class="form-label">Created By</label>
-												<select name="created_by" id="top_filter_created_by" class="form-control">
+								<select name="created_by" id="top_filter_created_by" class="form-control dashboard-filter-select">
 													<option value="">All Creators</option>
 
 													<?php foreach ($creators as $user):
@@ -175,7 +202,7 @@
 											<!-- Lead Source -->
 											<div class="col-md-3">
 												<label for="top_filter_channel" class="form-label">Lead Source</label>
-												<select name="channel" id="top_filter_channel" class="form-select filter-input">
+								<select name="channel" id="top_filter_channel" class="form-select filter-input dashboard-filter-select">
 													<option value="">All Sources</option>
 													<?php foreach ($user_channel as $channelObj): ?>
 														<?php $channel = $channelObj->user_channel; ?>
@@ -187,7 +214,7 @@
 											<!-- Stage -->
 											<div class="col-md-3">
 												<label for="top_filter_disposition" class="form-label">Stage</label>
-												<select name="disposition" id="top_filter_disposition" class="form-select filter-input">
+								<select name="disposition" id="top_filter_disposition" class="form-select filter-input dashboard-filter-select">
 													<option value="">All Stages</option>
 													<option value="Not Contacted">Not Contacted</option>
 													<option value="Contacted">Contacted</option>
@@ -710,7 +737,7 @@
 													?>
 
 													<input type="hidden" name="property_bottom" value='<?php echo $property ?>'>
-													<input type="hidden" name="department_bottom" value='<?php echo $department ?>'>
+											<input type="hidden" name="department_bottom" value="">
 
 
 
@@ -797,15 +824,6 @@
 			</div>
 		</section>
 
-		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-		<!-- Highcharts and modules -->
-		<script src="https://code.highcharts.com/highcharts.js"></script>
-		<script src="https://code.highcharts.com/modules/exporting.js"></script>
-		<script src="https://code.highcharts.com/modules/export-data.js"></script>
-		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
 		<style>
 			.chart-container {
 				border: 1px solid #ccc;
@@ -826,78 +844,66 @@
 		</style>
 
 
-		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-		<!-- Highcharts core and modules -->
-		<script src="https://code.highcharts.com/highcharts.js"></script>
-		<script src="https://code.highcharts.com/modules/exporting.js"></script>
-		<script src="https://code.highcharts.com/modules/export-data.js"></script>
-		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-		<script src="https://code.highcharts.com/modules/full-screen.js"></script>
-
-
-
-
-
-
 		<script>
-			function renderHighchart(containerId, title, categories, series, type = 'column') {
-				const isPie = type === 'pie';
+			var agentDashboardCharts = {};
 
-				Highcharts.chart(containerId, {
+			function renderDashboardChart(containerId, title, categories, series, type = 'column') {
+				const isPie = type === 'pie';
+				const isHorizontal = type === 'bar';
+				const container = document.getElementById(containerId);
+
+				if (!container || typeof ApexCharts === 'undefined') {
+					return;
+				}
+
+				if (agentDashboardCharts[containerId]) {
+					agentDashboardCharts[containerId].destroy();
+				}
+
+				var chartOptions = {
 					chart: {
-						type: isPie ? 'pie' : type
+						type: isPie ? 'pie' : 'bar',
+						height: 380,
+						toolbar: {
+							show: true
+						}
 					},
 					title: {
-						text: title
+						text: title,
+						align: 'center'
 					},
-					exporting: {
-						enabled: true
+					plotOptions: {
+						bar: {
+							horizontal: isHorizontal,
+							columnWidth: '55%'
+						}
 					},
-					accessibility: {
-						enabled: true
-					},
-					legend: {
-						enabled: true
-					},
-					tooltip: {
-						pointFormat: isPie ? '<b>{point.y}</b>' : '<b>{point.y}</b>'
-					},
-					series: isPie ? [{
-						name: title,
-						colorByPoint: true,
-						data: categories.map((label, index) => ({
-							name: label,
-							y: series[index]
-						}))
-					}] : [{
+					noData: {
+						text: 'No data available'
+					}
+				};
+
+				if (isPie) {
+					chartOptions.series = series;
+					chartOptions.labels = categories;
+				} else {
+					chartOptions.series = [{
 						name: title,
 						data: series
-					}],
-					xAxis: !isPie ? {
+					}];
+					chartOptions.xaxis = {
 						categories: categories
-					} : undefined,
-					yAxis: !isPie ? {
-						min: 0,
+					};
+					chartOptions.yaxis = {
 						title: {
 							text: 'Count'
 						}
-					} : undefined,
-					plotOptions: {
-						pie: {
-							allowPointSelect: true,
-							cursor: 'pointer',
-							dataLabels: {
-								enabled: true,
-								format: '<b>{point.name}</b>: {point.y}'
-							}
-						},
-						series: {
-							showInLegend: true
-						}
-					}
-				});
+					};
+				}
+
+				agentDashboardCharts[containerId] = new ApexCharts(container, chartOptions);
+
+				agentDashboardCharts[containerId].render();
 			}
 
 			function fetchAndRenderChart(endpoint, containerId, title, type) {
@@ -916,7 +922,7 @@
 					success: function(data) {
 						const categories = data.map(d => d.label);
 						const counts = data.map(d => parseInt(d.count));
-						renderHighchart(containerId, title, categories, counts, type);
+						renderDashboardChart(containerId, title, categories, counts, type);
 					},
 					error: function() {
 						$('#' + containerId).html('<p>Error loading data.</p>');
@@ -924,7 +930,13 @@
 				});
 			}
 
-			$(document).ready(function() {
+			window.addEventListener('load', function() {
+				var $ = window.jQuery;
+
+				if (!$ || typeof ApexCharts === 'undefined') {
+					return;
+				}
+
 				const chartConfigs = [{
 						id: 'chart_department',
 						endpoint: '<?= base_url("agent/Main/department_chart_data") ?>',
@@ -976,8 +988,6 @@
 				];
 
 				chartConfigs.forEach(config => {
-					fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
-
 					$('#' + config.startId + ', #' + config.endId).on('change', function() {
 						const start = $('#' + config.startId).val();
 						const end = $('#' + config.endId).val();
@@ -1005,7 +1015,25 @@
 
 
 		<script>
-			$(document).ready(function() {
+			window.addEventListener('load', function() {
+				var $ = window.jQuery;
+
+				if (!$) {
+					return;
+				}
+
+				if ($.fn.select2) {
+					$('.dashboard-filter-select').each(function() {
+						var $select = $(this);
+
+						if (!$select.hasClass('select2-hidden-accessible')) {
+							$select.select2({
+								width: '100%',
+								minimumResultsForSearch: 0
+							});
+						}
+					});
+				}
 
 				/* =========================================
 				   AUTO FILTER ON CHANGE
@@ -1018,10 +1046,12 @@
        #top_filter_end_date, \
        #top_filter_created_by, \
        #top_filter_assigned_to')
-					.on('change', function() {
+					.off('change.agentDashboardFilters')
+					.on('change.agentDashboardFilters', function() {
 						applyTopFilters();
 					});
 
+				applyTopFilters();
 			});
 
 
@@ -1046,8 +1076,6 @@
 					role: parts[1] || ''
 				};
 			}
-
-			applyTopFilters();
 
 			/* =========================================
 			   MAIN FILTER FUNCTION
@@ -1074,8 +1102,13 @@
 					assigned_id: assignedUser.id,
 					assigned_role: assignedUser.role
 				};
+				var csrfTokenName = <?= json_encode($this->security->get_csrf_token_name()); ?>;
+				var csrfCookieName = <?= json_encode($this->config->item('csrf_cookie_name')); ?>;
+				var csrfHash = getDashboardCookieValue(csrfCookieName);
 
-				console.log(filters)
+				if (csrfHash) {
+					filters[csrfTokenName] = csrfHash;
+				}
 
 
 				$.ajax({
@@ -1131,6 +1164,19 @@
 					}
 				});
 
+			}
+
+			function getDashboardCookieValue(cookieName) {
+				var encodedName = encodeURIComponent(cookieName) + '=';
+				var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+				for (var index = 0; index < cookies.length; index++) {
+					if (cookies[index].indexOf(encodedName) === 0) {
+						return decodeURIComponent(cookies[index].substring(encodedName.length));
+					}
+				}
+
+				return '';
 			}
 
 			function numberFormat(amount) {
