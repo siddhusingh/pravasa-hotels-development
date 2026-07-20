@@ -52,6 +52,50 @@
         padding: 6px 20px;
         font-weight: 500;
     }
+
+    #leadEditForm .required-marker {
+        color: #dc3545;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    #leadEditForm .select2-container--default .select2-selection--single {
+        background-color: #fff !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px !important;
+        height: 46px !important;
+        padding: 11px 14px;
+    }
+
+    #leadEditForm .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 22px;
+        margin-top: 0;
+        padding-left: 0;
+    }
+
+    #leadEditForm .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px;
+    }
+
+    #leadEditForm select.is-invalid + .select2-container .select2-selection--single {
+        border-color: #dc3545 !important;
+    }
+
+    #leadEditForm .select2-container--focus .select2-selection--single,
+    #leadEditForm .select2-container--open .select2-selection--single {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+    }
+
+    #leadEditForm .edit-select2-dropdown-parent {
+        position: relative;
+    }
+
+    #leadEditForm .edit-select2-dropdown-parent > .select2-container--open .select2-dropdown {
+        z-index: 1070;
+    }
 </style>
 <style>
     #filter-section .lead-filter-multiselect-source {
@@ -233,19 +277,32 @@
 
 <style>
     #Edit_dynamicFields {
-        display: contents;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
     }
 
-    #Edit_dynamicFields .row {
-        margin-top: 10px;
+    #Edit_dynamicFields > [class*="col-md-"] {
+        flex: 0 0 33.333333%;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: 33.333333%;
+        width: 33.333333%;
     }
 
-    #Edit_dynamicFields .col-md-3,
-    #Edit_dynamicFields .col-md-4,
-    #Edit_dynamicFields .col-md-6 {
-        margin-bottom: 10px;
-        margin-left: 5px;
-        margin-right: 5px;
+    #Edit_dynamicFields .form-control,
+    #Edit_dynamicFields .form-select,
+    #Edit_dynamicFields .select2-container {
+        width: 100% !important;
+    }
+
+    @media (max-width: 767.98px) {
+        #Edit_dynamicFields > [class*="col-md-"] {
+            flex-basis: 100%;
+            max-width: 100%;
+            width: 100%;
+        }
     }
 </style>
 <!-- Content Wrapper. Contains page content -->
@@ -875,24 +932,24 @@
 <!-- Button trigger modal -->
 <!-- Modal -->
 <div class="modal modal-lg" id="editLeadDetails" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editLeadDetailsLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="editLeadDetailsLabel">Edit Lead Info</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="leadEditForm">
+                <form id="leadEditForm" novalidate>
                     <input type="hidden" name="edit_lead_id" id="edit_lead_id">
                     <div class="row g-3">
                         <!-- Phone Number -->
                         <div class="col-md-4">
-                            <label>Phone</label>
+                            <label>Phone <span class="required-marker">*</span></label>
                             <input type="number" name="phone_number" id="edit_phone_number" class="form-control" value="" required>
                         </div>
                         <!-- Guest Name -->
                         <div class="col-md-4">
-                            <label>Name</label>
+                            <label>Name <span class="required-marker" id="editGuestNameRequiredMarker">*</span></label>
                             <input type="text" name="user_name" class="form-control" value="" required id="edit_user_name">
                         </div>
                         <!-- Email -->
@@ -902,7 +959,7 @@
                         </div>
                         <!-- Property -->
                         <div class="col-md-4">
-                            <label>Property</label>
+                            <label>Property <span class="required-marker">*</span></label>
                             <select name="property" class="form-control" required id="edit_property" disabled>
                                 <?php foreach ($properties as $property) { ?>
                                     <option
@@ -917,7 +974,7 @@
 
                         <!-- Department -->
                         <div class="col-md-4">
-                            <label>Department</label>
+                            <label>Department <span class="required-marker">*</span></label>
                             <select name="type" class="form-control" required id="edit_type">
                                 <?php foreach ($departments as $each): ?>
                                     <option value="<?= $each->department_id ?>"
@@ -941,9 +998,9 @@
                                 <span id="lead_type_error" class="text-danger small"></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage</label>
+                                <label for="disposition"><i class="fa fa-list me-1 text-dark"></i>Stage <span class="required-marker">*</span></label>
                                 <select class="form-control" name="disposition" id="edit_disposition">
                                     <option value="" disabled selected>Select Stage</option>
 
@@ -968,9 +1025,9 @@
                             </div>
                         </div>
                         <!-- Lead Status -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Lead Status</label>
+                                <label>Lead Status <span class="required-marker">*</span></label>
                                 <select name="status" id="edit_lead_status" class="form-control" required disabled>
                                     <option value="Open" selected>Open</option>
                                     <option value="On Hold">On Hold</option>
@@ -1007,10 +1064,10 @@
                         <input type="hidden" name="assigned_person_user_role" id="assigned_person_user_role">
                         <input type="hidden" name="assigned_person_email" id="assigned_person_email">
 
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label for="user_channel">
-                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source
+                                    <i class="fa fa-fire me-1 text-secondary"></i>Lead Source <span class="required-marker">*</span>
                                 </label>
 
                                 <select name="user_channel" id="user_channel" class="form-control">
@@ -1040,7 +1097,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label for="purpose">
                                     <i class="fa fa-bullseye me-1 text-secondary"></i>Purpose
@@ -1070,10 +1127,10 @@
                         <!-- Lead Type -->
                         <!-- Stage -->
                         <input type="hidden" id="edit_leadDepartment" name="edit_leadDepartment">
-                        <div id="Edit_dynamicFields"></div>
+                        <div id="Edit_dynamicFields" class="row g-3"></div>
                         <!-- Query -->
                         <div class="col-md-6">
-                            <label>Query</label>
+                            <label>Query <span class="required-marker">*</span></label>
                             <textarea name="query" class="form-control" id="edit_query"></textarea>
                         </div>
                         <!-- Remark -->
@@ -1114,6 +1171,40 @@
 </div>
 <script>
     $(document).ready(function() {
+
+        function initializeEditSingleSelect2(scope) {
+            if (!$.fn.select2) return;
+
+            var selectScope = scope ? $(scope) : $('#leadEditForm');
+            var selects = selectScope.is('select')
+                ? selectScope.filter('select:not([multiple])')
+                : selectScope.find('select:not([multiple])');
+
+            selects.each(function() {
+                var select = $(this);
+                var formGroup = select.closest('.form-group');
+                var dropdownParent = formGroup.length
+                    ? formGroup
+                    : select.closest('[class*="col-"]');
+
+                dropdownParent.addClass('edit-select2-dropdown-parent');
+
+                if (!select.hasClass('select2-hidden-accessible')) {
+                    select.select2({
+                        dropdownParent: dropdownParent,
+                        width: '100%'
+                    });
+                }
+            });
+        }
+
+        function refreshEditSingleSelect2(select) {
+            if (!$.fn.select2) return;
+
+            var field = $(select);
+            initializeEditSingleSelect2(field);
+            field.trigger('change.select2');
+        }
 
 
         function normalizeEditDepartmentName(name) {
@@ -1162,7 +1253,11 @@
                 modalBody.animate({
                     scrollTop: Math.max((container.position() || { top: 0 }).top - 20, 0)
                 }, 200);
-                firstField.trigger('focus');
+                if (firstField.hasClass('select2-hidden-accessible')) {
+                    firstField.next('.select2-container').find('.select2-selection').trigger('focus');
+                } else {
+                    firstField.trigger('focus');
+                }
             }
         }
 
@@ -1221,6 +1316,13 @@
             showEditLeadValidationErrors(errors);
             return Object.keys(errors).length === 0;
         }
+
+        $('#editLeadDetails').on('shown.bs.modal', function() {
+            initializeEditSingleSelect2('#leadEditForm');
+            $('#leadEditForm select:not([multiple])').trigger('change.select2');
+        }).on('hidden.bs.modal', function() {
+            clearEditLeadValidation();
+        });
 
         $(document).on('input change', '#leadEditForm input, #leadEditForm select, #leadEditForm textarea', function() {
             $(this).removeClass('is-invalid').removeAttr('aria-invalid');
@@ -1475,12 +1577,18 @@
             console.log(department);
 
             $('#edit_leadDepartment').val(department);
+            $('#editGuestNameRequiredMarker').toggle(disposition !== 'Not Contacted');
+            $('#edit_user_name').prop('required', disposition !== 'Not Contacted');
 
             let existingLeadData = data;
 
             console.log(existingLeadData);
 
             const container = $("#Edit_dynamicFields");
+            container.find('select.select2-hidden-accessible').each(function() {
+                if (!$.fn.select2) return false;
+                $(this).select2('destroy');
+            });
             container.empty();
 
             var today = new Date().toISOString().split('T')[0];
@@ -1525,7 +1633,7 @@
                 container.append(`
 
         <div class="col-md-4 mb-3">
-            <label class="form-label">Reason</label>
+            <label class="form-label">Reason <span class="required-marker">*</span></label>
             <select name="reason" class="form-select" id="reason" required>
                 <option value="">Select Reason</option>
                 <option value="Budget Issue">Budget Issue</option>
@@ -1573,7 +1681,7 @@
 </div>
 
 <div class="col-md-3 mb-3">
-    <label>Meal Plan</label>
+    <label>Meal Plan <span class="required-marker">*</span></label>
     <select name="meal_plan" id="edit_meal_plan" class="form-select">
         <option value="">Select Meal Plan</option>
     </select>
@@ -1663,12 +1771,12 @@
             </div>
 
             <div class="col-md-4 mb-3">
-                <label>Restaurant</label>
+                <label>Restaurant <span class="required-marker">*</span></label>
                 <select name="restaurant_id" id="edit_restaurant_id" class="form-select"></select>
             </div>
 
             <div class="col-md-4 mb-3">
-                    <label>Table Category <span class="text-danger">*</span></label>
+                    <label>Table Category <span class="required-marker">*</span></label>
                     <select name="table_category_id" id="table_category_id" class="form-select">
                         <option value="">Select Category</option>
                     </select>
@@ -1676,7 +1784,7 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label>Tables <span class="text-danger">*</span></label>
+                    <label>Tables <span class="required-marker">*</span></label>
                     <select name="table_id" id="table_id" class="form-select">
                         <option value="">Select Table</option>
                     </select>
@@ -1684,7 +1792,7 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label>Slot Type <span class="text-danger">*</span></label>
+                    <label>Slot Type <span class="required-marker">*</span></label>
                     <select name="slot_type_id" id="slot_type_id" class="form-select">
                         <option value="">Select Slot</option>
                     </select>
@@ -1692,7 +1800,7 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                <label>Time Slot <span class="text-danger">*</span></label>
+                <label>Time Slot <span class="required-marker">*</span></label>
                 <select name="time_slot_id" id="time_slot_id" class="form-select">
                     <option value="">Select Time Slot</option>
                 </select>
@@ -1745,7 +1853,7 @@
             </div>
 
             <div class="col-md-4 mb-3">
-                <label>Banquet</label>
+                <label>Banquet <span class="required-marker">*</span></label>
                 <select name="banquet_id" id="edit_banquet_id" class="form-select"></select>
             </div>
 
@@ -1850,7 +1958,7 @@
 </div>
 
 <div class="col-md-3 mb-3">
-    <label>Meal Plan</label>
+    <label>Meal Plan <span class="required-marker">*</span></label>
     <select name="meal_plan" id="edit_meal_plan" class="form-select">
         <option value="">Select Meal Plan</option>
     </select>
@@ -1906,7 +2014,7 @@
             </div>
 
             <div class="col-md-4 mb-3">
-                <label>Banquet</label>
+                <label>Banquet <span class="required-marker">*</span></label>
                 <select name="banquet_id" id="edit_banquet_id" class="form-select"></select>
             </div>
 
@@ -2000,6 +2108,10 @@
                 }
             }
 
+            initializeEditSingleSelect2(container);
+            container.find('select:not([multiple])').trigger('change.select2');
+            $('#edit_lead_status').trigger('change.select2');
+
         }
 
 
@@ -2029,6 +2141,7 @@
                     if (existingLeadData && existingLeadData.restaurant_id) {
                         $('#edit_restaurant_id').val(existingLeadData.restaurant_id);
                     }
+                    refreshEditSingleSelect2('#edit_restaurant_id');
                 }
             });
         }
@@ -2059,6 +2172,7 @@
                     if (existingLeadData && existingLeadData.banquet_id) {
                         $('#edit_banquet_id').val(existingLeadData.banquet_id);
                     }
+                    refreshEditSingleSelect2('#edit_banquet_id');
                 }
             });
         }
@@ -2089,6 +2203,7 @@
                     if (existingLeadData && existingLeadData.meal_plan) {
                         $('#edit_meal_plan').val(existingLeadData.meal_plan);
                     }
+                    refreshEditSingleSelect2('#edit_meal_plan');
                 }
             });
         }
@@ -2120,6 +2235,7 @@
                     if (existingLeadData && existingLeadData.promotional_offers) {
                         $('#edit_promotional_offers').val(existingLeadData.promotional_offers);
                     }
+                    refreshEditSingleSelect2('#edit_promotional_offers');
                 }
             });
         }
@@ -2150,6 +2266,7 @@
                     if (existingLeadData && existingLeadData.roomtype) {
                         $('#edit_roomtype').val(existingLeadData.roomtype);
                     }
+                    refreshEditSingleSelect2('#edit_roomtype');
                 }
             });
         }
@@ -2182,6 +2299,7 @@
                     if (typeof existingLeadData !== "undefined" && existingLeadData.slot_type_id) {
                         $('#slot_type_id').val(existingLeadData.slot_type_id);
                     }
+                    refreshEditSingleSelect2('#slot_type_id');
                 }
             });
         }
@@ -2227,6 +2345,7 @@
                     if (typeof existingLeadData !== "undefined" && existingLeadData.time_slot_id) {
                         $('#time_slot_id').val(existingLeadData.time_slot_id);
                     }
+                    refreshEditSingleSelect2('#time_slot_id');
 
 
                 }
@@ -2274,6 +2393,7 @@
                     if (selectedCategoryId !== null && selectedCategoryId !== "") {
                         $('#table_category_id').val(selectedCategoryId);
                     }
+                    refreshEditSingleSelect2('#table_category_id');
                 }
             });
         }
@@ -2322,6 +2442,7 @@
                     if (selectedTableId !== null && selectedTableId !== "") {
                         $('#table_id').val(selectedTableId);
                     }
+                    refreshEditSingleSelect2('#table_id');
                 }
             });
         }

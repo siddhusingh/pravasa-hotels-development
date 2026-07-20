@@ -203,30 +203,41 @@ class Leads extends CI_Controller
 
     public function followups()
     {
-        $property = $this->session->userdata('selected_hotel_id');
-        $department = $this->session->userdata('selected_department_id');
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return redirect('agent-dashboard');
+        }
+
+        $property = $scope['hotel_id'];
+        $agent = $this->session->userdata('agent_session');
 
         $filters = [
-            'department' => $department,
-            'status' => $this->input->get('status'),
-            'disposition' => $this->input->get('disposition'),
-            'channel' => $this->input->get('channel'),
+            'property' => [$property],
+            'status' => $this->normalise_multi_filter($this->input->get('status')),
+            'disposition' => $this->normalise_multi_filter($this->input->get('disposition')),
+            'channel' => $this->normalise_multi_filter($this->input->get('channel')),
             'start_date' => $this->input->get('start_date'),
             'end_date' => $this->input->get('end_date'),
-            'phone' => $this->input->get('phone')
+            'phone' => $this->input->get('phone'),
+            'showfollowupleads' => 'yes'
         ];
 
-        $activeFilters = array_filter($filters, function ($val) {
-            return $val !== null && $val !== '';
-        });
-        $activeFilters['showfollowupleads'] = 'yes';
+        $data['leads'] = $this->LeadModel->get_filtered_leads($filters, 50, 0);
 
-        // Fetch leads with follow-up date condition
-        $data['leads'] = $this->LeadModel->get_hotel_followup_leads($property, $activeFilters);
+        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+            'property' => $property,
+            'is_deleted' => 0
+        ]);
 
-        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
-
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $data['departments'] = $this->db
+            ->select('d.*')
+            ->distinct()
+            ->from('departments d')
+            ->join('staff_hotel_department_mapping shdm', 'shdm.department_id = d.department_id')
+            ->where('shdm.staff_id', (int) $agent['id'])
+            ->where('shdm.hotel_id', $property)
+            ->get()
+            ->result();
 
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
 
@@ -234,15 +245,12 @@ class Leads extends CI_Controller
 
         $data['all_assignable_users'] = $this->LeadModel->get_all_assignable_users('hotel_admin', '');
 
-        $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['properties'] = $this->db
+            ->where('hotel_id', $property)
+            ->get('hotel_admin')
+            ->result();
 
-        // Load all data to send to view
-        $data['lead_status_counts'] = [
-            'Open'        => $this->LeadModel->get_lead_count_by_status_agent('Open', $property, $department, null, null, true),
-            'In Progress' => $this->LeadModel->get_lead_count_by_status_agent('In Progress', $property, $department, null, null, true),
-            'On Hold'     => $this->LeadModel->get_lead_count_by_status_agent('On Hold', $property, $department, null, null, true),
-            'Closed'      => $this->LeadModel->get_lead_count_by_status_agent('Closed', $property, $department, null, null, true)
-        ];
+        $data['lead_status_counts'] = $this->LeadModel->get_leads_status_counts($filters);
         $data['showfollowupleads'] = 'yes';
 
         $this->load->view('agent/include/header');
