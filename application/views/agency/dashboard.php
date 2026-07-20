@@ -31,7 +31,7 @@
 								<div id="">
 
 									<form id="filter_lead_stats_count">
-										<div class="row g-3 align-items-end">
+										<div class="row align-items-end">
 											<!-- Existing filters (City, Property, etc.) -->
 
 
@@ -197,9 +197,9 @@
 								<div id="">
 
 									<form>
-										<div class="row g-3 align-items-end">
+										<div class="row align-items-end">
 											<form method="GET" action="<?= base_url('view-agencys-leads'); ?>" class="mb-4 px-3">
-												<div class="row g-3 align-items-end">
+												<div class="row align-items-end">
 													<!-- Existing filters (City, Property, etc.) -->
 
 

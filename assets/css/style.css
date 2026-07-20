@@ -33894,7 +33894,7 @@ li.treeview.menu-open {
 }
 
 .new_table_box .box-title {
-    font-size: 27px;
+    font-size: 22px;
     font-weight: 700;
     color: #000000;
     margin: 0;
@@ -33909,20 +33909,19 @@ li.treeview.menu-open {
                 BUTTON
 =====================================================*/
 
-.new_table_box button{
+.new_table_box button {
     background: #9F8BE7 !important;
-    border:none;
+    border: none;
     color: #fff !important;
-    border-radius:8px;
-    padding:7px 17px;
-    font-size:15px;
-    font-weight:600;
-    box-shadow:0 12px 25px rgba(126,90,239,.35);
-    -webkit-border-radius:8px;
-    -moz-border-radius:8px;
-    -ms-border-radius:8px;
-    -o-border-radius:8px;
-    height:46px ;
+    padding: 7px 8px;
+    font-weight: 500;
+    box-shadow: 0 12px 25px rgba(126,90,239,.35);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 8px;
+    -ms-border-radius: 8px;
+    -o-border-radius: 8px;
+    height: auto;
+    font-size: 13px;
 }
 
 .new_table_box .box-header button:hover{
@@ -34020,7 +34019,7 @@ li.treeview.menu-open {
 
     /* border:none !important; */
 
-    padding:18px 20px;
+    /* padding:18px 20px; */
 
     font-size:16px;
 
@@ -34339,7 +34338,8 @@ div.dataTables_wrapper div.dataTables_filter input,
 div.dataTables_wrapper .dataTables_length select,
 .form-control, .form-select, 
 div#server-side-data-table_filter label,
-.select2-container--default .select2-selection--multiple{
+.select2-container--default .select2-selection--multiple,
+.select2-container .select2-selection--single{
     border-radius: 8px!important;
     /*border: 1px solid #dbe3ee;
     */font-size: 14px!important;
@@ -34739,11 +34739,7 @@ table#leadReportTable tr td:last-child {
     /* background-color: #fff!important; */
 }
 
-table#complex_header button.btn.btn-sm.btn-warning {
-    padding: 5px 8px;
-    margin: 0;
-    font-size: 13px!important;
-}
+
 .box.new_table_box .form-group label ,
 .box.new_table_box .col-md-4 label,
 .box.new_table_box .col-sm-4 label{
@@ -34965,7 +34961,7 @@ button.dropdown-item.multiselect-all {
   padding: 0 12px;
   border-radius: 10px;
   transition: all 0.3s ease;
-  height: 46px;
+  height: auto;
   gap:8px  
 }
 .p_l_r-10 {
@@ -35403,4 +35399,57 @@ a.btn.btn-icon.close_bnt.btn-sm.no-shadow {
 a.waves-effect.waves-light.nav-link.push-btn.btn-primary-light {
     position: relative;
     top: 4px;
+}
+table#leadReportTable th, table#leadReportTable td {
+    text-align: left;
+}
+table#leadReportTable td {
+  font-weight: 400!important;
+}
+table#leadReportTable tbody tr:last-child td{
+  font-weight: 600!important;
+  color: #000;
+  opacity: 1;
+
+}
+
+.select2-container .select2-selection--single {
+    height: 46px!important;
+    min-height: 46px!important;
+    max-height: 46px!important;
+}
+
+.lead-report-filters .report-multiselect-toggle {
+    align-items: center;
+    background: #fff !important;
+    border: 1px solid #b8c0cc !important;
+    border-radius: 8px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+    color: #495057 !important;
+    display: flex;
+    box-sizing: border-box;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    justify-content: space-between;
+    padding: 0 14px !important;
+    text-align: left;
+    width: 100%;
+    border-radius: 8px !important;
+    /* border: 1px solid #dbe3ee; */
+    font-size: 14px !important;
+    /* box-shadow: none !important; */
+    transition: .25s ease;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 2px 11px;
+    background-color: #fff !important;
+    border: 1px solid #00000000 !important;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
+    height: 46px;
+    -webkit-border-radius: 8px !important;
+}
+.lead-report-filters .report-multiselect.is-open .report-multiselect-toggle, .lead-report-filters .report-multiselect-toggle:focus {
+    border-color: #ffffff00 !important;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
+    outline: 0;
 }

@@ -18,31 +18,7 @@
         width: 100%;
     }
 
-    .lead-report-filters .report-multiselect-toggle {
-        align-items: center;
-        background: #fff !important;
-        border: 1px solid #b8c0cc !important;
-        border-radius: 8px;
-        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-        box-sizing: border-box;
-        color: #495057 !important;
-        display: flex;
-        height: 56px !important;
-        justify-content: space-between;
-        max-height: 56px !important;
-        min-height: 56px !important;
-        padding: 0 14px !important;
-        text-align: left;
-        width: 100%;
-    }
-
-    .lead-report-filters .report-multiselect.is-open .report-multiselect-toggle,
-    .lead-report-filters .report-multiselect-toggle:focus {
-        border-color: #80bdff !important;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
-        outline: 0;
-    }
+     
 
     .lead-report-filters .report-multiselect-toggle:disabled {
         cursor: not-allowed;
@@ -63,8 +39,8 @@
     }
 
     .lead-report-filters .report-multiselect-menu {
-        background: #d2d2d2;
-        border: 1px solid #c5c5c5;
+         background: #fff;
+        border: 1px solid #fff;
         border-radius: 6px;
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
         display: none;
@@ -165,10 +141,10 @@
                             <div class="row">
 
                                 <form method="GET" action="<?= base_url('admin-reports-property-materialized'); ?>" class="mb-4 lead-report-filters">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="property" class="form-label">Property</label>
                                             <select name="property[]" class="form-control filter-input report-multiselect-source" multiple id="property" disabled aria-readonly="true">
                                                 <?php foreach ($properties as $property) { ?>
@@ -177,7 +153,7 @@
                                             </select>
                                         </div>
                                         <!-- Department -->
-                                        <div class="col-md-3 d-none">
+                                        <div class="col-md-4 d-none">
                                             <label for="department" class="form-label">Department</label>
                                             <select name="department[]" class="form-control filter-input report-multiselect-source" multiple id="department">
                                                 <?php foreach ($departments as $dept) { ?>
@@ -191,11 +167,11 @@
 
                                         <!-- Date Filters -->
                                         <!-- 🆕 Date Filters -->
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="start_date" class="form-label">Start Date</label>
                                             <input type="date" id="start_date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="end_date" class="form-label">End Date</label>
                                             <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
                                         </div>

@@ -49,7 +49,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 
 
 
-<div class="modal modal-right fade" id="quick_user_toggle" tabindex="-1">
+<div class="modal modal-right fade profile_drawer" id="quick_user_toggle" tabindex="-1">
    <div class="modal-dialog">
       <div class="modal-content slim-scroll3">
          <div class="modal modal-right fade show" id="quick_user_toggle_panel" tabindex="-1" aria-modal="true" role="dialog" style="display: block;">
@@ -60,14 +60,18 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
                         <h4 class="m-0">User Profile
 
                         </h4>
-                        <a href="#" class="btn btn-icon btn-danger-light btn-sm no-shadow" data-bs-dismiss="modal">
+                        <a href="#" class="btn btn-icon close_bnt btn-sm no-shadow" data-bs-dismiss="modal">
                            <span class="fa fa-close"></span>
                         </a>
                      </div>
                      <div>
-                        <div class="d-flex flex-row">
+                        <div class="profile-avatar">
+                           <!-- <img src="<?php echo base_url('assets/images/user.png'); ?>" alt="profile img " loading="lazy> -->
+                            <img src="https://img.magnific.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740&q=80" alt="profile img " loading="lazy" class="img-fluid rounded-circle">
+                        </div>
+                        <div class="profile-user-card">
 
-                           <div class="ps-20">
+                           <div class="profile-user-info">
                               <h5 class="mb-0"><?php echo $profile_data->name; ?></h5>
                               <p class="my-5 text-fade">
 
@@ -76,12 +80,12 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
                                  } else {
                                     echo 'Admin';
                                  } ?> </p>
-                              <p><a href="javascript:void(0)"><span class="icon-Mail-notification me-5 text-success"><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->email; ?></a></p>
+                              <p><a href="javascript:void(0)"><span class="icon-Mail-notification me-5 "><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->email; ?></a></p>
                               <p>
-                                 <a href="javascript:void(0)"><span class="fa fa-phone me-5 text-success"><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->phone; ?></a>
+                                 <a href="javascript:void(0)"><span class="fa fa-phone me-5 "><span class="path1"></span><span class="path2"></span></span> <?php echo $profile_data->phone; ?></a>
                               </p>
 
-                              <a class="btn btn-danger-light btn-sm mt-5" href="<?php echo base_url('hotel-admin-sign-out') ?>">
+                              <a class="btn close_bnt btn-sm mt-5" href="<?php echo base_url('hotel-admin-sign-out') ?>">
                                  <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
                               </a>
                            </div>
@@ -89,7 +93,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
                      </div>
                      <div class="dropdown-divider my-30"></div>
                      <div>
-                        <div class="d-flex align-items-center mb-30">
+                        <div class="profile-menu-item">
                            <div class="me-15 bg-primary-light h-50 w-50 l-h-60 rounded text-center">
                               <span class="icon-Library fs-24"><span class="path1"></span><span class="path2"></span></span>
                            </div>
@@ -98,14 +102,14 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
                               <span class="text-fade">Account settings and more</span>
                            </div>
                         </div>
-                        <div class="d-flex align-items-center mb-30">
-                           <!-- <div class="me-15 bg-success-light h-50 w-50 l-h-60 rounded text-center">
+                        <div class="profile-menu-item">
+                           <div class="me-15 bg-success-light h-50 w-50 l-h-60 rounded text-center">
                               <span class="icon-Group-chat fs-24"><span class="path1"></span><span class="path2"></span></span>
-                           </div> -->
-                           <!-- <div class="d-flex flex-column fw-500">
+                           </div>
+                           <div class="d-flex flex-column fw-500">
                               <a href="<?php echo base_url('hotel-admin-account-settings') ?>" class="text-dark hover-success mb-1 fs-16">Settings</a>
                               <span class="text-fade">Accout Settings</span>
-                           </div> -->
+                           </div>
                         </div>
                      </div>
                      <div class="dropdown-divider my-30"></div>

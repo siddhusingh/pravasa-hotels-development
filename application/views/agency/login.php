@@ -22,8 +22,8 @@
     <link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/custom.css">
     <style>
         .bg-white {
-            --bs-bg-opacity: 1;
-            background-color: rgb(255 255 255 / 2%) !important;
+            --bs-bg-opacity: 10;
+            background-color: #fff !important;
         }
 
 

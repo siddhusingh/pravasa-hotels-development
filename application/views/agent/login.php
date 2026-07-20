@@ -47,7 +47,7 @@
     <style>
         .bg-white {
             --bs-bg-opacity: 1;
-            background-color: rgb(255 255 255 / 2%) !important;
+            background-color: #fff !important;
         }
 
 

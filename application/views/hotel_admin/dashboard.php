@@ -20,10 +20,10 @@
 
 				<!-- quick filters -->
 
-				<div class="col-xxl-6 col-12">
+				<div class="col-xxl-12 col-12">
 
 
-					<div class="box">
+					<div class="box_supar_admin">
 						<div class="box-header no-border pb-0">
 						</div>
 						<div class="box-body">
@@ -34,29 +34,22 @@
 										/* ===== Professional Filter Panel UI ===== */
 
 										#filter_lead_stats_count {
-											background: #ffffff;
+											/* background: #ffffff;
 											border: 1px solid #e9eef5;
 											border-radius: 18px;
 											padding: 18px;
-											box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+											box-shadow: 0 8px 24px rgba(0, 0, 0, .05); */
 											margin-bottom: 20px;
 										}
 
-										#filter_lead_stats_count .form-label {
-											font-size: 13px;
-											font-weight: 700;
-											color: #475569;
-											margin-bottom: 6px;
-											display: block;
-										}
 
 										#filter_lead_stats_count .form-control,
 										#filter_lead_stats_count .form-select {
-											border-radius: 12px;
+											/* border-radius: 12px;
 											border: 1px solid #dbe3ee;
 											font-size: 14px;
 											box-shadow: none !important;
-											transition: .25s ease;
+											transition: .25s ease; */
 										}
 
 										#filter_lead_stats_count .form-control:focus,
@@ -102,10 +95,10 @@
 
 
 									<form id="filter_lead_stats_count">
-										<div class="row g-3 align-items-end">
+										<div class="row align-items-end">
 
 											<!-- Property -->
-											<div class="col-md-3 d-none">
+											<div class="col-md-4 d-none">
 												<label for="top_filter_property" class="form-label">Property</label>
 												<select name="property" id="top_filter_property" class="form-select">
 													<option value="">All Properties</option>
@@ -118,7 +111,7 @@
 											</div>
 
 											<!-- Department -->
-											<div class="col-md-3">
+											<div class="col-md-4">
 												<label for="top_filter_department" class="form-label">Department</label>
 												<select name="department" id="top_filter_department" class="form-select">
 													<option value="">All Departments</option>
@@ -131,7 +124,7 @@
 											</div>
 
 											<!-- Assigned To -->
-											<div class="col-md-3 d-none">
+											<div class="col-md-4 d-none">
 												<label for="top_filter_assigned_to" class="form-label">Assigned User</label>
 												<select name="assigned_to" id="top_filter_assigned_to" class="form-control">
 													<option value="">All Assigned Users</option>
@@ -151,7 +144,7 @@
 											</div>
 
 											<!-- Created By -->
-											<div class="col-md-3 d-none">
+											<div class="col-md-4 d-none">
 												<label for="top_filter_created_by" class="form-label">Created By</label>
 												<select name="created_by" id="top_filter_created_by" class="form-control">
 													<option value="">All Creators</option>
@@ -171,7 +164,7 @@
 											</div>
 
 											<!-- Lead Source -->
-											<div class="col-md-3">
+											<div class="col-md-4">
 												<label for="top_filter_channel" class="form-label">Lead Source</label>
 												<select name="channel" id="top_filter_channel" class="form-select filter-input">
 													<option value="">All Sources</option>
@@ -183,7 +176,7 @@
 											</div>
 
 											<!-- Stage -->
-											<div class="col-md-2">
+											<div class="col-md-4">
 												<label for="top_filter_disposition" class="form-label">Stage</label>
 												<select name="disposition" id="top_filter_disposition" class="form-select filter-input">
 													<option value="">All Stages</option>
@@ -199,7 +192,7 @@
 											</div>
 
 											<!-- Start Date -->
-											<div class="col-md-2">
+											<div class="col-md-4">
 												<label for="top_filter_start_date" class="form-label">Start Date</label>
 												<input type="date"
 													name="start_date"
@@ -209,7 +202,7 @@
 											</div>
 
 											<!-- End Date -->
-											<div class="col-md-2">
+											<div class="col-md-4">
 												<label for="top_filter_end_date" class="form-label">End Date</label>
 												<input type="date"
 													name="end_date"
@@ -219,7 +212,7 @@
 											</div>
 
 											<!-- Total Leads -->
-											<div class="col-md-3">
+											<div class="col-md-2">
 												<h5>Total Leads : <span id="totalLeads"><?= $total_leads ?></span></h5>
 											</div>
 
@@ -358,133 +351,6 @@
 							</div>
 
 
-
-
-							<style>
-								/* ===== Modern Horizontal KPI Card ===== */
-
-								.stage-card {
-									background: #ffffff;
-									border-radius: 18px;
-									padding: 16px 18px;
-									border: 1px solid #edf1f7;
-									box-shadow: 0 8px 22px rgba(0, 0, 0, .05);
-									transition: .30s ease;
-									height: 100%;
-									position: relative;
-									overflow: hidden;
-								}
-
-								.stage-card:hover {
-									transform: translateY(-4px);
-									box-shadow: 0 14px 28px rgba(0, 0, 0, .08);
-								}
-
-								.stage-card:before {
-									content: "";
-									position: absolute;
-									top: 0;
-									left: 0;
-									width: 5px;
-									height: 100%;
-									border-radius: 20px;
-								}
-
-								.border-blue:before {
-									background: #2563eb;
-								}
-
-								.border-orange:before {
-									background: #ea580c;
-								}
-
-								.border-cyan:before {
-									background: #0891b2;
-								}
-
-								.border-purple:before {
-									background: #7c3aed;
-								}
-
-								.stage-flex {
-									display: flex;
-									align-items: center;
-									justify-content: space-between;
-									gap: 15px;
-								}
-
-								.left-content {
-									flex: 1;
-								}
-
-								.stage-title {
-									font-size: 13px;
-									font-weight: 700;
-									color: #6b7280;
-									text-transform: uppercase;
-									margin-bottom: 6px;
-									letter-spacing: .5px;
-								}
-
-								.lead-count {
-									font-size: 28px;
-									font-weight: 800;
-									line-height: 1;
-									margin-bottom: 8px;
-								}
-
-								.revenue-box {
-									display: inline-block;
-									font-size: 12px;
-									font-weight: 700;
-									padding: 5px 10px;
-									border-radius: 30px;
-									background: #f0fdf4;
-									color: #16a34a;
-								}
-
-								.icon-box {
-									width: 58px;
-									height: 58px;
-									border-radius: 16px;
-									display: flex;
-									align-items: center;
-									justify-content: center;
-									font-size: 24px;
-									color: #fff;
-									flex-shrink: 0;
-								}
-
-								/* Colors */
-								.bg-blue {
-									background: linear-gradient(135deg, #3b82f6, #2563eb);
-								}
-
-								.bg-orange {
-									background: linear-gradient(135deg, #f59e0b, #ea580c);
-								}
-
-								.bg-cyan {
-									background: linear-gradient(135deg, #06b6d4, #0891b2);
-								}
-
-								.bg-purple {
-									background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-								}
-
-								@media(max-width:768px) {
-									.lead-count {
-
-										font-size: 22px;
-									}
-
-									.icon-box {
-										width: 48px;
-										height: 48px;
-										font-size: 20px;
-									}
-								}
-							</style>
 
 
 
@@ -755,67 +621,22 @@
 						padding: 18px 20px;
 					}
 
-					.quick-filter-box .form-label {
-						font-size: 13px;
-						font-weight: 700;
-						color: #475569;
-						margin-bottom: 6px;
-					}
+					
 
-					.quick-filter-box .form-control,
-					.quick-filter-box .form-select {
-
-						border-radius: 12px;
-						border: 1px solid #dbe3ee;
-						font-size: 14px;
-						box-shadow: none !important;
-						transition: .25s ease;
-					}
-
-					.quick-filter-box .form-control:focus,
-					.quick-filter-box .form-select:focus {
-						border-color: #2563eb;
-						box-shadow: 0 0 0 3px rgba(37, 99, 235, .08) !important;
-					}
-
-					.quick-filter-box .btn-primary {
-						border: none;
-						border-radius: 12px;
-						font-weight: 700;
-						background: linear-gradient(135deg, #2563eb, #1d4ed8);
-						box-shadow: 0 8px 16px rgba(37, 99, 235, .18);
-						transition: .25s ease;
-					}
-
-					.quick-filter-box .btn-primary:hover {
-						transform: translateY(-2px);
-						box-shadow: 0 12px 20px rgba(37, 99, 235, .24);
-					}
-
-					.quick-filter-box .row {
-						row-gap: 14px;
-					}
-
-					@media(max-width:768px) {
-
-						.quick-filter-box .box-header,
-						.quick-filter-box .box-body {
-							padding: 15px;
-						}
-					}
+					
 				</style>
 
 
 
-				<div class="col-xxl-6 col-12">
+				<div class="col-xxl-12 col-12">
 					<div class="box quick-filter-box">
 						<div class="box-header no-border pb-0">
 							<h4 class="box-title">Quick Filters for Charts </h4>
 						</div>
 						<div class="box-body">
 							<form id="chart-filter-form" class="mb-4 px-3">
-								<div class="row g-3 align-items-end">
-									<div class="col-md-2">
+								<div class="row align-items-end">
+									<div class="col-md-4">
 										<label for="department_bottom" class="form-label">Department</label>
 										<select name="department_bottom" id="department_bottom" class="form-select">
 											<option value="">All Departments</option>
@@ -823,18 +644,18 @@
 												<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
 													<?= $dept->department_name; ?>
 												</option>
-											<?php } ?>
+							.quick-filter-box .form-contro				<?php } ?>
 										</select>
 									</div>
-									<div class="col-md-2">
+									<div class="col-md-4">
 										<label for="start_date_bottom" class="form-label">Start Date</label>
 										<input type="date" name="start_date_bottom" id="start_date_bottom" class="form-control" value="<?= $this->input->get('start_date'); ?>">
 									</div>
-									<div class="col-md-2">
+									<div class="col-md-3">
 										<label for="end_date_bottom" class="form-label">End Date</label>
 										<input type="date" name="end_date_bottom" id="end_date_bottom" class="form-control" value="<?= $this->input->get('end_date'); ?>">
 									</div>
-									<div class="col-md-2 d-grid">
+									<div class="col-md-1 d-grid">
 										<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
 									</div>
 								</div>
@@ -1134,9 +955,9 @@
 
 				$('#filter_lead_stats_count select, .quick-filter-box select').each(function() {
 					const $select = $(this);
-					this.style.setProperty('height', '56px', 'important');
-					this.style.setProperty('min-height', '56px', 'important');
-					this.style.setProperty('max-height', '56px', 'important');
+					this.style.setProperty();
+					this.style.setProperty();
+					this.style.setProperty();
 
 					if (!$select.hasClass('select2-hidden-accessible')) {
 						$select.select2({
@@ -1152,10 +973,10 @@
 
 					[$container, $selection].forEach(function($element) {
 						if ($element.length) {
-							$element[0].style.setProperty('height', '56px', 'important');
-							$element[0].style.setProperty('min-height', '56px', 'important');
-							$element[0].style.setProperty('max-height', '56px', 'important');
-							$element[0].style.setProperty('box-sizing', 'border-box', 'important');
+							$element[0].style.setProperty();
+							$element[0].style.setProperty();
+							$element[0].style.setProperty();
+							$element[0].style.setProperty();
 						}
 					});
 
