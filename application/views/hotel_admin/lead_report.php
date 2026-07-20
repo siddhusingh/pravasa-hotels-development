@@ -536,7 +536,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                      ?>
                      <div id="filter-section" style="<?= $filterOpen ? '' : 'display: none;'; ?>">
                         <div class="mb-4 px-3">
-                           <div class="row g-3 align-items-end">
+                           <div class="row align-items-end">
                               <!-- Property -->
                               <div class="col-md-3">
                                  <label for="property" class="form-label"><?= $is_hotel_lead_view ? 'Hotel (Property)' : 'Property'; ?></label>

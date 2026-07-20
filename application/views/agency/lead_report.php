@@ -165,7 +165,7 @@
                             ?>
                             <div id="filter-section" style="<?= $filterOpen ? '' : 'display: none;'; ?>">
                                 <div class="mb-4 px-3">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
 
 
                                         <!-- Property -->

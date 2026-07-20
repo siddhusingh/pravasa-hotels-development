@@ -18,31 +18,7 @@
         width: 100%;
     }
 
-    .lead-report-filters .report-multiselect-toggle {
-        align-items: center;
-        background: #fff !important;
-        border: 1px solid #b8c0cc !important;
-        border-radius: 8px;
-        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-        box-sizing: border-box;
-        color: #495057 !important;
-        display: flex;
-        height: 56px !important;
-        justify-content: space-between;
-        max-height: 56px !important;
-        min-height: 56px !important;
-        padding: 0 14px !important;
-        text-align: left;
-        width: 100%;
-    }
-
-    .lead-report-filters .report-multiselect.is-open .report-multiselect-toggle,
-    .lead-report-filters .report-multiselect-toggle:focus {
-        border-color: #80bdff !important;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
-        outline: 0;
-    }
+     
 
     .lead-report-filters .report-multiselect-toggle::after {
         border-left: 5px solid transparent;
@@ -58,8 +34,8 @@
     }
 
     .lead-report-filters .report-multiselect-menu {
-        background: #d2d2d2;
-        border: 1px solid #c5c5c5;
+         background: #fff;
+        border: 1px solid #fff;
         border-radius: 6px;
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
         display: none;
@@ -179,7 +155,7 @@
 
                                 <div id="filter-section" class="lead-report-filters">
                                     <div class="mb-4">
-                                        <div class="row g-3 align-items-end">
+                                        <div class="row align-items-end">
                                             <!-- Property -->
                                             <div class="col-md-3">
                                                 <label for="property" class="form-label">Property</label>

@@ -482,3 +482,10 @@
 
 .select2-container--classic.select2-container--open .select2-dropdown {
   border-color: #5897fb; }
+
+
+  .select2-container .select2-selection--single {
+    height: 46px!important;
+    min-height: 46px!important;
+    max-height: 46px!important;
+}
