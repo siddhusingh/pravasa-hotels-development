@@ -259,6 +259,11 @@ $route['agency-save'] = 'superAdmin/Agency/save';
 $route['agency-details'] = 'superAdmin/Agency/getDetails';
 $route['agency-delete'] = 'superAdmin/Agency/delete';
 $route['manage-facebook-forms/(:any)'] = 'superAdmin/FacebookformController/manage/$1';
+$route['facebook-forms-data-table'] = 'superAdmin/FacebookformController/get_forms_table';
+$route['facebook-form-add'] = 'superAdmin/FacebookformController/addForm';
+$route['facebook-form-details'] = 'superAdmin/FacebookformController/getFormDetails';
+$route['facebook-form-update'] = 'superAdmin/FacebookformController/updateForm';
+$route['facebook-form-delete'] = 'superAdmin/FacebookformController/deleteForm';
 $route['agency-login'] = 'AgencyLogin/index';
 $route['agency-dashboard'] = 'agency/main/index';
 $route['agency-profile'] = 'agency/main/profile';
@@ -481,18 +486,18 @@ $route['lead/get-table-categories'] = 'LeadController/getTableCategories';
 $route['lead/get-tables'] = 'LeadController/getTables';
 
 // Property APIs
-$route['api/property-list'] = 'api/property_list';
+$route['api/property-list'] = 'API/property_list';
 
 // Department APIs
-$route['api/department-list'] = 'api/department_list';
+$route['api/department-list'] = 'API/department_list';
 
 // Restaurant APIs
-$route['api/restaurant-list'] = 'api/restaurant_list_by_hotel';
+$route['api/restaurant-list'] = 'API/restaurant_list_by_hotel';
 
 // Time Slot APIs
-$route['api/time-slots'] = 'api/time_slots';
+$route['api/time-slots'] = 'API/time_slots';
 
-$route['api/save-lead'] = 'api/save_lead';
+$route['api/save-lead'] = 'API/save_lead';
 
 
 $route['followups'] = 'LeadController/followups';

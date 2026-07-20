@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crescent Lead Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: transparent;
+            font-family: Arial, sans-serif;
+        }
+
+        .lead-form {
+            max-width: 520px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        }
+
+        .lead-form h4 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .form-control,
+        .form-select {
+            font-size: 14px;
+        }
+
+        .lead-form .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .required-marker {
+            color: #dc3545;
+            margin-left: 2px;
+        }
+
+        .field-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .btn-submit {
+            background-color: #0d6efd;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+        }
+
+        .message {
+            display: none;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        #departmentFields:empty {
+            display: none;
+        }
+
+        .date-input-wrap {
+            position: relative;
+        }
+
+        .date-input-wrap .date-input-placeholder {
+            color: #6c757d;
+            font-size: 14px;
+            left: 14px;
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .date-input-wrap .date-input-placeholder.has-value {
+            color: #212529;
+        }
+
+        .date-input-wrap input[type="date"] {
+            color: transparent;
+        }
+
+        .date-input-wrap input[type="date"]::-webkit-datetime-edit {
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+<div class="lead-form">
+    <h4>Enquiry Form</h4>
+
+    <form id="leadForm" novalidate>
+        <!-- Name -->
+        <div class="mb-3">
+            <label for="name" class="form-label">Full Name <span class="required-marker">*</span></label>
+            <input type="text" class="form-control" name="name" id="name" placeholder="Full Name" minlength="2" maxlength="100" required>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address <span class="required-marker">*</span></label>
+            <input type="email" class="form-control" name="email" id="email" placeholder="Email Address" maxlength="150" required>
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number <span class="required-marker">*</span></label>
+            <input type="tel" class="form-control" name="phone" id="phone" placeholder="Phone Number" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" required>
+        </div>
+
+        <!-- Property -->
+        <div class="mb-3">
+            <label for="property" class="form-label">Property <span class="required-marker">*</span></label>
+            <select class="form-select form-control" name="property" id="property" required disabled>
+                <option value="">Loading properties...</option>
+            </select>
+        </div>
+
+        <!-- Department -->
+        <div class="mb-3">
+            <label for="department" class="form-label">Department <span class="required-marker">*</span></label>
+            <select class="form-select form-control" name="department" id="department" required disabled>
+                <option value="">Loading departments...</option>
+            </select>
+        </div>
+
+        <!-- Department-specific fields -->
+        <div id="departmentFields" class="row g-3 mb-3"></div>
+
+        <!-- Comments -->
+        <div class="mb-3">
+            <label for="comments" class="form-label">Comments / Query <span class="required-marker">*</span></label>
+            <textarea class="form-control" name="comments" id="comments" rows="3" placeholder="Comments / Query" minlength="3" maxlength="1000" required></textarea>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-submit w-100">Submit Enquiry</button>
+
+        <!-- Messages -->
+        <div class="message text-success" id="successMsg">
+            Thank you! Your enquiry has been submitted successfully.
+        </div>
+
+        <div class="message text-danger" id="errorMsg">
+            Unable to submit the form. Please try again.
+        </div>
+    </form>
+</div>
+
+<script>
+// Change only this value when the API is hosted on another domain or folder.
+const BASE_URL = 'https://thexoombox.com/pravasahotels';
+
+function apiUrl(path) {
+    return `${BASE_URL.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`;
+}
+
+async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, errorText }) {
+    select.disabled = true;
+    select.replaceChildren(new Option('Loading...', ''));
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.status || !Array.isArray(result.data)) {
+            throw new Error(result.message || 'Unable to load options');
+        }
+
+        const options = document.createDocumentFragment();
+        options.appendChild(new Option(placeholder, ''));
+
+        result.data.forEach(function (item) {
+            const id = item[idKey];
+            const name = String(item[nameKey] || '').trim();
+
+            if (!id || !name) return;
+
+            // Keep the current name-based submission working. The API ID is
+            // retained for the save_lead integration in the next step.
+            const option = new Option(name, name);
+            option.dataset.id = id;
+            options.appendChild(option);
+        });
+
+        select.replaceChildren(options);
+        select.disabled = false;
+    } catch (error) {
+        select.replaceChildren(new Option(errorText, ''));
+        console.error(error);
+    }
+}
+
+function purposeField() {
+    return `
+        <div class="col-12">
+            <label for="purpose" class="form-label">Purpose <span class="required-marker">*</span></label>
+            <select class="form-select" name="purpose" id="purpose" required>
+                <option value="">Select Purpose</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Family">Family</option>
+                <option value="Vacation">Vacation</option>
+                <option value="Leisure">Leisure</option>
+                <option value="Social">Social</option>
+                <option value="Wedding">Wedding</option>
+                <option value="Pilgrimage">Pilgrimage</option>
+            </select>
+        </div>`;
+}
+
+function renderDepartmentFields(departmentName) {
+    const container = document.getElementById('departmentFields');
+    const department = String(departmentName || '').trim().toLowerCase();
+
+    container.replaceChildren();
+
+    if (department === 'rooms') {
+        container.innerHTML = `
+            <div class="col-md-6">
+                <label for="checkin_date" class="form-label">Check-in Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="checkin_date" id="checkin_date" data-placeholder="Select check-in date" required>
+                    <span class="date-input-placeholder">Select check-in date</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="checkout_date" class="form-label">Check-out Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="checkout_date" id="checkout_date" data-placeholder="Select check-out date" required>
+                    <span class="date-input-placeholder">Select check-out date</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="number_of_rooms" class="form-label">Number of Rooms <span class="required-marker">*</span></label>
+                <input type="number" class="form-control" name="number_of_rooms" id="number_of_rooms" min="1" step="1" placeholder="Number of Rooms" required>
+            </div>
+            <div class="col-md-6">
+                <label for="pax" class="form-label">No. of Pax <span class="required-marker">*</span></label>
+                <input type="number" class="form-control" name="pax" id="pax" min="1" step="1" placeholder="No. of Pax" required>
+            </div>
+            ${purposeField()}`;
+        return;
+    }
+
+    if (department === 'restaurants' || department === 'restaurant') {
+        container.innerHTML = `
+            <div class="col-md-6">
+                <label for="booking_date" class="form-label">Booking Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="booking_date" id="booking_date" data-placeholder="Select booking date" required>
+                    <span class="date-input-placeholder">Select booking date</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="pax" class="form-label">No. of Pax <span class="required-marker">*</span></label>
+                <input type="number" class="form-control" name="pax" id="pax" min="1" step="1" placeholder="No. of Pax" required>
+            </div>
+            ${purposeField()}`;
+        return;
+    }
+
+    if (department === 'banquets' || department === 'banquet') {
+        container.innerHTML = `
+            <div class="col-md-6">
+                <label for="booking_date" class="form-label">Booking Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="booking_date" id="booking_date" data-placeholder="Select booking date" required>
+                    <span class="date-input-placeholder">Select booking date</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="pax" class="form-label">No. of Pax <span class="required-marker">*</span></label>
+                <input type="number" class="form-control" name="pax" id="pax" min="1" step="1" placeholder="No. of Pax" required>
+            </div>
+            ${purposeField()}`;
+    }
+}
+
+function syncDateDisplay(input) {
+    const display = input.nextElementSibling;
+
+    if (!display || !display.classList.contains('date-input-placeholder')) return;
+
+    display.textContent = input.value || input.dataset.placeholder || 'Select date';
+    display.classList.toggle('has-value', Boolean(input.value));
+}
+
+function clearFieldError(input) {
+    if (!input) return;
+
+    input.classList.remove('is-invalid');
+    input.removeAttribute('aria-invalid');
+
+    const group = input.closest('.mb-3, [class*="col-"]') || input.parentElement;
+    group.querySelectorAll('.field-error').forEach(function (error) {
+        error.remove();
+    });
+}
+
+function showFieldError(input, message) {
+    if (!input) return;
+
+    input.classList.add('is-invalid');
+    input.setAttribute('aria-invalid', 'true');
+
+    const error = document.createElement('div');
+    error.className = 'field-error';
+    error.textContent = message;
+
+    const anchor = input.closest('.date-input-wrap') || input;
+    anchor.insertAdjacentElement('afterend', error);
+}
+
+function todayAsIsoDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function validateLeadForm(form, errorMsg) {
+    const errors = [];
+    const field = function (name) {
+        return form.querySelector(`[name="${name}"]`);
+    };
+    const value = function (name) {
+        const input = field(name);
+        return input ? input.value.trim() : '';
+    };
+    const addError = function (name, message) {
+        const input = field(name);
+        if (input) errors.push({ input, message });
+    };
+    const isPositiveInteger = function (inputValue) {
+        const number = Number(inputValue);
+        return Number.isInteger(number) && number >= 1;
+    };
+
+    form.querySelectorAll('.is-invalid').forEach(function (input) {
+        input.classList.remove('is-invalid');
+        input.removeAttribute('aria-invalid');
+    });
+    form.querySelectorAll('.field-error').forEach(function (error) {
+        error.remove();
+    });
+
+    if (value('name').length < 2) {
+        addError('name', 'Please enter a valid full name.');
+    }
+
+    const email = value('email');
+    if (!email) {
+        addError('email', 'Email address is required.');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        addError('email', 'Please enter a valid email address.');
+    }
+
+    if (!/^[6-9][0-9]{9}$/.test(value('phone'))) {
+        addError('phone', 'Please enter a valid mobile number.');
+    }
+
+    if (!value('property')) addError('property', 'Please select a property.');
+    if (!value('department')) addError('department', 'Please select a department.');
+
+    const comments = value('comments');
+    if (comments.length < 3) {
+        addError('comments', 'Please enter your comments or query.');
+    }
+
+    const department = value('department').toLowerCase();
+    const today = todayAsIsoDate();
+
+    if (department === 'rooms') {
+        const checkinDate = value('checkin_date');
+        const checkoutDate = value('checkout_date');
+
+        if (!checkinDate) {
+            addError('checkin_date', 'Please select a check-in date.');
+        } else if (checkinDate < today) {
+            addError('checkin_date', 'Check-in date cannot be in the past.');
+        }
+
+        if (!checkoutDate) {
+            addError('checkout_date', 'Please select a check-out date.');
+        } else if (checkinDate && checkoutDate <= checkinDate) {
+            addError('checkout_date', 'Check-out date must be after check-in date.');
+        }
+
+        if (!isPositiveInteger(value('number_of_rooms'))) {
+            addError('number_of_rooms', 'Please enter at least one room.');
+        }
+        if (!isPositiveInteger(value('pax'))) {
+            addError('pax', 'Please enter at least one guest.');
+        }
+        if (!value('purpose')) addError('purpose', 'Please select a purpose.');
+    }
+
+    if (
+        department === 'restaurants' ||
+        department === 'restaurant' ||
+        department === 'banquets' ||
+        department === 'banquet'
+    ) {
+        const bookingDate = value('booking_date');
+
+        if (!bookingDate) {
+            addError('booking_date', 'Please select a booking date.');
+        } else if (bookingDate < today) {
+            addError('booking_date', 'Booking date cannot be in the past.');
+        }
+
+        if (!isPositiveInteger(value('pax'))) {
+            addError('pax', 'Please enter at least one guest.');
+        }
+        if (!value('purpose')) addError('purpose', 'Please select a purpose.');
+    }
+
+    errors.forEach(function (error) {
+        showFieldError(error.input, error.message);
+    });
+
+    if (errors.length) {
+        errorMsg.textContent = 'Please correct the highlighted fields.';
+        errorMsg.style.display = 'block';
+        errors[0].input.focus();
+        return false;
+    }
+
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadSelectOptions({
+        url: apiUrl('api/property-list'),
+        select: document.getElementById('property'),
+        placeholder: 'Select Property',
+        idKey: 'property_id',
+        nameKey: 'property_name',
+        errorText: 'Unable to load properties'
+    });
+
+    loadSelectOptions({
+        url: apiUrl('api/department-list'),
+        select: document.getElementById('department'),
+        placeholder: 'Select Department',
+        idKey: 'department_id',
+        nameKey: 'department_name',
+        errorText: 'Unable to load departments'
+    });
+
+    document.getElementById('department').addEventListener('change', function () {
+        renderDepartmentFields(this.value);
+    });
+
+    document.getElementById('leadForm').addEventListener('input', function (event) {
+        clearFieldError(event.target);
+
+        if (event.target.matches('input[type="date"]')) {
+            syncDateDisplay(event.target);
+        }
+    });
+
+    document.getElementById('leadForm').addEventListener('change', function (event) {
+        clearFieldError(event.target);
+
+        if (event.target.matches('input[type="date"]')) {
+            syncDateDisplay(event.target);
+        }
+    });
+});
+
+document.getElementById('leadForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const submitBtn = form.querySelector('button');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+
+    const name = form.name.value.trim();
+    const phone = form.phone.value.trim();
+    const property = form.property.value;
+    const department = form.department.value;
+    const email = form.email.value.trim();
+    const comments = form.comments.value.trim();
+
+    if (!validateLeadForm(form, errorMsg)) {
+        return;
+    }
+
+    submitBtn.disabled = true;
+
+    const propertyId = form.property.selectedOptions[0]?.dataset.id || '';
+    const departmentId = form.department.selectedOptions[0]?.dataset.id || '';
+    const payload = {
+        name,
+        email,
+        phone,
+        property: propertyId,
+        department: departmentId,
+        query: comments
+    };
+
+    [
+        'checkin_date',
+        'checkout_date',
+        'number_of_rooms',
+        'booking_date',
+        'pax',
+        'purpose'
+    ].forEach(function (fieldName) {
+        const input = form.querySelector(`[name="${fieldName}"]`);
+
+        if (input && input.value.trim() !== '') {
+            payload[fieldName] = input.value.trim();
+        }
+    });
+
+    try {
+        const response = await fetch(apiUrl('api/save-lead'), {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.status) {
+            throw new Error(result.message || 'Unable to submit the form.');
+        }
+
+        successMsg.textContent = result.message || 'Thank you! Your enquiry has been submitted successfully.';
+        successMsg.style.display = 'block';
+        form.reset();
+        renderDepartmentFields('');
+    } catch (error) {
+        errorMsg.innerText = error.message || 'Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+    }
+
+    submitBtn.disabled = false;
+});
+</script>
+
+
+</body>
+</html>

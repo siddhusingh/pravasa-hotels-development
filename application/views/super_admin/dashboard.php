@@ -153,6 +153,52 @@
 											row-gap: 14px;
 										}
 
+										#filter_lead_stats_count .select2-container,
+										.quick-filter-box .select2-container {
+											height: 56px !important;
+											max-height: 56px !important;
+											min-height: 56px !important;
+											width: 100% !important;
+										}
+
+										#filter_lead_stats_count .select2-container .select2-selection--single,
+										.quick-filter-box .select2-container .select2-selection--single {
+											background: #fff;
+											border: 1px solid #dbe3ee;
+											border-radius: 12px;
+											box-sizing: border-box !important;
+											height: 56px !important;
+											min-height: 56px !important;
+											max-height: 56px !important;
+											padding: 0 14px !important;
+										}
+
+										#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__rendered,
+										.quick-filter-box .select2-container .select2-selection--single .select2-selection__rendered {
+											color: #1e293b;
+											height: 54px !important;
+											line-height: 54px !important;
+											padding-bottom: 0 !important;
+											padding-left: 0 !important;
+											padding-right: 28px !important;
+											padding-top: 0 !important;
+										}
+
+										#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__arrow,
+										.quick-filter-box .select2-container .select2-selection--single .select2-selection__arrow {
+											height: 54px !important;
+											right: 8px !important;
+											top: 0 !important;
+										}
+
+										#filter_lead_stats_count .select2-container.select2-container--focus .select2-selection--single,
+										#filter_lead_stats_count .select2-container.select2-container--open .select2-selection--single,
+										.quick-filter-box .select2-container.select2-container--focus .select2-selection--single,
+										.quick-filter-box .select2-container.select2-container--open .select2-selection--single {
+											border-color: #2563eb;
+											box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
+										}
+
 										#filter_lead_stats_count h5 {
 											background: linear-gradient(135deg, #2563eb, #1d4ed8);
 											color: #fff;
@@ -1240,6 +1286,50 @@
 
 		<script>
 			$(document).ready(function() {
+
+				if ($.fn.select2) {
+					$('#filter_lead_stats_count select, .quick-filter-box select').each(function() {
+						const $select = $(this);
+						this.style.setProperty('height', '56px', 'important');
+						this.style.setProperty('min-height', '56px', 'important');
+						this.style.setProperty('max-height', '56px', 'important');
+
+						if (!$select.hasClass('select2-hidden-accessible')) {
+							$select.select2({
+								width: '100%',
+								minimumResultsForSearch: 0
+							});
+						}
+
+						const $container = $select.next('.select2-container');
+						const $selection = $container.find('.select2-selection--single');
+						const $rendered = $selection.find('.select2-selection__rendered');
+						const $arrow = $selection.find('.select2-selection__arrow');
+
+						[$container, $selection].forEach(function($element) {
+							if ($element.length) {
+								$element[0].style.setProperty('height', '56px', 'important');
+								$element[0].style.setProperty('min-height', '56px', 'important');
+								$element[0].style.setProperty('max-height', '56px', 'important');
+								$element[0].style.setProperty('box-sizing', 'border-box', 'important');
+							}
+						});
+
+						if ($selection.length) {
+							$selection[0].style.setProperty('padding', '0 14px', 'important');
+						}
+						if ($rendered.length) {
+							$rendered[0].style.setProperty('height', '54px', 'important');
+							$rendered[0].style.setProperty('line-height', '54px', 'important');
+							$rendered[0].style.setProperty('padding-top', '0', 'important');
+							$rendered[0].style.setProperty('padding-bottom', '0', 'important');
+						}
+						if ($arrow.length) {
+							$arrow[0].style.setProperty('height', '54px', 'important');
+							$arrow[0].style.setProperty('top', '0', 'important');
+						}
+					});
+				}
 
 				/* =========================================
 				   AUTO FILTER ON CHANGE

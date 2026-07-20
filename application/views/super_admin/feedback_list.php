@@ -1,4 +1,19 @@
 ﻿<!-- Content Wrapper. Contains page content -->
+<style>
+   .feedback-filter-row .select2-container {
+      width: 100% !important;
+   }
+
+   .feedback-filter-row .select2-container .select2-selection--single {
+      box-sizing: border-box !important;
+      width: 100%;
+   }
+
+   .feedback-filter-row .select2-container .select2-selection--single .select2-selection__rendered {
+      padding-left: 14px;
+      padding-right: 34px;
+   }
+</style>
 <div class="content-wrapper">
    <div class="container-full">
 
@@ -24,7 +39,7 @@
       <section class="content">
 
          <!-- FILTERS -->
-         <div class="row mb-3">
+         <div class="row mb-3 feedback-filter-row">
             <div class="col-md-4">
                <label><?= ($module === 'restaurant') ? 'Restaurant' : 'Property' ?></label>
                <select id="filter_item" class="form-control">
@@ -123,6 +138,52 @@
    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 <?php } ?>
 <script>
+$(document).ready(function() {
+   if (!$.fn.select2) {
+      return;
+   }
+
+   $('#filter_item, #filter_rating').each(function() {
+      const $select = $(this);
+
+      if (!$select.length || $select.hasClass('select2-hidden-accessible')) {
+         return;
+      }
+
+      $select.select2({
+         width: '100%',
+         minimumResultsForSearch: 0
+      });
+
+      const controlHeight = Math.round($('#start_date').outerHeight()) || 46;
+      const innerHeight = Math.max(controlHeight - 2, 1);
+      const $container = $select.next('.select2-container');
+      const $selection = $container.find('.select2-selection--single');
+      const $rendered = $selection.find('.select2-selection__rendered');
+      const $arrow = $selection.find('.select2-selection__arrow');
+
+      [$container, $selection].forEach(function($element) {
+         if ($element.length) {
+            $element[0].style.setProperty('height', controlHeight + 'px', 'important');
+            $element[0].style.setProperty('min-height', controlHeight + 'px', 'important');
+            $element[0].style.setProperty('max-height', controlHeight + 'px', 'important');
+         }
+      });
+
+      if ($rendered.length) {
+         $rendered[0].style.setProperty('height', innerHeight + 'px', 'important');
+         $rendered[0].style.setProperty('line-height', innerHeight + 'px', 'important');
+         $rendered[0].style.setProperty('padding-top', '0', 'important');
+         $rendered[0].style.setProperty('padding-bottom', '0', 'important');
+      }
+
+      if ($arrow.length) {
+         $arrow[0].style.setProperty('height', innerHeight + 'px', 'important');
+         $arrow[0].style.setProperty('top', '0', 'important');
+      }
+   });
+});
+
 <?php if (in_array($module, ['restaurant', 'banquet', 'room'], true)) { ?>
    var feedbackTable = $('#<?= $module ?>-feedback-data-table').DataTable({
       processing: true,
