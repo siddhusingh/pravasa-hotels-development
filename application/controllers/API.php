@@ -34,6 +34,8 @@ class API extends CI_Controller
      */
     public function property_list()
     {
+        header('Access-Control-Allow-Origin: *');
+
         $data = $this->API_Model->get_property_list();
 
         if (!empty($data)) {
@@ -112,6 +114,7 @@ class API extends CI_Controller
      */
     public function department_list()
     {
+        header('Access-Control-Allow-Origin: *');
 
         $data = $this->API_Model->get_department_list();
 
@@ -225,6 +228,42 @@ class API extends CI_Controller
         }
 
         /* -------------------------------
+     *  BLOCK SCRIPT / MALWARE INPUT
+     * ----------------------------- */
+        $acceptedFields = [
+            'name', 'email', 'phone', 'query', 'property', 'department',
+            'user_channel', 'pax', 'booking_date', 'restaurant_id',
+            'time_slot_id', 'checkin_date', 'checkout_date',
+            'special_request', 'special_occasion', 'arrival_time', 'purpose'
+        ];
+
+        foreach ($acceptedFields as $field) {
+            if (!array_key_exists($field, $input) || $input[$field] === null) {
+                continue;
+            }
+
+            if (is_array($input[$field]) || is_object($input[$field])) {
+                return $this->response(false, "$field contains invalid data", [], 422);
+            }
+
+            $value = (string) $input[$field];
+
+            if (!preg_match('//u', $value) || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $value)) {
+                return $this->response(false, "$field contains invalid characters", [], 422);
+            }
+
+            // Decode twice so encoded tags such as &amp;lt;script&amp;gt; are checked too.
+            $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $decoded = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            $dangerousPattern = '/(?:javascript\s*:|vbscript\s*:|data\s*:\s*text\/html|expression\s*\(|on(?:error|load|click|mouseover|focus|input|change|submit|animationstart)\s*=)/i';
+
+            if (strip_tags($decoded) !== $decoded || preg_match($dangerousPattern, $decoded)) {
+                return $this->response(false, "$field contains unsafe content", [], 422);
+            }
+        }
+
+        /* -------------------------------
      *  VALIDATION
      * ----------------------------- */
         $required = ['name', 'phone', 'property', 'department'];
@@ -262,6 +301,10 @@ class API extends CI_Controller
             'time'         => date('H:i:s'),
             'ip_address'   => $this->input->ip_address()
         ];
+
+        if (!empty($input['purpose'])) {
+            $lead_data['purpose'] = trim($input['purpose']);
+        }
 
 
 

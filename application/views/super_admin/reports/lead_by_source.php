@@ -8,6 +8,115 @@
         border: 1px solid #23211d;
         background-color: #ffffff;
     }
+
+    .lead-report-filters .report-multiselect-source {
+        display: none !important;
+    }
+
+    .lead-report-filters .report-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    .lead-report-filters .report-multiselect-toggle {
+        align-items: center;
+        background: #fff !important;
+        border: 1px solid #b8c0cc !important;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057 !important;
+        display: flex;
+        box-sizing: border-box;
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+        justify-content: space-between;
+        padding: 0 14px !important;
+        text-align: left;
+        width: 100%;
+    }
+
+    .lead-report-filters .report-multiselect.is-open .report-multiselect-toggle,
+    .lead-report-filters .report-multiselect-toggle:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+        outline: 0;
+    }
+
+    .lead-report-filters .report-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    .lead-report-filters .report-multiselect.is-open .report-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    .lead-report-filters .report-multiselect-menu {
+        background: #d2d2d2;
+        border: 1px solid #c5c5c5;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1055;
+    }
+
+    .lead-report-filters .report-multiselect.is-open .report-multiselect-menu {
+        display: block;
+    }
+
+    .lead-report-filters .report-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    .lead-report-filters .report-multiselect-option:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    .lead-report-filters .report-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    .lead-report-filters .report-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    .lead-report-filters .report-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
+    }
+
 </style>
 <div class="content-wrapper">
     <div class="container-full">
@@ -57,13 +166,13 @@
 
                             <div>
 
-                                <form method="GET" action="<?= base_url('Reports'); ?>" class="mb-4">
+                                <form method="GET" action="<?= base_url('Reports'); ?>" class="mb-4 lead-report-filters">
                                     <div class="row g-3 align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
                                         <div class="col-md-3">
                                             <label for="property" class="form-label">Property</label>
-                                            <select name="property[]" class="form-select filter-input" multiple id="property">
+                                            <select name="property[]" class="form-control filter-input report-multiselect-source" multiple id="property">
                                                 <?php foreach ($properties as $property) { ?>
                                                     <option value="<?= $property->hotel_id; ?>"><?= $property->hotel_name; ?></option>
                                                 <?php } ?>
@@ -72,7 +181,7 @@
                                         <!-- Department -->
                                         <div class="col-md-3">
                                             <label for="department" class="form-label">Department</label>
-                                            <select name="department[]" class="form-select filter-input" multiple id="department">
+                                            <select name="department[]" class="form-control filter-input report-multiselect-source" multiple id="department">
                                                 <?php foreach ($departments as $dept) { ?>
                                                     <option value="<?= $dept->department_id; ?>"><?= $dept->department_name; ?></option>
                                                 <?php } ?>
@@ -181,8 +290,126 @@
 
 <script>
     (function($) {
+    function syncReportMultiSelect($select, $widget, placeholder) {
+        const selectedValues = ($select.val() || []).map(String);
+        const total = $widget.find('.report-multiselect-item').length;
+        const selectedCount = selectedValues.length;
+
+        $widget.find('.report-multiselect-item').each(function() {
+            $(this).prop('checked', selectedValues.includes(String($(this).val())));
+        });
+
+        const $selectAll = $widget.find('.report-multiselect-all');
+        $selectAll.prop('checked', total > 0 && selectedCount === total);
+        $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+        let summary = placeholder;
+        if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+        } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
+        }
+
+        $widget.find('.report-multiselect-summary').text(summary);
+    }
+
+    function initializeReportMultiSelect(selector, placeholder) {
+        const $select = $(selector);
+        if (!$select.length) return;
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.next('.report-multiselect').remove();
+        $select.addClass('report-multiselect-source');
+
+        const $widget = $('<div>', { class: 'report-multiselect' });
+        const $toggle = $('<button>', {
+            type: 'button',
+            class: 'report-multiselect-toggle',
+            'aria-expanded': 'false'
+        }).append($('<span>', {
+            class: 'report-multiselect-summary',
+            text: placeholder
+        }));
+        const $menu = $('<div>', { class: 'report-multiselect-menu' });
+        const availableOptions = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '';
+        });
+
+        if (availableOptions.length) {
+            const $selectAll = $('<input>', {
+                type: 'checkbox',
+                class: 'report-multiselect-all'
+            });
+            $menu.append(
+                $('<label>', { class: 'report-multiselect-option report-multiselect-select-all' })
+                    .append($selectAll, $('<span>', { text: 'Select all' }))
+            );
+
+            availableOptions.each(function() {
+                const $checkbox = $('<input>', {
+                    type: 'checkbox',
+                    class: 'report-multiselect-item',
+                    value: this.value
+                });
+                $menu.append(
+                    $('<label>', { class: 'report-multiselect-option' })
+                        .append($checkbox, $('<span>').text($(this).text().trim()))
+                );
+            });
+        } else {
+            $menu.append($('<div>', {
+                class: 'report-multiselect-empty',
+                text: 'No options available'
+            }));
+        }
+
+        $widget.append($toggle, $menu);
+        $select.after($widget);
+
+        $toggle.on('click', function() {
+            const isOpen = !$widget.hasClass('is-open');
+            $('.report-multiselect').not($widget).removeClass('is-open')
+                .find('.report-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', isOpen);
+            $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        $widget.on('change', '.report-multiselect-all', function() {
+            const values = this.checked
+                ? $widget.find('.report-multiselect-item').map(function() { return this.value; }).get()
+                : [];
+            $select.val(values).trigger('change');
+        });
+
+        $widget.on('change', '.report-multiselect-item', function() {
+            const values = $widget.find('.report-multiselect-item:checked')
+                .map(function() { return this.value; }).get();
+            $select.val(values).trigger('change');
+        });
+
+        $select.off('change.reportMultiSelect').on('change.reportMultiSelect', function() {
+            syncReportMultiSelect($select, $widget, placeholder);
+        });
+
+        syncReportMultiSelect($select, $widget, placeholder);
+    }
+
+
     $(document).ready(function() {
         var table;
+
+        initializeReportMultiSelect('#property', 'Select Options');
+        initializeReportMultiSelect('#department', 'Select Options');
+
+        $(document).off('click.reportMultiSelect').on('click.reportMultiSelect', function(e) {
+            if (!$(e.target).closest('.report-multiselect').length) {
+                $('.report-multiselect').removeClass('is-open')
+                    .find('.report-multiselect-toggle').attr('aria-expanded', 'false');
+            }
+        });
 
         // Function to initialize DataTable
         function initDataTable() {

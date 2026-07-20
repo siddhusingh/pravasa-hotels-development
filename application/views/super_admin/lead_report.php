@@ -3247,7 +3247,7 @@
       var statusFromGet = getUrlParamsArray('status');
       var dispositionFromGet = getUrlParamsArray('disposition');
 
-      var phoneFromGet = getUrlParamsArray('phone');
+      var phoneFromGet = new URL(window.location.href).searchParams.get('phone') || '';
 
 
 

@@ -137,7 +137,7 @@ class DepartmentManagment extends MY_Controller
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
                 </a>
-                <a href="'.base_url('manage-facebook-forms/'.$row->department_id).'" class="btn btn-sm btn-primary ms-2">Forms</a>'
+                <a href="'.base_url('manage-facebook-forms/'.$encrypted).'" class="btn btn-sm btn-primary ms-2">Forms</a>'
             ];
         }
 

@@ -182,7 +182,7 @@ class SalesVisits extends CI_Controller
         /* ===================== PERSON MET DETAILS ===================== */
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]
+            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 'Active', 'is_deleted' => 0]
         );
 
         $hotel_data = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property, 'is_deleted' => 0]);
@@ -982,7 +982,7 @@ class SalesVisits extends CI_Controller
 
         $personMetdata = $this->Common_model->getdata(
             'company_contacts',
-            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 1, 'is_deleted' => 0]
+            ['contact_id' => $personMet, 'company_id' => $companyId, 'status' => 'Active', 'is_deleted' => 0]
         );
 
         $hotel_data = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property, 'is_deleted' => 0]);
@@ -1274,7 +1274,7 @@ class SalesVisits extends CI_Controller
             ->from('company_contacts')
             ->where('company_id', $company_id)
             ->where('is_deleted', 0)
-            ->where('status', 1) // optional
+            ->where('status', 'Active')
             ->order_by('first_name', 'ASC')
             ->get()
             ->result();

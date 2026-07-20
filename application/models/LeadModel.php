@@ -522,7 +522,13 @@ class LeadModel extends CI_Model
 
     public function get_department_id_using_form_id($name)
     {
-        return $this->db->select('department_id')->from('facebook_forms')->where('form_id', $name)->get()->row('department_id');
+        return $this->db
+            ->select('department_id')
+            ->from('facebook_forms')
+            ->where('form_id', $name)
+            ->where('is_deleted', 0)
+            ->get()
+            ->row('department_id');
     }
 
 
@@ -1257,7 +1263,11 @@ class LeadModel extends CI_Model
 
             // End main group
             $this->db->group_end();
-        } else if (empty($filters['showfollowupleads']) || $filters['showfollowupleads'] !== 'yes') {
+        } else if (
+            (empty($filters['showfollowupleads']) || $filters['showfollowupleads'] !== 'yes')
+            && empty($filters['phone'])
+            && empty($filters['search'])
+        ) {
             $this->db->where('leads.status', 'open');
         }
 
@@ -1316,9 +1326,10 @@ class LeadModel extends CI_Model
         }
 
         if (!empty($filters['phone'])) {
-            $digits = preg_replace('/\D+/', '', (string)$filters['phone']);
+            $phone = is_array($filters['phone']) ? reset($filters['phone']) : $filters['phone'];
+            $digits = preg_replace('/\D+/', '', (string) $phone);
             $ten = substr($digits, -10);
-            if ($ten !== null) {
+            if (strlen($ten) === 10) {
                 $this->db->where("RIGHT(leads.phone_number, 10) =", $ten, FALSE);
             }
         }
@@ -1454,9 +1465,10 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
         }
 
         if (!empty($filters['phone'])) {
-            $digits = preg_replace('/\D+/', '', (string)$filters['phone']);
+            $phone = is_array($filters['phone']) ? reset($filters['phone']) : $filters['phone'];
+            $digits = preg_replace('/\D+/', '', (string) $phone);
             $ten = substr($digits, -10);
-            if ($ten !== null) {
+            if (strlen($ten) === 10) {
                 $this->db->where("RIGHT(leads.phone_number, 10) =", $ten, FALSE);
             }
         }

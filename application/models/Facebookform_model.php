@@ -9,17 +9,23 @@ class Facebookform_model extends CI_Model
     public function getFormsByDepartment($department_id)
     {
         $this->db->where('department_id', $department_id);
+        $this->db->where('is_deleted', 0);
         $this->db->order_by('created_at', 'DESC');
-        return $this->db->get('facebook_forms')->result();
+        return $this->db->get($this->table)->result();
     }
 
     public function getFormById($id)
     {
-        return $this->db->get_where($this->table, ['id' => $id])->row();
+        return $this->db->get_where($this->table, [
+            'id' => $id,
+            'is_deleted' => 0
+        ])->row();
     }
 
     public function insertForm($data)
     {
+        $data['is_deleted'] = 0;
+        $data['deleted_at'] = null;
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         return $this->db->insert($this->table, $data);
@@ -29,12 +35,19 @@ class Facebookform_model extends CI_Model
     {
         $data['updated_at'] = date('Y-m-d H:i:s');
         $this->db->where('id', $id);
+        $this->db->where('is_deleted', 0);
         return $this->db->update($this->table, $data);
     }
 
     public function deleteForm($id)
     {
+        $deletedAt = date('Y-m-d H:i:s');
         $this->db->where('id', $id);
-        return $this->db->delete($this->table);
+        $this->db->where('is_deleted', 0);
+        return $this->db->update($this->table, [
+            'is_deleted' => 1,
+            'deleted_at' => $deletedAt,
+            'updated_at' => $deletedAt
+        ]);
     }
 }

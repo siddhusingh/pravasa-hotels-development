@@ -150,7 +150,8 @@ class API_Model extends CI_Model
             hotel_image
         ');
         $this->db->from('hotel_admin');
-        $this->db->where('status', 1); // optional
+        $this->db->where('status', 'active'); // optional
+        $this->db->where('is_deleted', 0);
 
         return $this->db->get()->result_array();
     }
@@ -166,6 +167,7 @@ class API_Model extends CI_Model
             department_name
         ');
         $this->db->from('departments');
+        $this->db->where('is_deleted', 0);
 
         return $this->db->get()->result_array();
     }

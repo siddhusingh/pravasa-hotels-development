@@ -457,7 +457,9 @@ $config['csrf_token_name'] = 'app_csrf';
 $config['csrf_cookie_name'] = 'app_csrf_cookie';
 $config['csrf_expire'] = 14400;
 $config['csrf_regenerate'] = TRUE;
-$config['csrf_exclude_uris'] = array();
+$config['csrf_exclude_uris'] = array(
+	'api/.*'
+);
 
 /*
 |--------------------------------------------------------------------------
