@@ -21,8 +21,19 @@ class Staff extends MY_Controller
 
     public function index()
     {
+        $hotel_session = $this->session->userdata('hotel_admin_session');
+        $property = (int) ($hotel_session['id'] ?? 0);
 
-        $data['members'] = $this->Comman_model->gethotelmembersData();
+        $data['members'] = $this->db
+            ->select('staff_members.*')
+            ->from('staff_members')
+            ->join('staff_hotel_department_mapping mapping', 'mapping.staff_id = staff_members.id', 'inner')
+            ->where('mapping.hotel_id', $property)
+            ->where('staff_members.is_deleted', 0)
+            ->group_by('staff_members.id')
+            ->order_by('staff_members.name', 'ASC')
+            ->get()
+            ->result();
         $data['departments'] = $this->Common_model->getAllData('departments', '');
         $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
 
