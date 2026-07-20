@@ -739,9 +739,9 @@
 					}
 
 					.quick-filter-box .box-header {
-						padding: 18px 20px 10px;
+						/* padding: 18px 20px 10px;
 						border-bottom: 1px solid #eef2f7;
-						background: linear-gradient(135deg, #f8fafc, #ffffff);
+						background: linear-gradient(135deg, #f8fafc, #ffffff); */
 					}
 
 					.quick-filter-box .box-title {

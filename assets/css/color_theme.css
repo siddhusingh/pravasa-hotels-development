@@ -543,15 +543,15 @@ Theme Primary Color
     background-color: rgba(0, 82, 204, 0);
     color: #23211d;
     background-color: #9F8BE7;
-    border-radius: 10px;
+    border-radius: 10px!important;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     color: #fff;
     /*border-left: 5px solid rgba(0, 82, 204, 0);
-    */
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
-    -ms-border-radius: 1px;
-    -o-border-radius: 1px;
+    */-webkit-border-radius: 1px;
+    -moz-border-radius: 10px!important;
+    -ms-border-radius: 10px!important;
+    -o-border-radius: 10px!important;
+    -webkit-border-radius: 10px!important;
 }
   .theme-primary.light-skin .sidebar-menu > li:active a, .theme-primary.light-skin .sidebar-menu > li.active a {
     color: #ffffff; }
@@ -10803,9 +10803,13 @@ Theme Warning Color
 
 
    li.treeview.active.menu-open ul.treeview-menu li.active,li.treeview.active.menu-open ul.treeview-menu li:hover {
-background-color: #9F8BE7!important;
-    border-radius: 20px;
+    background-color: #9F8BE7!important;
+    border-radius: 10px!important;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    -webkit-border-radius: 10px!important;
+    -moz-border-radius: 10px!important;
+    -ms-border-radius: 10px!important;
+    -o-border-radius: 10px!important;
 }
 li.treeview.active.menu-open ul.treeview-menu li.active a,li.treeview.active.menu-open ul.treeview-menu li:hover a {
   color: #fff!important;

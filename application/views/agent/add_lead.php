@@ -20,20 +20,27 @@
 <div class="content-wrapper">
     <div class="container-full">
         <!-- Content Header (Page header) -->
-        <div class="content-header">
-            <div class="d-flex align-items-center">
-                <div class="me-auto">
-                    <h4 class="page-title">Create New Lead</h4>
-                    <div class="d-inline-block align-items-center">
-                        <nav>
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                                <li class="breadcrumb-item" aria-current="page">Super Admin</li>
-                                <li class="breadcrumb-item active" aria-current="page">Create New Lead</li>
-                            </ol>
-                        </nav>
-                    </div>
+        <div class="custom-page-header">
+            <div class="header-left">
+                <div class="header-icon-box">
+                    <i class="fa fa-phone-volume" aria-hidden="true"></i>
                 </div>
+                <div class="header-content">
+                    <h2 class="header-title">Create New Lead</h2>
+                    <ol class="custom-breadcrumb">
+                        <li>
+                            <i class="fa fa-home"></i>
+                        </li>
+                        <li>Super Admin</li>
+                        <li>
+                            <i class="fa fa-angle-right"></i>
+                        </li>
+                        <li class="active">Create New Lead</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="header-banner">
+                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
             </div>
         </div>
         <!-- Main content -->
@@ -53,7 +60,7 @@
                                     <div class="row g-3">
 
                                         <!-- Phone Number -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number</label>
                                                 <input type="number" name="phone_number" id="phone_number" class="form-control" placeholder="Enter phone number" required
@@ -65,7 +72,7 @@
                                         </div>
 
                                         <!-- Username -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name</label>
                                                 <input type="text" name="username" id="username" class="form-control" placeholder="Enter username">
@@ -76,7 +83,7 @@
 
 
                                         <!-- Email -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="email"><i class="fa fa-envelope me-1 text-warning"></i>Email (Optional)</label>
                                                 <input type="email" name="email" id="email" class="form-control" placeholder="Enter email">
@@ -91,7 +98,7 @@
 
 
                                         <!-- Hotel -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>Hotel (Property)</label>
                                                 <select name="property" id="property" class="form-control" required disabled>
@@ -113,7 +120,7 @@
                                         </div>
 
                                         <!-- Department -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="type"><i class="fa fa-sitemap me-1 text-muted"></i>Department (Type)</label>
                                                 <select name="type" id="type" class="form-control" required>
@@ -130,7 +137,7 @@
 
 
 
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label>Assign Lead To</label>
 
                                             <select name="assigned_to" id="assigned_to" class="form-control">
