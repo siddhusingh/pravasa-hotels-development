@@ -45,6 +45,7 @@
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	<style type="text/css">
 		#loader {
+			display: none !important; /* Temporarily disable the agent preloader. */
 			position: fixed;
 			width: 100%;
 			height: 100vh;
@@ -128,7 +129,13 @@
 									<?php if (!empty($hotel_list)) : ?>
 
 										<form action="<?= base_url('select-hotel') ?>" method="POST" id="hotelSelectForm" class="d-inline">
-											<select name="hotel_id" class="form-select form-select" style="width: auto; display: inline-block;" onchange="document.getElementById('hotelSelectForm').submit()">
+											<input
+												type="hidden"
+												id="agentHotelCsrfToken"
+												name="<?= $this->security->get_csrf_token_name(); ?>"
+												value="<?= $this->security->get_csrf_hash(); ?>"
+											>
+											<select id="agentHotelSelect" name="hotel_id" class="form-select form-select" style="width: auto; display: inline-block;">
 												<?php foreach ($hotel_list as $hotel): ?>
 													<option value="<?= $hotel->hotel_id ?>" <?= ($selected_hotel_id == $hotel->hotel_id) ? 'selected' : '' ?>>
 														<?= htmlspecialchars($hotel->hotel_name, ENT_QUOTES, 'UTF-8') ?>
@@ -137,6 +144,37 @@
 												<?php endforeach; ?>
 											</select>
 										</form>
+										<script>
+											(function() {
+												var hotelSelect = document.getElementById('agentHotelSelect');
+												var hotelForm = document.getElementById('hotelSelectForm');
+												var csrfInput = document.getElementById('agentHotelCsrfToken');
+												var csrfCookieName = <?= json_encode($this->config->item('csrf_cookie_name')); ?>;
+
+												function getCookieValue(cookieName) {
+													var encodedName = encodeURIComponent(cookieName) + '=';
+													var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+													for (var index = 0; index < cookies.length; index++) {
+														if (cookies[index].indexOf(encodedName) === 0) {
+															return decodeURIComponent(cookies[index].substring(encodedName.length));
+														}
+													}
+
+													return '';
+												}
+
+												hotelSelect.addEventListener('change', function() {
+													var currentCsrfHash = getCookieValue(csrfCookieName);
+
+													if (currentCsrfHash) {
+														csrfInput.value = currentCsrfHash;
+													}
+
+													hotelForm.submit();
+												});
+											})();
+										</script>
 									<?php endif; ?>
 								</div>
 							</div>

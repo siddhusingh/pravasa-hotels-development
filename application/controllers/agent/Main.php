@@ -39,45 +39,45 @@ class Main extends CI_Controller
             $data = [
 
                 'lead_status_counts'   => [
-                    'Open'        => $this->LeadModel->get_lead_count_by_status('Open', $property, $department),
-                    'In Progress' => $this->LeadModel->get_lead_count_by_status('In Progress', $property, $department),
-                    'On Hold'     => $this->LeadModel->get_lead_count_by_status('On Hold', $property, $department),
-                    'Closed'      => $this->LeadModel->get_lead_count_by_status('Closed', $property, $department),
-                    'Not_Assigned'      => $this->LeadModel->get_lead_count_for_not_assigned(''),
-                    'Not_Contacted'        => $this->LeadModel->get_lead_count_by_disposition('Not Contacted', $property, $department),
-                    'Quotation_Sent' => $this->LeadModel->get_lead_count_by_disposition('Quotation Sent', $property, $department),
-                    'Negotiations'     => $this->LeadModel->get_lead_count_by_disposition('Negotiations', $property, $department),
-                    'Contract_Done'      => $this->LeadModel->get_lead_count_by_disposition('Contract Done', $property, $department),
-                    'Advance_Received'      => $this->LeadModel->get_lead_count_by_disposition('Advance Received', $property, $department),
-                    'Lead_Won'      => $this->LeadModel->get_lead_count_by_disposition('Lead Won', $property, $department),
-                    'Lead_Lost'      => $this->LeadModel->get_lead_count_by_disposition('Lead Lost', $property, $department),
+                    'Open' => $this->LeadModel->get_lead_count_by_status('Open', $property),
+                    'In Progress' => $this->LeadModel->get_lead_count_by_status('In Progress', $property),
+                    'On Hold' => $this->LeadModel->get_lead_count_by_status('On Hold', $property),
+                    'Closed' => $this->LeadModel->get_lead_count_by_status('Closed', $property),
+                    'Not_Assigned' => $this->LeadModel->get_lead_count_for_not_assigned('', $property),
+                    'Not_Contacted' => $this->LeadModel->get_lead_count_by_disposition('Not Contacted', $property),
+                    'Quotation_Sent' => $this->LeadModel->get_lead_count_by_disposition('Quotation Sent', $property),
+                    'Negotiations' => $this->LeadModel->get_lead_count_by_disposition('Negotiations', $property),
+                    'Contract_Done' => $this->LeadModel->get_lead_count_by_disposition('Contract Done', $property),
+                    'Advance_Received' => $this->LeadModel->get_lead_count_by_disposition('Advance Received', $property),
+                    'Lead_Won' => $this->LeadModel->get_lead_count_by_disposition('Lead Won', $property),
+                    'Lead_Lost' => $this->LeadModel->get_lead_count_by_disposition('Lead Lost', $property),
 
 
                 ],
                 'lead_revenue' => [
 
-                    'Not_Contacted'   => $this->LeadModel->get_lead_revenue_by_disposition('Not Contacted', $property, $department),
+                    'Not_Contacted' => $this->LeadModel->get_lead_revenue_by_disposition('Not Contacted', $property),
 
-                    'Quotation_Sent'  => $this->LeadModel->get_lead_revenue_by_disposition('Quotation Sent', $property, $department),
+                    'Quotation_Sent' => $this->LeadModel->get_lead_revenue_by_disposition('Quotation Sent', $property),
 
-                    'Negotiations'    => $this->LeadModel->get_lead_revenue_by_disposition('Negotiations', $property, $department),
+                    'Negotiations' => $this->LeadModel->get_lead_revenue_by_disposition('Negotiations', $property),
 
-                    'Contract_Done'   => $this->LeadModel->get_lead_revenue_by_disposition('Contract Done', $property, $department),
+                    'Contract_Done' => $this->LeadModel->get_lead_revenue_by_disposition('Contract Done', $property),
 
-                    'Advance_Received' => $this->LeadModel->get_lead_revenue_by_disposition('Advance Received', $property, $department),
+                    'Advance_Received' => $this->LeadModel->get_lead_revenue_by_disposition('Advance Received', $property),
 
-                    'Lead_Won'        => $this->LeadModel->get_lead_revenue_by_disposition('Lead Won', $property, $department),
+                    'Lead_Won' => $this->LeadModel->get_lead_revenue_by_disposition('Lead Won', $property),
 
-                    'Lead_Lost'       => $this->LeadModel->get_lead_revenue_by_disposition('Lead Lost', $property, $department)
+                    'Lead_Lost' => $this->LeadModel->get_lead_revenue_by_disposition('Lead Lost', $property)
 
                 ]
             ];
 
 
 
-            $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property, 'type' => $department]);
+            $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property]);
 
-            $data['total_revenue'] = $this->Common_model->get_total_revenue_from_leads('leads', ['property' => $property, 'type' => $department]);
+            $data['total_revenue'] = $this->Common_model->get_total_revenue_from_leads('leads', ['property' => $property]);
 
 
 
@@ -94,7 +94,10 @@ class Main extends CI_Controller
             $data['departments'] = $this->Common_model->getAllData('departments', '');
             $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
             $data['cities'] = $this->Common_model->getAllData('city', '');
-            $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
+            $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+                'property' => $property,
+                'is_deleted' => 0
+            ]);
 
 
 
@@ -126,7 +129,7 @@ class Main extends CI_Controller
         $end_date = $this->input->post('end_date');
 
         $property = $this->session->userdata('selected_hotel_id');
-        $department = $this->session->userdata('selected_department_id');
+        $department = '';
 
         $created_id    = $this->input->post('created_id');
         $created_role  = $this->input->post('created_role');
@@ -470,8 +473,6 @@ class Main extends CI_Controller
 
 
 
-        $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property, 'type' => $department], $start_date, $end_date);
-
         echo json_encode($data);
     }
 
@@ -480,7 +481,7 @@ class Main extends CI_Controller
     // Chart Data Endpoints
     public function department_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
 
 
@@ -493,7 +494,7 @@ class Main extends CI_Controller
 
     public function disposition_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('disposition', $filters);
         $this->send_static_chart_data($data, 'disposition');
@@ -501,7 +502,7 @@ class Main extends CI_Controller
 
     public function template_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('template_name', $filters);
         $this->send_static_chart_data($data, 'template_name');
@@ -509,7 +510,7 @@ class Main extends CI_Controller
 
     public function source_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('user_channel', $filters);
         $this->send_static_chart_data($data, 'user_channel');
@@ -517,7 +518,7 @@ class Main extends CI_Controller
 
     public function status_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_leads_grouped_by('status', $filters);
         $this->send_static_chart_data($data, 'status');
@@ -525,7 +526,7 @@ class Main extends CI_Controller
 
     public function guest_type_chart_data()
     {
-        $filters = $this->input->get();
+        $filters = $this->get_agent_chart_filters();
 
         $data = $this->Dashboard_model->get_guest_type_data($filters);
 
@@ -536,6 +537,15 @@ class Main extends CI_Controller
         ];
 
         echo json_encode($response);
+    }
+
+    private function get_agent_chart_filters()
+    {
+        $filters = $this->input->get();
+        $filters['property'] = $this->session->userdata('selected_hotel_id');
+        $filters['type'] = '';
+
+        return $filters;
     }
 
 
@@ -632,39 +642,97 @@ class Main extends CI_Controller
     /*load user profile detail*/
     public function update_profile()
     {
-
-        $id = $this->input->post('id');
-        $full_name = $this->input->post('name');
-        $phone = $this->input->post('phone');
-        $email = $this->input->post('email');
-
-        $password = md5($this->input->post('password'));
-
-        $this->session->set_userdata('logged_in_username', $full_name);
-
-        $table = 'staff_members';
-        $data = array(
-            'name' => $full_name,
-            'email' => $email,
-            'phone' => $phone,
-
-        );
-
-        if (!empty($this->input->post('password'))) {
-            $data['password'] = $password;
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_status_header(405)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Method not allowed.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
         }
 
+        $agent_session = $this->session->userdata('agent_session');
+        if (empty($agent_session['id']) || $this->session->userdata('role_as') !== 'agent') {
+            return $this->output
+                ->set_status_header(401)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Your session has expired.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
-        $result = $this->Comman_model->UpdateRecord($table, $data, array('id' => $id));
+        $id = (int) $agent_session['id'];
+        $full_name = trim((string) $this->input->post('name', true));
+        $phone = trim((string) $this->input->post('phone', true));
+        $email = trim((string) $this->input->post('email', true));
+        $password = (string) $this->input->post('password');
+        $errors = [];
 
-        $response_json['status'] = true;
-        $response_json['message'] = "senior_managers data has been updated successfully";
-        $response_json['record_id'] = $record_id;
+        if ($full_name === '') {
+            $errors['name'] = 'Please Enter Full Name';
+        }
+        if ($email === '') {
+            $errors['email'] = 'Please Enter Email';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please Enter a Valid Email Address';
+        }
+        if ($phone === '') {
+            $errors['phone'] = 'Please Enter Phone Number';
+        }
+        if ($password !== '' && !preg_match('/^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/', $password)) {
+            $errors['password'] = 'Password must be at least 6 characters long, contain at least one number and one special character';
+        }
 
-        $this->session->set_flashdata('profile_success', "Your profile has been updated successfully.");
+        if (!empty($errors)) {
+            return $this->output
+                ->set_status_header(422)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
+        $data = [
+            'name' => $full_name,
+            'email' => $email,
+            'phone' => $phone
+        ];
 
-        echo json_encode($response_json);
+        // An empty password intentionally preserves the agent's existing password.
+        if ($password !== '') {
+            $data['password'] = md5($password);
+        }
+
+        $result = $this->Comman_model->UpdateRecord('staff_members', $data, ['id' => $id]);
+        if (!$result) {
+            return $this->output
+                ->set_status_header(500)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Unable to update your profile. Please try again.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $this->session->set_userdata('logged_in_username', $full_name);
+        $this->session->set_flashdata('profile_success', 'Your profile has been updated successfully.');
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Your profile has been updated successfully.',
+                'record_id' => $id,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
     }
 
 

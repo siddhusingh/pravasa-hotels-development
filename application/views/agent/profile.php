@@ -71,8 +71,9 @@
 
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label for="userpassword" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="password">
+                          <label for="password" class="form-label">New Password <span class="text-muted">(Optional)</span></label>
+                          <input type="password" class="form-control" id="password" autocomplete="new-password" placeholder="Leave blank to keep current password">
+                          <small class="text-muted">Enter a new password only if you want to change it.</small>
                           <span class="text-danger" id="password_error"></span>
                         </div>
                       </div> <!-- end col -->
@@ -134,6 +135,11 @@
     } ?>
   </script>
   <script type="text/javascript">
+    window.CSRF = window.CSRF || {
+      name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+      hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+    };
+
     // add Senior Managers code start from here
 
 
@@ -185,13 +191,11 @@
       if (value != "") {
         if (!passwordRegex.test(value)) {
           $('#password_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
-          $('#password').val('');
         } else {
           $('#password_error').html('');
         }
       } else {
-        $('#password_error').html('Please Enter Password');
-        $('#password').val('');
+        $('#password_error').html('');
       }
     });
 
@@ -234,11 +238,8 @@
         $('#phone_error').html('');
       }
 
-      // Validate password
-      if (password == '') {
-        $('#password_error').html('Please Enter Password');
-        isValid = false;
-      } else if (!passwordRegex.test(password)) {
+      // Password is optional. Validate it only when the agent enters a new one.
+      if (password !== '' && !passwordRegex.test(password)) {
         $('#password_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
         isValid = false;
       } else {
@@ -254,6 +255,7 @@
         formData.append('password', password);
         formData.append('phone', phone);
         formData.append('id', record_id);
+        formData.append(window.CSRF.name, window.CSRF.hash);
 
         $.ajax({
           url: '<?php echo base_url("update-agent-profile") ?>',
@@ -266,7 +268,34 @@
             $('#updateBtn').html('Updating...').attr('disabled', true);
           },
           success: function(response) {
-            window.location.reload();
+            if (response.csrfHash) {
+              window.CSRF.hash = response.csrfHash;
+            }
+
+            if (response.status) {
+              window.location.reload();
+              return;
+            }
+
+            toastr.error(response.message || 'Unable to update your profile.');
+          },
+          error: function(xhr) {
+            var response = xhr.responseJSON || {};
+            if (response.csrfHash) {
+              window.CSRF.hash = response.csrfHash;
+            }
+
+            if (response.errors) {
+              if (response.errors.name) $('#full_name_error').html(response.errors.name);
+              if (response.errors.email) $('#email_error').html(response.errors.email);
+              if (response.errors.phone) $('#phone_error').html(response.errors.phone);
+              if (response.errors.password) $('#password_error').html(response.errors.password);
+            } else {
+              toastr.error(response.message || 'Unable to update your profile.');
+            }
+          },
+          complete: function() {
+            $('#updateBtn').html('<i class="fa fa-save m-1"></i> Save Changes').attr('disabled', false);
           }
         });
       }

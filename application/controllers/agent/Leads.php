@@ -18,20 +18,64 @@ class Leads extends CI_Controller
         }
     }
 
+    /**
+     * Resolve the selected hotel from the authenticated agent's hotel mapping.
+     * Never trust a property sent by the browser for agent pages.
+     */
+    private function get_agent_scope()
+    {
+        $agent = $this->session->userdata('agent_session');
+        $hotel_id = (int) $this->session->userdata('selected_hotel_id');
+
+        if (empty($agent['id']) || $hotel_id <= 0) {
+            return null;
+        }
+
+        $mapping = $this->db
+            ->select('hotel_id')
+            ->from('staff_hotel_department_mapping')
+            ->where('staff_id', (int) $agent['id'])
+            ->where('hotel_id', $hotel_id)
+            ->get()
+            ->row_array();
+
+        if (empty($mapping)) {
+            return null;
+        }
+
+        return [
+            'hotel_id' => (int) $mapping['hotel_id']
+        ];
+    }
+
+    private function normalise_multi_filter($value)
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        $values = is_array($value) ? $value : [$value];
+
+        return array_values(array_filter($values, static function ($item) {
+            return is_scalar($item) && trim((string) $item) !== '';
+        }));
+    }
+
 
 
     public function index()
     {
 
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return redirect('agent-dashboard');
+        }
 
-
-        $property = $this->session->userdata('selected_hotel_id');
-
+        $property = $scope['hotel_id'];
         $disposition = $this->input->get('disposition');
 
 
         $filters = [
-            'department' => $this->session->userdata('selected_department_id'),
             'status' => $this->input->get('status'),
             'disposition' => $disposition,
 
@@ -55,11 +99,20 @@ class Leads extends CI_Controller
 
         $data['leads'] = $this->LeadModel->get_hotel_leads($property, $activeFilters);
 
-        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
+        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+            'property' => $property,
+            'is_deleted' => 0
+        ]);
 
-        $department = $this->session->userdata('selected_department_id');
-
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $data['departments'] = $this->db
+            ->select('d.*')
+            ->distinct()
+            ->from('departments d')
+            ->join('staff_hotel_department_mapping shdm', 'shdm.department_id = d.department_id')
+            ->where('shdm.staff_id', (int) $this->session->userdata('agent_session')['id'])
+            ->where('shdm.hotel_id', $property)
+            ->get()
+            ->result();
 
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
 
@@ -73,9 +126,11 @@ class Leads extends CI_Controller
 
         $activeFilters['property'] = $property;
 
-        $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['properties'] = $this->db
+            ->where('hotel_id', $property)
+            ->get('hotel_admin')
+            ->result();
 
-        $activeFilters['department'] = $department;
         $data['lead_status_counts'] = $this->LeadModel->get_lead_counts_grouped_by_status($activeFilters);
 
 
@@ -86,33 +141,103 @@ class Leads extends CI_Controller
         $this->load->view('agent/include/footer');
     }
 
+    /**
+     * Agent-only lead feed. The selected hotel is taken from the authenticated
+     * session and cannot be overridden by POST data.
+     */
+    public function fetch_leads_ajax()
+    {
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode(['status' => false, 'message' => 'Method not allowed']));
+        }
+
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['status' => false, 'message' => 'No hotel access is available for this agent.']));
+        }
+
+        $limit = (int) $this->input->post('limit');
+        $offset = max(0, (int) $this->input->post('offset'));
+        $limit = $limit > 0 ? min($limit, 100) : 50;
+
+        $business_type = $this->input->post('business_type');
+        if (is_array($business_type)) {
+            $business_type = reset($business_type);
+        }
+
+        $filters = [
+            'property' => [$scope['hotel_id']],
+            'status' => $this->normalise_multi_filter($this->input->post('status')),
+            'channel' => $this->normalise_multi_filter($this->input->post('channel')),
+            'disposition' => $this->normalise_multi_filter($this->input->post('disposition')),
+            'start_date' => $this->input->post('start_date', true),
+            'end_date' => $this->input->post('end_date', true),
+            'search' => trim((string) $this->input->post('search', true)),
+            'phone' => $this->input->post('phone', true),
+            'business_type' => in_array($business_type, ['business', 'non_business'], true) ? $business_type : '',
+            'showfollowupleads' => $this->input->post('showfollowupleads') === 'yes' ? 'yes' : 'no'
+        ];
+
+        $leads = $this->LeadModel->get_filtered_leads($filters, $limit, $offset);
+        $total_counts = $this->LeadModel->get_leads_status_counts($filters);
+        $html = $this->load->view('agent/ajax_leads_cards', ['leads' => $leads], true);
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_status_header(200)
+            ->set_output(json_encode([
+                'status' => true,
+                'html' => $html,
+                'count' => count($leads),
+                'totalCounts' => $total_counts,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
+    }
+
 
     public function followups()
     {
-        $property = $this->session->userdata('selected_hotel_id');
-        $department = $this->session->userdata('selected_department_id');
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return redirect('agent-dashboard');
+        }
+
+        $property = $scope['hotel_id'];
+        $agent = $this->session->userdata('agent_session');
 
         $filters = [
-            'department' => $department,
-            'status' => $this->input->get('status'),
-            'disposition' => $this->input->get('disposition'),
-            'channel' => $this->input->get('channel'),
+            'property' => [$property],
+            'status' => $this->normalise_multi_filter($this->input->get('status')),
+            'disposition' => $this->normalise_multi_filter($this->input->get('disposition')),
+            'channel' => $this->normalise_multi_filter($this->input->get('channel')),
             'start_date' => $this->input->get('start_date'),
             'end_date' => $this->input->get('end_date'),
-            'phone' => $this->input->get('phone')
+            'phone' => $this->input->get('phone'),
+            'showfollowupleads' => 'yes'
         ];
 
-        $activeFilters = array_filter($filters, function ($val) {
-            return $val !== null && $val !== '';
-        });
-        $activeFilters['showfollowupleads'] = 'yes';
+        $data['leads'] = $this->LeadModel->get_filtered_leads($filters, 50, 0);
 
-        // Fetch leads with follow-up date condition
-        $data['leads'] = $this->LeadModel->get_hotel_followup_leads($property, $activeFilters);
+        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+            'property' => $property,
+            'is_deleted' => 0
+        ]);
 
-        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
-
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $data['departments'] = $this->db
+            ->select('d.*')
+            ->distinct()
+            ->from('departments d')
+            ->join('staff_hotel_department_mapping shdm', 'shdm.department_id = d.department_id')
+            ->where('shdm.staff_id', (int) $agent['id'])
+            ->where('shdm.hotel_id', $property)
+            ->get()
+            ->result();
 
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
 
@@ -120,15 +245,12 @@ class Leads extends CI_Controller
 
         $data['all_assignable_users'] = $this->LeadModel->get_all_assignable_users('hotel_admin', '');
 
-        $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['properties'] = $this->db
+            ->where('hotel_id', $property)
+            ->get('hotel_admin')
+            ->result();
 
-        // Load all data to send to view
-        $data['lead_status_counts'] = [
-            'Open'        => $this->LeadModel->get_lead_count_by_status_agent('Open', $property, $department, null, null, true),
-            'In Progress' => $this->LeadModel->get_lead_count_by_status_agent('In Progress', $property, $department, null, null, true),
-            'On Hold'     => $this->LeadModel->get_lead_count_by_status_agent('On Hold', $property, $department, null, null, true),
-            'Closed'      => $this->LeadModel->get_lead_count_by_status_agent('Closed', $property, $department, null, null, true)
-        ];
+        $data['lead_status_counts'] = $this->LeadModel->get_leads_status_counts($filters);
         $data['showfollowupleads'] = 'yes';
 
         $this->load->view('agent/include/header');
@@ -191,11 +313,27 @@ class Leads extends CI_Controller
 
     public function add_lead()
     {
-        $property = $this->session->userdata('selected_hotel_id');
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return redirect('agent-dashboard');
+        }
+
+        $property = $scope['hotel_id'];
 
         $data['leads'] = $this->LeadModel->get_leads();
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['departments'] = $this->db
+            ->select('d.*')
+            ->distinct()
+            ->from('departments d')
+            ->join('staff_hotel_department_mapping shdm', 'shdm.department_id = d.department_id')
+            ->where('shdm.staff_id', (int) $this->session->userdata('agent_session')['id'])
+            ->where('shdm.hotel_id', $property)
+            ->get()
+            ->result();
+        $data['hotel_admin'] = $this->db
+            ->where('hotel_id', $property)
+            ->get('hotel_admin')
+            ->result();
 
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
 
@@ -214,231 +352,310 @@ class Leads extends CI_Controller
         $this->load->view('agent/include/footer');
     }
 
-    public function insert_lead()
+    private function getActiveAssignableUser($userId, $role)
     {
-        if ($this->input->method() === 'post') {
+        $userId = (int) $userId;
 
-
-
-            $selected_department_id = $this->session->userdata('selected_department_id');
-            $property = $this->session->userdata('selected_hotel_id');
-
-            $assigned_role = $this->session->userdata('role_as');
-
-            if ($assigned_role == 'super_admin') {
-                $userId = $this->session->userdata('super_admin_session')['id'];
-            } else if ($assigned_role == 'admin') {
-                $userId = $this->session->userdata('hotel_admin_session')['id'];
-            } else {
-                $userId = $this->session->userdata('agent_session')['id'];
-            }
-
-
-
-            // Collect each field from POST manually
-            $leadData = [
-                'user_name'       => $this->input->post('user_name', true),
-                'phone_number'   => $this->input->post('phone_number', true),
-                'email'          => $this->input->post('email', true),
-                'date'           => $this->input->post('date', true),
-                'time'           => $this->input->post('time', true),
-                'user_channel'   => $this->input->post('user_channel', true),
-                'property'       => $property,
-                'type'           => $selected_department_id,
-                'status'    => $this->input->post('status', true),
-                'disposition'    => $this->input->post('disposition', true),
-                'created_at'   =>  date('Y-m-d H:i:s'),
-                'query'          => $this->input->post('query', true),
-                'remark'         => $this->input->post('remark', true),
-                'lead_type'          => $this->input->post('lead_type', true),
-
-                'template_name' => 'Phone',
-                'city' => $result->city_id,
-                'created_by' => $userId,
-                'creator_user_role' => $assigned_role
-            ];
-
-            $assigned_role = $this->session->userdata('role_as');
-
-            if ($assigned_role == 'super_admin') {
-                $userId = $this->session->userdata('super_admin_session')['id'];
-            } else if ($assigned_role == 'admin') {
-                $userId = $this->session->userdata('hotel_admin_session')['id'];
-            } else {
-                $userId = $this->session->userdata('agent_session')['id'];
-            }
-
-            $status = $this->input->post('status', true);
-            $disposition = $this->input->post('disposition', true);
-            $department = $this->input->post('leadDepartment', true);
-
-
-            // Time tracking
-            if ($status === 'Closed') {
-                $leadData['completed_time'] = date('Y-m-d H:i:s');
-            } else {
-                $leadData['responded_time'] = date('Y-m-d H:i:s');
-            }
-
-            // Additional fields for Reservation Closed
-            if ($disposition === 'Reservation' && strtolower($status) === 'closed') {
-                $department = strtolower($department); // convert everything to lowercase
-
-                if ($department === 'rooms') {
-                    $leadData['checkin_date'] = $this->input->post('checkin_date');
-                    $leadData['checkout_date'] = $this->input->post('checkout_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['reservation_number'] = $this->input->post('reservation_number');
-                    $leadData['reservation_email'] = $this->input->post('reservation_email');
-
-                    // Handle file upload
-                    if (!empty($_FILES['bill_attachment']['name'])) {
-                        $uploadPath = FCPATH . 'uploads/bills/';
-
-                        if (!is_dir($uploadPath)) {
-                            mkdir($uploadPath, 0755, true);
-                        }
-
-                        $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-                        $fileName = $_FILES['bill_attachment']['name'];
-                        $tmpName = $_FILES['bill_attachment']['tmp_name'];
-                        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-                        if (!in_array($extension, $allowedExtensions)) {
-                            echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, PDF allowed.']);
-                            return;
-                        }
-
-                        $newFileName = 'bill_' . time() . '.' . $extension;
-                        $targetPath = $uploadPath . $newFileName;
-
-                        if (move_uploaded_file($tmpName, $targetPath)) {
-                            $leadData['bill_attachment'] = $newFileName;
-                        } else {
-                            echo json_encode(['error' => 'Failed to move uploaded file.']);
-                            return;
-                        }
-                    }
-                }
-
-                if ($department === 'restaurants') {
-                    $leadData['booking_date'] = $this->input->post('booking_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['fnb_email'] = $this->input->post('fnb_email');
-                }
-
-                if ($department === 'banquets') {
-                    $leadData['booking_date'] = $this->input->post('booking_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['banquet_email'] = $this->input->post('banquet_email');
-                }
-            }
-
-            // Shopping - Follow up - In Progress
-            if (strpos(strtolower($disposition), 'shopping - follow up') !== false && strtolower($status) === 'in progress') {
-                $leadData['booking_enquiry_date'] = $this->input->post('booking_enquiry_date');
-                $leadData['followup_date'] = $this->input->post('followup_date');
-                $leadData['second_followup_date'] = $this->input->post('second_followup_date');
-                $leadData['followup_remark'] = $this->input->post('followup_remark');
-
-                if ($department === 'banquets') {
-                    $leadData['transfer_to_manager'] = $this->input->post('transfer_to_manager');
-                }
-            }
-
-
-            $phone = $this->input->post('phone_number', true);
-            $twoHoursAgo = date('Y-m-d H:i:s', strtotime('-2 hours'));
-
-            // find last lead created in last 2 hours with same phone number
-            $existingLead = $this->db
-                ->where('phone_number', $phone)
-                ->where('created_at >=', $twoHoursAgo)
-                ->where('status !=', 'Closed')
-                ->where('is_deleted', 0)
-                ->order_by('id', 'DESC')
-                ->get('leads')
-                ->row();
-
-            if (!empty($existingLead)) {
-
-                // Do not change original creation timestamp
-                unset($leadData['created_at']);
-
-                // Update existing lead with fresh details
-                $this->db->where('id', $existingLead->id)
-                    ->update('leads', $leadData);
-
-                echo json_encode([
-                    'status' => true,
-                    'message' => 'Duplicate detected: Existing lead updated successfully.',
-                    'duplicate' => true
-                ]);
-                return; // stop here, no email, no new lead creation
-            }
-
-
-
-            // Insert into DB
-            $insert_id = $this->LeadModel->insert_lead($leadData);
-
-            $leadData['created_at'] = date('Y-m-d H:i:s');
-
-
-            $phone = $leadData['phone_number'];
-
-            // Check if any previous lead has reservation with revenue > 0
-            $valuableGuest = $this->db
-                ->select('id, disposition, amount')  // revenue_amount = your amount column
-                ->from('leads')
-                ->where('is_deleted', 0)
-                ->where('phone_number', $phone)
-                ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
-                ->where('amount >', 0)                // has revenue
-                ->order_by('id', 'DESC')
-                ->limit(1)
-                ->get()
-                ->row();
-
-            if ($valuableGuest) {
-                $IsvaluableGuest = true;
-            } else {
-                $IsvaluableGuest = false;
-            }
-
-
-
-
-
-
-            if ($insert_id) {
-
-                $url = base_url("EmailWorker/sendLeadEmail/$insert_id/$IsvaluableGuest");
-
-                // Fire & Forget HTTP Request
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POST, false); // GET request
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // We don't care about the response
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 100); // Fast timeout
-                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); // Don't wait for response
-                curl_setopt($ch, CURLOPT_NOSIGNAL, 1); // For timeout under 1s (only on Unix)
-                curl_exec($ch);
-                curl_close($ch);
-                echo json_encode(['status' => true, 'message' => 'Lead created successfully.']);
-            } else {
-                echo json_encode(['status' => false, 'message' => 'Failed to insert lead.']);
-            }
-        } else {
-            show_404();
+        if ($userId <= 0) {
+            return null;
         }
+
+        if ($role === 'admin') {
+            return $this->db
+                ->select("id, name, email, 'admin' AS user_role", false)
+                ->where(['id' => $userId, 'status' => 1])
+                ->get('hotel_admins')
+                ->row_array();
+        }
+
+        if ($role === 'agent') {
+            return $this->db
+                ->select("id, name, email, 'agent' AS user_role", false)
+                ->where(['id' => $userId, 'status' => 1])
+                ->get('staff_members')
+                ->row_array();
+        }
+
+        if ($role === 'super_admin') {
+            return $this->db
+                ->select("id, full_name AS name, email, 'super_admin' AS user_role", false)
+                ->where(['id' => $userId, 'status' => 'active'])
+                ->get('super_admin')
+                ->row_array();
+        }
+
+        return null;
     }
 
+    private function validateLeadInput($departmentName)
+    {
+        $errors = [];
+        $value = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
 
+        $phone = substr(preg_replace('/\D+/', '', $value('phone_number')), -10);
+        $disposition = $value('disposition');
+        $department = strtolower(trim((string) $departmentName));
 
+        if ($department === 'restaurants') {
+            $department = 'restaurant';
+        } elseif ($department === 'banquets') {
+            $department = 'banquet';
+        }
+
+        if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+            $errors['phone_number'] = 'Enter a valid 10-digit Indian mobile number.';
+        }
+        if ($disposition !== 'Not Contacted' && $value('user_name') === '') {
+            $errors['username'] = 'Guest name is required.';
+        }
+        if ($value('email') !== '' && !filter_var($value('email'), FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Enter a valid email address.';
+        }
+
+        $required = [
+            'type' => 'Please select a department.',
+            'user_channel' => 'Please select a lead source.',
+            'disposition' => 'Please select a stage.',
+            'status' => 'Please select a lead status.',
+            'query' => 'Query is required.'
+        ];
+
+        foreach ($required as $field => $message) {
+            if ($value($field) === '') {
+                $errors[$field === 'status' ? 'lead_status' : $field] = $message;
+            }
+        }
+
+        if ($disposition === 'Lead Lost' && $value('reason') === '') {
+            $errors['reason'] = 'Please select a reason.';
+        }
+
+        if ($disposition === 'Quotation Sent') {
+            if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
+                $errors['meal_plan'] = 'Please select a meal plan.';
+            }
+            if (in_array($department, ['banquet', 'wedding'], true) && $value('banquet_id') === '') {
+                $errors['banquet_id'] = 'Please select a banquet.';
+            }
+            if ($department === 'restaurant') {
+                $restaurantRequired = [
+                    'restaurant_id' => 'Please select a restaurant.',
+                    'slot_type_id' => 'Please select a slot type.',
+                    'time_slot_id' => 'Please select a time slot.',
+                    'table_category_id' => 'Please select a table category.',
+                    'table_id' => 'Please select a table.'
+                ];
+                foreach ($restaurantRequired as $field => $message) {
+                    if ($value($field) === '') {
+                        $errors[$field] = $message;
+                    }
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    public function insert_lead()
+    {
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode(['status' => false, 'message' => 'Method not allowed.']));
+        }
+
+        $scope = $this->get_agent_scope();
+        if ($scope === null) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'The selected hotel is not assigned to this agent.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $agentSession = $this->session->userdata('agent_session');
+        $property = (int) $scope['hotel_id'];
+        $type = (int) $this->input->post('type', true);
+        $hotel = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
+        $department = $this->Common_model->getdata('departments', ['department_id' => $type]);
+        $errors = $this->validateLeadInput($department->department_name ?? '');
+
+        if (!$hotel) {
+            $errors['property'] = 'The selected hotel is unavailable.';
+        }
+        if (!$department) {
+            $errors['type'] = 'Please select a valid department.';
+        }
+
+        $departmentMapping = $this->db
+            ->where('staff_id', (int) ($agentSession['id'] ?? 0))
+            ->where('hotel_id', $property)
+            ->where('department_id', $type)
+            ->get('staff_hotel_department_mapping')
+            ->row_array();
+        if (!$departmentMapping) {
+            $errors['type'] = 'This department is not assigned to your account for the selected hotel.';
+        }
+
+        $assignedUser = null;
+        $assignedTo = trim((string) $this->input->post('assigned_to', true));
+        $assignedRole = trim((string) $this->input->post('assigned_person_user_role', true));
+        if ($assignedTo !== '') {
+            $assignedUser = $this->getActiveAssignableUser($assignedTo, $assignedRole);
+            if (!$assignedUser) {
+                $errors['assigned_to'] = 'Please select an active assignable user.';
+            }
+        }
+
+        if (!empty($errors)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $phone = substr(preg_replace('/\D+/', '', (string) $this->input->post('phone_number', true)), -10);
+        $now = date('Y-m-d H:i:s');
+        $leadData = [
+            'user_name' => trim((string) $this->input->post('user_name', true)),
+            'phone_number' => $phone,
+            'email' => trim((string) $this->input->post('email', true)),
+            'user_channel' => $this->input->post('user_channel', true),
+            'property' => $property,
+            'type' => $type,
+            'status' => $this->input->post('status', true),
+            'disposition' => $this->input->post('disposition', true),
+            'created_at' => $now,
+            'query' => $this->input->post('query', true),
+            'remark' => $this->input->post('remark', true),
+            'lead_type' => $this->input->post('lead_type', true),
+            'purpose' => $this->input->post('purpose', true),
+            'reason' => $this->input->post('reason', true),
+            'promotional_offers' => $this->input->post('promotional_offers', true),
+            'template_name' => 'Phone',
+            'city' => $hotel->city_id,
+            'created_by' => (int) $agentSession['id'],
+            'creator_user_role' => 'agent'
+        ];
+
+        $escalationHours = (float) ($department->escalation_level_1 ?? 0);
+        $leadData['esc_next_followup_at'] = date('Y-m-d H:i:s', strtotime('+' . ($escalationHours * 60) . ' minutes'));
+        $leadData['esc_follow_up_level'] = 1;
+
+        $optionalFields = [
+            'booking_date', 'followup_date', 'second_followup_date', 'arrival_time',
+            'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
+            'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
+            'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
+            'time_slot_id', 'table_category_id', 'table_id', 'special_occasion',
+            'special_request'
+        ];
+        foreach ($optionalFields as $field) {
+            $fieldValue = $this->input->post($field, true);
+            if ($fieldValue !== null && $fieldValue !== '') {
+                $leadData[$field] = $fieldValue;
+            }
+        }
+
+        if ($assignedUser) {
+            $leadData['is_assigned'] = 1;
+            $leadData['assigned_to'] = (int) $assignedUser['id'];
+            $leadData['assigned_person_user_role'] = $assignedUser['user_role'];
+            $leadData['assigned_person_email'] = $assignedUser['email'];
+        }
+
+        if ($leadData['status'] === 'Closed') {
+            $leadData['completed_time'] = $now;
+        } else {
+            $leadData['responded_time'] = $now;
+        }
+
+        $existingLead = $this->db
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('property', $property)
+            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-2 hours')))
+            ->where('status !=', 'Closed')
+            ->where('is_deleted', 0)
+            ->order_by('id', 'DESC')
+            ->get('leads')
+            ->row();
+
+        if ($existingLead) {
+            unset($leadData['created_at']);
+            $saved = $this->db
+                ->where('id', (int) $existingLead->id)
+                ->where('property', $property)
+                ->update('leads', $leadData);
+
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => (bool) $saved,
+                    'message' => $saved
+                        ? 'Duplicate detected: Existing lead updated successfully.'
+                        : 'Failed to update the existing lead.',
+                    'duplicate' => true,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $insertId = $this->LeadModel->insert_lead($leadData);
+        if (!$insertId) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(500)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Failed to insert lead.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $valuableGuest = $this->db
+            ->select('id')
+            ->from('leads')
+            ->where('is_deleted', 0)
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('LOWER(disposition)', 'reservation')
+            ->where('amount >', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+
+        $emailUrl = base_url(
+            'EmailWorker/sendLeadEmailToassigned_person_email/' .
+            (int) $insertId . '/' .
+            ($valuableGuest ? '1' : '0')
+        );
+        $emailRequest = curl_init();
+        curl_setopt($emailRequest, CURLOPT_URL, $emailUrl);
+        curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($emailRequest, CURLOPT_CONNECTTIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_NOSIGNAL, 1);
+        curl_exec($emailRequest);
+        curl_close($emailRequest);
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Lead created successfully.',
+                'leadId' => (int) $insertId,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
+    }
 
     public function get_call_history()
     {
@@ -489,136 +706,241 @@ class Leads extends CI_Controller
         $this->load->view('agent/include/footer');
     }
 
-    public function update_lead()
+    public function get_lead_details()
     {
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode(['status' => 'error', 'message' => 'Method not allowed.']));
+        }
 
+        $scope = $this->get_agent_scope();
+        $leadId = (int) $this->input->post('lead_id');
+        $agent = $this->session->userdata('agent_session');
 
-        $id   = $this->input->post('lead_id');
-        $lead = $this->Comman_model->getData('leads', ['id' => $id]);
+        if ($scope === null || $leadId <= 0) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => 'error',
+                    'message' => 'Invalid lead request.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $lead = $this->db
+            ->where('id', $leadId)
+            ->where('property', (int) $scope['hotel_id'])
+            ->where('is_deleted', 0)
+            ->get('leads')
+            ->row();
 
         if (!$lead) {
-            echo json_encode(['status' => false, 'message' => 'Lead not found']);
-            return;
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(404)
+                ->set_output(json_encode([
+                    'status' => 'error',
+                    'message' => 'Lead not found for the selected hotel.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
         }
 
-        $property   = $this->input->post('property');
-        $type       = $this->input->post('type', true);
-        $status     = $this->input->post('status', true);
-        $disposition = $this->input->post('disposition', true);
-        $department  = $this->input->post('leadDepartment', true);
+        if (
+            (int) $lead->is_assigned === 1 &&
+            $lead->assigned_person_user_role === 'agent' &&
+            (int) $lead->assigned_to !== (int) $agent['id']
+        ) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode([
+                    'status' => 'error',
+                    'message' => 'This lead is assigned to another agent.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
-        $hotel_data      = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
-        $department_data = $this->Common_model->getdata('departments', ['department_id' => $type]);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => 'success',
+                'data' => $lead,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ], JSON_UNESCAPED_UNICODE));
+    }
 
-        $lead_type       = $this->input->post('lead_type', true);
+    public function update_lead()
+    {
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode(['status' => false, 'message' => 'Method not allowed.']));
+        }
 
-        $department       = $this->input->post('department', true);
+        $scope = $this->get_agent_scope();
+        $agent = $this->session->userdata('agent_session');
+        $leadId = (int) $this->input->post('lead_id');
 
+        if ($scope === null || $leadId <= 0) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Invalid agent hotel scope.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $lead = $this->db
+            ->where('id', $leadId)
+            ->where('property', (int) $scope['hotel_id'])
+            ->where('is_deleted', 0)
+            ->get('leads')
+            ->row();
+
+        if (!$lead) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(404)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Lead not found for the selected hotel.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        if (
+            (int) $lead->is_assigned === 1 &&
+            $lead->assigned_person_user_role === 'agent' &&
+            (int) $lead->assigned_to !== (int) $agent['id']
+        ) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'This lead is assigned to another agent.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $property = (int) $scope['hotel_id'];
+        $type = (int) $this->input->post('type', true);
+        $department = $this->Common_model->getdata('departments', ['department_id' => $type]);
+        $errors = $this->validateLeadInput($department->department_name ?? '');
+
+        $departmentMapping = $this->db
+            ->where('staff_id', (int) $agent['id'])
+            ->where('hotel_id', $property)
+            ->where('department_id', $type)
+            ->get('staff_hotel_department_mapping')
+            ->row_array();
+
+        if (!$department || !$departmentMapping) {
+            $errors['type'] = 'Please select a department assigned to this hotel.';
+        }
+
+        $assignedUser = null;
+        $assignedTo = trim((string) $this->input->post('assigned_to', true));
+        $assignedRole = trim((string) $this->input->post('assigned_person_user_role', true));
+        if ($assignedTo !== '') {
+            $assignedUser = $this->getActiveAssignableUser($assignedTo, $assignedRole);
+            if (!$assignedUser) {
+                $errors['assigned_to'] = 'Please select an active assignable user.';
+            }
+        }
+
+        if (!empty($errors)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $phone = substr(preg_replace('/\D+/', '', (string) $this->input->post('phone_number', true)), -10);
+        $status = $this->input->post('status', true);
+        $now = date('Y-m-d H:i:s');
         $leadData = [
-            'user_name'    => $this->input->post('user_name', true),
-            'phone_number' => $this->input->post('phone_number', true),
-            'email'        => $this->input->post('email', true),
-            'date'         => $this->input->post('date', true),
-            'time'         => $this->input->post('time', true),
-            'property'     => $property,
-            'type'         => $department,
-            'status'       => $status,
-            'disposition'  => $disposition,
-            'query'        => $this->input->post('query', true),
-            'remark'       => $this->input->post('remark', true),
-            'city'         => $hotel_data->city_id ?? null,
-            'updated_on'   => date('Y-m-d H:i:s'),
-            'lead_type' => $lead_type
+            'user_name' => trim((string) $this->input->post('user_name', true)),
+            'phone_number' => $phone,
+            'email' => trim((string) $this->input->post('email', true)),
+            'user_channel' => $this->input->post('user_channel', true),
+            'type' => $type,
+            'status' => $status,
+            'disposition' => $this->input->post('disposition', true),
+            'query' => $this->input->post('query', true),
+            'remark' => $this->input->post('remark', true),
+            'lead_type' => $this->input->post('lead_type', true),
+            'purpose' => $this->input->post('purpose', true),
+            'reason' => $this->input->post('reason', true),
+            'promotional_offers' => $this->input->post('promotional_offers', true),
+            'updated_on' => $now
         ];
 
-        /** Get logged-in user ID based on role */
-        $assigned_role = $this->session->userdata('role_as');
-        if ($assigned_role === 'super_admin') {
-            $userId = $this->session->userdata('super_admin_session')['id'];
-        } elseif ($assigned_role === 'admin') {
-            $userId = $this->session->userdata('hotel_admin_session')['id'];
-        } else {
-            $userId = $this->session->userdata('agent_session')['id'];
+        $optionalFields = [
+            'booking_date', 'followup_date', 'second_followup_date', 'arrival_time',
+            'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
+            'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
+            'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
+            'time_slot_id', 'table_category_id', 'table_id', 'special_occasion',
+            'special_request'
+        ];
+        foreach ($optionalFields as $field) {
+            $fieldValue = $this->input->post($field, true);
+            if ($fieldValue !== null) {
+                $leadData[$field] = $fieldValue;
+            }
         }
 
-        /** Time tracking */
+        if ($assignedUser) {
+            $leadData['is_assigned'] = 1;
+            $leadData['assigned_to'] = (int) $assignedUser['id'];
+            $leadData['assigned_person_user_role'] = $assignedUser['user_role'];
+            $leadData['assigned_person_email'] = $assignedUser['email'];
+        }
+
         if ($status === 'Closed') {
-            $leadData['completed_time'] = date('Y-m-d H:i:s');
+            $leadData['completed_time'] = $now;
         } else {
-            $leadData['responded_time'] = date('Y-m-d H:i:s');
+            $leadData['responded_time'] = $now;
         }
 
-        /** Reservation Closed */
-        if ($disposition === 'Reservation' && strtolower($status) === 'closed') {
-            $department = strtolower($department);
+        $updated = $this->db
+            ->where('id', $leadId)
+            ->where('property', $property)
+            ->update('leads', $leadData);
 
-            if ($department === 'rooms') {
-                $leadData['checkin_date']       = $this->input->post('checkin_date');
-                $leadData['checkout_date']      = $this->input->post('checkout_date');
-                $leadData['pax']                = $this->input->post('pax');
-                $leadData['amount']             = $this->input->post('amount');
-                $leadData['reservation_number'] = $this->input->post('reservation_number');
-                $leadData['reservation_email']  = $this->input->post('reservation_email');
-
-                // File upload
-                if (!empty($_FILES['bill_attachment']['name'])) {
-                    $uploadPath = FCPATH . 'uploads/bills/';
-                    if (!is_dir($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-
-                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-                    $fileName   = $_FILES['bill_attachment']['name'];
-                    $tmpName    = $_FILES['bill_attachment']['tmp_name'];
-                    $extension  = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-                    if (!in_array($extension, $allowedExtensions)) {
-                        echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, PDF allowed.']);
-                        return;
-                    }
-
-                    $newFileName = 'bill_' . time() . '.' . $extension;
-                    $targetPath  = $uploadPath . $newFileName;
-
-                    if (move_uploaded_file($tmpName, $targetPath)) {
-                        $leadData['bill_attachment'] = $newFileName;
-                    } else {
-                        echo json_encode(['error' => 'Failed to move uploaded file.']);
-                        return;
-                    }
-                }
-            }
-
-            if ($department === 'restaurants') {
-                $leadData['booking_date'] = $this->input->post('booking_date');
-                $leadData['pax']          = $this->input->post('pax');
-                $leadData['amount']       = $this->input->post('amount');
-                $leadData['fnb_email']    = $this->input->post('fnb_email');
-            }
-
-            if ($department === 'banquets') {
-                $leadData['booking_date']  = $this->input->post('booking_date');
-                $leadData['pax']           = $this->input->post('pax');
-                $leadData['amount']        = $this->input->post('amount');
-                $leadData['banquet_email'] = $this->input->post('banquet_email');
-            }
+        if (!$updated) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(500)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Failed to update lead.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
         }
 
-        /** Shopping - Follow up - In Progress */
-        if (strpos(strtolower($disposition), 'shopping - follow up') !== false && strtolower($status) === 'in progress') {
-            $leadData['booking_enquiry_date']  = $this->input->post('booking_enquiry_date');
-            $leadData['followup_date']         = $this->input->post('followup_date');
-            $leadData['second_followup_date']  = $this->input->post('second_followup_date');
-            $leadData['followup_remark']       = $this->input->post('followup_remark');
+        $updatedLead = $this->LeadModel->get_lead_by_id_with_joins($leadId);
 
-            if ($department === 'banquets') {
-                $leadData['transfer_to_manager'] = $this->input->post('transfer_to_manager');
-            }
-        }
-
-        /** Update record */
-        $this->Comman_model->UpdateRecord('leads', $leadData, ['id' => $id]);
-
-        echo json_encode(['status' => true, 'message' => 'Lead updated successfully.']);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Lead updated successfully.',
+                'data' => $updatedLead ? (array) $updatedLead : $leadData,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ], JSON_UNESCAPED_UNICODE));
     }
+
 }

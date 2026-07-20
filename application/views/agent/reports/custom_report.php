@@ -1,331 +1,506 @@
-<!-- Content Wrapper. Contains page content -->
 <style>
-  
-  
+    .report-filter-card {
+        padding: 18px;
+        margin-bottom: 22px;
+        border: 1px solid #ececf3;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .report-filter-card .form-label {
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .report-filter-card .select2-container {
+        width: 100% !important;
+    }
+
+    .report-filter-card .select2-container .select2-selection--single {
+        height: 40px;
+        border: 1px solid #d9d9e3;
+        border-radius: 5px;
+    }
+
+    .report-filter-card .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 38px;
+        padding-left: 12px;
+    }
+
+    .report-filter-card .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 38px;
+    }
+
+    .report-filter-card .lead-filter-multiselect-source {
+        display: none !important;
+    }
+
+    .report-filter-card .lead-filter-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    .report-filter-card .lead-filter-multiselect-toggle {
+        align-items: center;
+        background: #fff !important;
+        border: 1px solid #d9d9e3;
+        border-radius: 5px;
+        box-shadow: none !important;
+        color: #495057 !important;
+        display: flex;
+        height: 40px;
+        justify-content: space-between;
+        padding: 0 12px;
+        text-align: left;
+        width: 100%;
+    }
+
+    .report-filter-card .lead-filter-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        flex: 0 0 auto;
+        margin-left: 10px;
+    }
+
+    .report-filter-card .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle,
+    .report-filter-card .lead-filter-multiselect-toggle:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        outline: 0;
+    }
+
+    .report-filter-card .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    .report-filter-card .lead-filter-multiselect-menu {
+        background: #fff;
+        border: 1px solid #d2d2d2;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1080;
+    }
+
+    .report-filter-card .lead-filter-multiselect.is-open .lead-filter-multiselect-menu {
+        display: block;
+    }
+
+    .report-filter-card .lead-filter-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 10px;
+        margin: 0;
+        padding: 9px 14px;
+    }
+
+    .report-filter-card .lead-filter-multiselect-option:hover {
+        background: #f4f4f4;
+    }
+
+    .report-filter-card .lead-filter-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 20px;
+        height: 20px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 20px !important;
+    }
+
+    .report-filter-card .lead-filter-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #report-filter-error {
+        display: none;
+        margin-top: 10px;
+    }
+
+    #server-side-data-table th,
+    #server-side-data-table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
     .theme-primary .dataTables_wrapper .dataTables_paginate .paginate_button.current {
         border: 1px solid #23211d;
-        background-color: #ffffff;
+        background-color: #fff;
     }
 </style>
+
 <div class="content-wrapper">
     <div class="container-full">
-        <!-- Content Header (Page header) -->
-         <div class="custom-page-header">
+        <div class="custom-page-header">
             <div class="header-left">
                 <div class="header-icon-box"><i class="fa fa-file-text"></i></div>
                 <div class="header-content">
                     <h2 class="header-title">Lead Reports</h2>
                     <ol class="custom-breadcrumb">
-                        <li><i class="fa fa-home"></i></li><li>Agent Admin</li>
-                        <li><i class="fa fa-angle-right"></i></li><li class="active"> Custom Report</li>
+                        <li><i class="fa fa-home"></i></li>
+                        <li>Agent</li>
+                        <li><i class="fa fa-angle-right"></i></li>
+                        <li class="active">Custom Report</li>
                     </ol>
                 </div>
             </div>
-            <div class="header-banner"><img src="<?= base_url('assets/new_img-add.png'); ?>" alt=""></div>
+            <div class="header-banner">
+                <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+            </div>
         </div>
-        <!-- Main content -->
+
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box new_table_box">
                         <div class="box-header">
                             <h4 class="box-title">Lead Reports</h4>
-                            <div class="float-right" style="float:right;">
-
-
-
-
-
-                            </div>
                         </div>
                         <div class="box-body">
-
-                            <?php
-                            // Check if any GET filter is set
-                            $filterOpen = !empty($this->input->get());
-                            ?>
-
-                            <div>
-
-                                <form method="GET" action="<?= base_url('reports-agent'); ?>" class="mb-4 px-3">
-                                    <div class="row align-items-end" >
-                                        <!-- Existing filters (City, Property, etc.) -->
-
-
-
-                                        <div class="col-md-2">
-                                            <label for="status" class="form-label">Status</label>
-                                            <select name="status" class="form-select">
-                                                <option value="">All</option>
-                                                <option value="Open" <?= ($this->input->get('status') == 'Open') ? 'selected' : ''; ?>>Open</option>
-                                                <option value="In Progress" <?= ($this->input->get('status') == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                                                <option value="Closed" <?= ($this->input->get('status') == 'Closed') ? 'selected' : ''; ?>>Closed</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label for="channel" class="form-label">Lead Source</label>
-                                            <select name="channel" class="form-select">
-                                                <option value="">All</option>
-                                                <?php foreach ($user_channel as $channelObj): ?>
-                                                    <?php $channel = $channelObj->user_channel; ?>
-                                                    <option value="<?= $channel ?>" <?= ($this->input->get('channel') == $channel) ? 'selected' : ''; ?>>
-                                                        <?= strtoupper($channel) ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-
-
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-2">
-                                            <label for="disposition" class="form-label">Stage</label>
-                                            <select class="form-select" name="disposition">
-                                                <option value="">Select Stage</option>
-                                                <option value="Information/Enquiry" <?= ($this->input->get('disposition') == 'Information/Enquiry') ? 'selected' : ''; ?>>Information/Enquiry</option>
-                                                <option value="Reservation" <?= ($this->input->get('disposition') == 'Reservation') ? 'selected' : ''; ?>>Reservation</option>
-                                                <option value="Shopping - Follow up" <?= ($this->input->get('disposition') == 'Shopping - Follow up') ? 'selected' : ''; ?>>Shopping - Follow up</option>
-                                                <option value="Shopping - No Follow up" <?= ($this->input->get('disposition') == 'Shopping - No Follow up') ? 'selected' : ''; ?>>Shopping - No Follow up</option>
-                                                <option value="Shopping - Follow up (Reservation)" <?= ($this->input->get('disposition') == 'Shopping - Follow up (Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (Reservation)</option>
-                                                <option value="Shopping - Follow up (No Reservation)" <?= ($this->input->get('disposition') == 'Shopping - Follow up (No Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (No Reservation)</option>
-                                                <option value="Trash" <?= ($this->input->get('disposition') == 'Trash') ? 'selected' : ''; ?>>Trash</option>
-                                                <option value="Enquiry not received" <?= ($this->input->get('disposition') == 'Enquiry not received') ? 'selected' : ''; ?>>Enquiry not received</option>
-                                                <option value="Denied" <?= ($this->input->get('disposition') == 'Denied') ? 'selected' : ''; ?>>Denied</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Date Filters -->
-                                        <!-- 🆕 Date Filters -->
-                                        <div class="col-md-3">
-                                            <label for="start_date" class="form-label">Start Date</label>
-                                            <input type="date" id="start_date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="end_date" class="form-label">End Date</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
-                                        </div>
-                                        <div class="-10">
-                                            <button type="submit" class="btn btn-primary p_l_r-10">Filter</button>
-                                        </div>
-
+                            <form id="report-filter-form" class="report-filter-card" autocomplete="off">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_property" class="form-label">Hotel</label>
+                                        <select id="report_property" class="form-select report-select2" disabled>
+                                            <option value="<?= (int) ($property->hotel_id ?? 0); ?>" selected>
+                                                <?= htmlspecialchars($property->hotel_name ?? 'Selected Hotel', ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
+                                        </select>
                                     </div>
-                                </form>
-                            </div>
 
-                            <div class="">
-
-
-                            </div>
-
-                            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
-                                <div class="container mt-4">
-                                    <table id="leadReportTable" class="display nowrap table table-bordered" style="width:100%">
-                                        <thead>
-                                            <tr>
-
-                                                <th>Lead ID</th>
-                                                <th>City</th>
-                                                <th>Property</th>
-                                                <th>Department</th>
-                                                <th>Guest Name</th>
-                                                <th>Phone</th>
-                                                <th>Email</th>
-                                                <th>Status</th>
-                                                <th>Stage</th>
-                                                <th>Source</th>
-                                                <th>Created Date</th>
-                                                <th>Response Date</th>
-                                                <th>Completed Date</th>
-                                                <th>Booking Date</th>
-                                                <th>Check In Date</th>
-                                                <th>Check Out Date</th>
-
-                                                <th>Follow up 1</th>
-                                                <th>Follow up 2</th>
-                                                <th>Pax</th>
-
-                                                <th>Query</th>
-                                                <th>Remark</th>
-                                                <th>Revenue</th>
-                                                <th>Materialization</th>
-
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($leads as $lead): ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($lead['id']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['city_name']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['hotel_name']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['department_name']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['user_name']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['phone_number']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['email']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['status']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['disposition']) ?></td>
-                                                    <td><?= htmlspecialchars($lead['user_channel']) ?></td>
-
-
-
-
-                                                    <td><?= date('d M Y, h:i A', strtotime($lead['created_at'])) ?></td>
-
-
-                                                    <td>
-                                                        <?= !empty($lead['responded_time']) && strtotime($lead['responded_time']) ? date('d M Y, h:i A', strtotime($lead['responded_time'])) : 'NA' ?>
-                                                    </td>
-                                                    <td>
-                                                        <?= !empty($lead['completed_time']) && strtotime($lead['completed_time']) ? date('d M Y, h:i A', strtotime($lead['completed_time'])) : 'NA' ?>
-                                                    </td>
-
-
-
-
-
-
-
-
-                                                    <td>
-                                                        <?= !empty($lead['booking_enquiry_date']) && strtotime($lead['booking_enquiry_date']) ? date('d M Y, h:i A', strtotime($lead['booking_enquiry_date'])) : 'NA' ?>
-                                                    </td>
-                                                    <td>
-                                                        <?= !empty($lead['checkin_date']) && strtotime($lead['checkin_date']) ? date('d M Y, h:i A', strtotime($lead['checkin_date'])) : 'NA' ?>
-                                                    </td>
-                                                    <td>
-                                                        <?= !empty($lead['checkout_date']) && strtotime($lead['checkout_date']) ? date('d M Y, h:i A', strtotime($lead['checkout_date'])) : 'NA' ?>
-                                                    </td>
-
-                                                    <td>
-                                                        <?= !empty($lead['followup_date']) && strtotime($lead['followup_date']) ? date('d M Y', strtotime($lead['followup_date'])) : 'NA' ?>
-                                                    </td>
-                                                    <td>
-                                                        <?= !empty($lead['second_followup_date']) && strtotime($lead['second_followup_date']) ? date('d M Y', strtotime($lead['second_followup_date'])) : 'NA' ?>
-                                                    </td>
-                                                    <td>
-                                                        <?= !empty($lead['pax']) ? htmlspecialchars($lead['pax']) : 'NA' ?>
-                                                    </td>
-
-
-
-
-                                                    <td><?= nl2br(htmlspecialchars($lead['query'])) ?></td>
-                                                    <td><?= nl2br(htmlspecialchars($lead['remark'])) ?></td>
-                                                    <td>
-                                                        <?= number_format((float)($lead['amount'] ?? 0), 2) ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php
-                                                        $isMaterialized = (
-                                                            strtolower($lead['disposition']) === 'reservation' &&
-                                                            strtolower($lead['status']) === 'closed'
-                                                        );
-
-                                                        echo $isMaterialized ? 'Yes' : 'No';
-                                                        ?>
-                                                    </td>
-
-
-
-                                                </tr>
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_department" class="form-label">Department</label>
+                                        <select id="report_department" name="department[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Departments" multiple>
+                                            <?php foreach ($departments as $department): ?>
+                                                <option value="<?= (int) $department->department_id; ?>">
+                                                    <?= htmlspecialchars($department->department_name, ENT_QUOTES, 'UTF-8'); ?>
+                                                </option>
                                             <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
+                                        </select>
+                                    </div>
 
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_status" class="form-label">Status</label>
+                                        <select id="report_status" name="status[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Statuses" multiple>
+                                            <?php foreach ($statuses as $status): ?>
+                                                <option value="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_channel" class="form-label">Lead Source</label>
+                                        <select id="report_channel" name="channel[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Sources" multiple>
+                                            <?php foreach ($channels as $channel): ?>
+                                                <option value="<?= htmlspecialchars($channel, ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <?= htmlspecialchars(strtoupper($channel), ENT_QUOTES, 'UTF-8'); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_disposition" class="form-label">Stage</label>
+                                        <select id="report_disposition" name="disposition[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Stages" multiple>
+                                            <?php foreach ($dispositions as $disposition): ?>
+                                                <option value="<?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_start_date" class="form-label">Start Date</label>
+                                        <input type="date" id="report_start_date" name="start_date" class="form-control">
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6">
+                                        <label for="report_end_date" class="form-label">End Date</label>
+                                        <input type="date" id="report_end_date" name="end_date" class="form-control">
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">Filter</button>
+                                        <button type="button" id="reset-report-filters" class="btn btn-primary-light">Reset</button>
+                                    </div>
                                 </div>
+                                <div id="report-filter-error" class="text-danger" role="alert"></div>
+                            </form>
+
+                            <div class="table-responsive">
+                                <table id="server-side-data-table" class="text-fade table table-bordered display" style="width:100%">
+                                    <thead>
+                                        <tr class="text-dark">
+                                            <th>Lead ID</th>
+                                            <th>City</th>
+                                            <th>Property</th>
+                                            <th>Department</th>
+                                            <th>Guest Name</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Stage</th>
+                                            <th>Source</th>
+                                            <th>Created Date</th>
+                                            <th>Response Date</th>
+                                            <th>Completed Date</th>
+                                            <th>Booking Date</th>
+                                            <th>Check In Date</th>
+                                            <th>Check Out Date</th>
+                                            <th>Follow up 1</th>
+                                            <th>Follow up 2</th>
+                                            <th>Pax</th>
+                                            <th>Query</th>
+                                            <th>Remark</th>
+                                            <th>Revenue</th>
+                                            <th>Materialization</th>
+                                        </tr>
+                                    </thead>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- /.col -->
+        </section>
     </div>
-    <!-- /.row -->
-    </section>
-    <!-- /.content -->
 </div>
-</div>
-
-
-
-
-
 
 <script>
-    $(document).ready(function() {
-        $('#toggle-filters').click(function() {
-            $('#filter-section').slideToggle();
+    window.CSRF = window.CSRF || {
+        name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+        hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+    };
+
+    window.addEventListener('load', function () {
+        var $ = window.jQuery;
+        if (!$ || !$.fn.DataTable) {
+            return;
+        }
+
+        $('.report-select2').each(function () {
+            var $select = $(this);
+            $select.select2({
+                width: '100%',
+                placeholder: $select.data('placeholder') || '',
+                allowClear: !$select.prop('disabled')
+            });
         });
-    });
-</script>
 
+        function syncReportMultiSelect($select, $widget) {
+            var selectedValues = ($select.val() || []).map(String);
+            var $items = $widget.find('.lead-filter-multiselect-item');
+            var selectedCount = selectedValues.length;
+            var total = $items.length;
 
+            $items.each(function () {
+                $(this).prop('checked', selectedValues.indexOf(String($(this).val())) !== -1);
+            });
 
+            var $selectAll = $widget.find('.lead-filter-multiselect-all');
+            $selectAll.prop('checked', total > 0 && selectedCount === total);
+            $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
 
-<!-- ✅ jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+            var summary = $select.data('placeholder') || 'Select Options';
+            if (selectedCount > 0 && selectedCount === total) {
+                summary = 'All selected (' + selectedCount + ')';
+            } else if (selectedCount > 0) {
+                summary = selectedCount + ' selected';
+            }
 
+            $widget.find('.lead-filter-multiselect-summary').text(summary);
+        }
 
+        function initializeReportMultiSelect(select) {
+            var $select = $(select);
+            var placeholder = $select.data('placeholder') || 'Select Options';
 
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
 
+            $select.next('.lead-filter-multiselect').remove();
 
-<script>
-    $(document).ready(function() {
+            var $widget = $('<div>', { class: 'lead-filter-multiselect' });
+            var $toggle = $('<button>', {
+                type: 'button',
+                class: 'lead-filter-multiselect-toggle',
+                'aria-expanded': 'false',
+                'aria-haspopup': 'true',
+                'aria-label': placeholder
+            }).append($('<span>', {
+                class: 'lead-filter-multiselect-summary',
+                text: placeholder
+            }));
+            var $menu = $('<div>', {
+                class: 'lead-filter-multiselect-menu',
+                role: 'group',
+                'aria-label': placeholder
+            });
+            var $options = $select.find('option').filter(function () {
+                return String(this.value).trim() !== '' && !this.disabled;
+            });
 
+            if ($options.length) {
+                $menu.append(
+                    $('<label>', {
+                        class: 'lead-filter-multiselect-option lead-filter-multiselect-select-all'
+                    }).append(
+                        $('<input>', {
+                            type: 'checkbox',
+                            class: 'lead-filter-multiselect-all'
+                        }),
+                        $('<span>', { text: 'Select all' })
+                    )
+                );
 
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
-        var yy = String(today.getFullYear()).slice(-2);
-        var fileName = 'Lead_Report_' + dd + '-' + mm + '-' + yy;
+                $options.each(function () {
+                    $menu.append(
+                        $('<label>', { class: 'lead-filter-multiselect-option' }).append(
+                            $('<input>', {
+                                type: 'checkbox',
+                                class: 'lead-filter-multiselect-item',
+                                value: this.value
+                            }),
+                            $('<span>').text($(this).text().trim())
+                        )
+                    );
+                });
+            } else {
+                $menu.append($('<div>', {
+                    class: 'lead-filter-multiselect-option text-muted',
+                    text: 'No options available'
+                }));
+            }
 
+            $widget.append($toggle, $menu);
+            $select.after($widget);
 
-        $('#leadReportTable').DataTable({
-            dom: 'Bfrtip',
-            pageLength: 50,
+            $toggle.on('click', function () {
+                var isOpen = !$widget.hasClass('is-open');
+                $('.report-filter-card .lead-filter-multiselect').not($widget)
+                    .removeClass('is-open')
+                    .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+                $widget.toggleClass('is-open', isOpen);
+                $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-all', function () {
+                var values = this.checked
+                    ? $widget.find('.lead-filter-multiselect-item').map(function () {
+                        return this.value;
+                    }).get()
+                    : [];
+                $select.val(values).trigger('change');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-item', function () {
+                var values = $widget.find('.lead-filter-multiselect-item:checked').map(function () {
+                    return this.value;
+                }).get();
+                $select.val(values).trigger('change');
+            });
+
+            $select.off('change.reportMultiSelect').on('change.reportMultiSelect', function () {
+                syncReportMultiSelect($select, $widget);
+            });
+
+            syncReportMultiSelect($select, $widget);
+        }
+
+        $('#report_department, #report_status, #report_channel, #report_disposition').each(function () {
+            initializeReportMultiSelect(this);
+        });
+
+        $(document).off('click.reportMultiSelect').on('click.reportMultiSelect', function (event) {
+            if (!$(event.target).closest('.lead-filter-multiselect').length) {
+                $('.report-filter-card .lead-filter-multiselect').removeClass('is-open')
+                    .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+            }
+        });
+
+        var $error = $('#report-filter-error');
+        var table = $('#server-side-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ordering: true,
+            searching: true,
             scrollX: true,
-            ordering: false,
-            responsive: true,
-            stripeClasses: [],
-            info: true,
             autoWidth: false,
-            destroy: true,
-            buttons: [{
-                    extend: 'colvis',
-                    text: 'Select Columns'
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            order: [[10, 'desc']],
+            ajax: {
+                url: <?= json_encode(base_url('agent/Reports/data_table')); ?>,
+                type: 'POST',
+                data: function (data) {
+                    data.department = $('#report_department').val() || [];
+                    data.status = $('#report_status').val() || [];
+                    data.channel = $('#report_channel').val() || [];
+                    data.disposition = $('#report_disposition').val() || [];
+                    data.start_date = $('#report_start_date').val();
+                    data.end_date = $('#report_end_date').val();
+                    data[window.CSRF.name] = window.CSRF.hash;
                 },
-                {
-                    extend: 'excelHtml5',
-                    title: 'Lead Report',
-                    filename: fileName,
-                    exportOptions: {
-                        columns: ':visible'
+                dataSrc: function (json) {
+                    if (json.csrfHash) {
+                        window.CSRF.hash = json.csrfHash;
                     }
+                    $error.hide().text('');
+                    return json.data || [];
                 },
-                {
-                    extend: 'csvHtml5',
-                    title: 'Lead Report',
-                    filename: fileName,
-                    exportOptions: {
-                        columns: ':visible'
+                error: function (xhr) {
+                    var response = xhr.responseJSON || {};
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
                     }
-                },
-                {
-                    extend: 'pdfHtml5',
-                    title: 'Lead Report',
-                    filename: fileName,
-                    orientation: 'landscape',
-                    pageSize: 'A4',
-                    exportOptions: {
-                        columns: ':visible'
-                    }
-                },
-                {
-                    extend: 'print',
-                    title: 'Lead Report',
-                    exportOptions: {
-                        columns: ':visible'
-                    }
+                    $error.text(response.message || 'Unable to load the report. Please refresh and try again.').show();
                 }
-            ]
+            }
+        });
+
+        $('#report-filter-form').on('submit', function (event) {
+            event.preventDefault();
+            var start = $('#report_start_date').val();
+            var end = $('#report_end_date').val();
+
+            if (start && end && start > end) {
+                $error.text('Start Date cannot be after End Date.').show();
+                return;
+            }
+
+            $error.hide().text('');
+            table.ajax.reload();
+        });
+
+        $('#reset-report-filters').on('click', function () {
+            $('#report-filter-form')[0].reset();
+            $('.lead-filter-multiselect-source').val([]).trigger('change');
+            $error.hide().text('');
+            table.search('').ajax.reload();
         });
     });
 </script>
