@@ -104,7 +104,7 @@
 						</li>
 						<li class="btn-group d-lg-inline-flex d-none">
 							<div class="app-menu">
-								<div class="search-bx mx-5">
+								<div class="search-bx mx-5 header_select_new_box">
 									<?php
 									$agent = $this->session->userdata('agent_session');
 
