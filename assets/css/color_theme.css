@@ -266,7 +266,7 @@
   color: #ffffff !important; }
 
 .bg-white {
-  background-color: #ffffff; }
+  background-color: #ffffff!important; }
 
 .bg-transparent {
   background-color: transparent !important; }

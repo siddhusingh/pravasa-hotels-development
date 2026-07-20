@@ -422,8 +422,8 @@
     }
 
     #leadForm .table-multiselect-menu {
-        background: #d2d2d2;
-        border: 1px solid #c5c5c5;
+         background: #fff;
+        border: 1px solid #fff;
         border-radius: 6px;
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
         display: none;
