@@ -165,7 +165,7 @@
                             <div>
 
                                 <form method="GET" action="<?= base_url('admin-reports-lead-by-departments'); ?>" class="mb-4 lead-report-filters">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
                                         <div class="col-md-3">

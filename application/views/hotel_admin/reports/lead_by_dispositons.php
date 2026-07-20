@@ -154,11 +154,6 @@
                         <div class="box-header">
                             <h4 class="box-title">Stage-wise Lead Report</h4>
                             <div class="float-right" style="float:right;">
-
-
-
-
-
                             </div>
                         </div>
                         <div class="box-body">
@@ -171,7 +166,7 @@
                             <div>
 
                                 <form method="GET" action="<?= base_url('admin-reports-lead-by-dispositions'); ?>" class="mb-4 lead-report-filters">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
                                         <div class="col-md-3">
@@ -211,10 +206,7 @@
                                 </form>
                             </div>
 
-                            <div class="">
-
-
-                            </div>
+                          
 
                             <div class="table-responsive" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
 

@@ -165,10 +165,10 @@
                             <div class="row">
 
                                 <form method="GET" action="<?= base_url('admin-reports-property-materialized'); ?>" class="mb-4 lead-report-filters">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="property" class="form-label">Property</label>
                                             <select name="property[]" class="form-control filter-input report-multiselect-source" multiple id="property" disabled aria-readonly="true">
                                                 <?php foreach ($properties as $property) { ?>
@@ -177,7 +177,7 @@
                                             </select>
                                         </div>
                                         <!-- Department -->
-                                        <div class="col-md-3 d-none">
+                                        <div class="col-md-4 d-none">
                                             <label for="department" class="form-label">Department</label>
                                             <select name="department[]" class="form-control filter-input report-multiselect-source" multiple id="department">
                                                 <?php foreach ($departments as $dept) { ?>
@@ -191,11 +191,11 @@
 
                                         <!-- Date Filters -->
                                         <!-- 🆕 Date Filters -->
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="start_date" class="form-label">Start Date</label>
                                             <input type="date" id="start_date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="end_date" class="form-label">End Date</label>
                                             <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
                                         </div>

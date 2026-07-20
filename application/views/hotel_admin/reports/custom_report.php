@@ -182,7 +182,7 @@ Output:
 
                                 <div id="filter-section" class="lead-report-filters">
                                     <div class="mb-4">
-                                        <div class="row g-3 align-items-end">
+                                        <div class="row align-items-end">
                                             <!-- Department -->
                                             <div class="col-md-4">
                                                 <label for="department" class="form-label">Department</label>

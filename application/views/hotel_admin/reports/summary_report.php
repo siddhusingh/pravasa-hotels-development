@@ -170,7 +170,7 @@ Output:
                             <div class="row">
 
                                 <form method="GET" action="<?= base_url('admin-reports-summary'); ?>" class="mb-4 lead-report-filters">
-                                    <div class="row g-3 align-items-end">
+                                    <div class="row align-items-end">
                                         <!-- Hotel property is fixed from the logged-in session. -->
                                         <!-- Department -->
                                         <div class="col-md-4">

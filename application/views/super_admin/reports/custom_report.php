@@ -179,7 +179,7 @@
 
                                 <div id="filter-section" class="lead-report-filters">
                                     <div class="mb-4">
-                                        <div class="row g-3 align-items-end">
+                                        <div class="row align-items-end">
                                             <!-- Property -->
                                             <div class="col-md-3">
                                                 <label for="property" class="form-label">Property</label>

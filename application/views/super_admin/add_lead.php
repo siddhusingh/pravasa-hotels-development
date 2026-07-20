@@ -340,7 +340,7 @@
 <style>
     /* The shared new_table_box style sets label icons to white. Keep them visible here. */
     .box.new_table_box #leadForm .form-group label i.fa {
-        color: #8f79e8 !important;
+        color: #000 !important;
         display: inline-block;
         width: 18px;
         margin-right: 6px !important;

@@ -126,13 +126,7 @@
 											margin-bottom: 20px;
 										} */
 
-										#filter_lead_stats_count .form-label {
-											font-size: 13px;
-											font-weight: 700;
-											color: #475569;
-											margin-bottom: 6px;
-											display: block;
-										}
+										
 
 										/* #filter_lead_stats_count .form-control,
 										#filter_lead_stats_count .form-select {
@@ -232,7 +226,7 @@
 
 
 									<form id="filter_lead_stats_count">
-										<div class="row g-3 align-items-end">
+										<div class="row align-items-end">
 
 											<!-- Property -->
 											<div class="col-md-3">
@@ -895,47 +889,7 @@
 						margin-bottom: 6px;
 					}
 
-					.quick-filter-box .form-control,
-					.quick-filter-box .form-select {
-
-						border-radius: 12px;
-						border: 1px solid #dbe3ee;
-						font-size: 14px;
-						/* box-shadow: none !important; */
-						transition: .25s ease;
-					}
-
-					.quick-filter-box .form-control:focus,
-					.quick-filter-box .form-select:focus {
-						border-color: #2563eb;
-						box-shadow: 0 0 0 3px rgba(37, 99, 235, .08) !important;
-					}
-
-					.quick-filter-box .btn-primary {
-						border: none;
-						border-radius: 12px;
-						font-weight: 700;
-						background: linear-gradient(135deg, #2563eb, #1d4ed8);
-						box-shadow: 0 8px 16px rgba(37, 99, 235, .18);
-						transition: .25s ease;
-					}
-
-					.quick-filter-box .btn-primary:hover {
-						transform: translateY(-2px);
-						box-shadow: 0 12px 20px rgba(37, 99, 235, .24);
-					}
-
-					.quick-filter-box .row {
-						row-gap: 14px;
-					}
-
-					@media(max-width:768px) {
-
-						.quick-filter-box .box-header,
-						.quick-filter-box .box-body {
-							padding: 15px;
-						}
-					}
+				
 				</style>
 
 
@@ -952,11 +906,11 @@
 								<div id="">
 
 									<form>
-										<div class="row g-3 align-items-end">
+										<div class="row align-items-end">
 
 											<form method="GET" action="<?= base_url('manage-leads'); ?>" class="mb-4 px-3">
 
-												<div class="row g-3 align-items-end">
+												<div class="row align-items-end">
 
 													<!-- Property -->
 													<div class="col-md-3">
@@ -1290,9 +1244,9 @@
 				if ($.fn.select2) {
 					$('#filter_lead_stats_count select, .quick-filter-box select').each(function() {
 						const $select = $(this);
-						this.style.setProperty('height', '56px', 'important');
-						this.style.setProperty('min-height', '56px', 'important');
-						this.style.setProperty('max-height', '56px', 'important');
+						this.style.setProperty();
+						this.style.setProperty();
+						this.style.setProperty();
 
 						if (!$select.hasClass('select2-hidden-accessible')) {
 							$select.select2({
@@ -1308,10 +1262,10 @@
 
 						[$container, $selection].forEach(function($element) {
 							if ($element.length) {
-								$element[0].style.setProperty('height', '56px', 'important');
-								$element[0].style.setProperty('min-height', '56px', 'important');
-								$element[0].style.setProperty('max-height', '56px', 'important');
-								$element[0].style.setProperty('box-sizing', 'border-box', 'important');
+								$element[0].style.setProperty();
+								$element[0].style.setProperty();
+								$element[0].style.setProperty();
+								$element[0].style.setProperty();
 							}
 						});
 
