@@ -651,7 +651,7 @@
                            </div>
                         </div>
                      </div>
-                     <div class="table-responsive" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
+                     <div class="table-responsive " style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
                         <div class="container my-4">
                            <div id="lead_container"></div>
                            <button id="load_more_btn" class="btn btn-primary mt-3">Load More</button>
@@ -669,7 +669,7 @@
 </div>
 </div>
 <div class="modal modal-lg" id="statusHistoryModal" tabindex="-1" aria-labelledby="statusHistoryLabel" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
             <h5 class="modal-title" id="statusHistoryLabel">Lead Status History</h5>
@@ -683,16 +683,18 @@
       </div>
    </div>
 </div>
+
+
 <!-- Call Confirmation Modal -->
 <div class="modal modal-lg" id="confirmCallModal" tabindex="-1" aria-labelledby="confirmCallModalLabel" aria-hidden="true">
-   <div class="modal-dialog">
-      <div class="modal-content">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content onfirm-call-ui">
          <div class="modal-header">
             <h5 class="modal-title">Confirm Call</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            Are you sure you want to call <strong id="call-number"></strong>?
+            Are you sure you want to call <strong id="call-number"></strong>
          </div>
          <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -703,7 +705,7 @@
 </div>
 <!-- Email Modal -->
 <div class="modal modal-lg" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
-   <div class="modal-dialog">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <form id="emailForm">
          <div class="modal-content">
             <div class="modal-header">
@@ -735,17 +737,18 @@
       </form>
    </div>
 </div>
+
 <!-- Call Progress Modal -->
 <div class="modal modal-lg" id="callProgressModal" tabindex="-1" aria-hidden="true">
-   <div class="modal-dialog" role="document">
-      <div class=" modal-content text-center p-4">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+      <div class=" modal-content call-ui text-center p-4">
          <div class="modal-header">
             <h5 class="modal-title">Calling...</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
          </div>
          <div class="modal-body">
             <div class="call-animation">
-               📞
+               📞 <i class="fas fa-phone-alt"></i>
             </div>
             <h4>Calling <span id="progress-number"></span></h4>
             <h5>Duration: <span id="call-timer">00:00</span></h5>
@@ -755,12 +758,12 @@
 </div>
 <!-- Call History Modal -->
 <div class="modal modal-lg" id="callHistoryModal" tabindex="-1" aria-hidden="true">
-   <div class="modal-dialog modal-xl">
+   <div class="modal-dialog  modal-dialog-scrollable modal-xl">
       <!-- Increased size for wider view -->
       <div class="modal-content">
          <div class="modal-header">
             <h5 class="modal-title">Call History</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
          </div>
          <div class="modal-body">
             <div class="table-responsive">
@@ -1143,7 +1146,7 @@
 <!-- Button trigger modal -->
 <!-- Modal -->
 <div class="modal modal-lg" id="editLeadDetails" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editLeadDetailsLabel" aria-hidden="true">
-   <div class="modal-dialog modal-xl">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
       <div class="modal-content">
          <div class="modal-header">
             <h1 class="modal-title fs-5" id="editLeadDetailsLabel">Edit Lead Info</h1>
@@ -1379,8 +1382,8 @@
 </div>
 <!-- Lead Details Modal -->
 <div class="modal modal-lg" id="viewLeadModal" tabindex="-1" aria-labelledby="viewLeadModalLabel" aria-hidden="true">
-   <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl modal-dialog-scrollable">
+      <div class="modal-content lead-modal-ui">
          <div class="modal-header">
             <h5 class="modal-title" id="viewLeadModalLabel">Lead Details</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1394,6 +1397,8 @@
       </div>
    </div>
 </div>
+
+
 <script>
    $(document).ready(function() {
 
@@ -3989,7 +3994,7 @@ ${data.bill_attachment ? `
 
 <!-- Bootstrap Modal -->
 <div class="modal modal-lg" id="availabilityModal" tabindex="-1">
-   <div class="modal-dialog modal-lg">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
       <div class="modal-content">
          <div class="modal-header">
             <h5 class="modal-title">Room Availability</h5>
@@ -4124,9 +4129,8 @@ ${data.bill_attachment ? `
    }
 </script>
 
-
 <div class="modal fade" id="whatsappTemplateModal" tabindex="-1">
-   <div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-dialog-centered">
       <div class="modal-content">
 
          <div class="modal-header">
@@ -4143,14 +4147,14 @@ ${data.bill_attachment ? `
             <input type="hidden" id="wa_user_name">
             <input type="hidden" id="wa_created_at">
 
-            <div class="form-group">
+            <div class="form-group whatsapp-select-box">
                <label class="form-label">Select WhatsApp Template</label>
                <select class="form-control" id="whatsapp_template_id">
                   <option value="">-- Select Template --</option>
                </select>
             </div>
 
-            <div class="text-end mt-3">
+            <div class="text-end mt-3 whatsapp-action">
                <button type="button" class="btn btn-success" id="sendWhatsappMessage">
                   <i class="fa fa-paper-plane"></i> Send Message
                </button>

@@ -81,12 +81,12 @@
                 </div>
             </div>
             <div class="modal-body ps-3 pe-3 row">
-                <div class="col-sm-6 mb-3">
+                <div class="col-sm-12 mb-3">
                     <label for="team_group_name" class="form-label">Group Name <span class="required-asterisk">*</span></label>
                     <input type="text" class="form-control" id="team_group_name" name="team_group_name" placeholder="Enter group name">
                     <span class="validation text-danger" id="team_group_name_error"></span>
                 </div>
-                <div class="col-sm-6 mb-3">
+                <div class="col-sm-12 mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
                         <option value="1" selected>Active</option>

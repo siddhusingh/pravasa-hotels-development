@@ -22234,10 +22234,15 @@ body .main-header .navbar .nav > li.search-box > a:hover, body .main-header .nav
     padding-left: 20px; }
   .treeview-menu > li {
     margin: 5px; }
-    .treeview-menu > li > a {
-      padding: 11px 10px;
-      display: block;
-      font-size: 1rem; }
+.treeview-menu > li > a {
+    padding: 11px 10px;
+    display: block;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
       .treeview-menu > li > a > i {
         width: 20px;
         padding-right: 20px;
@@ -33917,6 +33922,7 @@ li.treeview.menu-open {
     -moz-border-radius:8px;
     -ms-border-radius:8px;
     -o-border-radius:8px;
+    height:46px ;
 }
 
 .new_table_box .box-header button:hover{
@@ -34813,4 +34819,12 @@ button.dropdown-item.multiselect-all {
 }
 .multiselect-container {
   box-shadow: none!important;
+}
+/* ============  */
+#filter-section .lead-filter-multiselect-menu , .select2-container--default .select2-results__option--selected{
+    background: #fff!important;
+}
+.theme-primary .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: #fff!important;
+  color: #000!important;
 }
