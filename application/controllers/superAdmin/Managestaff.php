@@ -62,7 +62,8 @@ class Managestaff extends MY_Controller
         $name = trim($this->input->post('name'));
         $email = trim($this->input->post('email'));
         $phone = trim($this->input->post('phone'));
-        $password = $this->input->post('password');
+        $password = (string) $this->input->post('password');
+        $passwordPattern = '/^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/';
         $hotels = json_decode($this->input->post('hotels'), true);
         $departments = json_decode($this->input->post('departments'), true);
         $levels = json_decode($this->input->post('levels'), true);
@@ -79,12 +80,12 @@ class Managestaff extends MY_Controller
             $errors['phone'] = 'Phone number must be 10 digits';
         }
 
-        if ($requirePassword && ($password === '' || strlen($password) < 6)) {
-            $errors['password'] = 'Password must be at least 6 characters';
+        if ($requirePassword && ($password === '' || !preg_match($passwordPattern, $password))) {
+            $errors['password'] = 'Password must be at least 6 characters long, contain at least one number and one special character';
         }
 
-        if (!$requirePassword && $password !== '' && strlen($password) < 6) {
-            $errors['password'] = 'Password must be at least 6 characters';
+        if (!$requirePassword && $password !== '' && !preg_match($passwordPattern, $password)) {
+            $errors['password'] = 'Password must be at least 6 characters long, contain at least one number and one special character';
         }
 
         if (!is_array($hotels) || !is_array($departments) || !is_array($levels)) {
