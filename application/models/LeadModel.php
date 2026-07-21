@@ -1717,6 +1717,44 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
             ->row() ?? null;
     }
 
+    /**
+     * Resolve a lead assignee without confusing equal numeric IDs across the
+     * Agent, Hotel Admin and Super Admin tables.
+     */
+    public function get_assignee_contact($assignee_id, $role)
+    {
+        $assignee_id = (int) $assignee_id;
+        if ($assignee_id <= 0) {
+            return null;
+        }
+
+        if ($role === 'agent') {
+            return $this->db
+                ->select('name, email')
+                ->where('id', $assignee_id)
+                ->get('staff_members')
+                ->row() ?? null;
+        }
+
+        if ($role === 'admin') {
+            return $this->db
+                ->select('name, email')
+                ->where('id', $assignee_id)
+                ->get('hotel_admins')
+                ->row() ?? null;
+        }
+
+        if ($role === 'super_admin') {
+            return $this->db
+                ->select('full_name AS name, email', false)
+                ->where('id', $assignee_id)
+                ->get('super_admin')
+                ->row() ?? null;
+        }
+
+        return null;
+    }
+
     public function update_followup_one_status($lead_id, $status)
     {
         if (empty($lead_id)) {
@@ -2116,7 +2154,6 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
         return $this->db
             ->where('status', 'Open')          // ✅ only open leads
             ->where('is_deleted', 0)
-            ->where('property', 1)
             ->where('esc_next_followup_at <=', $now)
             ->where('esc_follow_up_level <', 4)
             ->get('leads')
@@ -2143,7 +2180,15 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
             ->select('
             l.*,
             h.hotel_name,
-            h.email as hotel_admin_email,
+            (
+                SELECT ha.email
+                FROM hotel_admins ha
+                WHERE ha.hotel_id = l.property
+                  AND ha.is_deleted = 0
+                  AND ha.status = 1
+                ORDER BY ha.is_primary DESC, ha.id ASC
+                LIMIT 1
+            ) as hotel_admin_email,
             d.department_name
         ')
             ->from('leads l')

@@ -68,15 +68,18 @@ class Followup_cron extends CI_Controller
 
         if (!$lead) return;
 
-        // Get agent email
-        $agent = $this->Leadmodel->get_agent_email($lead->assigned_to);
-        if (!$agent || !filter_var($agent->email, FILTER_VALIDATE_EMAIL)) {
-            log_message('error', "First follow-up email skipped because the assigned agent has no valid email. Lead ID: $lead_id");
+        // Resolve the recipient from the role stored on the lead.
+        $assignee = $this->Leadmodel->get_assignee_contact(
+            $lead->assigned_to,
+            $lead->assigned_person_user_role
+        );
+        if (!$assignee || !filter_var($assignee->email, FILTER_VALIDATE_EMAIL)) {
+            log_message('error', "First follow-up email skipped because the assignee has no valid email. Lead ID: $lead_id");
             return false;
         }
 
-        $agent_email = $agent->email;
-        $agent_name = $agent->name;
+        $agent_email = $assignee->email;
+        $agent_name = $assignee->name;
 
         $lead->agent_name = $agent_name;
 
@@ -133,15 +136,18 @@ class Followup_cron extends CI_Controller
 
         if (!$lead) return;
 
-        // Get agent email
-        $agent = $this->Leadmodel->get_agent_email($lead->assigned_to);
-        if (!$agent || !filter_var($agent->email, FILTER_VALIDATE_EMAIL)) {
-            log_message('error', "Second follow-up email skipped because the assigned agent has no valid email. Lead ID: $lead_id");
+        // Resolve the recipient from the role stored on the lead.
+        $assignee = $this->Leadmodel->get_assignee_contact(
+            $lead->assigned_to,
+            $lead->assigned_person_user_role
+        );
+        if (!$assignee || !filter_var($assignee->email, FILTER_VALIDATE_EMAIL)) {
+            log_message('error', "Second follow-up email skipped because the assignee has no valid email. Lead ID: $lead_id");
             return false;
         }
 
-        $agent_email = $agent->email;
-        $agent_name = $agent->name;
+        $agent_email = $assignee->email;
+        $agent_name = $assignee->name;
 
         $lead->agent_name = $agent_name;
 
