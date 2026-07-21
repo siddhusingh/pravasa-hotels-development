@@ -10,6 +10,7 @@ class SalesVisits extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Mycloud_config_model');
         $this->load->helper('secure');
 
 
@@ -299,7 +300,7 @@ class SalesVisits extends CI_Controller
                     $hotel_code = $hotel_code_Data->hotel_code;
 
                     $requestBody = [
-                        "chain_code"          => "E0701",
+                        "chain_code"          => $this->Mycloud_config_model->get_runtime_config()->chain_code,
                         "hotel_code"          => "E0701",
                         "confirmation_number" => $confirmationNumber,
                         "confirmation_type"   => "EXT",
@@ -640,19 +641,24 @@ class SalesVisits extends CI_Controller
     public function send_booking_to_mycloud($requestBody)
     {
 
+        $config = $this->Mycloud_config_model->get_runtime_config();
+        if (!$config->is_ready) {
+            return $this->mycloudRequestError('MYCLOUD_CONFIG_MISSING', 'MyCloud PMS configuration is incomplete.');
+        }
+
         // Convert PHP array to JSON
         $jsonBody = json_encode($requestBody);
 
 
 
         // MyCloud API URL
-        $url = "https://live2.mycloudhospitality.com/mycloud_WebAPI2.0/api/pms/reservation/processbookings";
+        $url = $this->Mycloud_config_model->get_endpoint('processbookings');
 
         // Required headers
         $headers = [
             "Content-Type: application/json",
-            "authCODE: lfgLTH0m25gFGYStsAEBAJ9j6Vg45kk",
-            "clientID: SAYAJI"
+            "authCODE: {$config->auth_code}",
+            "clientID: {$config->client_id}"
         ];
 
         // cURL setup
@@ -671,10 +677,20 @@ class SalesVisits extends CI_Controller
         file_put_contents(APPPATH . 'logs/mycloud_response.log', $response . PHP_EOL, FILE_APPEND);
 
         if ($error) {
-            return [
-                "status"  => false,
-                "error"   => $error
-            ];
+            return $this->mycloudRequestError('MYCLOUD_CONNECTION_ERROR', $error);
+        }
+
+        $decoded_response = json_decode($response, true);
+        if (!is_array($decoded_response) || !isset($decoded_response['status_code'])) {
+            return $this->mycloudRequestError('MYCLOUD_INVALID_RESPONSE', 'MyCloud returned an invalid response.');
+        }
+
+        if ((string) $decoded_response['status_code'] === '200' && empty($decoded_response['bookings'][0])) {
+            return $this->mycloudRequestError('MYCLOUD_INVALID_RESPONSE', 'MyCloud did not return booking details.');
+        }
+
+        if ((string) $decoded_response['status_code'] !== '200' && empty($decoded_response['error']['ErrorDescription'])) {
+            return $this->mycloudRequestError('MYCLOUD_API_ERROR', 'MyCloud rejected the booking request.');
         }
 
         return [
@@ -683,11 +699,27 @@ class SalesVisits extends CI_Controller
         ];
     }
 
+    private function mycloudRequestError($code, $message)
+    {
+        return [
+            'status' => false,
+            'error' => $message,
+            'response' => json_encode([
+                'status_code' => '500',
+                'bookings' => [],
+                'error' => [
+                    'ErrorCode' => $code,
+                    'ErrorDescription' => $message
+                ]
+            ])
+        ];
+    }
+
     public function search_bookings($booking_id = "100528")
     {
         // === Request body ===
         $requestBody = [
-            "chain_code"                => "E0701",
+            "chain_code"                => $this->Mycloud_config_model->get_runtime_config()->chain_code,
             "hotel_code"                => "E0701",
             "booking_status"            => "CHECKEDOUT",
             "confirmation_number"       => "",
@@ -712,9 +744,18 @@ class SalesVisits extends CI_Controller
         $jsonData = json_encode($requestBody, JSON_UNESCAPED_SLASHES);
 
         // === API credentials ===
-        $url        = "https://live2.mycloudhospitality.com/mycloud_WebAPI2.0/api/pms/reservation/searchbookings";
-        $authCode   = "lfgLTH0m25gFGYStsAEBAJ9j6Vg45kk";
-        $clientId   = "SAYAJI";
+        $config = $this->Mycloud_config_model->get_runtime_config();
+        if (!$config->is_ready) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'MyCloud PMS configuration is incomplete.'
+            ]);
+            return;
+        }
+
+        $url        = $this->Mycloud_config_model->get_endpoint('searchbookings');
+        $authCode   = $config->auth_code;
+        $clientId   = $config->client_id;
 
         // === cURL Setup ===
         $curl = curl_init();
@@ -850,6 +891,17 @@ class SalesVisits extends CI_Controller
     {
         $requestData = $this->input->post(); // data from AJAX
 
+        $config = $this->Mycloud_config_model->get_runtime_config();
+        if (!$config->is_ready) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'MyCloud PMS configuration is incomplete. Please contact the administrator.'
+            ]);
+            return;
+        }
+
+        $requestData['chain_code'] = $config->chain_code;
+
         $apiResponse = $this->getRoomRateAvailability($requestData); // your previous function
 
         // Convert JSON string → array
@@ -866,11 +918,19 @@ class SalesVisits extends CI_Controller
 
     public function getRoomRateAvailability($requestData)
     {
+        $config = $this->Mycloud_config_model->get_runtime_config();
+        if (!$config->is_ready) {
+            return json_encode([
+                'status_code' => '500',
+                'message' => 'MyCloud PMS configuration is incomplete.'
+            ]);
+        }
+
         // Convert array to JSON
         $jsonData = json_encode($requestData);
 
         // API URL
-        $url = "https://live2.mycloudhospitality.com/mycloud_WebAPI2.0/api/pms/reservation/getroomrateavailability";
+        $url = $this->Mycloud_config_model->get_endpoint('getroomrateavailability');
 
         $curl = curl_init();
 
@@ -886,8 +946,8 @@ class SalesVisits extends CI_Controller
             CURLOPT_POSTFIELDS => $jsonData,
             CURLOPT_HTTPHEADER => array(
                 "Content-Type: application/json",
-                "authCODE: lfgLTH0m25gFGYStsAEBAJ9j6Vg45kk",
-                "clientID: SAYAJI"
+                "authCODE: {$config->auth_code}",
+                "clientID: {$config->client_id}"
             ),
         ));
 

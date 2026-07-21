@@ -63,10 +63,9 @@ class Job_scheduler extends CI_Controller
                     $follow_up_data['follow_up_time'] = $follow_up_time;
 
 
-                    $datas = $this->Comman_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
-
-
-                    $this->level_1_follow_up($each_lead->id);
+                    if ($this->level_1_follow_up($each_lead->id)) {
+                        $this->Common_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
+                    }
 
 
                     // second level of follow up
@@ -93,10 +92,9 @@ class Job_scheduler extends CI_Controller
                     $follow_up_data['follow_up_time'] = $follow_up_time;
 
 
-                    $datas = $this->Comman_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
-
-
-                    $this->level_2_follow_up($each_lead->id);
+                    if ($this->level_2_follow_up($each_lead->id)) {
+                        $this->Common_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
+                    }
 
 
                     // third level of follow up
@@ -123,10 +121,9 @@ class Job_scheduler extends CI_Controller
                     $follow_up_data['follow_up_time'] = $follow_up_time;
 
 
-                    $datas = $this->Comman_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
-
-
-                    $this->level_3_follow_up($each_lead->id);
+                    if ($this->level_3_follow_up($each_lead->id)) {
+                        $this->Common_model->UpdateRecord('leads', $follow_up_data, array('id' => $each_lead->id));
+                    }
 
                     // fourth level of follow up
 
@@ -148,7 +145,7 @@ class Job_scheduler extends CI_Controller
 
         $subject = " Level 1 Reminder: Lead Follow-up - {$lead->user_name}";
         $message = $this->compose_email_template($lead, 1);
-        $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
+        return $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
     }
 
     public function level_2_follow_up($lead_id)
@@ -162,7 +159,7 @@ class Job_scheduler extends CI_Controller
 
         $subject = " Level 2 Escalation: Lead Requires Action - {$lead->user_name}";
         $message = $this->compose_email_template($lead, 2);
-        $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
+        return $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
     }
 
     public function level_3_follow_up($lead_id)
@@ -176,7 +173,7 @@ class Job_scheduler extends CI_Controller
 
         $subject = " Level 3 Urgent Escalation: Lead Still Pending - {$lead->user_name}";
         $message = $this->compose_email_template($lead, 3);
-        $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
+        return $this->Mail_model->sendMailSMTP_uv('Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
     }
 
     public function level_4_follow_up($lead_id)
@@ -190,7 +187,7 @@ class Job_scheduler extends CI_Controller
 
         $subject = "🚨 Level 4 Critical Escalation: Immediate Action Required - {$lead->user_name}";
         $message = $this->compose_email_template($lead, 4);
-        $this->Mail_model->sendMailSMTP_uv('Senior Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
+        return $this->Mail_model->sendMailSMTP_uv('Senior Manager', ['umeshvishwakarma6192@gmail.com'], $subject, $message);
     }
 
 

@@ -64,6 +64,9 @@ $route['super-admin-dashbaord'] = 'superAdmin/main/index';
 $route['super-admin-profile'] = 'superAdmin/main/profile';
 $route['super-admin-sign-out'] = 'superAdmin/login/logout';
 $route['forget-password-super-admin'] = 'superAdmin/login/forget_password';
+$route['check-email-super-admin'] = 'superAdmin/login/check_email';
+$route['reset-password-super-admin/(:any)'] = 'superAdmin/login/reset_password/$1';
+$route['update-password-super-admin'] = 'superAdmin/login/update_password';
 $route['update-super-admin-profile'] = 'superAdmin/main/update_profile';
 $route['super-admin-account-settings'] = 'superAdmin/main/account_settings';
 
@@ -421,7 +424,9 @@ $route['software-settings']     = 'superAdmin/Software_settings/index';
 $route['software-settings/upload-branding'] = 'superAdmin/Software_settings/upload_branding';
 $route['software-settings/update-basic'] = 'superAdmin/Software_settings/update_basic';
 $route['software-settings/update-smtp'] = 'superAdmin/Software_settings/update_smtp';
+$route['software-settings/test-smtp'] = 'superAdmin/Software_settings/test_smtp';
 $route['software-settings/update-airtel'] = 'superAdmin/Software_settings/update_airtel';
+$route['software-settings/update-mycloud'] = 'superAdmin/Software_settings/update_mycloud';
 
 $route['manage-hotel-admins']     = 'superAdmin/HotelAdmins/index';
 $route['insert-hotel-admin']     = 'superAdmin/HotelAdmins/insert';

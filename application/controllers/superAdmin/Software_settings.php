@@ -19,10 +19,13 @@ class Software_settings extends CI_Controller
     {
         $this->load->model('Settings_model');
         $this->load->model('Airtel_config_model');
+        $this->load->model('Mycloud_config_model');
         $data['settings'] = $this->Settings_model->get_settings();
         $data['smtp_has_password'] = !empty($data['settings']->smtp_pass);
         $data['airtel_config'] = $this->Airtel_config_model->get_config();
         $data['airtel_has_api_key'] = !empty($data['airtel_config']->api_key_encrypted);
+        $data['mycloud_config'] = $this->Mycloud_config_model->get_config();
+        $data['mycloud_has_auth_code'] = !empty($data['mycloud_config']->auth_code_encrypted);
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/software_settings', $data);
@@ -153,6 +156,56 @@ class Software_settings extends CI_Controller
         ]);
     }
 
+    public function test_smtp()
+    {
+        if ($this->input->method(true) !== 'POST') {
+            $this->output->set_status_header(405);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Method not allowed',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $recipient_email = trim((string) $this->input->post('test_email'));
+        if ($recipient_email === '' || !filter_var($recipient_email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Please enter a valid email address',
+                'errors' => ['test_email' => 'Enter a valid email address'],
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $this->load->model(['Settings_model', 'Mail_model']);
+        $settings = $this->Settings_model->get_settings();
+        $email_body = $this->load->view('emails/test-email', [
+            'from_name' => $settings ? (string) $settings->smtp_from_name : ''
+        ], true);
+
+        if (!$this->Mail_model->sendMailSMTP_uv(
+            '',
+            [$recipient_email],
+            'SMTP Test Email',
+            $email_body
+        )) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to send test email. Please verify the saved SMTP settings and recipient address.',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'status' => true,
+            'message' => 'Test email sent successfully to ' . $recipient_email,
+            'csrfHash' => $this->security->get_csrf_hash()
+        ]);
+    }
+
     public function update_airtel()
     {
         if ($this->input->method(true) !== 'POST') {
@@ -235,6 +288,90 @@ class Software_settings extends CI_Controller
         echo json_encode([
             'status' => true,
             'message' => 'Airtel configuration saved successfully',
+            'csrfHash' => $this->security->get_csrf_hash()
+        ]);
+    }
+
+    public function update_mycloud()
+    {
+        if ($this->input->method(true) !== 'POST') {
+            $this->output->set_status_header(405);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Method not allowed',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $this->load->model('Mycloud_config_model');
+        $existing_config = $this->Mycloud_config_model->get_config();
+
+        $api_url = rtrim(trim((string) $this->input->post('mycloud_api_url')), '/');
+        $auth_code = trim((string) $this->input->post('mycloud_auth_code'));
+        $client_id = trim((string) $this->input->post('mycloud_client_id'));
+        $chain_code = trim((string) $this->input->post('mycloud_chain_code'));
+        $errors = [];
+
+        $api_url = preg_replace('#/(processbookings|searchbookings|getroomrateavailability)$#i', '', $api_url);
+
+        if ($api_url === '' || !filter_var($api_url, FILTER_VALIDATE_URL) || strtolower((string) parse_url($api_url, PHP_URL_SCHEME)) !== 'https') {
+            $errors['mycloud_api_url'] = 'Enter a valid HTTPS API base URL';
+        } elseif (strlen($api_url) > 500) {
+            $errors['mycloud_api_url'] = 'API Base URL cannot exceed 500 characters';
+        }
+
+        if ($auth_code === '' && empty($existing_config->auth_code_encrypted)) {
+            $errors['mycloud_auth_code'] = 'Auth Code is required';
+        }
+
+        if ($client_id === '') {
+            $errors['mycloud_client_id'] = 'Client ID is required';
+        } elseif (strlen($client_id) > 150) {
+            $errors['mycloud_client_id'] = 'Client ID cannot exceed 150 characters';
+        }
+
+        if ($chain_code === '') {
+            $errors['mycloud_chain_code'] = 'Chain Code is required';
+        } elseif (strlen($chain_code) > 100) {
+            $errors['mycloud_chain_code'] = 'Chain Code cannot exceed 100 characters';
+        }
+
+        if (!empty($errors)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Please correct the highlighted fields',
+                'errors' => $errors,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $mycloud_data = [
+            'api_url' => $api_url,
+            'client_id' => $client_id,
+            'chain_code' => $chain_code
+        ];
+
+        if ($auth_code !== '') {
+            $this->load->library('encryption');
+            $mycloud_data['auth_code_encrypted'] = $this->encryption->encrypt($auth_code);
+        }
+
+        if (!$this->Mycloud_config_model->save_config($mycloud_data)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to save MyCloud configuration. Please run the PMS configuration migration first.',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'status' => true,
+            'message' => 'MyCloud PMS configuration saved successfully',
+            'clientId' => $client_id,
+            'chainCode' => $chain_code,
             'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }

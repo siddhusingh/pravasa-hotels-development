@@ -149,7 +149,10 @@
 
                                     </div>
 
-                                    <div class="col-12 mt-3 text-end">
+                                    <div class="col-12 mt-3 d-flex justify-content-between align-items-center">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#testSmtpModal">
+                                            <i class="fa fa-paper-plane mr-1"></i> Send Test Email
+                                        </button>
                                         <button type="submit" class="btn btn-primary">
                                             Save SMTP Settings
                                         </button>
@@ -215,6 +218,39 @@
                                 </div>
                             </form>
 
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="section_title mb-0">PMS Integrations</h5>
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mycloudConfigModal">
+                                        <i class="fa fa-plus mr-1"></i>
+                                        <?= $mycloud_config ? 'Edit PMS' : 'Add PMS' ?>
+                                    </button>
+                                </div>
+
+                                <?php if ($mycloud_config) { ?>
+                                    <div class="card border rounded p-3 mb-0">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                            <div>
+                                                <h5 class="mb-1">MyCloud Hospitality</h5>
+                                                <div class="text-muted">
+                                                    Client ID: <?= html_escape($mycloud_config->client_id) ?>
+                                                    <span class="mx-2">&bull;</span>
+                                                    Chain Code: <?= html_escape($mycloud_config->chain_code) ?>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-primary mt-2 mt-md-0" data-toggle="modal" data-target="#mycloudConfigModal">
+                                                <i class="fa fa-edit mr-1"></i> Edit Configuration
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php } else { ?>
+                                    <div class="card border rounded p-4 mb-0 text-center">
+                                        <h5 class="mb-1">No PMS has been configured</h5>
+                                        <p class="text-muted mb-0">Use Add PMS to configure MyCloud Hospitality.</p>
+                                    </div>
+                                <?php } ?>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -226,7 +262,95 @@
     </div>
 </div>
 <!-- /.content-wrapper -->
-<!-- Modal -->
+
+<div class="modal fade" id="mycloudConfigModal" tabindex="-1" role="dialog" aria-labelledby="mycloudConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="mycloudConfigModalLabel">MyCloud PMS Configuration</h5>
+                    <small class="text-muted">Configure the MyCloud account used by the booking integration.</small>
+                </div>
+            </div>
+
+            <form id="mycloudSettingsForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>API Base URL</label>
+                            <input type="url" name="mycloud_api_url" class="form-control"
+                                value="<?= html_escape($mycloud_config->api_url ?? '') ?>"
+                                maxlength="500"
+                                placeholder="https://example.com/api/pms/reservation">
+                            <small class="text-danger error"></small>
+                            <small class="form-text text-muted">Enter the common URL before processbookings, searchbookings or getroomrateavailability.</small>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label>Auth Code</label>
+                            <input type="password" name="mycloud_auth_code" class="form-control"
+                                placeholder="<?= $mycloud_has_auth_code ? 'Leave blank to keep existing Auth Code' : 'Enter MyCloud Auth Code' ?>"
+                                autocomplete="new-password">
+                            <small class="text-danger error"></small>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label>Client ID</label>
+                            <input type="text" name="mycloud_client_id" class="form-control"
+                                value="<?= html_escape($mycloud_config->client_id ?? '') ?>"
+                                maxlength="150"
+                                placeholder="Enter MyCloud Client ID">
+                            <small class="text-danger error"></small>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label>Chain Code</label>
+                            <input type="text" name="mycloud_chain_code" class="form-control"
+                                value="<?= html_escape($mycloud_config->chain_code ?? '') ?>"
+                                maxlength="100"
+                                placeholder="Enter MyCloud Chain Code">
+                            <small class="text-danger error"></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save MyCloud Configuration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="testSmtpModal" tabindex="-1" role="dialog" aria-labelledby="testSmtpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="testSmtpModalLabel">Send Test Email</h5>
+                    <small class="text-muted">The test message will only be sent to the email entered below.</small>
+                </div>
+            </div>
+
+            <form id="testSmtpForm">
+                <div class="modal-body">
+                    <label>Recipient Email</label>
+                    <input type="email" name="test_email" class="form-control"
+                        maxlength="254" placeholder="Enter a valid email address" autocomplete="email">
+                    <small class="text-danger error"></small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-paper-plane mr-1"></i> Send Test Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
@@ -458,6 +582,28 @@
         }
     });
 
+    bindSettingsForm({
+        form: '#testSmtpForm',
+        url: "<?= base_url('software-settings/test-smtp') ?>",
+        buttonText: 'Send Test Email',
+        validate: function(form) {
+            const email = form.find('[name="test_email"]');
+            const value = $.trim(email.val());
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (value === '' || !emailRegex.test(value)) {
+                email.next('.error').text('Enter a valid email address');
+                return false;
+            }
+
+            return true;
+        },
+        onSuccess: function(form) {
+            form[0].reset();
+            $('#testSmtpModal').modal('hide');
+        }
+    });
+
     let airtelHasApiKey = <?= $airtel_has_api_key ? 'true' : 'false' ?>;
 
     bindSettingsForm({
@@ -494,6 +640,53 @@
             const apiKey = form.find('[name="api_key"]');
             airtelHasApiKey = true;
             apiKey.val('').attr('placeholder', 'Leave blank to keep existing API key');
+        }
+    });
+
+    let mycloudHasAuthCode = <?= $mycloud_has_auth_code ? 'true' : 'false' ?>;
+
+    bindSettingsForm({
+        form: '#mycloudSettingsForm',
+        url: "<?= base_url('software-settings/update-mycloud') ?>",
+        buttonText: 'Save MyCloud Configuration',
+        validate: function(form) {
+            const requiredFields = {
+                mycloud_api_url: 'API Base URL is required',
+                mycloud_client_id: 'Client ID is required',
+                mycloud_chain_code: 'Chain Code is required'
+            };
+            let isValid = true;
+
+            Object.keys(requiredFields).forEach(function(field) {
+                const input = form.find('[name="' + field + '"]');
+                if ($.trim(input.val()) === '') {
+                    input.next('.error').text(requiredFields[field]);
+                    isValid = false;
+                }
+            });
+
+            const authCode = form.find('[name="mycloud_auth_code"]');
+            if (!mycloudHasAuthCode && $.trim(authCode.val()) === '') {
+                authCode.next('.error').text('Auth Code is required');
+                isValid = false;
+            }
+
+            const apiUrl = form.find('[name="mycloud_api_url"]');
+            if ($.trim(apiUrl.val()) !== '' && !/^https:\/\//i.test($.trim(apiUrl.val()))) {
+                apiUrl.next('.error').text('Enter a valid HTTPS API base URL');
+                isValid = false;
+            }
+
+            return isValid;
+        },
+        onSuccess: function(form) {
+            const authCode = form.find('[name="mycloud_auth_code"]');
+            mycloudHasAuthCode = true;
+            authCode.val('').attr('placeholder', 'Leave blank to keep existing Auth Code');
+            $('#mycloudConfigModal').modal('hide');
+            setTimeout(function() {
+                window.location.reload();
+            }, 700);
         }
     });
 </script>

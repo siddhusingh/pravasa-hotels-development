@@ -98,20 +98,24 @@ class EmailWorker extends CI_Controller
         </div>';
 
 
-        if (count($emails) > 0) {
-            $result = $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, "", $IsvaluableGuest);
+        if (empty($emails)) {
+            log_message('error', "Lead email skipped because no mapped recipient was found for lead ID: $leadID");
+            return false;
         }
 
+        $result = $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, "", $IsvaluableGuest);
 
         if ($result === true) {
             log_message('info', "Lead email sent successfully for lead ID: $leadID");
         } else {
             log_message('error', "Lead email failed for lead ID: $leadID");
         }
+
+        return $result;
     }
 
 
-    public function sendLeadEmailToassigned_person_email($leadID = null, $IsvaluableGuest = '')
+    public function sendLeadEmailToassigned_person_email($leadID = null, $IsvaluableGuest = '', $notificationType = 'created')
     {
 
 
@@ -204,17 +208,41 @@ class EmailWorker extends CI_Controller
 
 
 
-        $subject = 'New Lead Registered: ' . ($leadData->user_name ?? 'Unknown') . ' for ' . ($department_name ?? 'Unknown') . ' - ' . date('d M Y', strtotime($leadData->created_at ?? date('Y-m-d')));
+        $notificationTypes = [
+            'created' => [
+                'subject' => 'New Lead Registered',
+                'heading' => 'New Lead Notification',
+                'intro' => 'A new lead has been registered with the following details:'
+            ],
+            'updated' => [
+                'subject' => 'Lead Updated',
+                'heading' => 'Lead Update Notification',
+                'intro' => 'An existing lead has been updated with the following details:'
+            ],
+            'reassigned' => [
+                'subject' => 'Lead Reassigned',
+                'heading' => 'Lead Reassignment Notification',
+                'intro' => 'A lead has been assigned to you with the following details:'
+            ]
+        ];
+
+        $notificationType = strtolower(trim((string) $notificationType));
+        if (!isset($notificationTypes[$notificationType])) {
+            $notificationType = 'created';
+        }
+
+        $notification = $notificationTypes[$notificationType];
+        $subject = $notification['subject'] . ': ' . ($leadData->user_name ?? 'Unknown') . ' for ' . ($department_name ?? 'Unknown') . ' - ' . date('d M Y', strtotime($leadData->created_at ?? date('Y-m-d')));
 
 
-        if ($IsvaluableGuest) {
+        if ($IsvaluableGuest && $notificationType === 'created') {
             $subject = 'New Lead From Valuable Guest: ' . ($leadData->user_name ?? 'Unknown') . ' for ' . ($department_name ?? 'Unknown') . ' - ' . date('d M Y', strtotime($leadData->created_at ?? date('Y-m-d')));
         }
 
         $message = '
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; background-color: #f9f9f9;">
-            <h2 style="color: #2c3e50;">New Lead Notification</h2>
-            <p>A new lead has been registered with the following details:</p>
+            <h2 style="color: #2c3e50;">' . htmlspecialchars($notification['heading']) . '</h2>
+            <p>' . htmlspecialchars($notification['intro']) . '</p>
             <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                 <tr><td><strong>Name</strong></td><td>' . htmlspecialchars($leadData->user_name ?? '') . '</td></tr>
                 <tr><td><strong>Phone</strong></td><td>' . htmlspecialchars($leadData->phone_number ?? '') . '</td></tr>
@@ -231,6 +259,11 @@ class EmailWorker extends CI_Controller
 
 
 
+        if (!filter_var($assigned_person_email, FILTER_VALIDATE_EMAIL)) {
+            log_message('error', "Assigned-person email skipped because no valid recipient was found for lead ID: $leadID");
+            return false;
+        }
+
         $result = $this->Mail_model->sendMailSMTP_uv('', [$assigned_person_email], $subject, $message, "", $IsvaluableGuest);
 
 
@@ -240,6 +273,8 @@ class EmailWorker extends CI_Controller
         } else {
             log_message('error', "Lead email failed for lead ID: $leadID");
         }
+
+        return $result;
     }
 
 
@@ -252,6 +287,10 @@ class EmailWorker extends CI_Controller
         $this->load->model(['Comman_model', 'Mail_model']);
 
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
+        if (!$lead) {
+            log_message('error', "Level 1 escalation email skipped because lead was not found: $lead_id");
+            return false;
+        }
 
 
         $this->db->select('staff_members.email');
@@ -283,7 +322,9 @@ class EmailWorker extends CI_Controller
         $subject = "Level 1 Escalation: Lead Pending Follow-up";
         $message = $this->buildEscalationEmailBody($lead, 1);
 
-        $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $sent = $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $this->output->set_status_header($sent ? 200 : 500);
+        return $sent;
     }
 
     public function sendEscalationL2($lead_id = null)
@@ -293,6 +334,10 @@ class EmailWorker extends CI_Controller
         $this->load->model(['Comman_model', 'Mail_model']);
 
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
+        if (!$lead) {
+            log_message('error', "Level 2 escalation email skipped because lead was not found: $lead_id");
+            return false;
+        }
 
 
 
@@ -316,7 +361,9 @@ class EmailWorker extends CI_Controller
         $subject = "Level 2 Escalation: Immediate Attention Required";
         $message = $this->buildEscalationEmailBody($lead, 2);
 
-        $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $sent = $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $this->output->set_status_header($sent ? 200 : 500);
+        return $sent;
     }
 
 
@@ -331,9 +378,13 @@ class EmailWorker extends CI_Controller
         $this->load->model(['Comman_model', 'Mail_model']);
 
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
+        if (!$lead) {
+            log_message('error', "Level 3 escalation email skipped because lead was not found: $lead_id");
+            return false;
+        }
 
 
-        $emails = [''];
+        $emails = [$lead->hotel_admin_email];
 
         $this->db->select('staff_members.email');
         $this->db->from('staff_members');
@@ -347,10 +398,6 @@ class EmailWorker extends CI_Controller
 
 
 
-        $extra_email = $lead->hotel_admin_email;
-
-        $cc_emails[] = $extra_email;
-
         // Remove duplicates
         $cc_emails = array_values(array_unique($cc_emails));
 
@@ -359,7 +406,9 @@ class EmailWorker extends CI_Controller
         $subject = "Level 3 Escalation: SLA Breach";
         $message = $this->buildEscalationEmailBody($lead, 3);
 
-        $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $sent = $this->Mail_model->sendMailSMTP_uv('', $emails, $subject, $message, $cc_emails);
+        $this->output->set_status_header($sent ? 200 : 500);
+        return $sent;
     }
 
 

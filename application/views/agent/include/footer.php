@@ -621,7 +621,6 @@ $properties = $CI->Common_model->getAllData('hotel_admin', ['hotel_code!=' => ''
          url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
          type: "POST",
          data: {
-            chain_code: "00051",
             hotel_code: hotelCode,
             date_arrive: checkin,
             date_depart: checkout,
