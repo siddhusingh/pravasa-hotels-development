@@ -695,7 +695,6 @@
             $('#password_edit_error').html('');
         } else if (!passwordRegex.test(value)) {
             $('#password_edit_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
-            $('#password').val('');
         } else {
             $('#password_edit_error').html('');
         }
@@ -956,18 +955,14 @@
 
 
 
-        var value = password;
         var passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/; // At least 6 chars, one number & one special char
 
-        if (value != "") {
-            if (!passwordRegex.test(value)) {
-                $('#password_edit_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
-                $('#password').val('');
-            } else {
-                $('#password_edit_error').html('');
-            }
-
+        if (password !== "" && !passwordRegex.test(password)) {
+            $('#password_edit_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
+            return;
         }
+
+        $('#password_edit_error').html('');
 
 
         var hotels = [];
