@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"
+    onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/dropify@0.2.2/dist/css/dropify.min.css';">
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
@@ -23,8 +26,7 @@
                     <div class="  software_settings_page">
                     
                         <div class="box-body">
-                            <form id="softwareSettingsForm" enctype="multipart/form-data">
-
+                            <form id="basicSettingsForm">
                                 <h5 class="section_title">Basic Information</h5>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -39,24 +41,25 @@
                                         <input type="text" name="site_tagline" class="form-control" value="<?= $settings->site_tagline ?? '' ?>">
 
                                     </div>
+
+                                    <div class="col-12 mt-3 text-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Basic Information
+                                        </button>
+                                    </div>
                                 </div>
+                            </form>
 
 
-                                <h5 class="section_title">Branding</h5>
-                                <div class="row">
+                            <h5 class="section_title">Branding</h5>
+                            <div class="row">
 
                                     <!-- LOGO -->
                                     <div class="col-md-4">
                                         <label>Logo</label>
-                                        <input type="file" name="logo" class="form-control">
-
-                                        <?php if (!empty($settings->logo)) { ?>
-                                            <div class="mt-1">
-                                                <a href="<?= base_url($settings->logo) ?>" target="_blank" class="text-primary">
-                                                    <i class="fa fa-eye"></i> View current logo
-                                                </a>
-                                            </div>
-                                        <?php } ?>
+                                        <input type="file" name="logo" class="branding-upload dropify"
+                                            data-default-file="<?= !empty($settings->logo) ? base_url($settings->logo) : '' ?>"
+                                            data-allowed-file-extensions="jpg jpeg png ico webp" data-max-file-size="6M">
 
                                         <small class="text-danger error"></small>
                                     </div>
@@ -64,15 +67,9 @@
                                     <!-- FAVICON -->
                                     <div class="col-md-4">
                                         <label>Favicon</label>
-                                        <input type="file" name="favicon" class="form-control">
-
-                                        <?php if (!empty($settings->favicon)) { ?>
-                                            <div class="mt-1">
-                                                <a href="<?= base_url($settings->favicon) ?>" target="_blank" class="text-primary">
-                                                    <i class="fa fa-eye"></i> View current favicon
-                                                </a>
-                                            </div>
-                                        <?php } ?>
+                                        <input type="file" name="favicon" class="branding-upload dropify"
+                                            data-default-file="<?= !empty($settings->favicon) ? base_url($settings->favicon) : '' ?>"
+                                            data-allowed-file-extensions="jpg jpeg png ico webp" data-max-file-size="6M">
 
                                         <small class="text-danger error"></small>
                                     </div>
@@ -80,21 +77,16 @@
                                     <!-- LOGIN BG -->
                                     <div class="col-md-4">
                                         <label>Login Background</label>
-                                        <input type="file" name="login_bg_image" class="form-control">
-
-                                        <?php if (!empty($settings->login_bg_image)) { ?>
-                                            <div class="mt-1">
-                                                <a href="<?= base_url($settings->login_bg_image) ?>" target="_blank" class="text-primary">
-                                                    <i class="fa fa-eye"></i> View current background
-                                                </a>
-                                            </div>
-                                        <?php } ?>
+                                        <input type="file" name="login_bg_image" class="branding-upload dropify"
+                                            data-default-file="<?= !empty($settings->login_bg_image) ? base_url($settings->login_bg_image) : '' ?>"
+                                            data-allowed-file-extensions="jpg jpeg png ico webp" data-max-file-size="6M">
 
                                         <small class="text-danger error"></small>
                                     </div>
 
-                                </div>
+                            </div>
 
+                            <form id="smtpSettingsForm">
                                 <h5 class="section_title">SMTP Settings</h5>
                                 <div class="row">
                                     <div class="col-md-3">
@@ -125,21 +117,18 @@
 
                                     </div>
 
-                                </div>
-
-                                <div class="row mt-2">
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-3">
                                         <label>Encryption</label>
                                         <select name="smtp_encryption" class="form-control">
-                                            <option value="tls">TLS</option>
-                                            <option value="ssl">SSL</option>
-                                            <option value="none">None</option>
+                                            <option value="tls" <?= ($settings->smtp_encryption ?? 'tls') === 'tls' ? 'selected' : '' ?>>TLS</option>
+                                            <option value="ssl" <?= ($settings->smtp_encryption ?? '') === 'ssl' ? 'selected' : '' ?>>SSL</option>
+                                            <option value="none" <?= ($settings->smtp_encryption ?? '') === 'none' ? 'selected' : '' ?>>None</option>
                                         </select>
                                         <small class="text-danger error"></small>
 
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-3">
                                         <label>From Email</label>
                                         <input type="email" name="smtp_from_email" class="form-control"
                                             value="<?= $settings->smtp_from_email ?? '' ?>">
@@ -147,21 +136,20 @@
 
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-3">
                                         <label>From Name</label>
                                         <input type="text" name="smtp_from_name" class="form-control"
                                             value="<?= $settings->smtp_from_name ?? '' ?>">
                                         <small class="text-danger error"></small>
 
                                     </div>
-                                </div>
 
-                                <div class="mt-4 text-end">
-                                    <button type="submit" class="btn btn-primary">
-                                        Save Settings
-                                    </button>
+                                    <div class="col-12 mt-3 text-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            Save SMTP Settings
+                                        </button>
+                                    </div>
                                 </div>
-
                             </form>
 
                         </div>
@@ -179,6 +167,8 @@
 
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script defer src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"
+    onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/dropify@0.2.2/dist/js/dropify.min.js';"></script>
 <script>
     // validation rules for comments
     toastr.options = {
@@ -212,77 +202,161 @@
 <script type="text/javascript">
     // add Sales Users code start from here
 
-    $('#softwareSettingsForm').on('submit', function(e) {
-        e.preventDefault();
+    $(function() {
+        const brandingInputs = $('.dropify');
 
-        let isValid = true;
-        let form = $(this);
-
-        // Clear old errors
-        form.find('.error').text('');
-
-        // TEXT / SELECT / EMAIL required fields
-        form.find('.required').each(function() {
-            if ($.trim($(this).val()) === '') {
-                $(this).next('.error').text('This field is required');
-                isValid = false;
-            }
-        });
-
-        // FILE required fields
-        form.find('.required-file').each(function() {
-            if ($(this).get(0).files.length === 0) {
-                $(this).next('.error').text('File is required');
-                isValid = false;
-            }
-        });
-
-        // Email validation
-        let emailField = $('input[name="smtp_from_email"]');
-        let emailVal = emailField.val().trim();
-        let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (emailVal === '') {
-            emailField.next('.error').text('Email is required');
-            isValid = false;
-        } else if (!emailRegex.test(emailVal)) {
-            emailField.next('.error').text('Enter a valid email');
-            isValid = false;
+        if ($.fn.dropify) {
+            brandingInputs.dropify();
         }
 
-        // Stop if validation fails
-        if (!isValid) {
-            return false;
-        }
+        brandingInputs.on('change', function() {
+            const input = this;
+            const file = input.files && input.files[0];
 
-        // Submit via AJAX
-        let formData = new FormData(this);
-        formData.append(window.CSRF.name, window.CSRF.hash);
-
-        $.ajax({
-            url: "<?= base_url('superAdmin/Software_settings/update') ?>",
-            type: "POST",
-            data: formData,
-            contentType: false,
-            processData: false,
-            dataType: "json",
-            beforeSend: function() {
-                $('button[type="submit"]').prop('disabled', true).text('Saving...');
-            },
-            success: function(res) {
-                if (res.csrfHash) {
-                    window.CSRF.hash = res.csrfHash;
-                }
-                if (res.status) {
-                    alert('Settings updated successfully');
-                    location.reload();
-                } else {
-                    alert(res.message);
-                }
-            },
-            complete: function() {
-                $('button[type="submit"]').prop('disabled', false).text('Save Settings');
+            if (!file) {
+                return;
             }
+
+            const field = input.name;
+            const extension = file.name.split('.').pop().toLowerCase();
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'ico', 'webp'];
+
+            if (!allowedExtensions.includes(extension) || file.size > (6048 * 1024)) {
+                toastr.error('Please select a JPG, JPEG, PNG, ICO or WEBP image up to 6 MB');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append(field, file);
+            formData.append(window.CSRF.name, window.CSRF.hash);
+
+            $.ajax({
+                url: "<?= base_url('software-settings/upload-branding') ?>",
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                beforeSend: function() {
+                    $(input).prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+
+                    if (!response.status) {
+                        toastr.error(response.message || 'Unable to upload branding image');
+                        return;
+                    }
+
+                    toastr.success(response.message);
+                },
+                error: function(xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.csrfHash) {
+                        window.CSRF.hash = xhr.responseJSON.csrfHash;
+                    }
+                    toastr.error('Unable to upload branding image');
+                },
+                complete: function() {
+                    $(input).prop('disabled', false);
+                }
+            });
         });
+    });
+
+    function showSectionErrors(form, errors) {
+        Object.keys(errors || {}).forEach(function(field) {
+            form.find('[name="' + field + '"]').next('.error').text(errors[field]);
+        });
+    }
+
+    function bindSettingsForm(config) {
+        $(config.form).on('submit', function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const button = form.find('button[type="submit"]');
+            form.find('.error').text('');
+
+            if (config.validate && !config.validate(form)) {
+                return;
+            }
+
+            const formData = new FormData(this);
+            formData.append(window.CSRF.name, window.CSRF.hash);
+
+            $.ajax({
+                url: config.url,
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                beforeSend: function() {
+                    button.prop('disabled', true).text('Saving...');
+                },
+                success: function(response) {
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+
+                    if (response.status) {
+                        toastr.success(response.message);
+                    } else {
+                        showSectionErrors(form, response.errors);
+                        toastr.error(response.message || 'Unable to update settings');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.csrfHash) {
+                        window.CSRF.hash = xhr.responseJSON.csrfHash;
+                    }
+                    toastr.error('Unable to update settings');
+                },
+                complete: function() {
+                    button.prop('disabled', false).text(config.buttonText);
+                }
+            });
+        });
+    }
+
+    bindSettingsForm({
+        form: '#basicSettingsForm',
+        url: "<?= base_url('software-settings/update-basic') ?>",
+        buttonText: 'Save Basic Information',
+        validate: function(form) {
+            const title = form.find('[name="site_title"]');
+
+            if ($.trim(title.val()) === '') {
+                title.next('.error').text('Site title is required');
+                return false;
+            }
+
+            return true;
+        }
+    });
+
+    bindSettingsForm({
+        form: '#smtpSettingsForm',
+        url: "<?= base_url('software-settings/update-smtp') ?>",
+        buttonText: 'Save SMTP Settings',
+        validate: function(form) {
+            const email = form.find('[name="smtp_from_email"]');
+            const value = $.trim(email.val());
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (value === '') {
+                email.next('.error').text('Email is required');
+                return false;
+            }
+
+            if (!emailRegex.test(value)) {
+                email.next('.error').text('Enter a valid email');
+                return false;
+            }
+
+            return true;
+        }
     });
 </script>

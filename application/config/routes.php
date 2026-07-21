@@ -418,6 +418,9 @@ $route['whatsapp-templates-update']     = 'superAdmin/Whatsapp_templates/update'
 $route['whatsapp-templates-delete']     = 'superAdmin/Whatsapp_templates/delete';
 $route['whatsapp-templates-details']     = 'superAdmin/Whatsapp_templates/getDetails';
 $route['software-settings']     = 'superAdmin/Software_settings/index';
+$route['software-settings/upload-branding'] = 'superAdmin/Software_settings/upload_branding';
+$route['software-settings/update-basic'] = 'superAdmin/Software_settings/update_basic';
+$route['software-settings/update-smtp'] = 'superAdmin/Software_settings/update_smtp';
 
 $route['manage-hotel-admins']     = 'superAdmin/HotelAdmins/index';
 $route['insert-hotel-admin']     = 'superAdmin/HotelAdmins/insert';
