@@ -33,8 +33,8 @@
 
 
     ?>
-    <div class="card shadow-sm mb-4 p-3 rounded-4 border <?= $statusClass; ?>" id="lead_card-<?= $lead['id'] ?>">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="card crm-card shadow-sm mb-4 p-3 rounded-4 <?= $statusClass; ?>" id="lead_card-<?= $lead['id'] ?>">
+       <div class="crm-card-header d-flex justify-content-between align-items-start mb-3 flex-wrap">
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <i class="fa fa-map-marker" aria-hidden="true"></i>
                 <strong><?= $lead['city_name']; ?> - <?= $lead['hotel_name']; ?></strong>
@@ -43,70 +43,69 @@
                 <?= $businessBadge ?>
 
             </div>
+            <div class="lead_edtid_broder">
+                <div style="">
+                    <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
+                        <?php $lead_history_route = 'view-agents-leads'; ?>
+                        <a class="badge  text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
+                    <?php else: ?>
+                        <span class="badge bg-secondary-light">New Guest</span>
+                    <?php endif; ?>
 
-            <div style="margin-left:100px">
-                <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
-                    <?php $lead_history_route = 'view-agents-leads'; ?>
-                    <a class="badge bg-warning-light text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
-                <?php else: ?>
-                    <span class="badge bg-secondary-light">New Guest</span>
-                <?php endif; ?>
 
+                    <?php
+                    $logged_in_role      = $this->session->userdata('role_as');
+                    $agentSession        = $this->session->userdata('agent_session');
+                    $logged_in_user_id   = $agentSession['id'] ?? null;
 
-                <?php
-                $logged_in_role      = $this->session->userdata('role_as');
-                $agentSession        = $this->session->userdata('agent_session');
-                $logged_in_user_id   = $agentSession['id'] ?? null;
+                    // normalize status
+                    $lead_status = strtolower(trim($lead['status']));
 
-                // normalize status
-                $lead_status = strtolower(trim($lead['status']));
+                    // Allow:
+                    // 1. Assigned user
+                    // 2. super_admin
+                    // 3. hotel_admin
+                    // and lead should not be closed
 
-                // Allow:
-                // 1. Assigned user
-                // 2. super_admin
-                // 3. hotel_admin
-                // and lead should not be closed
-
-                $canTransfer =
-                    (
+                    $canTransfer =
                         (
-                            ($lead['is_assigned'] == 1) &&
-                            ($lead['assigned_to'] == $logged_in_user_id)
+                            (
+                                ($lead['is_assigned'] == 1) &&
+                                ($lead['assigned_to'] == $logged_in_user_id)
+                            )
+                            ||
+                            in_array($logged_in_role, ['super_admin', 'hotel_admin', 'admin'])
                         )
-                        ||
-                        in_array($logged_in_role, ['super_admin', 'hotel_admin', 'admin'])
-                    )
-                    &&
-                    ($lead_status !== 'closed');
-                ?>
+                        &&
+                        ($lead_status !== 'closed');
+                    ?>
 
-                <button class="btn btn-warning-light btn-sm transferLeadBtn"
-                    data-id="<?= $lead['id']; ?>"
-                    style="<?= $canTransfer ? '' : 'display:none;' ?>">
-                    <i class="fa fa-exchange"></i> Transfer Lead
-                </button>
-
-
-                <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
-                    <button class="btn btn-warning-light btn-sm deleteLeadBtn"
-                        data-id="<?php echo $lead['id']; ?>">
-                        <i class="fa fa-trash"></i> Delete
+                    <button class="btn btn-warning-light btn-sm transferLeadBtn"
+                        data-id="<?= $lead['id']; ?>"
+                        style="<?= $canTransfer ? '' : 'display:none;' ?>">
+                        <i class="fa fa-exchange"></i> Transfer Lead
                     </button>
 
-                <?php } ?>
+
+                    <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
+                        <button class="btn btn-warning-light btn-sm deleteLeadBtn"
+                            data-id="<?php echo $lead['id']; ?>">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+
+                    <?php } ?>
 
 
 
+                </div>
+                <div class="lead_edtid_broder_child" title="template Name">
+                    <span class="badge "><i class="fa fa-book"></i> : <?= $lead['template_name']; ?></span>
+                </div>
+                <a href="javascript:void(0)" class="badge  editLeadDetails" data-lead-id="<?= $lead['id'] ?>"><i class="fa fa-edit"></i> Edit</a>
             </div>
-
-            <div title="template Name">
-                <span class="badge bg-warning-light"><i class="fa fa-book"></i> : <?= $lead['template_name']; ?></span>
-            </div>
-
-            <a href="javascript:void(0)" class="badge bg-warning-light editLeadDetails" data-lead-id="<?= $lead['id'] ?>"><i class="fa fa-edit"></i> Edit</a>
         </div>
 
-        <div class="row mb-2">
+       <div class="row crm-card-body mb-3">
             <div class="col-md-3 col-sm-6 mb-2">
                 <i class="fa fa-building text-secondary me-1"></i>
                 <strong>Department:</strong> <span class="lead-department"><?= $lead['department_name']; ?></span>
@@ -125,9 +124,9 @@
             </div>
         </div>
 
-        <div class="guest-comment mb-2"><?= $lead['query']; ?></div>
+       <div class="guest-comment crm-comment mb-3"><?= $lead['query']; ?></div>
 
-        <div class="d-flex justify-content-end gap-2 mt-2">
+        <div class="crm-card-footer d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
             <?php if ($lead['disposition'] != ''): ?>
                 <span id="disposition-<?= $lead['id']; ?>" title="Stage">
                     Dis. : <b><span class="lead-disposition"><?= $lead['disposition']; ?></span></b>
@@ -160,5 +159,73 @@
                 View Details
             </a>
         </div>
+        <style>
+
+.row.crm-card-body.mb-3 .col-md-3.col-sm-6.mb-2 {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 7px 9px;
+    width: 24%;
+}
+.row.crm-card-body.mb-3 {
+    gap: 21px;
+    justify-content: center;
+
+}
+.row.crm-card-body.mb-3 .col-md-3.col-sm-6.mb-2 {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 11px 9px;
+    width: 22%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 99;
+    margin-top: 10px;
+}
+.row.crm-card-body.mb-3 .col-md-3.col-sm-6.mb-2 i {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #fff;
+    position: absolute;
+    top: -15px;
+    left: -12px;
+}
+.row.crm-card-body.mb-3 .col-md-3.col-sm-6.mb-2 strong {
+    margin-left: 19px;
+}
+.row.crm-card-body.mb-3 .col-md-3.col-sm-6.mb-2 span {
+    font-size: 14px;
+    padding-left: 5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.lead_edtid_broder {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+.lead_edtid_broder a,.lead_edtid_broder_child {
+    background: transparent;
+    background-color: transparent;
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid #00000021 !important;
+    color:#000;
+}
+.card.crm-card {
+    background-color: #fff!important;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px!important;
+}
+        </style>
     </div>
 <?php endforeach; ?>

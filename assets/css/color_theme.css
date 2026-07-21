@@ -10823,14 +10823,18 @@ li.treeview.active.menu-open ul.treeview-menu li.active a,li.treeview.active.men
     border: none;
 }
 .dark-skin .stage-card {
-    background: #1F2630;
-    border: 1px solid #2A3340;
+    background: #1F2630!important;
+    border: 1px solid #2A3340!important;
     transition: .30s ease;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
     -webkit-border-radius: 18px;
     -moz-border-radius: 18px;
     -ms-border-radius: 18px;
     -o-border-radius: 18px;
+    -webkit-transition: .30s ease;
+    -moz-transition: .30s ease;
+    -ms-transition: .30s ease;
+    -o-transition: .30s ease;
 }
 .dark-skin #filter_lead_stats_count .form-control, 
 .dark-skin #filter_lead_stats_count .form-select,
@@ -11021,4 +11025,17 @@ li.treeview.active.menu-open ul.treeview-menu li.active a,li.treeview.active.men
     background: #0D1219;
     border: 1px solid #2A3340;
     box-shadow: rgb(202 202 202 / 30%) 0px 1px 2px 0px, rgb(170 170 170 / 15%) 0px 2px 6px 2px;
+}
+.dark-skin a.waves-effect.waves-light.btn-primary-light.svg-bt-icon svg {
+    color: #9F8BE7;
+}
+.dark-skin .theme-primary .bg-primary-light {
+    background-color: #fff !important;
+}
+.dark-skin a.waves-effect.waves-light.btn-primary-light.svg-bt-icon {
+    background: transparent;
+}
+.dark-skin .select2-container .select2-selection--single {
+   
+    background-color: #1F2630 !important;
 }

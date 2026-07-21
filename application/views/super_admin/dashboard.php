@@ -903,10 +903,8 @@
 
 						<div class="box-body">
 							<div class="row">
-								<div id="">
-
 									<form>
-										<div class="row align-items-end">
+										<div class="">
 
 											<form method="GET" action="<?= base_url('manage-leads'); ?>" class="mb-4 px-3">
 
@@ -971,8 +969,6 @@
 
 										</div>
 									</form>
-
-								</div>
 							</div>
 						</div>
 

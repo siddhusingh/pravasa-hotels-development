@@ -55,7 +55,7 @@ window.CSRF = {
                                     <div class="row g-3">
 
                                         <!-- Phone Number -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="phone_number"><i class="fa fa-phone me-1 text-success"></i>Phone Number <span class="required-marker">*</span></label>
                                                 <input type="number" name="phone_number" id="phone_number" class="form-control" placeholder="Enter phone number" required
@@ -67,7 +67,7 @@ window.CSRF = {
                                         </div>
 
                                         <!-- Username -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="username"><i class="fa fa-user me-1 text-primary"></i>Guest Name <span class="required-marker" id="guestNameRequiredMarker">*</span></label>
                                                 <input type="text" name="username" id="username" class="form-control" placeholder="Enter username">
@@ -78,7 +78,7 @@ window.CSRF = {
 
 
                                         <!-- Email -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="email"><i class="fa fa-envelope me-1 text-warning"></i>Email (Optional)</label>
                                                 <input type="email" name="email" id="email" class="form-control" placeholder="Enter email">
