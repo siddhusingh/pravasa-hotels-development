@@ -68,9 +68,18 @@ class Followup_cron extends CI_Controller
 
         if (!$lead) return;
 
-        // Get agent email
-        $agent_email = $this->Leadmodel->get_agent_email($lead->assigned_to)->email;
-        $agent_name = $this->Leadmodel->get_agent_email($lead->assigned_to)->name;
+        // Resolve the recipient from the role stored on the lead.
+        $assignee = $this->Leadmodel->get_assignee_contact(
+            $lead->assigned_to,
+            $lead->assigned_person_user_role
+        );
+        if (!$assignee || !filter_var($assignee->email, FILTER_VALIDATE_EMAIL)) {
+            log_message('error', "First follow-up email skipped because the assignee has no valid email. Lead ID: $lead_id");
+            return false;
+        }
+
+        $agent_email = $assignee->email;
+        $agent_name = $assignee->name;
 
         $lead->agent_name = $agent_name;
 
@@ -88,7 +97,7 @@ class Followup_cron extends CI_Controller
 
 
         $this->load->model('Mail_model');
-        $this->Mail_model->sendMailSMTP_uv(
+        $sent = $this->Mail_model->sendMailSMTP_uv(
             $agent_name,
             [$agent_email],
             $subject,
@@ -101,8 +110,12 @@ class Followup_cron extends CI_Controller
 
 
 
-        // ✅ Send + Log
-        $this->LeadModel->update_followup_one_status($lead_id, 1);
+        // Update the reminder only after the SMTP server accepted the email.
+        if ($sent) {
+            $this->LeadModel->update_followup_one_status($lead_id, 1);
+        }
+
+        return $sent;
     }
 
 
@@ -123,9 +136,18 @@ class Followup_cron extends CI_Controller
 
         if (!$lead) return;
 
-        // Get agent email
-        $agent_email = $this->Leadmodel->get_agent_email($lead->assigned_to)->email;
-        $agent_name = $this->Leadmodel->get_agent_email($lead->assigned_to)->name;
+        // Resolve the recipient from the role stored on the lead.
+        $assignee = $this->Leadmodel->get_assignee_contact(
+            $lead->assigned_to,
+            $lead->assigned_person_user_role
+        );
+        if (!$assignee || !filter_var($assignee->email, FILTER_VALIDATE_EMAIL)) {
+            log_message('error', "Second follow-up email skipped because the assignee has no valid email. Lead ID: $lead_id");
+            return false;
+        }
+
+        $agent_email = $assignee->email;
+        $agent_name = $assignee->name;
 
         $lead->agent_name = $agent_name;
 
@@ -143,7 +165,7 @@ class Followup_cron extends CI_Controller
 
 
         $this->load->model('Mail_model');
-        $this->Mail_model->sendMailSMTP_uv(
+        $sent = $this->Mail_model->sendMailSMTP_uv(
             $agent_name,
             [$agent_email],
             $subject,
@@ -156,8 +178,11 @@ class Followup_cron extends CI_Controller
 
 
 
-        // ✅ Send + Log
+        // Update the reminder only after the SMTP server accepted the email.
+        if ($sent) {
+            $this->LeadModel->update_followup_two_status($lead_id, 1);
+        }
 
-        $this->LeadModel->update_followup_two_status($lead_id, 1);
+        return $sent;
     }
 }

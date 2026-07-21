@@ -10,6 +10,7 @@ class Leads extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Airtel_config_model');
         $this->load->helper('download');
 
 
@@ -135,6 +136,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('agent/include/header');
         $this->load->view('agent/include/sidebar');
         $this->load->view('agent/lead_report', $data);
@@ -253,6 +255,7 @@ class Leads extends CI_Controller
         $data['lead_status_counts'] = $this->LeadModel->get_leads_status_counts($filters);
         $data['showfollowupleads'] = 'yes';
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('agent/include/header');
         $this->load->view('agent/include/sidebar');
         $this->load->view('agent/lead_report', $data);
@@ -305,6 +308,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('agent/include/header');
         $this->load->view('agent/include/sidebar');
         $this->load->view('agent/lead_report', $data);
@@ -592,11 +596,24 @@ class Leads extends CI_Controller
             ->row();
 
         if ($existingLead) {
+            $wasReassigned = $assignedUser && (
+                (int) $existingLead->assigned_to !== (int) $assignedUser['id'] ||
+                (string) $existingLead->assigned_person_user_role !== (string) $assignedUser['user_role']
+            );
+
             unset($leadData['created_at']);
             $saved = $this->db
                 ->where('id', (int) $existingLead->id)
                 ->where('property', $property)
                 ->update('leads', $leadData);
+
+            if ($saved) {
+                $this->triggerAssignedLeadEmail(
+                    (int) $existingLead->id,
+                    $phone,
+                    $wasReassigned ? 'reassigned' : 'updated'
+                );
+            }
 
             return $this->output
                 ->set_content_type('application/json')
@@ -622,30 +639,7 @@ class Leads extends CI_Controller
                 ]));
         }
 
-        $valuableGuest = $this->db
-            ->select('id')
-            ->from('leads')
-            ->where('is_deleted', 0)
-            ->where("RIGHT(phone_number, 10) =", $phone, false)
-            ->where('LOWER(disposition)', 'reservation')
-            ->where('amount >', 0)
-            ->limit(1)
-            ->get()
-            ->row();
-
-        $emailUrl = base_url(
-            'EmailWorker/sendLeadEmailToassigned_person_email/' .
-            (int) $insertId . '/' .
-            ($valuableGuest ? '1' : '0')
-        );
-        $emailRequest = curl_init();
-        curl_setopt($emailRequest, CURLOPT_URL, $emailUrl);
-        curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, false);
-        curl_setopt($emailRequest, CURLOPT_CONNECTTIMEOUT_MS, 100);
-        curl_setopt($emailRequest, CURLOPT_TIMEOUT_MS, 100);
-        curl_setopt($emailRequest, CURLOPT_NOSIGNAL, 1);
-        curl_exec($emailRequest);
-        curl_close($emailRequest);
+        $this->triggerAssignedLeadEmail((int) $insertId, $phone, 'created');
 
         return $this->output
             ->set_content_type('application/json')
@@ -931,6 +925,17 @@ class Leads extends CI_Controller
                 ]));
         }
 
+        $wasReassigned = $assignedUser && (
+            (int) $lead->assigned_to !== (int) $assignedUser['id'] ||
+            (string) $lead->assigned_person_user_role !== (string) $assignedUser['user_role']
+        );
+
+        $this->triggerAssignedLeadEmail(
+            $leadId,
+            $phone,
+            $wasReassigned ? 'reassigned' : 'updated'
+        );
+
         $updatedLead = $this->LeadModel->get_lead_by_id_with_joins($leadId);
 
         return $this->output
@@ -941,6 +946,49 @@ class Leads extends CI_Controller
                 'data' => $updatedLead ? (array) $updatedLead : $leadData,
                 'csrfHash' => $this->security->get_csrf_hash()
             ], JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Trigger the shared dynamic-SMTP notification without making lead saves
+     * depend on the mail server response.
+     */
+    private function triggerAssignedLeadEmail($leadId, $phone, $notificationType)
+    {
+        $valuableGuest = $this->db
+            ->select('id')
+            ->from('leads')
+            ->where('is_deleted', 0)
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('LOWER(disposition)', 'reservation')
+            ->where('amount >', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+
+        $emailUrl = base_url(
+            'EmailWorker/sendLeadEmailToassigned_person_email/' .
+            (int) $leadId . '/' .
+            ($valuableGuest ? '1' : '0') . '/' .
+            rawurlencode($notificationType)
+        );
+
+        $emailRequest = curl_init();
+        curl_setopt($emailRequest, CURLOPT_URL, $emailUrl);
+        curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($emailRequest, CURLOPT_CONNECTTIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_NOSIGNAL, 1);
+        $requested = curl_exec($emailRequest);
+
+        if ($requested === false) {
+            log_message(
+                'error',
+                'Assigned lead email worker could not be started for lead ID ' .
+                (int) $leadId . ': ' . curl_error($emailRequest)
+            );
+        }
+
+        curl_close($emailRequest);
     }
 
 }

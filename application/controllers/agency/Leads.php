@@ -10,6 +10,7 @@ class Leads extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Airtel_config_model');
         $this->load->helper('download');
 
 
@@ -38,6 +39,7 @@ class Leads extends CI_Controller
         $data['departments'] = $this->Common_model->getAllData('departments', '');
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('agency/include/header');
         $this->load->view('agency/include/sidebar');
         $this->load->view('agency/lead_report', $data);
@@ -90,6 +92,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('agency/include/header');
         $this->load->view('agency/include/sidebar');
         $this->load->view('agency/lead_report', $data);

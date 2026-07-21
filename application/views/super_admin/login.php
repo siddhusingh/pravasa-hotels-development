@@ -136,6 +136,13 @@
               </div>
               <div class="p-40 login-card">
 
+                <?php if ($this->session->flashdata('success')): ?>
+                  <div class="alert alert-success"><?= html_escape($this->session->flashdata('success')) ?></div>
+                <?php endif; ?>
+                <?php if ($this->session->flashdata('error')): ?>
+                  <div class="alert alert-danger"><?= html_escape($this->session->flashdata('error')) ?></div>
+                <?php endif; ?>
+
                 <div class="form-group">
                   <div class="input-group mb-3">
                     <span class="input-group-text bg-transparent"><i class="text-fade ti-user"></i></span>
@@ -162,7 +169,7 @@
                   <!-- /.col -->
                   <div class="col-6">
                     <div class="fog-pwd text-end">
-                      <!-- <a href="<?php echo base_url('forget-password-super-admin') ?>" class="text-primary fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot pwd?</a><br> -->
+                      <a href="<?php echo base_url('forget-password-super-admin') ?>" class="text-primary fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot pwd?</a><br>
                     </div>
                   </div>
                   <!-- /.col -->

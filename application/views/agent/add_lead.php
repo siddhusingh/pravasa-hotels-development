@@ -1782,7 +1782,6 @@
             url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
             type: "POST",
             data: {
-                chain_code: "00051",
                 hotel_code: "E0701",
                 date_arrive: checkin,
                 date_depart: checkout,

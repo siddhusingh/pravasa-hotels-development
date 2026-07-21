@@ -55,8 +55,10 @@ class Esc_followup_cron extends CI_Controller
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
         if (!$lead) return;
 
-        // Async trigger (fire & forget)
-        $this->send_level_one_email($lead->id);
+        if (!$this->send_level_one_email($lead->id)) {
+            log_message('error', "Level 1 escalation status was not advanced because the email failed. Lead ID: $lead_id");
+            return false;
+        }
 
         $next_time = $this->calculate_next_followup_time($lead->type, 2);
 
@@ -65,6 +67,8 @@ class Esc_followup_cron extends CI_Controller
             'esc_followup_one_status' => 1,
             'esc_next_followup_at'    => $next_time
         ]);
+
+        return true;
     }
 
 
@@ -75,7 +79,10 @@ class Esc_followup_cron extends CI_Controller
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
         if (!$lead) return;
 
-        $this->send_level_two_email($lead->id);
+        if (!$this->send_level_two_email($lead->id)) {
+            log_message('error', "Level 2 escalation status was not advanced because the email failed. Lead ID: $lead_id");
+            return false;
+        }
 
         $next_time = $this->calculate_next_followup_time($lead->type, 3);
 
@@ -84,6 +91,8 @@ class Esc_followup_cron extends CI_Controller
             'esc_followup_two_status' => 1,
             'esc_next_followup_at'    => $next_time
         ]);
+
+        return true;
     }
 
 
@@ -94,13 +103,18 @@ class Esc_followup_cron extends CI_Controller
         $lead = $this->LeadModel->get_lead_with_property_and_department($lead_id);
         if (!$lead) return;
 
-        $this->send_level_three_email($lead->id);
+        if (!$this->send_level_three_email($lead->id)) {
+            log_message('error', "Level 3 escalation status was not advanced because the email failed. Lead ID: $lead_id");
+            return false;
+        }
 
         $this->LeadModel->update_followup($lead->id, [
             'esc_follow_up_level'        => 4,
             'esc_followup_three_status' => 1,
             'esc_next_followup_at'      => NULL
         ]);
+
+        return true;
     }
 
 
@@ -149,31 +163,39 @@ class Esc_followup_cron extends CI_Controller
     public function send_level_one_email($lead_id)
     {
         $url = base_url("EmailWorker/sendEscalationL1/$lead_id");
-        $this->fireAndForget($url);
+        return $this->runEmailWorker($url);
     }
 
     public function send_level_two_email($lead_id)
     {
         $url = base_url("EmailWorker/sendEscalationL2/$lead_id");
-        $this->fireAndForget($url);
+        return $this->runEmailWorker($url);
     }
 
     public function send_level_three_email($lead_id)
     {
         $url = base_url("EmailWorker/sendEscalationL3/$lead_id");
-        $this->fireAndForget($url);
+        return $this->runEmailWorker($url);
     }
 
-    public function fireAndForget($url)
+    private function runEmailWorker($url)
     {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => false,
-            CURLOPT_CONNECTTIMEOUT_MS => 100,
-            CURLOPT_TIMEOUT_MS => 100,
-            CURLOPT_NOSIGNAL => 1
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT => 60
         ]);
-        curl_exec($ch);
+        $response = curl_exec($ch);
+        $http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
         curl_close($ch);
+
+        if ($response === false || $http_code < 200 || $http_code >= 300) {
+            log_message('error', 'Escalation email worker request failed: ' . ($curl_error ?: 'HTTP ' . $http_code));
+            return false;
+        }
+
+        return true;
     }
 }

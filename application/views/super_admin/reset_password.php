@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Super Admin - Recover Password</title>
+	<title>Super Admin - Reset Password</title>
 	<link rel="stylesheet" href="<?= base_url('assets/css/vendors_css.css') ?>">
 	<link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
 	<link rel="stylesheet" href="<?= base_url('assets/css/skin_color.css') ?>">
@@ -17,26 +17,25 @@
 					<div class="col-lg-5 col-md-6 col-12">
 						<div class="bg-gray-800 rounded10 shadow-lg">
 							<div class="content-top-agile p-20 pb-0">
-								<h2 class="mb-10 fw-600 text-primary">Forgot Password?</h2>
-								<p class="mb-0 text-fade">Enter your Super Admin email to receive a reset link.</p>
+								<h2 class="mb-10 fw-600 text-primary">Reset Password</h2>
+								<p class="mb-0 text-fade">Choose a new password for your Super Admin account.</p>
 							</div>
 							<div class="p-40">
-								<?php if ($this->session->flashdata('success')): ?>
-									<div class="alert alert-success"><?= html_escape($this->session->flashdata('success')) ?></div>
-								<?php endif; ?>
 								<?php if ($this->session->flashdata('error')): ?>
 									<div class="alert alert-danger"><?= html_escape($this->session->flashdata('error')) ?></div>
 								<?php endif; ?>
-								<form action="<?= base_url('check-email-super-admin') ?>" method="post">
+								<form action="<?= base_url('update-password-super-admin') ?>" method="post">
 									<input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
-									<div class="form-group">
-										<div class="input-group mb-3">
-											<span class="input-group-text"><i class="text-fade ti-email"></i></span>
-											<input type="email" name="email" class="form-control ps-15" placeholder="Your Email" required autocomplete="email">
-										</div>
+									<input type="hidden" name="token" value="<?= html_escape($token) ?>">
+									<div class="form-group mb-3">
+										<label for="password">New Password</label>
+										<input type="password" id="password" name="password" class="form-control" minlength="6" required autocomplete="new-password">
 									</div>
-									<button type="submit" class="btn btn-primary w-p100 mt-10">Send Reset Link</button>
-									<a href="<?= base_url('super-admin-login') ?>" class="btn btn-link w-p100 mt-10">Back to Login</a>
+									<div class="form-group mb-3">
+										<label for="confirm_password">Confirm Password</label>
+										<input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="6" required autocomplete="new-password">
+									</div>
+									<button type="submit" class="btn btn-primary w-p100 mt-10">Update Password</button>
 								</form>
 							</div>
 						</div>

@@ -133,41 +133,138 @@ class Login extends CI_Controller
 
     public function check_email()
     {
-        $email = $this->input->POST('email');
-        $userdata = array('email' => $email);
-
-
-        $result = $this->Comman_model->getdata('user_profile', $userdata);
-
-
-
-        if (!empty($result)) {
-
-            $result = $this->Comman_model->getdata('user_profile', $userdata);
-
-            $$email = $result->email;
-            $name = $result->full_name;
-            $subject = "Forgot Password ";
-
-
-            $random = substr(str_shuffle(str_repeat($x = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil(25 / strlen($x)))), 1, 25);
-
-            $url = base_url('set-password') . '/' . $random;
-
-
-
-            $data = $this->Comman_model->UpdateRecord('user_profile', ['security_token' => $random], array('email' => $email));
-
-            $message = "please click on this <a href='$url'>URL </a>,to proceed to change the password.";
-
-            $this->sendMailSTMP($name, $email, $CC_Mails = "", $subject, $message);
-
-            $this->session->set_flashdata('success', " We have sent reset password link to your mail. please check your mail to reset password");
-        } else {
-
-            $this->session->set_flashdata('error', "This Email does not exists");
+        if ($this->input->method(true) !== 'POST') {
+            return redirect('forget-password-super-admin');
         }
-        return redirect('forgot_password');
+
+        $email = trim((string) $this->input->post('email'));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->session->set_flashdata('error', 'Please enter a valid email address.');
+            return redirect('forget-password-super-admin');
+        }
+
+        $account = $this->Comman_model->getdata('super_admin', [
+            'email' => $email,
+            'is_deleted' => 0,
+            'status' => 'active'
+        ]);
+
+        // Use the same response for unknown accounts to prevent email enumeration.
+        if (!$account) {
+            $this->session->set_flashdata('success', 'If this email belongs to an active account, a reset link has been sent.');
+            return redirect('forget-password-super-admin');
+        }
+
+        try {
+            $token = bin2hex(random_bytes(32));
+        } catch (Exception $e) {
+            log_message('error', 'Unable to generate Super Admin password reset token: ' . $e->getMessage());
+            $this->session->set_flashdata('error', 'Unable to create a password reset request. Please try again.');
+            return redirect('forget-password-super-admin');
+        }
+
+        $token_hash = hash('sha256', $token);
+        $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $updated = $this->Comman_model->UpdateRecord('super_admin', [
+            'reset_token_hash' => $token_hash,
+            'reset_token_expires_at' => $expires_at
+        ], ['id' => $account->id]);
+
+        if (!$updated) {
+            $this->session->set_flashdata('error', 'Unable to create a password reset request. Please try again.');
+            return redirect('forget-password-super-admin');
+        }
+
+        $this->load->model('Mail_model');
+        $reset_url = base_url('reset-password-super-admin/' . rawurlencode($token));
+        $message = $this->load->view('emails/super-admin-password-reset', [
+            'name' => $account->full_name,
+            'reset_url' => $reset_url
+        ], true);
+
+        if (!$this->Mail_model->sendMailSMTP_uv(
+            $account->full_name,
+            [$account->email],
+            'Reset Your Super Admin Password',
+            $message
+        )) {
+            $this->Comman_model->UpdateRecord('super_admin', [
+                'reset_token_hash' => null,
+                'reset_token_expires_at' => null
+            ], ['id' => $account->id]);
+            $this->session->set_flashdata('error', 'Unable to send the reset email. Please verify the SMTP settings and try again.');
+            return redirect('forget-password-super-admin');
+        }
+
+        $this->session->set_flashdata('success', 'If this email belongs to an active account, a reset link has been sent.');
+        return redirect('forget-password-super-admin');
+    }
+
+    public function reset_password($token = '')
+    {
+        $account = $this->find_account_by_reset_token($token);
+        if (!$account) {
+            $this->session->set_flashdata('error', 'This password reset link is invalid or has expired.');
+            return redirect('forget-password-super-admin');
+        }
+
+        $this->load->view('super_admin/reset_password', ['token' => $token]);
+    }
+
+    public function update_password()
+    {
+        if ($this->input->method(true) !== 'POST') {
+            return redirect('super-admin-login');
+        }
+
+        $token = trim((string) $this->input->post('token'));
+        $password = (string) $this->input->post('password');
+        $confirm_password = (string) $this->input->post('confirm_password');
+        $account = $this->find_account_by_reset_token($token);
+
+        if (!$account) {
+            $this->session->set_flashdata('error', 'This password reset link is invalid or has expired.');
+            return redirect('forget-password-super-admin');
+        }
+
+        if (strlen($password) < 6) {
+            $this->session->set_flashdata('error', 'Password must be at least 6 characters.');
+            return redirect('reset-password-super-admin/' . rawurlencode($token));
+        }
+
+        if ($password !== $confirm_password) {
+            $this->session->set_flashdata('error', 'Password confirmation does not match.');
+            return redirect('reset-password-super-admin/' . rawurlencode($token));
+        }
+
+        $updated = $this->Comman_model->UpdateRecord('super_admin', [
+            'password' => md5($password),
+            'reset_token_hash' => null,
+            'reset_token_expires_at' => null
+        ], ['id' => $account->id]);
+
+        if (!$updated) {
+            $this->session->set_flashdata('error', 'Unable to update the password. Please try again.');
+            return redirect('reset-password-super-admin/' . rawurlencode($token));
+        }
+
+        $this->session->set_flashdata('success', 'Password updated successfully. You can now log in.');
+        return redirect('super-admin-login');
+    }
+
+    private function find_account_by_reset_token($token)
+    {
+        if (!is_string($token) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return null;
+        }
+
+        return $this->db
+            ->where('reset_token_hash', hash('sha256', $token))
+            ->where('reset_token_expires_at >=', date('Y-m-d H:i:s'))
+            ->where('is_deleted', 0)
+            ->where('status', 'active')
+            ->get('super_admin')
+            ->row();
     }
 
     //  end  forgrt password

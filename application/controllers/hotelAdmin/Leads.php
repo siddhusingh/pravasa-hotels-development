@@ -10,6 +10,7 @@ class Leads extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Airtel_config_model');
         $this->load->helper('download');
 
         if (empty($this->session->userdata('hotel_admin_session'))) {
@@ -110,6 +111,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
@@ -258,6 +260,7 @@ class Leads extends CI_Controller
         $data['lead_status_counts'] = $this->LeadModel->get_leads_status_counts($activeFilters);
         $data['showfollowupleads'] = 'yes';
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
@@ -308,6 +311,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
@@ -751,12 +755,25 @@ class Leads extends CI_Controller
 
             if (!empty($existingLead)) {
 
+                $wasReassigned = $assigned_to !== null && $assigned_to !== '' && (
+                    (int) $existingLead->assigned_to !== (int) $assigned_to ||
+                    (string) $existingLead->assigned_person_user_role !== (string) $this->input->post('assigned_person_user_role', true)
+                );
+
                 // Do not change original creation timestamp
                 unset($leadData['created_at']);
 
                 // Update existing lead with fresh details
-                $this->db->where('id', $existingLead->id)
+                $updated = $this->db->where('id', $existingLead->id)
                     ->update('leads', $leadData);
+
+                if ($updated) {
+                    $this->triggerAssignedLeadEmail(
+                        (int) $existingLead->id,
+                        $last_10_digits,
+                        $wasReassigned ? 'reassigned' : 'updated'
+                    );
+                }
 
                 echo json_encode([
                     'status' => true,
@@ -1122,6 +1139,18 @@ class Leads extends CI_Controller
                 ]));
         }
 
+        $was_reassigned = $active_assignee && (
+            (int) $lead->assigned_to !== (int) $active_assignee['id'] ||
+            (string) $lead->assigned_person_user_role !== (string) $active_assignee['user_role']
+        );
+
+        $phone = substr(preg_replace('/\D+/', '', (string) $leadData['phone_number']), -10);
+        $this->triggerAssignedLeadEmail(
+            $id,
+            $phone,
+            $was_reassigned ? 'reassigned' : 'updated'
+        );
+
         $updated_lead = $this->db
             ->select('leads.*, departments.department_name')
             ->from('leads')
@@ -1141,6 +1170,49 @@ class Leads extends CI_Controller
                 'data' => $updated_lead,
                 'csrfHash' => $this->security->get_csrf_hash()
             ]));
+    }
+
+    /**
+     * Start the shared saved-SMTP notification without making a successful
+     * Hotel Admin lead save depend on the mail server response.
+     */
+    private function triggerAssignedLeadEmail($leadId, $phone, $notificationType)
+    {
+        $valuableGuest = $this->db
+            ->select('id')
+            ->from('leads')
+            ->where('is_deleted', 0)
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('LOWER(disposition)', 'reservation')
+            ->where('amount >', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+
+        $emailUrl = base_url(
+            'EmailWorker/sendLeadEmailToassigned_person_email/' .
+            (int) $leadId . '/' .
+            ($valuableGuest ? '1' : '0') . '/' .
+            rawurlencode($notificationType)
+        );
+
+        $emailRequest = curl_init();
+        curl_setopt($emailRequest, CURLOPT_URL, $emailUrl);
+        curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($emailRequest, CURLOPT_CONNECTTIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_NOSIGNAL, 1);
+        $requested = curl_exec($emailRequest);
+
+        if ($requested === false) {
+            log_message(
+                'error',
+                'Hotel Admin assigned lead email worker could not be started for lead ID ' .
+                (int) $leadId . ': ' . curl_error($emailRequest)
+            );
+        }
+
+        curl_close($emailRequest);
     }
 
 }

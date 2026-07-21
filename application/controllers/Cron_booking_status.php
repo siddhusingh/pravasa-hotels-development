@@ -9,6 +9,7 @@ class Cron_booking_status extends CI_Controller
         parent::__construct();
         $this->load->helper('url');
         $this->load->model('LeadModel'); // Load Model
+        $this->load->model('Mycloud_config_model');
 
     }
 
@@ -47,9 +48,15 @@ class Cron_booking_status extends CI_Controller
 
     public function search_bookings($booking_id, $booking_status)
     {
+        $config = $this->Mycloud_config_model->get_runtime_config();
+        if (!$config->is_ready) {
+            log_message('error', 'MyCloud booking status sync skipped because the PMS configuration is incomplete.');
+            return [];
+        }
+
         // === Request body ===
         $requestBody = [
-            "chain_code"                => "E0701",
+            "chain_code"                => $config->chain_code,
             "hotel_code"                => "E0701",
             "booking_status"            => "$booking_status",
             "confirmation_number"       => "",
@@ -74,9 +81,9 @@ class Cron_booking_status extends CI_Controller
         $jsonData = json_encode($requestBody, JSON_UNESCAPED_SLASHES);
 
         // === API credentials ===
-        $url        = "https://live2.mycloudhospitality.com/mycloud_WebAPI2.0/api/pms/reservation/searchbookings";
-        $authCode   = "lfgLTH0m25gFGYStsAEBAJ9j6Vg45kk";
-        $clientId   = "SAYAJI";
+        $url        = $this->Mycloud_config_model->get_endpoint('searchbookings');
+        $authCode   = $config->auth_code;
+        $clientId   = $config->client_id;
 
         // === cURL Setup ===
         $curl = curl_init();

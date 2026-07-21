@@ -636,7 +636,10 @@ class Main extends CI_Controller
     public function account_settings()
     {
         $login_id = $this->session->userdata('hotel_admin_session')['id'];
-        $data['profile_data'] = $this->Comman_model->get_single_record('hotel_admin', ['id' => $login_id]);
+        $data['profile_data'] = $this->Comman_model->get_single_record('hotel_admins', [
+            'hotel_id' => $login_id,
+            'is_deleted' => 0
+        ]);
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/account_settings', $data);
