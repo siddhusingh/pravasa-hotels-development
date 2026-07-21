@@ -18,7 +18,11 @@ class Software_settings extends CI_Controller
 
     {
         $this->load->model('Settings_model');
+        $this->load->model('Airtel_config_model');
         $data['settings'] = $this->Settings_model->get_settings();
+        $data['smtp_has_password'] = !empty($data['settings']->smtp_pass);
+        $data['airtel_config'] = $this->Airtel_config_model->get_config();
+        $data['airtel_has_api_key'] = !empty($data['airtel_config']->api_key_encrypted);
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/software_settings', $data);
@@ -75,12 +79,42 @@ class Software_settings extends CI_Controller
             return;
         }
 
-        $smtp_from_email = trim((string) $this->input->post('smtp_from_email'));
+        $this->load->model('Settings_model');
+        $existing_settings = $this->Settings_model->get_settings();
+
+        $smtp_host = trim((string) $this->input->post('smtp_host'));
+        $smtp_port = trim((string) $this->input->post('smtp_port'));
+        $smtp_user = trim((string) $this->input->post('smtp_user'));
+        $smtp_password = (string) $this->input->post('smtp_pass');
         $smtp_encryption = strtolower(trim((string) $this->input->post('smtp_encryption')));
+        $smtp_from_email = trim((string) $this->input->post('smtp_from_email'));
+        $smtp_from_name = trim((string) $this->input->post('smtp_from_name'));
         $errors = [];
+
+        if ($smtp_host === '') {
+            $errors['smtp_host'] = 'SMTP host is required';
+        }
+
+        if ($smtp_port === '' || filter_var($smtp_port, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 65535]
+        ]) === false) {
+            $errors['smtp_port'] = 'Enter a valid port between 1 and 65535';
+        }
+
+        if ($smtp_user === '') {
+            $errors['smtp_user'] = 'SMTP user is required';
+        }
+
+        if ($smtp_password === '' && empty($existing_settings->smtp_pass)) {
+            $errors['smtp_pass'] = 'SMTP password is required';
+        }
 
         if ($smtp_from_email === '' || !filter_var($smtp_from_email, FILTER_VALIDATE_EMAIL)) {
             $errors['smtp_from_email'] = 'Enter a valid email';
+        }
+
+        if ($smtp_from_name === '') {
+            $errors['smtp_from_name'] = 'From name is required';
         }
 
         if (!in_array($smtp_encryption, ['tls', 'ssl', 'none'], true)) {
@@ -98,25 +132,109 @@ class Software_settings extends CI_Controller
         }
 
         $smtp_data = [
-            'smtp_host' => trim((string) $this->input->post('smtp_host')),
-            'smtp_port' => trim((string) $this->input->post('smtp_port')),
-            'smtp_user' => trim((string) $this->input->post('smtp_user')),
+            'smtp_host' => $smtp_host,
+            'smtp_port' => $smtp_port,
+            'smtp_user' => $smtp_user,
             'smtp_encryption' => $smtp_encryption,
             'smtp_from_email' => $smtp_from_email,
-            'smtp_from_name' => trim((string) $this->input->post('smtp_from_name'))
+            'smtp_from_name' => $smtp_from_name
         ];
 
-        $smtp_password = (string) $this->input->post('smtp_pass');
         if ($smtp_password !== '') {
             $smtp_data['smtp_pass'] = $smtp_password;
         }
 
-        $this->load->model('Settings_model');
         $this->Settings_model->update_settings($smtp_data);
 
         echo json_encode([
             'status' => true,
             'message' => 'SMTP settings updated successfully',
+            'csrfHash' => $this->security->get_csrf_hash()
+        ]);
+    }
+
+    public function update_airtel()
+    {
+        if ($this->input->method(true) !== 'POST') {
+            $this->output->set_status_header(405);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Method not allowed',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $this->load->model('Airtel_config_model');
+        $existing_config = $this->Airtel_config_model->get_config();
+
+        $api_url = trim((string) $this->input->post('api_url'));
+        $api_key = trim((string) $this->input->post('api_key'));
+        $caller_id = trim((string) $this->input->post('caller_id'));
+        $customer_id = trim((string) $this->input->post('customer_id'));
+        $call_flow_id = trim((string) $this->input->post('call_flow_id'));
+        $notify_url = trim((string) $this->input->post('notify_url'));
+        $errors = [];
+
+        if ($api_url === '' || !filter_var($api_url, FILTER_VALIDATE_URL)) {
+            $errors['api_url'] = 'Enter a valid API URL';
+        }
+
+        if ($api_key === '' && empty($existing_config->api_key_encrypted)) {
+            $errors['api_key'] = 'API key is required';
+        }
+
+        if ($caller_id === '' || !preg_match('/^\+?[0-9]{6,20}$/', $caller_id)) {
+            $errors['caller_id'] = 'Enter a valid caller ID';
+        }
+
+        if ($customer_id === '') {
+            $errors['customer_id'] = 'Customer ID is required';
+        }
+
+        if ($call_flow_id === '') {
+            $errors['call_flow_id'] = 'Call flow ID is required';
+        }
+
+        if ($notify_url === '' || !filter_var($notify_url, FILTER_VALIDATE_URL)) {
+            $errors['notify_url'] = 'Enter a valid notify URL';
+        }
+
+        if (!empty($errors)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Please correct the highlighted fields',
+                'errors' => $errors,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        $airtel_data = [
+            'api_url' => $api_url,
+            'caller_id' => $caller_id,
+            'customer_id' => $customer_id,
+            'call_flow_id' => $call_flow_id,
+            'notify_url' => $notify_url
+        ];
+
+        if ($api_key !== '') {
+            $this->load->library('encryption');
+            $airtel_data['api_key_encrypted'] = $this->encryption->encrypt($api_key);
+        }
+
+        if (!$this->Airtel_config_model->save_config($airtel_data)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Unable to save Airtel configuration. Please run the Airtel configuration migration first.',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'status' => true,
+            'message' => 'Airtel configuration saved successfully',
             'csrfHash' => $this->security->get_csrf_hash()
         ]);
     }

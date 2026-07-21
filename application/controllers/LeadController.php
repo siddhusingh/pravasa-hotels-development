@@ -18,6 +18,7 @@ class LeadController extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Airtel_config_model');
         $this->load->helper('download');
     }
 
@@ -544,6 +545,7 @@ class LeadController extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/lead_report', $data);
@@ -870,6 +872,7 @@ class LeadController extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/lead_report', $data);
@@ -926,6 +929,7 @@ class LeadController extends CI_Controller
         ];
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');
         $this->load->view('super_admin/lead_report', $data);

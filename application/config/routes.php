@@ -421,6 +421,7 @@ $route['software-settings']     = 'superAdmin/Software_settings/index';
 $route['software-settings/upload-branding'] = 'superAdmin/Software_settings/upload_branding';
 $route['software-settings/update-basic'] = 'superAdmin/Software_settings/update_basic';
 $route['software-settings/update-smtp'] = 'superAdmin/Software_settings/update_smtp';
+$route['software-settings/update-airtel'] = 'superAdmin/Software_settings/update_airtel';
 
 $route['manage-hotel-admins']     = 'superAdmin/HotelAdmins/index';
 $route['insert-hotel-admin']     = 'superAdmin/HotelAdmins/insert';

@@ -91,28 +91,33 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label>SMTP Host</label>
-                                        <input type="text" name="smtp_host" class="form-control" value="<?= $settings->smtp_host ?? '' ?>">
+                                        <input type="text" name="smtp_host" class="form-control" value="<?= html_escape($settings->smtp_host ?? '') ?>"
+                                            placeholder="Enter SMTP host">
                                         <small class="text-danger error"></small>
 
                                     </div>
 
                                     <div class="col-md-3">
                                         <label>Port</label>
-                                        <input type="text" name="smtp_port" class="form-control" value="<?= $settings->smtp_port ?? '' ?>">
+                                        <input type="number" name="smtp_port" class="form-control" value="<?= html_escape($settings->smtp_port ?? '') ?>"
+                                            min="1" max="65535" placeholder="Enter SMTP port">
                                         <small class="text-danger error"></small>
 
                                     </div>
 
                                     <div class="col-md-3">
                                         <label>User</label>
-                                        <input type="text" name="smtp_user" class="form-control" value="<?= $settings->smtp_user ?? '' ?>">
+                                        <input type="text" name="smtp_user" class="form-control" value="<?= html_escape($settings->smtp_user ?? '') ?>"
+                                            placeholder="Enter SMTP user">
                                         <small class="text-danger error"></small>
 
                                     </div>
 
                                     <div class="col-md-3">
                                         <label>Password</label>
-                                        <input type="password" name="smtp_pass" class="form-control">
+                                        <input type="password" name="smtp_pass" class="form-control"
+                                            placeholder="<?= $smtp_has_password ? 'Leave blank to keep existing password' : 'Enter SMTP password' ?>"
+                                            autocomplete="new-password">
                                         <small class="text-danger error"></small>
 
                                     </div>
@@ -131,7 +136,7 @@
                                     <div class="col-md-4 mt-3">
                                         <label>From Email</label>
                                         <input type="email" name="smtp_from_email" class="form-control"
-                                            value="<?= $settings->smtp_from_email ?? '' ?>">
+                                            value="<?= html_escape($settings->smtp_from_email ?? '') ?>" placeholder="Enter from email">
                                         <small class="text-danger error"></small>
 
                                     </div>
@@ -139,7 +144,7 @@
                                     <div class="col-md-4 mt-3">
                                         <label>From Name</label>
                                         <input type="text" name="smtp_from_name" class="form-control"
-                                            value="<?= $settings->smtp_from_name ?? '' ?>">
+                                            value="<?= html_escape($settings->smtp_from_name ?? '') ?>" placeholder="Enter from name">
                                         <small class="text-danger error"></small>
 
                                     </div>
@@ -147,6 +152,64 @@
                                     <div class="col-12 mt-3 text-end">
                                         <button type="submit" class="btn btn-primary">
                                             Save SMTP Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <form id="airtelSettingsForm">
+                                <h5 class="section_title">Airtel IQ Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>API URL</label>
+                                        <input type="url" name="api_url" class="form-control"
+                                            value="<?= html_escape($airtel_config->api_url ?? '') ?>"
+                                            placeholder="Enter Airtel API URL">
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label>API Key</label>
+                                        <input type="password" name="api_key" class="form-control"
+                                            placeholder="<?= $airtel_has_api_key ? 'Leave blank to keep existing API key' : 'Enter Airtel API key' ?>"
+                                            autocomplete="new-password">
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-md-4 mt-3">
+                                        <label>Caller ID</label>
+                                        <input type="text" name="caller_id" class="form-control"
+                                            value="<?= html_escape($airtel_config->caller_id ?? '') ?>"
+                                            placeholder="Enter caller ID">
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-md-8 mt-3">
+                                        <label>Customer ID</label>
+                                        <input type="text" name="customer_id" class="form-control"
+                                            value="<?= html_escape($airtel_config->customer_id ?? '') ?>"
+                                            placeholder="Enter customer ID">
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-md-12 mt-3">
+                                        <label>Call Flow ID</label>
+                                        <textarea name="call_flow_id" class="form-control" rows="2"
+                                            placeholder="Enter tagged call flow ID"><?= html_escape($airtel_config->call_flow_id ?? '') ?></textarea>
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-md-12 mt-3">
+                                        <label>Notify URL</label>
+                                        <input type="url" name="notify_url" class="form-control"
+                                            value="<?= html_escape($airtel_config->notify_url ?? '') ?>"
+                                            placeholder="Enter CDR notify URL">
+                                        <small class="text-danger error"></small>
+                                    </div>
+
+                                    <div class="col-12 mt-3 text-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Airtel Configuration
                                         </button>
                                     </div>
                                 </div>
@@ -303,6 +366,9 @@
 
                     if (response.status) {
                         toastr.success(response.message);
+                        if (config.onSuccess) {
+                            config.onSuccess(form, response);
+                        }
                     } else {
                         showSectionErrors(form, response.errors);
                         toastr.error(response.message || 'Unable to update settings');
@@ -337,26 +403,97 @@
         }
     });
 
+    let smtpHasPassword = <?= $smtp_has_password ? 'true' : 'false' ?>;
+
     bindSettingsForm({
         form: '#smtpSettingsForm',
         url: "<?= base_url('software-settings/update-smtp') ?>",
         buttonText: 'Save SMTP Settings',
         validate: function(form) {
+            const requiredFields = {
+                smtp_host: 'SMTP host is required',
+                smtp_port: 'SMTP port is required',
+                smtp_user: 'SMTP user is required',
+                smtp_from_email: 'From email is required',
+                smtp_from_name: 'From name is required'
+            };
+            let isValid = true;
+
+            Object.keys(requiredFields).forEach(function(field) {
+                const input = form.find('[name="' + field + '"]');
+                if ($.trim(input.val()) === '') {
+                    input.next('.error').text(requiredFields[field]);
+                    isValid = false;
+                }
+            });
+
+            const port = form.find('[name="smtp_port"]');
+            const portValue = Number(port.val());
+            if ($.trim(port.val()) !== '' && (!Number.isInteger(portValue) || portValue < 1 || portValue > 65535)) {
+                port.next('.error').text('Enter a valid port between 1 and 65535');
+                isValid = false;
+            }
+
+            const password = form.find('[name="smtp_pass"]');
+            if (!smtpHasPassword && $.trim(password.val()) === '') {
+                password.next('.error').text('SMTP password is required');
+                isValid = false;
+            }
+
             const email = form.find('[name="smtp_from_email"]');
             const value = $.trim(email.val());
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            if (value === '') {
-                email.next('.error').text('Email is required');
-                return false;
-            }
-
-            if (!emailRegex.test(value)) {
+            if (value !== '' && !emailRegex.test(value)) {
                 email.next('.error').text('Enter a valid email');
-                return false;
+                isValid = false;
             }
 
-            return true;
+            return isValid;
+        },
+        onSuccess: function(form) {
+            const password = form.find('[name="smtp_pass"]');
+            smtpHasPassword = true;
+            password.val('').attr('placeholder', 'Leave blank to keep existing password');
+        }
+    });
+
+    let airtelHasApiKey = <?= $airtel_has_api_key ? 'true' : 'false' ?>;
+
+    bindSettingsForm({
+        form: '#airtelSettingsForm',
+        url: "<?= base_url('software-settings/update-airtel') ?>",
+        buttonText: 'Save Airtel Configuration',
+        validate: function(form) {
+            const requiredFields = {
+                api_url: 'API URL is required',
+                caller_id: 'Caller ID is required',
+                customer_id: 'Customer ID is required',
+                call_flow_id: 'Call flow ID is required',
+                notify_url: 'Notify URL is required'
+            };
+            let isValid = true;
+
+            Object.keys(requiredFields).forEach(function(field) {
+                const input = form.find('[name="' + field + '"]');
+                if ($.trim(input.val()) === '') {
+                    input.next('.error').text(requiredFields[field]);
+                    isValid = false;
+                }
+            });
+
+            const apiKey = form.find('[name="api_key"]');
+            if (!airtelHasApiKey && $.trim(apiKey.val()) === '') {
+                apiKey.next('.error').text('API key is required');
+                isValid = false;
+            }
+
+            return isValid;
+        },
+        onSuccess: function(form) {
+            const apiKey = form.find('[name="api_key"]');
+            airtelHasApiKey = true;
+            apiKey.val('').attr('placeholder', 'Leave blank to keep existing API key');
         }
     });
 </script>

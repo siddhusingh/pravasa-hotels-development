@@ -10,6 +10,7 @@ class Leads extends CI_Controller
         $this->load->model('LeadModel'); // Load Model
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
+        $this->load->model('Airtel_config_model');
         $this->load->helper('download');
 
         if (empty($this->session->userdata('hotel_admin_session'))) {
@@ -110,6 +111,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
@@ -258,6 +260,7 @@ class Leads extends CI_Controller
         $data['lead_status_counts'] = $this->LeadModel->get_leads_status_counts($activeFilters);
         $data['showfollowupleads'] = 'yes';
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
@@ -308,6 +311,7 @@ class Leads extends CI_Controller
 
 
 
+        $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
         $this->load->view('hotel_admin/include/header');
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
