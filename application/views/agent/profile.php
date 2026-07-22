@@ -8,7 +8,7 @@
           <div class="header-content">
             <h2 class="header-title">My Profile</h2>
             <ol class="custom-breadcrumb">
-              <li><i class="fa fa-home"></i></li><li>Super Admin</li>
+              <li><i class="fa fa-home"></i></li><li>Agent Admin</li>
               <li><i class="fa fa-angle-right"></i></li><li class="active">My Profile</li>
             </ol>
           </div>

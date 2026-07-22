@@ -313,10 +313,10 @@
         <section class="content">
             <div class="row">
                 <div class="col-12">
-                    <div class="box">
+                    <div class="box lead_report_container ">
                         <div class="box-header">
                             <h4 class="box-title">Lead Reports</h4>
-                            <div class="row mt-2">
+                            <div class="row mt-2 responsive_lead-report">
                                 <div class="col-md-6">
                                     <input type="text" id="lead-search" class="form-control" placeholder="Search by name or phone...">
                                     <div id="search-results" class="list-group position-absolute" style="z-index:1000; display:none;"></div>
@@ -336,7 +336,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="box-body">
+                        <div class="box-body ">
                             <?php
                             // Check if any GET filter is set
                             $filterOpen = !empty($this->input->get());

@@ -1135,7 +1135,7 @@ font-size:20px;
 
     background:#fff;
     color:#fff;
-    padding:20px 30px;
+    padding:10px 30px;
     border:none;
 
 }
@@ -1161,21 +1161,13 @@ font-size:20px;
 #viewLeadModal .modal-body{
 
     background:#f6f8fc;
-    padding:30px;
+    padding:20px;
 
 }
+
 
 
 /* Container */
-
-.ticket-container{
-
-    background:#fff;
-    border-radius:20px;
-    padding:25px;
-    box-shadow:0 10px 35px rgba(0,0,0,.08);
-
-}
 
 
 /* Section */
@@ -1188,6 +1180,8 @@ font-size:20px;
     background:#fff;
     border:1px solid #edf0f6;
     box-shadow:0 8px 20px rgba(0,0,0,.04);
+    margin: 0px 0px;
+    margin-bottom: 10px ;
 
 }
 
@@ -1217,20 +1211,29 @@ font-size:20px;
 
 /* Value */
 
-.ticket-value{
-
-    background:#fafbff;
-    border:1px solid #e9ecf5;
-    border-radius:12px;
-    padding:14px 16px;
-    min-height:52px;
-    display:flex;
-    align-items:center;
-    font-size:15px;
-    color:#222;
-    font-weight:600;
-    transition:.3s;
-
+.ticket-value {
+    min-height: 51px;
+    background: #fafbff;
+    border: 1px solid #e9ecf5;
+    border-radius: 8px;
+    min-height: 46px;
+    display: flex;
+    align-items: baseline;
+    font-size: 13px;
+    color: #222;
+    font-weight: 500;
+    transition: .3s;
+    padding: 0 8px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: flow-root;
+    line-height: 46px;
+    background-color: #fff !important;
+    border: 1px solid #00000000 !important;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
+    height: 46px;
+    -webkit-border-radius: 8px !important;
 }
 
 .ticket-value:hover{
@@ -1278,11 +1281,7 @@ padding:15px;
 
 }
 
-.ticket-container{
 
-padding:15px;
-
-}
 
 .ticket-section{
 
@@ -1525,4 +1524,13 @@ width:100%;
 
 }
 
+}
+
+.row.ticket-section .col-md-6.mb-3 {
+    width: 20%;
+}
+form#leadEditForm .col-md-4,
+div#Edit_dynamicFields .col-lg-4.col-md-6,
+div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
+    width: 20%;
 }

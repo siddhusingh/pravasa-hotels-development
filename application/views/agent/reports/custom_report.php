@@ -40,20 +40,7 @@
         width: 100%;
     }
 
-    .report-filter-card .lead-filter-multiselect-toggle {
-        align-items: center;
-        background: #fff !important;
-        border: 1px solid #d9d9e3;
-        border-radius: 5px;
-        box-shadow: none !important;
-        color: #495057 !important;
-        display: flex;
-        height: 40px;
-        justify-content: space-between;
-        padding: 0 12px;
-        text-align: left;
-        width: 100%;
-    }
+  
 
     .report-filter-card .lead-filter-multiselect-toggle::after {
         border-left: 5px solid transparent;
