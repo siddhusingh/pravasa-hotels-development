@@ -1,614 +1,373 @@
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-   <div class="container-full">
-      <!-- Content Header (Page header) -->
-      <div class="content-header">
-         <div class="d-flex align-items-center">
-            <div class="me-auto">
-               <h4 class="page-title">Manage Restaurants</h4>
-               <div class="d-inline-block align-items-center">
-                  <nav>
-                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                        <li class="breadcrumb-item" aria-current="page">Super Admin</li>
-                        <li class="breadcrumb-item active" aria-current="page">Manage Restaurants</li>
-                     </ol>
-                  </nav>
-               </div>
+    <div class="container-full">
+        <div class="custom-page-header">
+            <div class="header-left">
+                <div class="header-icon-box">
+                    <i class="fa fa-cutlery"></i>
+                </div>
+                <div class="header-content">
+                    <h2 class="header-title">Manage Restaurants</h2>
+                    <ol class="custom-breadcrumb">
+                        <li><i class="fa fa-home"></i></li>
+                        <li>Hotel Admin</li>
+                        <li><i class="fa fa-angle-right"></i></li>
+                        <li>Property Management</li>
+                        <li><i class="fa fa-angle-right"></i></li>
+                        <li class="active">Restaurant Management</li>
+                    </ol>
+                </div>
             </div>
-         </div>
-      </div>
-      <!-- Main content -->
-      <section class="content">
-         <div class="row">
-            <div class="col-12">
-               <div class="box">
-                  <div class="box-header">
-                     <h4 class="box-title">Manage Restaurants</h4>
-                     <div class="float-right" style="float:right;">
-                        <button type="button" class="btn btn-primary-light btn-sm " id="open-restaurants-modal">
-                        Add +
-                        </button>
-                     </div>
-                  </div>
-                  <div class="box-body">
-                     <div class="table-responsive">
-                        <table id="complex_header" class="text-fade table table-bordered display" style="width:100%">
-                           <thead>
-                              <tr class="text-dark">
-                                 <th>Sr. No.</th>
-                                 <th>Restaurant Name</th>
-                                 <th>Daily  Budget</th>
-                                 <!-- <th>Weekly Actual Budget</th> -->
-                                 <th>Monthly  Budget</th>
-                                 <th>Yearly  Budget</th>
-                                 <th>Created Date</th>
-                                 <th>Updated Date</th>
-                                 <th>Action</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                              <?php if(!empty($restaurants)) {
-                                 $number=1;
-                                 
-                                 
-                                 foreach ($restaurants as $each_restaurants) { ?>
-                              <tr>
-                                 <td><?php echo $number; $number++; ?></td>
-                                 <td><?= $each_restaurants->restaurants_name ?></td>
-                                 <td><?= $each_restaurants->daily_budget ?></td>
-                                <!--  <td><?= $each_restaurants->weekly_budget ?></td> -->
-                                 <td><?= $each_restaurants->monthly_budget ?></td>
-                                 <td><?= $each_restaurants->yearly_budget ?></td>
-                                 <td><?= $each_restaurants->created_at ?></td>
-                                 <td><?= $each_restaurants->updated_at ?></td>
-                                 <td class="table-action min-w-100">
-                                    <a href="javascript:void(0)" class="text-fade hover-primary edit-restaurants" data-record_id="<?php echo $each_restaurants->restaurants_id ?>">
-                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle">
-                                          <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
-                                       </svg>
-                                    </a>
-                                    <a href="javascript:void(0)" class="text-fade hover-primary delete-restaurants" data-record_id="<?php echo $each_restaurants->restaurants_id ?>">
-                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash align-middle">
-                                          <polyline points="3 6 5 6 21 6"></polyline>
-                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                       </svg>
-                                    </a>
-                                 </td>
-                              </tr>
-                              <?php
-                                 } } ?>
-                           </tbody>
+            <div class="header-banner">
+                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="box new_table_box">
+                <div class="box-header">
+                    <h4 class="box-title">Restaurant Management</h4>
+                    <div class="float-right" style="float:right;">
+                        <button type="button" class="btn btn-primary-light btn-sm" id="open-restaurant-modal">Add +</button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="table-responsive">
+                        <table id="hotel-restaurants-table" class="text-fade table table-bordered display" style="width:100%">
+                            <thead>
+                                <tr class="text-dark">
+                                    <th>Sr. No.</th>
+                                    <th>Hotel</th>
+                                    <th>Restaurant Name</th>
+                                    <th>Restaurant Code</th>
+                                    <th>Contact Number</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
                         </table>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-            <!-- /.col -->
-         </div>
-         <!-- /.row -->
-      </section>
-      <!-- /.content -->
-   </div>
+        </section>
+    </div>
 </div>
-<!-- /.content-wrapper -->
-<!-- Modal -->
-<div class="modal  modal-lg" id="add-restaurants-modal" tabindex="-1" role="dialog" aria-labelledby="add-restaurants-modalLabel" aria-hidden="true">
-   <div class="modal-dialog" role="document">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h4 class="modal-title" id="myLargeModalLabel">Add New Restaurant</h4>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body ps-3 pe-3">
-            <!--  <form class="ps-3 pe-3" action="#"> -->
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">Restaurant Name</label>
-               <input class="form-control" type="email" id="restaurants_name" required="" placeholder="">
-               <span id="restaurants_name_error" class="validation text-danger"></span>
-            </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">Daily Budget</label>
-               <input class="form-control" type="number" id="daily_budget" required="" placeholder="">
-               <span id="daily_budget_error" class="validation text-danger"></span>
-            </div>
-              </div>
-             <!--  <div class="col-md-6">
-                 <div class="mb-3">
-               <label for="username" class="form-label">weekly Budget</label>
-               <input class="form-control" type="number" id="weekly_budget" required="" placeholder="">
-               <span id="weekly_budget_error" class="validation text-danger"></span>
-            </div>
-              </div> -->
-              <div class="col-md-6">
-                 <div class="mb-3">
-               <label for="username" class="form-label">Monthly Budget</label>
-               <input class="form-control" type="number" id="monthly_budget" required="" placeholder="">
-               <span id="monthly_budget_error" class="validation text-danger"></span>
-            </div>
-              </div>
-              <div class="col-md-6">
-                 <div class="mb-3">
-               <label for="username" class="form-label">yearly Budget</label>
-               <input class="form-control" type="number" id="yearly_budget" required="" placeholder="">
-               <span id="yearly_budget_error" class="validation text-danger"></span>
-            </div>
-              </div>
 
+<div class="modal modal-lg new_modal_design" id="restaurant-crud-modal" tabindex="-1" role="dialog" aria-labelledby="restaurant-crud-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="custom-page-header">
+                <div class="header-left">
+                    <div class="header-icon-box">
+                        <i class="fa fa-cutlery"></i>
+                    </div>
+                    <div class="header-content">
+                        <div class="modal-header hotel_modal_header">
+                            <h5 class="modal-title" id="restaurant-crud-modal-label"></h5>
+                            <div class="hotel_banner"></div>
+                        </div>
+                        <ol class="custom-breadcrumb">
+                            <li>
+                                <i class="fa fa-info-circle"></i>
+                                Fill in the details to add or update a restaurant.
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="header-banner">
+                    <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
-            
-
-            
-
-           
-
-           
-
-           
-
-         </div>
-         <div class="modal-footer">
-            <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
-            <button type="button" id="SaveBtn" class="btn btn-primary">Save changes</button>
-         </div>
-      </div>
-   </div>
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-md-6 mb-3">
+                    <label for="hotel_id">Parent Hotel <span class="required-asterisk">*</span></label>
+                    <select class="form-select" id="hotel_id" name="hotel_id" disabled aria-disabled="true">
+                        <option value="<?php echo encrypt_id($hotel->hotel_id); ?>" selected>
+                            <?php echo htmlspecialchars((string) $hotel->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
+                        </option>
+                    </select>
+                    <small class="text-muted">Your assigned hotel is selected automatically.</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="restaurant_name">Restaurant Name <span class="required-asterisk">*</span></label>
+                    <input type="text" class="form-control" id="restaurant_name" name="restaurant_name">
+                    <div class="text-danger validation" id="restaurant_name_error"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="restaurant_code">Restaurant Code <span class="required-asterisk">*</span></label>
+                    <input type="text" class="form-control" id="restaurant_code" name="restaurant_code">
+                    <div class="text-danger validation" id="restaurant_code_error"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="contact_number">Contact Number</label>
+                    <input type="text" class="form-control" id="contact_number" name="contact_number">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                    <div class="text-danger validation" id="email_error"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="restaurant_image">Restaurant Image</label>
+                    <input type="file" class="form-control" id="restaurant_image" name="restaurant_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                    <small class="text-muted">JPG, JPEG, PNG or WEBP; maximum 2 MB.</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <img id="restaurant_image_preview" alt="Restaurant preview" style="width:100px; display:none;">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="status">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="1" selected>Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="restaurant-action-btn" class="btn btn-primary" data-record-id="">Add Restaurant</button>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="modal  modal-lg" id="edit-restaurants-modal" tabindex="-1" role="dialog" aria-labelledby="add-restaurants-modalLabel" aria-hidden="true">
-   <div class="modal-dialog" role="document">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h4 class="modal-title" id="myLargeModalLabel">Edit Restaurant </h4>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body ps-3 pe-3">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">Restaurant Name</label>
-               <input class="form-control" type="email" id="restaurants_name_edit" required="" placeholder="">
-               <span id="restaurants_name_edit_error" class="validation text-danger"></span>
-               <input type="hidden" name="" id="record_id">
-            </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">Daily Budget</label>
-               <input class="form-control" type="number" id="daily_budget_edit" required="" placeholder="">
-               <span id="daily_budget_edit_error" class="validation text-danger"></span>
-            </div>
-              </div>
-              <!-- <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">weekly Budget</label>
-               <input class="form-control" type="number" id="weekly_budget_edit" required="" placeholder="">
-               <span id="weekly_budget_edit_error" class="validation text-danger"></span>
-            </div>
-              </div> -->
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">Monthly Budget</label>
-               <input class="form-control" type="number" id="monthly_budget_edit" required="" placeholder="">
-               <span id="monthly_budget_edit_error" class="validation text-danger"></span>
-            </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-               <label for="username" class="form-label">yearly Budget</label>
-               <input class="form-control" type="number" id="yearly_budget_edit" required="" placeholder="">
-               <span id="yearly_budget_edit_error" class="validation text-danger"></span>
-            </div>
-              </div>
-            </div>
-            
-            
-         </div>
-         <div class="modal-footer">
-            <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Close</button>
-            <button type="button" id="updateBtn" class="btn btn-primary">Update changes</button>
-         </div>
-      </div>
-   </div>
-</div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-<script>
-   // validation rules for comments
-   toastr.options = {
-         'closeButton': true,
-         'debug': false,
-         'newestOnTop': false,
-         'progressBar': false,
-         'positionClass': 'toast-top-right',
-         'preventDuplicates': false,
-         'showDuration': '1000',
-         'hideDuration': '1000',
-         'timeOut': '5000',
-         'extendedTimeOut': '1000',
-         'showEasing': 'swing',
-         'hideEasing': 'linear',
-         'showMethod': 'fadeIn',
-         'hideMethod': 'fadeOut',
-      }
-   
-   
-   
-      <?php  if($this->session->flashdata('restaurants_success_msg')!=""){ ?>
-      
-      
-   
-      toastr.success('<?php echo $this->session->flashdata('restaurants_success_msg'); ?>')
-   
-    <?php  $this->session->set_flashdata('restaurants_success_msg',''); } ?>
-</script>
 <script type="text/javascript">
-   // add restaurants code start from here
-   
-     $("#open-restaurants-modal").click(function(e) {
-   
-     	e.preventDefault()
-      
-      $('#restaurants_name').val("");
-      $('#daily_budget').val("");
-      // $('#weekly_budget').val("");
-      $('#monthly_budget').val("");
-      $('#yearly_budget').val("");
-      
-   
-     $('#add-restaurants-modal').modal('show'); 
-   });
-   
-   
-   
-   
-   // validation rules
-    
-    $('#restaurants_name').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#restaurants_name_error').html('');
-       } else {
-         $('#restaurants_name_error').html('Please Enter Room Analysis Name');
-         $('#restaurants_name').val('');
-       }
-     
-   });
-   
-    $('#daily_budget').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#daily_budget_error').html('');
-       } else {
-         $('#daily_budget_error').html('Please Enter Daily Budget');
-         $('#daily_budget').val('');
-       }
-     
-   });
+    window.CSRF = {
+        name: <?php echo json_encode($this->security->get_csrf_token_name()); ?>,
+        hash: <?php echo json_encode($this->security->get_csrf_hash()); ?>
+    };
 
-    $('#daily_budget').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#daily_budget_error').html('');
-       } else {
-         $('#daily_budget_error').html('Please Enter Daily Budget');
-         $('#daily_budget').val('');
-       }
-     
-   });
+    window.addEventListener('load', function() {
+        toastr.options = {
+            closeButton: true,
+            positionClass: 'toast-top-right',
+            timeOut: '5000',
+            preventDuplicates: true
+        };
 
-    $('#weekly_budget').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#weekly_budget_error').html('');
-       } else {
-         $('#weekly_budget_error').html('Please Enter Weekly Budget');
-         $('#weekly_budget').val('');
-       }
-     
-   });
+        var restaurantsTable = $('#hotel-restaurants-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ordering: true,
+            searching: true,
+            columnDefs: [
+                { targets: 7, orderable: false }
+            ],
+            ajax: {
+                url: '<?php echo base_url('hotel-admin/get-restaurants-table'); ?>',
+                type: 'POST',
+                data: function(data) {
+                    data[window.CSRF.name] = window.CSRF.hash;
+                },
+                dataSrc: function(response) {
+                    refreshCsrf(response);
+                    if (response.status === 'error' && response.message) {
+                        toastr.error(response.message);
+                    }
+                    return response.data || [];
+                }
+            }
+        });
 
-    $('#monthly_budget').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#monthly_budget_error').html('');
-       } else {
-         $('#monthly_budget_error').html('Please Enter monthly Budget');
-         $('#monthly_budget').val('');
-       }
-     
-   });
+        function refreshCsrf(response) {
+            if (response && response.csrfHash) {
+                window.CSRF.hash = response.csrfHash;
+            }
+        }
 
-    $('#yearly_budget').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#yearly_budget_error').html('');
-       } else {
-         $('#yearly_budget_error').html('Please Enter Yearly Budget');
-         $('#yearly_budget').val('');
-       }
-     
-   });
-   
-   
-   // submit function for add a new record
-   
-   $(document).on('click','#SaveBtn',function(e){
-   e.preventDefault();
-   
-   $('#restaurants_name').trigger('focusout');
-   $('#daily_budget').trigger('focusout');
-   // $('#weekly_budget').trigger('focusout');
-   $('#monthly_budget').trigger('focusout');
-   $('#yearly_budget').trigger('focusout');
-   
-   
-   var restaurants_name=$('#restaurants_name').val();
-   var daily_budget=$('#daily_budget').val();
-   // var weekly_budget=$('#weekly_budget').val();
-   var monthly_budget=$('#monthly_budget').val();
-   var yearly_budget=$('#yearly_budget').val();
-   
-   
-   if(restaurants_name!=''&&daily_budget!=''&&monthly_budget!=''&&yearly_budget!=''){
-   
-     var formData = new FormData();
-     formData.append('restaurants_name', restaurants_name);
-     formData.append('daily_budget', daily_budget);
-     // formData.append('weekly_budget', weekly_budget);
-     formData.append('monthly_budget', monthly_budget);
-     formData.append('yearly_budget', yearly_budget);
+        function resetRestaurantForm() {
+            $('.validation').text('');
+            $('#restaurant_name, #restaurant_code, #contact_number, #email').val('');
+            $('#restaurant_image').val('');
+            $('#restaurant_image_preview').hide().attr('src', '');
+            $('#status').val('1');
+            $('#restaurant-action-btn')
+                .attr('data-record-id', '')
+                .text('Add Restaurant')
+                .prop('disabled', false);
+        }
 
+        function validateRestaurantForm() {
+            var isValid = true;
+            var requiredFields = [
+                ['restaurant_name', 'restaurant_name_error', 'Restaurant name is required'],
+                ['restaurant_code', 'restaurant_code_error', 'Restaurant code is required']
+            ];
 
-    
-   
-   $.ajax({
-             url: '<?php echo base_url("insert-restaurants") ?>',
-             type: 'POST',
-             data: formData,
-             processData: false,
-             contentType: false,
-             dataType:'JSON',
-             beforeSend:function () {
-                $(this).html('saving..');
-                $(this).attr('disabled',true);
-   
-             },
-             success:function(response){
-               
-               $(".SaveBtn").attr('disabled',false);
-               $(this).html('Add');
-               $(this).attr('disabled',false);
-                // mera man
-               window.location.reload()
-               // toastr.success('New Room Analysis has been added Successfully') 
-             }
-         });
-   
-   
-   
-   }
-   
-   
-   
-   })
-   
-   
-   // edit-restaurants function start from here
-   
-   $(".edit-restaurants").click(function(e) {
-   	e.preventDefault()
-      
-      $('#restaurants_name_edit').val("");
-      $('#daily_budget').val("");
-      // $('#weekly_budget').val("");
-      $('#monthly_budget').val("");
-      $('#yearly_budget').val("");
-     
-   
-      $(".validation").html("")
-     var id=$(this).attr('data-record_id');
-   //     alert(id);
-   
-    $.ajax({
-      url: '<?php echo base_url('edit-restaurants')?>',
-      type: 'post',
-      dataType:'JSON',
-      data: {
-       id:id
-     },
-       success:function(res){
-         //   alert(res);
-         if (res){
-         $("#record_id").val(id)
-          $('#restaurants_name_edit').val(res.restaurants_name);
-          $('#daily_budget_edit').val(res.daily_budget);
-          // $('#weekly_budget_edit').val(res.weekly_budget);
-          $('#monthly_budget_edit').val(res.monthly_budget);
-          $('#yearly_budget_edit').val(res.yearly_budget);
-   
-         
-         $('#edit-restaurants-modal').modal('show');         
-         }
-        
-       }
-    })
-   
-   
-     
-   })
-   
+            requiredFields.forEach(function(field) {
+                var value = $.trim($('#' + field[0]).val());
+                $('#' + field[1]).text(value === '' ? field[2] : '');
+                $('#' + field[0]).val(value);
+                if (value === '') {
+                    isValid = false;
+                }
+            });
 
-   // update restaurants code start from here
+            var email = $.trim($('#email').val());
+            var emailIsValid = email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            $('#email').val(email);
+            $('#email_error').text(emailIsValid ? '' : 'Please enter a valid email address');
 
-   // validation rules
-    
-    $('#restaurants_name_edit').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#restaurants_name_edit_error').html('');
-       } else {
-         $('#restaurants_name_edit_error').html('Please Enter Room Analysis Name');
-         $('#restaurants_name_edit').val('');
-       }
-     
-   });
+            return isValid && emailIsValid;
+        }
 
+        $('#restaurant_image').on('change', function() {
+            var file = this.files && this.files[0] ? this.files[0] : null;
+            if (!file) {
+                $('#restaurant_image_preview').hide().attr('src', '');
+                return;
+            }
 
-    $('#daily_budget_edit').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#daily_budget_edit_error').html('');
-       } else {
-         $('#daily_budget_edit_error').html('Please Enter Daily Budget');
-         $('#daily_budget_edit').val('');
-       }
-     
-   });
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                $('#restaurant_image_preview').attr('src', event.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        });
 
-    $('#weekly_budget_edit').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#weekly_budget_edit_error').html('');
-       } else {
-         $('#weekly_budget_edit_error').html('Please Enter Weekly Budget');
-         $('#weekly_budget_edit').val('');
-       }
-     
-   });
+        $('#open-restaurant-modal').on('click', function(event) {
+            event.preventDefault();
+            resetRestaurantForm();
+            $('#restaurant-crud-modal-label').text('Add Restaurant');
+            $('#restaurant-crud-modal').modal('show');
+        });
 
-    $('#monthly_budget_edit').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#monthly_budget_edit_error').html('');
-       } else {
-         $('#monthly_budget_edit_error').html('Please Enter monthly Budget');
-         $('#monthly_budget_edit').val('');
-       }
-     
-   });
+        $(document).on('click', '#restaurant-action-btn', function(event) {
+            event.preventDefault();
 
-    $('#yearly_budget_edit').focusout(function() {
-     var value = this.value;
-     if (value!="") {
-         $('#yearly_budget_edit_error').html('');
-       } else {
-         $('#yearly_budget_edit_error').html('Please Enter Yearly Budget');
-         $('#yearly_budget_edit').val('');
-       }
-     
-   });
-   
-   
+            if (!validateRestaurantForm()) {
+                return;
+            }
 
+            var button = $(this);
+            var recordId = button.attr('data-record-id');
+            var isUpdate = recordId !== '';
+            var buttonText = button.text();
+            var formData = new FormData();
+            formData.append('restaurant_name', $('#restaurant_name').val());
+            formData.append('restaurant_code', $('#restaurant_code').val());
+            formData.append('contact_number', $.trim($('#contact_number').val()));
+            formData.append('email', $('#email').val());
+            formData.append('status', $('#status').val());
+            formData.append(window.CSRF.name, window.CSRF.hash);
 
-    $(document).on('click','#updateBtn',function(e){
-   e.preventDefault();
-   
-   $('#restaurants_name_edit').trigger('focusout');
-   $('#daily_budget_edit').trigger('focusout');
-   // $('#weekly_budget_edit').trigger('focusout');
-   $('#monthly_budget_edit').trigger('focusout');
-   $('#yearly_budget_edit').trigger('focusout');
-   
-   
-   var restaurants_name=$('#restaurants_name_edit').val();
-   var daily_budget=$('#daily_budget_edit').val();
-   // var weekly_budget=$('#weekly_budget_edit').val();
-   var monthly_budget=$('#monthly_budget_edit').val();
-   var yearly_budget=$('#yearly_budget_edit').val();
-   var record_id=$('#record_id').val();
-   
-   
-   if(restaurants_name!=''&&daily_budget!=''&&monthly_budget!=''&&yearly_budget!=''){
-   
-     var formData = new FormData();
-     formData.append('restaurants_name', restaurants_name);
-     formData.append('daily_budget', daily_budget);
-     // formData.append('weekly_budget', weekly_budget);
-     formData.append('monthly_budget', monthly_budget);
-     formData.append('yearly_budget', yearly_budget);
-     formData.append('record_id',record_id);
-   
-   $.ajax({
-             url: '<?php echo base_url("update-restaurants") ?>',
-             type: 'POST',
-             data: formData,
-             processData: false,
-             contentType: false,
-             dataType:'JSON',
-             beforeSend:function () {
-                $(this).html('updating..');
-                $(this).attr('disabled',true);
-   
-             },
-             success:function(response){
-               
-               $("#updateBtn").attr('disabled',false);
-               
-               $(this).attr('disabled',false);
-                // mera man
-               window.location.reload()
-               // toastr.success('New Room Analysis has been added Successfully') 
-             }
-         });
-   
-   
-   
-   }
-   
-   
-   
-   })
+            var imageInput = $('#restaurant_image')[0];
+            if (imageInput.files && imageInput.files[0]) {
+                formData.append('restaurant_image', imageInput.files[0]);
+            }
+            if (isUpdate) {
+                formData.append('id', recordId);
+            }
 
-   
-   
-   // delete restaurants code is here
-   
-   $(".delete-restaurants").click(function (argument) {
-   Swal.fire({
-   title: "Are you sure?",
-   text:'You will not be able to recover this imaginary file!',
-   icon: "question",
-   showCancelButton: true,
-   showCloseButton: true,
-   
-   confirmButtonText: "Yes Delete it",
-   denyButtonText: `Cancel`
-   }).then((result) => {
-   
-   if (result.isConfirmed) {
-       
-   
-       var id=$(this).attr('data-record_id');
-   $.ajax({
-      url: '<?php echo base_url('delete-restaurants')?>',
-      method:"POST",
-      data: {
-       id:id
-     },
-       success:function(res){
-       	console.log(res)
-         
-         	//Swal.fire("Room Analysis Has been Deleted Successfully!", "", "success");
-         	window.location.reload();
-         
-       	
-       }
-   
-    })
-   
-   
-   
-   
-     
-   } 
-   });
-   })
-   
-    
+            $.ajax({
+                url: '<?php echo base_url('hotel-admin/'); ?>' + (isUpdate ? 'update-restaurant' : 'insert-restaurant'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                beforeSend: function() {
+                    button.prop('disabled', true).text(isUpdate ? 'Updating...' : 'Adding...');
+                },
+                success: function(response) {
+                    refreshCsrf(response);
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                        $('#restaurant-crud-modal').modal('hide');
+                        restaurantsTable.ajax.reload(null, false);
+                    } else {
+                        toastr.error(response.message || 'Unable to save restaurant');
+                    }
+                },
+                error: function() {
+                    toastr.error('Server error! Please try again.');
+                },
+                complete: function() {
+                    button.prop('disabled', false).text(buttonText);
+                }
+            });
+        });
+
+        $(document).on('click', '.edit-restaurant', function(event) {
+            event.preventDefault();
+            resetRestaurantForm();
+
+            $.ajax({
+                url: '<?php echo base_url('hotel-admin/edit-restaurant'); ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id: $(this).attr('data-record_id'),
+                    [window.CSRF.name]: window.CSRF.hash
+                },
+                success: function(response) {
+                    refreshCsrf(response);
+                    if (response.status !== 'success') {
+                        toastr.error(response.message || 'Failed to fetch restaurant details');
+                        return;
+                    }
+
+                    var data = response.data;
+                    $('#restaurant_name').val(data.restaurant_name);
+                    $('#restaurant_code').val(data.restaurant_code);
+                    $('#contact_number').val(data.contact_number);
+                    $('#email').val(data.email);
+                    $('#status').val(String(data.status));
+                    if (data.restaurant_image) {
+                        $('#restaurant_image_preview')
+                            .attr('src', '<?php echo base_url('uploads/restaurant_images/'); ?>' + data.restaurant_image + '?t=' + Date.now())
+                            .show();
+                    }
+                    $('#restaurant-crud-modal-label').text('Edit Restaurant');
+                    $('#restaurant-action-btn').attr('data-record-id', response.id).text('Update Restaurant');
+                    $('#restaurant-crud-modal').modal('show');
+                },
+                error: function() {
+                    toastr.error('Error fetching restaurant details');
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-restaurant', function(event) {
+            event.preventDefault();
+            var recordId = $(this).attr('data-record_id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This restaurant will be removed from the active restaurant list.',
+                icon: 'question',
+                showCancelButton: true,
+                showCloseButton: true,
+                confirmButtonText: 'Yes Delete it'
+            }).then(function(result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '<?php echo base_url('hotel-admin/delete-restaurant'); ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        id: recordId,
+                        [window.CSRF.name]: window.CSRF.hash
+                    },
+                    success: function(response) {
+                        refreshCsrf(response);
+                        if (response.status === 'success') {
+                            toastr.success(response.message);
+                            restaurantsTable.ajax.reload(null, false);
+                        } else {
+                            toastr.error(response.message || 'Failed to delete restaurant');
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Server error! Please try again.');
+                    }
+                });
+            });
+        });
+    });
 </script>
