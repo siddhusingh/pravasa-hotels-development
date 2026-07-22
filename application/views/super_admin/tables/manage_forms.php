@@ -24,7 +24,7 @@
                 </div>
             </div>
             <div class="header-banner">
-                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+                <img src="<?php echo base_url('assets/new_img/table_img.png'); ?>" alt="">
             </div>
         </div>
 
@@ -82,7 +82,7 @@
                     </div>
                 </div>
                 <div class="header-banner">
-                    <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+                    <img src="<?= base_url('assets/new_img/table_img.png'); ?>" alt="">
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
             </div>

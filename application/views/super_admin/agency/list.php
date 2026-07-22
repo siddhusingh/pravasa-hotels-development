@@ -81,7 +81,7 @@
                 </div>
             </div>
             <div class="header-banner">
-                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+                <img src="<?php echo base_url('assets/new_img/agency_img.png'); ?>" alt="">
             </div>
         </div>
 

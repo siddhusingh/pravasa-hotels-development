@@ -114,7 +114,7 @@
                 </div>
             </div>
             <div class="header-banner">
-                <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+                <img src="<?= base_url('assets/new_img/stage_wise_img.png'); ?>" alt="">
             </div>
         </div>
         <!-- Main content -->
