@@ -259,7 +259,7 @@ class Staff extends MY_Controller
                 !empty($row->created_at) ? date('d M Y', strtotime($row->created_at)) : '-',
                 !empty($row->updated_at) ? date('d M Y', strtotime($row->updated_at)) : '-',
                 '<a href="javascript:void(0)" class="text-fade hover-primary view-staff" data-record_id="'.$encryptedId.'" data-name="'.$escapedName.'" aria-label="View staff details"><i class="fa fa-eye"></i> View</a>
-                <a href="'.base_url('view-leads?staff_id='.(int) $row->id).'" class="text-fade hover-primary ms-2" aria-label="View staff leads"><i class="fa fa-phone"></i> Leads</a>
+                <a href="'.base_url('view-leads?staff_id='.urlencode($encryptedId)).'" class="text-fade hover-primary ms-2" aria-label="View leads for '.$escapedName.'"><i class="fa fa-phone"></i> Leads</a>
                 <a href="javascript:void(0)" class="text-fade hover-primary edit-staff ms-2" data-record_id="'.$encryptedId.'" aria-label="Edit staff"><i class="fa fa-edit"></i> Edit</a>
                 <a href="javascript:void(0)" class="text-fade hover-primary delete-staff ms-2" data-record_id="'.$encryptedId.'" aria-label="Delete staff"><i class="fa fa-trash"></i> Delete</a>'
             ];

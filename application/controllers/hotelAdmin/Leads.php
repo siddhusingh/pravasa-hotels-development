@@ -26,7 +26,13 @@ class Leads extends CI_Controller
         $hotel_session = $this->session->userdata('hotel_admin_session');
 
         $property = (int) ($hotel_session['id'] ?? 0);
-        $staff_id = max(0, (int) $this->input->get('staff_id'));
+        $staffFilter = trim((string) $this->input->get('staff_id'));
+        $staff_id = $this->resolveStaffFilter($staffFilter);
+
+        if ($staffFilter !== '' && $staff_id === 0) {
+            return show_error('Invalid staff member selected.', 400);
+        }
+
         $scoped_staff = $staff_id > 0 ? $this->getHotelStaffMember($staff_id, $property) : null;
 
         if ($staff_id > 0 && !$scoped_staff) {
@@ -161,6 +167,20 @@ class Leads extends CI_Controller
         }
 
         return $resolved[0] ?? '';
+    }
+
+    /**
+     * Accept encrypted staff drill-down links while retaining existing numeric filters.
+     */
+    private function resolveStaffFilter($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return 0;
+        }
+
+        $staffId = ctype_digit($value) ? (int) $value : (int) decrypt_id($value);
+        return max(0, $staffId);
     }
 
     /**

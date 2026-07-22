@@ -149,7 +149,7 @@ class Departments extends MY_Controller
                 html_escape($row->escalation_level_3).' Hours',
                 '<a href="javascript:void(0)" class="text-fade hover-primary edit-department" data-record_id="'.$encryptedId.'" aria-label="Edit department"><i class="fa fa-edit"></i></a>
                 <a href="javascript:void(0)" class="text-fade hover-primary delete-department ms-2" data-record_id="'.$encryptedId.'" aria-label="Delete department"><i class="fa fa-trash"></i></a>
-                <a href="'.base_url('view-leads?department='.urlencode($encryptedId)).'" class="btn btn-sm btn-primary ms-2" aria-label="View leads for '.html_escape($row->department_name).'">View Leads</a>'
+                <a href="'.base_url('view-leads?department='.urlencode($encryptedId)).'" class="text-fade hover-primary ms-2" aria-label="View leads for '.html_escape($row->department_name).'"><i class="fa fa-phone"></i> Leads</a>'
             ];
         }
 
