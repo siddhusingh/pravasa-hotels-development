@@ -14,17 +14,6 @@
                   </a>
                </li>
 
-               <li class="<?php if ($this->uri->segment('1') == 'view-staff-admin') {
-                              echo "treeview active menu-open";
-                           } ?>">
-                  <a href="<?php echo base_url('view-staff-admin') ?>">
-                     <i class="fa fa-users" aria-hidden="true"></i>
-                     <span>Staff Management </span>
-                  </a>
-               </li>
-
-
-
                <li class="<?php if ($this->uri->segment('1') == 'view-leads' || $this->uri->segment('1') == 'add-lead-admin') {
                               echo "treeview active menu-open";
                            } ?>">
@@ -189,6 +178,25 @@
                         <!-- Trigger modal -->
                         <a href="<?php echo base_url('admin-reports-summary') ?>">
                            <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Summary Report
+                        </a>
+                     </li>
+                  </ul>
+               </li>
+
+               <li class="treeview <?php if (($this->uri->segment('1') == 'hotel-admin' && $this->uri->segment('2') == 'manage-staff') || $this->uri->segment('1') == 'view-staff-admin') {
+                                       echo "active menu-open";
+                                    } ?>">
+                  <a href="#">
+                     <i class="fa fa-users" aria-hidden="true"></i>
+                     <span>User Management</span>
+                     <span class="pull-right-container"><i class="fa fa-angle-right pull-right"></i></span>
+                  </a>
+                  <ul class="treeview-menu">
+                     <li class="<?php if (($this->uri->segment('1') == 'hotel-admin' && $this->uri->segment('2') == 'manage-staff') || $this->uri->segment('1') == 'view-staff-admin') {
+                                    echo "active";
+                                 } ?>">
+                        <a href="<?php echo base_url('hotel-admin/manage-staff') ?>">
+                           <i class="fa fa-users" aria-hidden="true"></i> Staff Management
                         </a>
                      </li>
                   </ul>

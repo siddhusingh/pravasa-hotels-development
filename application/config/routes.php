@@ -198,6 +198,15 @@ $route['forget-password-hotel-admin'] = 'hotelAdmin/login/forget_password';
 $route['update-hotel-admin-profile'] = 'hotelAdmin/main/update_profile';
 $route['hotel-admin-account-settings'] = 'hotelAdmin/main/account_settings';
 
+// Hotel admin staff management
+$route['hotel-admin/manage-staff'] = 'hotelAdmin/Staff/index';
+$route['hotel-admin/get-staff-table'] = 'hotelAdmin/Staff/get_staff_table';
+$route['hotel-admin/insert-staff'] = 'hotelAdmin/Staff/insert';
+$route['hotel-admin/get-staff-details'] = 'hotelAdmin/Staff/get_staff_details';
+$route['hotel-admin/update-staff'] = 'hotelAdmin/Staff/update';
+$route['hotel-admin/delete-staff'] = 'hotelAdmin/Staff/delete';
+$route['hotel-admin/view-staff'] = 'hotelAdmin/Staff/get_mapping_details';
+
 // Hotel admin room type management
 $route['hotel-admin/manage-roomtypes'] = 'hotelAdmin/RoomTypeManagement/index';
 $route['hotel-admin/get-roomtypes-table'] = 'hotelAdmin/RoomTypeManagement/get_roomtypes_table';
