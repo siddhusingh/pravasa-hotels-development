@@ -19,12 +19,12 @@
         color: #28a745;
     }
 
-    .guest-comment {
-        background-color: #f4f7fd;
-        border-radius: 15px;
-        padding: 15px;
-        color: #666;
-    }
+   .guest-comment {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 12px 9px;
+    color: #000;
+}
 
     .reply-box {
         background-color: #fde7ed;
@@ -707,15 +707,6 @@
     });
 
     $(document).ready(function() {
-        const airtelConfig = <?= json_encode([
-                                    'apiUrl' => (string) ($airtel_config->api_url ?? ''),
-                                    'apiKey' => (string) ($airtel_config->api_key ?? ''),
-                                    'callerId' => (int) ($airtel_config->caller_id ?? 0),
-                                    'customerId' => (string) ($airtel_config->customer_id ?? ''),
-                                    'callFlowId' => (string) ($airtel_config->call_flow_id ?? ''),
-                                    'notifyUrl' => (string) ($airtel_config->notify_url ?? ''),
-                                    'ready' => !empty($airtel_config->is_ready)
-                                ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES); ?>;
         let leadId, phoneNumber;
         let callTimer;
         let seconds = 0;
@@ -731,11 +722,6 @@
 
         // Confirm Call
         $("#confirmCall").click(function() {
-            if (!airtelConfig.ready) {
-                toastr.error("Airtel calling configuration is incomplete. Please contact the administrator.");
-                return;
-            }
-
             $("#confirmCallModal").modal("hide");
             $("#progress-number").text(phoneNumber);
             $("#callProgressModal").modal("show");
@@ -758,15 +744,15 @@
             event.preventDefault();
 
             let data = {
-                "callFlowId": airtelConfig.callFlowId,
-                "customerId": airtelConfig.customerId,
+                "callFlowId": "TUMspyjWoYb+Ul8vp2khpgWZix3lECvaXcJtTQ78KKLfDiJjaazlkJrCd2pEA3DmInBzC9KmR061nKW85NR3l4FS31CoVZBm8cPiJ7trrSE=",
+                "customerId": "SAYAJI_HOT_Y6fD4Rfsi6zgGcAP6Gdg",
                 "callType": "OUTBOUND",
                 "metaData": {
                     "leadid": leadId
                 },
                 "callFlowConfiguration": {
                     "initiateCall_1": {
-                        "callerId": airtelConfig.callerId,
+                        "callerId": 8048248828,
                         "mergingStrategy": "SEQUENTIAL",
                         "callBackURLs": [{
                                 "eventType": "ALL",
@@ -775,13 +761,13 @@
                             },
                             {
                                 "eventType": "CDR",
-                                "notifyURL": airtelConfig.notifyUrl,
+                                "notifyURL": "https://rsgsoftech.com/crm/superAdmin/CallApiController/capture_call_data",
                                 "method": "POST"
                             }
                         ],
                         "participants": [{
                             "participantAddress": <?= json_encode((string) ($this->session->userdata('agent_session')['phone'] ?? '')); ?>,
-                            "callerId": airtelConfig.callerId,
+                            "callerId": 8048248828,
                             "participantName": "A",
                             "maxRetries": 1,
                             "maxTime": 0
@@ -804,13 +790,13 @@
 
 
             csrfAjax({
-                url: airtelConfig.apiUrl,
+                url: "https://iqtelephony.airtel.in/gateway/airtel-xchange/v2/execute/workflow",
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(data),
                 headers: {
                     "Cache-Control": "no-cache",
-                    "Authorization": "Basic " + btoa(airtelConfig.customerId + ":" + airtelConfig.apiKey)
+                    "Authorization": "Basic " + btoa("SAYAJI_HOT_Y6fD4Rfsi6zgGcAP6Gdg:Y6fD4Rfsi6zgGcAP6Gdg")
                 },
                 success: function(response) {
 
@@ -3512,6 +3498,7 @@ ${data.bill_attachment ? `
             url: "<?= base_url('LeadController/getRoomRateAvailabilityAjax') ?>",
             type: "POST",
             data: {
+                chain_code: "00051",
                 hotel_code: hotelCode,
                 date_arrive: checkin,
                 date_depart: checkout,

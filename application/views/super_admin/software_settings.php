@@ -16,7 +16,7 @@
                     </ol>
                 </div>
             </div>
-            <div class="header-banner"><img src="<?= base_url('assets/new_img-add.png'); ?>" alt=""></div>
+            <div class="header-banner"><img src="<?= base_url('assets/new_img/Software_img.png'); ?>" alt=""></div>
         </div>
 
         <!-- Main content -->
