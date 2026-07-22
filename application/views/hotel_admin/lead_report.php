@@ -3289,7 +3289,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
       }
 
       var statusFromGet = getUrlParamsArray('status');
-      var departmentFromGet = getUrlParamsArray('department');
+      var departmentFromGet = <?= json_encode(isset($initial_department_filter) ? $initial_department_filter : (array) $this->input->get('department')); ?>;
       var dispositionFromGet = getUrlParamsArray('disposition');
 
       var phoneFromGet = new URL(window.location.href).searchParams.get('phone') || '';

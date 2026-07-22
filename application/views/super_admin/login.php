@@ -167,7 +167,7 @@
 										  </div> -->
                   </div>
                   <!-- /.col -->
-                  <div class="col-6">
+                  <div class="d-none col-6">
                     <div class="fog-pwd text-end">
                       <a href="<?php echo base_url('forget-password-super-admin') ?>" class="text-primary fw-500 hover-primary"><i class="ion ion-locked"></i> Forgot pwd?</a><br>
                     </div>

@@ -197,13 +197,17 @@ class Datatables extends CI_Model {
         return $this->db->count_all_results();
     }
 
-    public function DTRestaurants($limit, $start, $search = "", $orderColumn = "r.id", $orderDir = "DESC")
+    public function DTRestaurants($limit, $start, $search = "", $orderColumn = "r.id", $orderDir = "DESC", $hotelId = null)
     {
         $this->db->select('r.*, h.hotel_name');
         $this->db->from('hotel_restaurants r');
         $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -221,22 +225,30 @@ class Datatables extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function DTRestaurantsAll()
+    public function DTRestaurantsAll($hotelId = null)
     {
         $this->db->from('hotel_restaurants r');
         $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         return $this->db->count_all_results();
     }
 
-    public function DTRestaurantsFiltered($search = "")
+    public function DTRestaurantsFiltered($search = "", $hotelId = null)
     {
         $this->db->from('hotel_restaurants r');
         $this->db->join('hotel_admin h', 'h.hotel_id = r.hotel_id', 'inner');
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -251,13 +263,17 @@ class Datatables extends CI_Model {
         return $this->db->count_all_results();
     }
 
-    public function DTBanquets($limit, $start, $search = "", $orderColumn = "banquet.banquet_id", $orderDir = "DESC")
+    public function DTBanquets($limit, $start, $search = "", $orderColumn = "banquet.banquet_id", $orderDir = "DESC", $hotelId = null)
     {
         $this->db->select('banquet.*, hotel_admin.hotel_name');
         $this->db->from('banquet');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
         $this->db->where('banquet.is_deleted', 0);
         $this->db->where('hotel_admin.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('banquet.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -274,22 +290,30 @@ class Datatables extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function DTBanquetsAll()
+    public function DTBanquetsAll($hotelId = null)
     {
         $this->db->from('banquet');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
         $this->db->where('banquet.is_deleted', 0);
         $this->db->where('hotel_admin.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('banquet.hotel_id', (int) $hotelId);
+        }
 
         return $this->db->count_all_results();
     }
 
-    public function DTBanquetsFiltered($search = "")
+    public function DTBanquetsFiltered($search = "", $hotelId = null)
     {
         $this->db->from('banquet');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = banquet.hotel_id', 'inner');
         $this->db->where('banquet.is_deleted', 0);
         $this->db->where('hotel_admin.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('banquet.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -542,7 +566,7 @@ class Datatables extends CI_Model {
         return $this->db->count_all_results();
     }
 
-    public function DTTableCategories($limit, $start, $search = "", $orderColumn = "tc.id", $orderDir = "DESC")
+    public function DTTableCategories($limit, $start, $search = "", $orderColumn = "tc.id", $orderDir = "DESC", $hotelId = null)
     {
         $this->db->select('tc.*, r.restaurant_name');
         $this->db->from('table_categories tc');
@@ -551,6 +575,10 @@ class Datatables extends CI_Model {
         $this->db->where('tc.is_deleted', 0);
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -567,7 +595,7 @@ class Datatables extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function DTTableCategoriesAll()
+    public function DTTableCategoriesAll($hotelId = null)
     {
         $this->db->from('table_categories tc');
         $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'inner');
@@ -575,11 +603,15 @@ class Datatables extends CI_Model {
         $this->db->where('tc.is_deleted', 0);
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         return $this->db->count_all_results();
     }
 
-    public function DTTableCategoriesFiltered($search = "")
+    public function DTTableCategoriesFiltered($search = "", $hotelId = null)
     {
         $this->db->from('table_categories tc');
         $this->db->join('hotel_restaurants r', 'r.id = tc.restaurant_id', 'inner');
@@ -587,6 +619,10 @@ class Datatables extends CI_Model {
         $this->db->where('tc.is_deleted', 0);
         $this->db->where('r.is_deleted', 0);
         $this->db->where('h.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('r.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -720,12 +756,16 @@ class Datatables extends CI_Model {
         return $this->db->count_all_results();
     }
 
-    public function DTRoomTypes($limit, $start, $search = "", $orderColumn = "roomtype.roomtype_id", $orderDir = "DESC")
+    public function DTRoomTypes($limit, $start, $search = "", $orderColumn = "roomtype.roomtype_id", $orderDir = "DESC", $hotelId = null)
     {
         $this->db->select('roomtype.*, hotel_admin.hotel_name');
         $this->db->from('roomtype');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = roomtype.hotel_id', 'left');
         $this->db->where('roomtype.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('roomtype.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();
@@ -741,19 +781,27 @@ class Datatables extends CI_Model {
         return $this->db->get()->result();
     }
 
-    public function DTRoomTypesAll()
+    public function DTRoomTypesAll($hotelId = null)
     {
         $this->db->from('roomtype');
         $this->db->where('roomtype.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('roomtype.hotel_id', (int) $hotelId);
+        }
 
         return $this->db->count_all_results();
     }
 
-    public function DTRoomTypesFiltered($search = "")
+    public function DTRoomTypesFiltered($search = "", $hotelId = null)
     {
         $this->db->from('roomtype');
         $this->db->join('hotel_admin', 'hotel_admin.hotel_id = roomtype.hotel_id', 'left');
         $this->db->where('roomtype.is_deleted', 0);
+
+        if ($hotelId !== null) {
+            $this->db->where('roomtype.hotel_id', (int) $hotelId);
+        }
 
         if (!empty($search)) {
             $this->db->group_start();

@@ -390,6 +390,20 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <!-- ✅ jQuery - Use FULL version instead of slim for Flot -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<?php if (($this->uri->segment(1) === 'hotel-admin' && in_array($this->uri->segment(2), ['manage-staff', 'manage-roomtypes', 'manage-restaurants', 'manage-banquet', 'manage-departments', 'manage-table-categories', 'manage-time-slots'], true)) || in_array($this->uri->segment(1), ['restaurants', 'view-departments', 'view-staff-admin'], true)): ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script>
+$(document).on(
+    'click.hotelAdminCrudModalClose',
+    '.modal .btn-close, .modal [data-bs-dismiss="modal"], .modal [data-dismiss="modal"]',
+    function (event) {
+        event.preventDefault();
+        $(this).closest('.modal').modal('hide');
+    }
+);
+</script>
+<?php endif; ?>
+
 <!-- ✅ Bootstrap dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
@@ -417,15 +431,6 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <!-- ✅ Feather Icons -->
 <script src="<?php echo base_url('assets/assets/') ?>icons/feather-icons/feather.min.js"></script>
 
-<!-- ✅ AmCharts (optional if used in dashboard) -->
-<?php if ($is_hotel_dashboard): ?>
-<script src="<?php echo base_url('assets/') ?>/lib/4/core.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/maps.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/geodata/worldLow.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/themes/dataviz.js"></script>
-<script src="<?php echo base_url('assets/') ?>/lib/4/themes/animated.js"></script>
-<?php endif; ?>
-
 <!-- ✅ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?php echo base_url('assets/assets/') ?>/vendor_components/sweetalert/sweetalert.min.js"></script>
@@ -437,12 +442,6 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <!-- ✅ Tresto Template Scripts -->
 <script src="<?php echo base_url('assets/') ?>/js/template.js"></script>
 <script src="<?php echo base_url('assets/') ?>/js/demo.js"></script>
-
-<!-- ✅ Dashboard JS should come at last -->
-<?php if ($is_hotel_dashboard): ?>
-<script src="<?php echo base_url('assets/') ?>/js/pages/dashboard.js"></script>
-<?php endif; ?>
-
 
 <!-- ✅ DataTables CSS & Buttons CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">

@@ -198,6 +198,23 @@ $route['forget-password-hotel-admin'] = 'hotelAdmin/login/forget_password';
 $route['update-hotel-admin-profile'] = 'hotelAdmin/main/update_profile';
 $route['hotel-admin-account-settings'] = 'hotelAdmin/main/account_settings';
 
+// Hotel admin staff management
+$route['hotel-admin/manage-staff'] = 'hotelAdmin/Staff/index';
+$route['hotel-admin/get-staff-table'] = 'hotelAdmin/Staff/get_staff_table';
+$route['hotel-admin/insert-staff'] = 'hotelAdmin/Staff/insert';
+$route['hotel-admin/get-staff-details'] = 'hotelAdmin/Staff/get_staff_details';
+$route['hotel-admin/update-staff'] = 'hotelAdmin/Staff/update';
+$route['hotel-admin/delete-staff'] = 'hotelAdmin/Staff/delete';
+$route['hotel-admin/view-staff'] = 'hotelAdmin/Staff/get_mapping_details';
+
+// Hotel admin room type management
+$route['hotel-admin/manage-roomtypes'] = 'hotelAdmin/RoomTypeManagement/index';
+$route['hotel-admin/get-roomtypes-table'] = 'hotelAdmin/RoomTypeManagement/get_roomtypes_table';
+$route['hotel-admin/insert-roomtype'] = 'hotelAdmin/RoomTypeManagement/insert';
+$route['hotel-admin/edit-roomtype'] = 'hotelAdmin/RoomTypeManagement/edit';
+$route['hotel-admin/update-roomtype'] = 'hotelAdmin/RoomTypeManagement/update';
+$route['hotel-admin/delete-roomtype'] = 'hotelAdmin/RoomTypeManagement/delete';
+
 // routes for room anylysis
 
 $route['room_analysis'] = 'hotelAdmin/ManageRoom_Analysis/index';
@@ -206,8 +223,47 @@ $route['delete-room_analysis'] = 'hotelAdmin/ManageRoom_Analysis/delete';
 $route['edit-room_analysis'] = 'hotelAdmin/ManageRoom_Analysis/edit';
 $route['update-room_analysis'] = 'hotelAdmin/ManageRoom_Analysis/update';
 
-// routes for restarants anylysis
+// Hotel admin restaurant management
+$route['hotel-admin/manage-restaurants'] = 'hotelAdmin/ManageRestaurants/index';
+$route['hotel-admin/get-restaurants-table'] = 'hotelAdmin/ManageRestaurants/get_restaurants_table';
+$route['hotel-admin/insert-restaurant'] = 'hotelAdmin/ManageRestaurants/insert';
+$route['hotel-admin/edit-restaurant'] = 'hotelAdmin/ManageRestaurants/edit';
+$route['hotel-admin/update-restaurant'] = 'hotelAdmin/ManageRestaurants/update';
+$route['hotel-admin/delete-restaurant'] = 'hotelAdmin/ManageRestaurants/delete';
 
+// Hotel admin banquet management
+$route['hotel-admin/manage-banquet'] = 'hotelAdmin/BanquetManagement/index';
+$route['hotel-admin/get-banquets-table'] = 'hotelAdmin/BanquetManagement/get_banquets_table';
+$route['hotel-admin/insert-banquet'] = 'hotelAdmin/BanquetManagement/insert';
+$route['hotel-admin/edit-banquet'] = 'hotelAdmin/BanquetManagement/edit';
+$route['hotel-admin/update-banquet'] = 'hotelAdmin/BanquetManagement/update';
+$route['hotel-admin/delete-banquet'] = 'hotelAdmin/BanquetManagement/delete';
+
+// Hotel admin department management
+$route['hotel-admin/manage-departments'] = 'hotelAdmin/Departments/index';
+$route['hotel-admin/get-departments-table'] = 'hotelAdmin/Departments/get_departments_table';
+$route['hotel-admin/insert-department'] = 'hotelAdmin/Departments/insert';
+$route['hotel-admin/edit-department'] = 'hotelAdmin/Departments/edit';
+$route['hotel-admin/update-department'] = 'hotelAdmin/Departments/update';
+$route['hotel-admin/delete-department'] = 'hotelAdmin/Departments/delete';
+
+// Hotel admin table category management
+$route['hotel-admin/manage-table-categories'] = 'hotelAdmin/TableCategories/manage';
+$route['hotel-admin/get-table-categories-table'] = 'hotelAdmin/TableCategories/get_table_categories_table';
+$route['hotel-admin/table-categories-add'] = 'hotelAdmin/TableCategories/add';
+$route['hotel-admin/table-categories-update'] = 'hotelAdmin/TableCategories/update';
+$route['hotel-admin/table-categories-delete'] = 'hotelAdmin/TableCategories/delete';
+$route['hotel-admin/table-categories-details'] = 'hotelAdmin/TableCategories/getDetails';
+
+// Hotel admin time slot management
+$route['hotel-admin/manage-time-slots'] = 'hotelAdmin/TimeSlots/manage';
+$route['hotel-admin/get-time-slots-table'] = 'hotelAdmin/TimeSlots/get_time_slots_table';
+$route['hotel-admin/time-slots-add'] = 'hotelAdmin/TimeSlots/add';
+$route['hotel-admin/time-slots-update'] = 'hotelAdmin/TimeSlots/update';
+$route['hotel-admin/time-slots-delete'] = 'hotelAdmin/TimeSlots/delete';
+$route['hotel-admin/time-slots-details'] = 'hotelAdmin/TimeSlots/getDetails';
+
+// Backward-compatible hotel admin restaurant routes
 $route['restaurants'] = 'hotelAdmin/ManageRestaurants/index';
 $route['insert-restaurants'] = 'hotelAdmin/ManageRestaurants/insert';
 $route['delete-restaurants'] = 'hotelAdmin/ManageRestaurants/delete';

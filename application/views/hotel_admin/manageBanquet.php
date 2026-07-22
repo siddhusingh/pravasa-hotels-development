@@ -2,40 +2,42 @@
     <div class="container-full">
         <div class="custom-page-header">
             <div class="header-left">
-                <div class="header-icon-box"><i class="fa fa-sitemap"></i></div>
+                <div class="header-icon-box"><i class="fa fa-building"></i></div>
                 <div class="header-content">
-                    <h2 class="header-title">Manage Departments</h2>
+                    <h2 class="header-title">Manage Banquet</h2>
                     <ol class="custom-breadcrumb">
                         <li><i class="fa fa-home"></i></li>
                         <li>Hotel Admin</li>
                         <li><i class="fa fa-angle-right"></i></li>
                         <li>Property Management</li>
                         <li><i class="fa fa-angle-right"></i></li>
-                        <li class="active">Departments</li>
+                        <li class="active">Manage Banquet</li>
                     </ol>
                 </div>
             </div>
-            <div class="header-banner"><img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt=""></div>
+            <div class="header-banner">
+                <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+            </div>
         </div>
 
         <section class="content">
             <div class="box new_table_box">
                 <div class="box-header">
-                    <h4 class="box-title">Manage Departments</h4>
+                    <h4 class="box-title">Manage Banquet</h4>
                     <div class="float-right" style="float:right;">
-                        <button type="button" class="btn btn-primary-light btn-sm" id="open-department-modal">Add +</button>
+                        <button type="button" class="btn btn-primary-light btn-sm" id="open-banquet-modal">Add +</button>
                     </div>
                 </div>
-                <div class="box-body last_active_design_td">
+                <div class="box-body">
                     <div class="table-responsive">
-                        <table id="hotel-departments-table" class="text-fade table table-bordered display" style="width:100%">
+                        <table id="hotel-banquets-table" class="text-fade table table-bordered display" style="width:100%">
                             <thead>
                                 <tr class="text-dark">
                                     <th>Sr. No.</th>
-                                    <th>Department Name</th>
-                                    <th>Escalation Level 1</th>
-                                    <th>Escalation Level 2</th>
-                                    <th>Escalation Level 3</th>
+                                    <th>Hotel Name</th>
+                                    <th>Banquet Code</th>
+                                    <th>Banquet Name</th>
+                                    <th>Capacity</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -47,19 +49,19 @@
     </div>
 </div>
 
-<div class="modal modal-lg new_modal_design" id="department-crud-modal" tabindex="-1" role="dialog" aria-labelledby="department-crud-modal-label" aria-hidden="true">
+<div class="modal modal-lg new_modal_design" id="banquet-crud-modal" tabindex="-1" role="dialog" aria-labelledby="banquet-crud-modal-label" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="custom-page-header">
                 <div class="header-left">
-                    <div class="header-icon-box"><i class="fa fa-sitemap"></i></div>
+                    <div class="header-icon-box"><i class="fa fa-building"></i></div>
                     <div class="header-content">
                         <div class="modal-header hotel_modal_header">
-                            <h5 class="modal-title" id="department-crud-modal-label"></h5>
+                            <h5 class="modal-title" id="banquet-crud-modal-label"></h5>
                             <div class="hotel_banner"></div>
                         </div>
                         <ol class="custom-breadcrumb">
-                            <li><i class="fa fa-info-circle"></i> Fill in the details to add or update a department.</li>
+                            <li><i class="fa fa-info-circle"></i> Fill in the details to add or update a banquet.</li>
                         </ol>
                     </div>
                 </div>
@@ -68,33 +70,35 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body ps-3 pe-3">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="department_name">Department Name <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-control" id="department_name" placeholder="Department Name">
-                        <div id="department_name_error" class="validation text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="escalation_level_1">Level 1 Escalation <span class="required-asterisk">*</span></label>
-                        <input type="number" min="0" step="any" class="form-control" id="escalation_level_1" placeholder="Escalation in Hours">
-                        <div id="escalation_level_1_error" class="validation text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="escalation_level_2">Level 2 Escalation <span class="required-asterisk">*</span></label>
-                        <input type="number" min="0" step="any" class="form-control" id="escalation_level_2" placeholder="Escalation in Hours">
-                        <div id="escalation_level_2_error" class="validation text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="escalation_level_3">Level 3 Escalation <span class="required-asterisk">*</span></label>
-                        <input type="number" min="0" step="any" class="form-control" id="escalation_level_3" placeholder="Escalation in Hours">
-                        <div id="escalation_level_3_error" class="validation text-danger"></div>
-                    </div>
+            <div class="modal-body ps-3 pe-3 row">
+                <div class="col-md-6 mb-3">
+                    <label for="hotel_id">Parent Hotel <span class="required-asterisk">*</span></label>
+                    <select class="form-select" id="hotel_id" name="hotel_id" disabled aria-disabled="true">
+                        <option value="<?php echo encrypt_id($hotel->hotel_id); ?>" selected>
+                            <?php echo htmlspecialchars((string) $hotel->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
+                        </option>
+                    </select>
+                    <small class="text-muted">Your assigned hotel is selected automatically.</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="banquet_code">Banquet Code <span class="required-asterisk">*</span></label>
+                    <input type="text" class="form-control" id="banquet_code" name="banquet_code" placeholder="Enter Banquet Code">
+                    <div class="text-danger validation" id="banquet_code_error"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="banquet_name">Banquet Name <span class="required-asterisk">*</span></label>
+                    <input type="text" class="form-control" id="banquet_name" name="banquet_name" placeholder="Enter Banquet Name">
+                    <div class="text-danger validation" id="banquet_name_error"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="capacity">Capacity <span class="required-asterisk">*</span></label>
+                    <input type="number" min="1" step="1" class="form-control" id="capacity" name="capacity" placeholder="Enter Capacity">
+                    <div class="text-danger validation" id="capacity_error"></div>
                 </div>
             </div>
             <div class="modal-footer d-flex justify-content-start">
                 <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="department-action-btn" class="btn btn-primary" data-record-id="">Create</button>
+                <button type="button" id="banquet-action-btn" class="btn btn-primary" data-record-id="">Add Banquet</button>
             </div>
         </div>
     </div>
@@ -121,37 +125,39 @@
             }
         }
 
-        var departmentTable = $('#hotel-departments-table').DataTable({
+        var banquetTable = $('#hotel-banquets-table').DataTable({
             processing: true,
             serverSide: true,
             ordering: true,
             searching: true,
             columnDefs: [{ targets: 5, orderable: false }],
             ajax: {
-                url: '<?php echo base_url('hotel-admin/get-departments-table'); ?>',
+                url: '<?php echo base_url('hotel-admin/get-banquets-table'); ?>',
                 type: 'POST',
                 data: function(data) {
                     data[window.CSRF.name] = window.CSRF.hash;
                 },
                 dataSrc: function(response) {
                     refreshCsrf(response);
+                    if (response.status === false && response.message) {
+                        toastr.error(response.message);
+                    }
                     return response.data || [];
                 }
             }
         });
 
-        function resetDepartmentForm() {
+        function resetBanquetForm() {
             $('.validation').text('');
-            $('#department_name, #escalation_level_1, #escalation_level_2, #escalation_level_3').val('');
-            $('#department-action-btn').attr('data-record-id', '').text('Create').prop('disabled', false);
+            $('#banquet_code, #banquet_name, #capacity').val('');
+            $('#banquet-action-btn').attr('data-record-id', '').text('Add Banquet').prop('disabled', false);
         }
 
-        function validateDepartmentForm() {
+        function validateBanquetForm() {
             var fields = [
-                ['department_name', 'Department name is required'],
-                ['escalation_level_1', 'Level 1 escalation is required'],
-                ['escalation_level_2', 'Level 2 escalation is required'],
-                ['escalation_level_3', 'Level 3 escalation is required']
+                ['banquet_code', 'Banquet code is required'],
+                ['banquet_name', 'Banquet name is required'],
+                ['capacity', 'Capacity is required']
             ];
             var isValid = true;
 
@@ -164,31 +170,29 @@
                 }
             });
 
-            ['escalation_level_1', 'escalation_level_2', 'escalation_level_3'].forEach(function(field) {
-                var value = $('#' + field).val();
-                if (value !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0)) {
-                    $('#' + field + '_error').text('Escalation level must be zero or greater');
-                    isValid = false;
-                }
-            });
+            var capacity = $('#capacity').val();
+            if (capacity !== '' && (!/^\d+$/.test(capacity) || Number(capacity) < 1)) {
+                $('#capacity_error').text('Capacity must be a positive whole number');
+                isValid = false;
+            }
 
             return isValid;
         }
 
-        $('#department_name, #escalation_level_1, #escalation_level_2, #escalation_level_3').on('input change', function() {
+        $('#banquet_code, #banquet_name, #capacity').on('input change', function() {
             $('#' + this.id + '_error').text('');
         });
 
-        $('#open-department-modal').on('click', function(event) {
+        $('#open-banquet-modal').on('click', function(event) {
             event.preventDefault();
-            resetDepartmentForm();
-            $('#department-crud-modal-label').text('Add New Department');
-            $('#department-crud-modal').modal('show');
+            resetBanquetForm();
+            $('#banquet-crud-modal-label').text('Add New Banquet');
+            $('#banquet-crud-modal').modal('show');
         });
 
-        $(document).on('click', '#department-action-btn', function(event) {
+        $(document).on('click', '#banquet-action-btn', function(event) {
             event.preventDefault();
-            if (!validateDepartmentForm()) {
+            if (!validateBanquetForm()) {
                 return;
             }
 
@@ -197,33 +201,32 @@
             var isUpdate = recordId !== '';
             var buttonText = button.text();
             var formData = new FormData();
-            formData.append('department_name', $('#department_name').val());
-            formData.append('escalation_level_1', $('#escalation_level_1').val());
-            formData.append('escalation_level_2', $('#escalation_level_2').val());
-            formData.append('escalation_level_3', $('#escalation_level_3').val());
+            formData.append('banquet_code', $('#banquet_code').val());
+            formData.append('banquet_name', $('#banquet_name').val());
+            formData.append('capacity', $('#capacity').val());
             formData.append(window.CSRF.name, window.CSRF.hash);
             if (isUpdate) {
                 formData.append('record_id', recordId);
             }
 
             $.ajax({
-                url: '<?php echo base_url('hotel-admin/'); ?>' + (isUpdate ? 'update-department' : 'insert-department'),
+                url: '<?php echo base_url('hotel-admin/'); ?>' + (isUpdate ? 'update-banquet' : 'insert-banquet'),
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 dataType: 'json',
                 beforeSend: function() {
-                    button.prop('disabled', true).text(isUpdate ? 'Updating...' : 'Saving...');
+                    button.prop('disabled', true).text(isUpdate ? 'Updating...' : 'Adding...');
                 },
                 success: function(response) {
                     refreshCsrf(response);
                     if (response.status === true) {
                         toastr.success(response.message);
-                        $('#department-crud-modal').modal('hide');
-                        departmentTable.ajax.reload(null, false);
+                        $('#banquet-crud-modal').modal('hide');
+                        banquetTable.ajax.reload(null, false);
                     } else {
-                        toastr.error(response.message || 'Unable to save department');
+                        toastr.error(response.message || 'Unable to save banquet');
                     }
                 },
                 error: function() {
@@ -235,12 +238,12 @@
             });
         });
 
-        $(document).on('click', '.edit-department', function(event) {
+        $(document).on('click', '.edit-banquet', function(event) {
             event.preventDefault();
-            resetDepartmentForm();
+            resetBanquetForm();
 
             $.ajax({
-                url: '<?php echo base_url('hotel-admin/edit-department'); ?>',
+                url: '<?php echo base_url('hotel-admin/edit-banquet'); ?>',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -250,31 +253,30 @@
                 success: function(response) {
                     refreshCsrf(response);
                     if (response.status !== true) {
-                        toastr.error(response.message || 'Unable to load department details');
+                        toastr.error(response.message || 'Unable to load banquet details');
                         return;
                     }
 
-                    $('#department_name').val(response.data.department_name);
-                    $('#escalation_level_1').val(response.data.escalation_level_1);
-                    $('#escalation_level_2').val(response.data.escalation_level_2);
-                    $('#escalation_level_3').val(response.data.escalation_level_3);
-                    $('#department-crud-modal-label').text('Edit Department');
-                    $('#department-action-btn').attr('data-record-id', response.id).text('Update');
-                    $('#department-crud-modal').modal('show');
+                    $('#banquet_code').val(response.data.banquet_code);
+                    $('#banquet_name').val(response.data.banquet_name);
+                    $('#capacity').val(response.data.capacity);
+                    $('#banquet-crud-modal-label').text('Edit Banquet');
+                    $('#banquet-action-btn').attr('data-record-id', response.id).text('Update Banquet');
+                    $('#banquet-crud-modal').modal('show');
                 },
                 error: function() {
-                    toastr.error('Error fetching department details');
+                    toastr.error('Error fetching banquet details');
                 }
             });
         });
 
-        $(document).on('click', '.delete-department', function(event) {
+        $(document).on('click', '.delete-banquet', function(event) {
             event.preventDefault();
             var recordId = $(this).attr('data-record_id');
 
             Swal.fire({
                 title: 'Are you sure?',
-                text: 'This department will be removed from the active department list.',
+                text: 'This banquet will be removed from the active banquet list.',
                 icon: 'question',
                 showCancelButton: true,
                 showCloseButton: true,
@@ -285,7 +287,7 @@
                 }
 
                 $.ajax({
-                    url: '<?php echo base_url('hotel-admin/delete-department'); ?>',
+                    url: '<?php echo base_url('hotel-admin/delete-banquet'); ?>',
                     type: 'POST',
                     dataType: 'json',
                     data: {
@@ -296,9 +298,9 @@
                         refreshCsrf(response);
                         if (response.status === true) {
                             toastr.success(response.message);
-                            departmentTable.ajax.reload(null, false);
+                            banquetTable.ajax.reload(null, false);
                         } else {
-                            toastr.error(response.message || 'Unable to delete department');
+                            toastr.error(response.message || 'Unable to delete banquet');
                         }
                     },
                     error: function() {

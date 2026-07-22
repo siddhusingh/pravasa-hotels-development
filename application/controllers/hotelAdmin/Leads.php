@@ -26,15 +26,23 @@ class Leads extends CI_Controller
         $hotel_session = $this->session->userdata('hotel_admin_session');
 
         $property = (int) ($hotel_session['id'] ?? 0);
-        $staff_id = max(0, (int) $this->input->get('staff_id'));
+        $staffFilter = trim((string) $this->input->get('staff_id'));
+        $staff_id = $this->resolveStaffFilter($staffFilter);
+
+        if ($staffFilter !== '' && $staff_id === 0) {
+            return show_error('Invalid staff member selected.', 400);
+        }
+
         $scoped_staff = $staff_id > 0 ? $this->getHotelStaffMember($staff_id, $property) : null;
 
         if ($staff_id > 0 && !$scoped_staff) {
             return show_error('The selected staff member is not assigned to this hotel.', 403);
         }
 
+        $departmentFilter = $this->resolveDepartmentFilter($this->input->get('department'));
+
         $filters = [
-            'department' => $this->input->get('department'),
+            'department' => $departmentFilter,
             'status' => $this->input->get('status'),
             'channel' => $this->input->get('channel'),
             'start_date' => $this->input->get('start_date'),
@@ -71,6 +79,9 @@ class Leads extends CI_Controller
         $data['scoped_staff_name'] = $scoped_staff['name'] ?? '';
         $data['creators'] = $this->LeadModel->get_active_creators();
         $data['assigned_users'] = $this->LeadModel->get_active_assigned_users();
+        $data['initial_department_filter'] = $departmentFilter === ''
+            ? []
+            : (is_array($departmentFilter) ? array_values($departmentFilter) : [(string) $departmentFilter]);
 
         if ($scoped_staff) {
             $staff_in_options = false;
@@ -116,6 +127,60 @@ class Leads extends CI_Controller
         $this->load->view('hotel_admin/include/sidebar');
         $this->load->view('hotel_admin/lead_report', $data);
         $this->load->view('hotel_admin/include/footer');
+    }
+
+    /**
+     * Accept encrypted department links while retaining existing numeric filters.
+     */
+    private function resolveDepartmentFilter($value)
+    {
+        $values = is_array($value) ? $value : [$value];
+        $resolved = [];
+
+        foreach ($values as $department) {
+            $department = trim((string) $department);
+            if ($department === '') {
+                continue;
+            }
+
+            $departmentId = ctype_digit($department)
+                ? (int) $department
+                : (int) decrypt_id($department);
+
+            if ($departmentId < 1) {
+                continue;
+            }
+
+            $activeDepartment = $this->Common_model->getdata('departments', [
+                'department_id' => $departmentId,
+                'is_deleted' => 0
+            ]);
+
+            if (!empty($activeDepartment)) {
+                $resolved[] = (string) $departmentId;
+            }
+        }
+
+        $resolved = array_values(array_unique($resolved));
+        if (is_array($value)) {
+            return $resolved;
+        }
+
+        return $resolved[0] ?? '';
+    }
+
+    /**
+     * Accept encrypted staff drill-down links while retaining existing numeric filters.
+     */
+    private function resolveStaffFilter($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return 0;
+        }
+
+        $staffId = ctype_digit($value) ? (int) $value : (int) decrypt_id($value);
+        return max(0, $staffId);
     }
 
     /**
