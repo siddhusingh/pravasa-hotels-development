@@ -263,6 +263,8 @@ class Reports extends CI_Controller
 
         // Populate dropdown values
         $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $fixed_property = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
+        $data['properties'] = $fixed_property ? [$fixed_property] : [];
 
 
         $data['report_data']  = $this->LeadModel->get_property_department_channel_report($filters);

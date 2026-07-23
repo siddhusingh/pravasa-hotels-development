@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 1 seconds
-Output:
 <!-- Content Wrapper. Contains page content -->
 <style>
     .theme-primary .dt-buttons .dt-button {
@@ -19,6 +16,11 @@ Output:
     .lead-report-filters .report-multiselect {
         position: relative;
         width: 100%;
+    }
+
+    .lead-report-filters .report-multiselect-toggle:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
     }
 
      
@@ -100,8 +102,64 @@ Output:
     .dataTables_scrollHeadInner {
         width: 100%important;
     }
-    .new_table_box table tbody td:first-child {
+.new_table_box table tbody td:first-child {
     text-align: left!important;
+}
+
+.content-wrapper {
+    position: relative;
+}
+
+#admin-summary-filter-modal .modal-dialog {
+    max-width: 1100px;
+    min-height: auto;
+    width: 100%;
+}
+
+#admin-summary-filter-modal.admin-summary-filter-overlay {
+    align-items: flex-start;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    inset: 0;
+    justify-content: center;
+    min-height: calc(100vh - 70px);
+    overflow-y: auto;
+    padding: 32px;
+    position: absolute;
+    z-index: 100;
+}
+
+#admin-summary-filter-modal .modal-content,
+#admin-summary-filter-modal .modal-body {
+    overflow: visible !important;
+}
+
+#admin-summary-filter-modal .modal-header {
+    padding: 24px 28px 12px;
+}
+
+#admin-summary-filter-modal .modal-body {
+    padding: 12px 28px 8px;
+}
+
+#admin-summary-filter-modal .modal-footer {
+    padding: 14px 28px 24px;
+}
+
+#initial-admin-summary-filter-error,
+#admin-summary-filter-error {
+    min-height: 22px;
+}
+
+@media (max-width: 767.98px) {
+    #admin-summary-filter-modal.admin-summary-filter-overlay {
+        padding: 16px;
+    }
+
+    body.sidebar-open .main-sidebar {
+        z-index: 830 !important;
+    }
 }
 </style>
 <div class="content-wrapper">
@@ -143,13 +201,22 @@ Output:
                             $filterOpen = !empty($this->input->get());
                             ?>
 
+                            <div id="admin-summary-report-results" style="display: none;">
                             <div class="row">
 
                                 <form method="GET" action="<?= base_url('admin-reports-summary'); ?>" class="mb-4 lead-report-filters">
                                     <div class="row align-items-end">
                                         <!-- Hotel property is fixed from the logged-in session. -->
+                                        <div class="col-md-3">
+                                            <label for="summary_property" class="form-label">Hotel</label>
+                                            <select id="summary_property" class="form-control report-multiselect-source" multiple disabled aria-readonly="true">
+                                                <?php foreach ($properties as $property) { ?>
+                                                    <option value="<?= (int) $property->hotel_id; ?>" selected><?= htmlspecialchars($property->hotel_name, ENT_QUOTES, 'UTF-8'); ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
                                         <!-- Department -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label for="department" class="form-label">Department</label>
                                             <select name="department[]" class="form-control filter-input report-multiselect-source" multiple id="department">
                                                 <?php foreach ($departments as $dept) { ?>
@@ -163,17 +230,18 @@ Output:
 
                                         <!-- Date Filters -->
                                         <!-- 🆕 Date Filters -->
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label for="start_date" class="form-label">Start Date</label>
                                             <input type="date" id="start_date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <label for="end_date" class="form-label">End Date</label>
                                             <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
                                         </div>
 
 
                                     </div>
+                                    <div id="admin-summary-filter-error" class="text-danger" role="alert" aria-live="polite"></div>
                                 </form>
 
 
@@ -282,6 +350,7 @@ Output:
 
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -292,6 +361,60 @@ Output:
     </section>
     <!-- /.content -->
 </div>
+</div>
+
+<div class="new_modal_design admin-summary-filter-overlay" id="admin-summary-filter-modal" tabindex="-1"
+    role="dialog" aria-labelledby="admin-summary-filter-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4 class="modal-title" id="admin-summary-filter-modal-title">Report Filters</h4>
+                    <p class="mb-0 text-muted">Select a required date range and any additional filters.</p>
+                </div>
+            </div>
+            <form id="initial-admin-summary-filter-form" class="lead-report-filters" autocomplete="off" novalidate>
+                <div class="modal-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-3 mb-3">
+                            <label for="modal_summary_property" class="form-label">Hotel</label>
+                            <select id="modal_summary_property" class="form-control report-multiselect-source" multiple disabled aria-readonly="true">
+                                <?php foreach ($properties as $property) { ?>
+                                    <option value="<?= (int) $property->hotel_id; ?>" selected><?= htmlspecialchars($property->hotel_name, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="modal_summary_department" class="form-label">Department</label>
+                            <select id="modal_summary_department" class="form-control report-multiselect-source" multiple>
+                                <?php foreach ($departments as $dept) { ?>
+                                    <option value="<?= (int) $dept->department_id; ?>"><?= htmlspecialchars($dept->department_name, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="modal_summary_start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" id="modal_summary_start_date" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="modal_summary_end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="date" id="modal_summary_end_date" class="form-control" required>
+                        </div>
+
+                        <div class="col-12">
+                            <div id="initial-admin-summary-filter-error" class="text-danger" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 
@@ -320,7 +443,9 @@ Output:
         $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
 
         let summary = placeholder;
-        if (selectedCount > 0 && selectedCount === total) {
+        if ($select.prop('disabled') && selectedCount === 1) {
+            summary = $select.find('option:selected').text().trim();
+        } else if (selectedCount > 0 && selectedCount === total) {
             summary = `All selected (${selectedCount})`;
         } else if (selectedCount > 0) {
             summary = `${selectedCount} selected`;
@@ -332,6 +457,7 @@ Output:
     function initializeReportMultiSelect(selector, placeholder) {
         const $select = $(selector);
         if (!$select.length) return;
+        const isDisabled = $select.prop('disabled');
 
         if ($select.hasClass('select2-hidden-accessible') && $.fn.select2) {
             $select.select2('destroy');
@@ -344,7 +470,8 @@ Output:
         const $toggle = $('<button>', {
             type: 'button',
             class: 'report-multiselect-toggle',
-            'aria-expanded': 'false'
+            'aria-expanded': 'false',
+            disabled: isDisabled
         }).append($('<span>', {
             class: 'report-multiselect-summary',
             text: placeholder
@@ -357,7 +484,8 @@ Output:
         if (availableOptions.length) {
             const $selectAll = $('<input>', {
                 type: 'checkbox',
-                class: 'report-multiselect-all'
+                class: 'report-multiselect-all',
+                disabled: isDisabled
             });
             $menu.append(
                 $('<label>', { class: 'report-multiselect-option report-multiselect-select-all' })
@@ -368,7 +496,8 @@ Output:
                 const $checkbox = $('<input>', {
                     type: 'checkbox',
                     class: 'report-multiselect-item',
-                    value: this.value
+                    value: this.value,
+                    disabled: isDisabled
                 });
                 $menu.append(
                     $('<label>', { class: 'report-multiselect-option' })
@@ -386,6 +515,7 @@ Output:
         $select.after($widget);
 
         $toggle.on('click', function() {
+            if (isDisabled) return;
             const isOpen = !$widget.hasClass('is-open');
             $('.report-multiselect').not($widget).removeClass('is-open')
                 .find('.report-multiselect-toggle').attr('aria-expanded', 'false');
@@ -415,9 +545,14 @@ Output:
 
 
     $(document).ready(function() {
-        var table;
+        var table = null;
+        var filtersReady = false;
+        var $reportError = $('#admin-summary-filter-error');
 
+        initializeReportMultiSelect('#summary_property', 'Select Options');
         initializeReportMultiSelect('#department', 'Select Options');
+        initializeReportMultiSelect('#modal_summary_property', 'Select Options');
+        initializeReportMultiSelect('#modal_summary_department', 'Select Options');
 
         $(document).off('click.reportMultiSelect').on('click.reportMultiSelect', function(e) {
             if (!$(e.target).closest('.report-multiselect').length) {
@@ -428,6 +563,10 @@ Output:
 
         // Function to initialize DataTable
         function initDataTable() {
+            if ($.fn.DataTable.isDataTable('#leadReportTable')) {
+                $('#leadReportTable').DataTable().destroy();
+            }
+
             table = $('#leadReportTable').DataTable({
                 dom: 'lfrtip',
                 pageLength: 50,
@@ -446,9 +585,6 @@ Output:
             });
         }
 
-        // Initialize initially
-        initDataTable();
-
         // Function to fetch filtered data
         function fetchLeads(reset = false) {
             let filters = {
@@ -464,33 +600,85 @@ Output:
                 data: filters,
                 dataType: "json",
                 beforeSend: function() {
-                    if (reset) $('#leadReportTable').html('<p>Loading...</p>');
+                    $reportError.hide().text('');
                 },
                 success: function(response) {
                     if (response.csrfHash) {
                         window.CSRF.hash = response.csrfHash;
                     }
                     if (response.status) {
+                        if ($.fn.DataTable.isDataTable('#leadReportTable')) {
+                            $('#leadReportTable').DataTable().destroy();
+                        }
+
                         // Replace table body HTML only
                         $('#leadReportTable').html(response.html);
 
                         // Reinitialize DataTable with new data
                         initDataTable();
+                        $reportError.hide().text('');
                     } else {
                         $('#leadReportTable').html('<p>No records found.</p>');
                     }
                 },
-                error: function() {
-                    alert('Something went wrong!');
+                error: function(xhr) {
+                    const response = xhr.responseJSON || {};
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+                    $reportError.text(response.message || 'Unable to load the report. Please refresh and try again.').show();
                 }
             });
         }
 
         // Trigger fetch on filter change
         $(document).on('change', '#department, #start_date, #end_date', function() {
-            console.log("Filters changed");
+            if (!filtersReady) return;
+
+            const startDate = $('#start_date').val();
+            const endDate = $('#end_date').val();
+
+            if (startDate && endDate && startDate > endDate) {
+                $reportError.text('Start Date cannot be after End Date.').show();
+                return;
+            }
+
+            $reportError.hide().text('');
             fetchLeads(true);
         });
+
+        $('#initial-admin-summary-filter-form').on('submit', function(event) {
+            event.preventDefault();
+
+            const startDate = $('#modal_summary_start_date').val();
+            const endDate = $('#modal_summary_end_date').val();
+            const $initialError = $('#initial-admin-summary-filter-error');
+            $initialError.text('');
+
+            if (!startDate || !endDate) {
+                $initialError.text('Start Date and End Date are required.');
+                return;
+            }
+
+            if (startDate > endDate) {
+                $initialError.text('Start Date cannot be after End Date.');
+                return;
+            }
+
+            $('#department').val($('#modal_summary_department').val() || []).trigger('change.reportMultiSelect');
+            $('#start_date').val(startDate);
+            $('#end_date').val(endDate);
+
+            filtersReady = true;
+            $('#admin-summary-report-results').show();
+            $('#admin-summary-filter-modal').removeClass('show').attr('aria-hidden', 'true');
+            fetchLeads(true);
+        });
+
+        $('#admin-summary-filter-modal')
+            .appendTo('.content-wrapper')
+            .addClass('show')
+            .attr('aria-hidden', 'false');
     });
     })(window.jQuery);
     });

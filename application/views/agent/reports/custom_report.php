@@ -134,6 +134,67 @@
         border: 1px solid #23211d;
         background-color: #fff;
     }
+
+    .content-wrapper {
+        position: relative;
+    }
+
+    #agent-report-filter-modal .modal-dialog {
+        max-width: 1100px;
+        min-height: auto;
+        width: 100%;
+    }
+
+    #agent-report-filter-modal.agent-report-filter-overlay {
+        align-items: flex-start;
+        background: rgba(15, 23, 42, 0.35);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        inset: 0;
+        justify-content: center;
+        min-height: calc(100vh - 70px);
+        overflow-y: auto;
+        padding: 32px;
+        position: absolute;
+        z-index: 100;
+    }
+
+    #agent-report-filter-modal .modal-content,
+    #agent-report-filter-modal .modal-body {
+        overflow: visible !important;
+    }
+
+    #agent-report-filter-modal .modal-header {
+        padding: 24px 28px 12px;
+    }
+
+    #agent-report-filter-modal .modal-body {
+        padding: 12px 28px 8px;
+    }
+
+    #agent-report-filter-modal .modal-footer {
+        padding: 14px 28px 24px;
+    }
+
+    #agent-report-filter-modal .report-filter-card {
+        border: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    #initial-agent-report-filter-error {
+        min-height: 22px;
+    }
+
+    @media (max-width: 767.98px) {
+        #agent-report-filter-modal.agent-report-filter-overlay {
+            padding: 16px;
+        }
+
+        body.sidebar-open .main-sidebar {
+            z-index: 830 !important;
+        }
+    }
 </style>
 
 <div class="content-wrapper">
@@ -164,6 +225,7 @@
                             <h4 class="box-title">Lead Reports</h4>
                         </div>
                         <div class="box-body">
+                            <div id="agent-report-results" style="display: none;">
                             <form id="report-filter-form" class="report-filter-card" autocomplete="off">
                                 <div class="row g-3 align-items-end">
                                     <div class="col-xl-3 col-md-6">
@@ -229,10 +291,6 @@
                                         <input type="date" id="report_end_date" name="end_date" class="form-control">
                                     </div>
 
-                                    <div class="col-xl-3 col-md-6 d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary">Filter</button>
-                                        <button type="button" id="reset-report-filters" class="btn btn-primary-light">Reset</button>
-                                    </div>
                                 </div>
                                 <div id="report-filter-error" class="text-danger" role="alert"></div>
                             </form>
@@ -268,11 +326,101 @@
                                     </thead>
                                 </table>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+    </div>
+</div>
+
+<div class="new_modal_design agent-report-filter-overlay" id="agent-report-filter-modal" tabindex="-1"
+    role="dialog" aria-labelledby="agent-report-filter-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4 class="modal-title" id="agent-report-filter-modal-title">Report Filters</h4>
+                    <p class="mb-0 text-muted">Select a required date range and any additional filters.</p>
+                </div>
+            </div>
+            <form id="initial-agent-report-filter-form" class="report-filter-card" autocomplete="off" novalidate>
+                <div class="modal-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_property" class="form-label">Hotel</label>
+                            <select id="modal_report_property" class="form-select report-select2" disabled>
+                                <option value="<?= (int) ($property->hotel_id ?? 0); ?>" selected>
+                                    <?= htmlspecialchars($property->hotel_name ?? 'Selected Hotel', ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_department" class="form-label">Department</label>
+                            <select id="modal_report_department" class="form-select lead-filter-multiselect-source" data-placeholder="All Departments" multiple>
+                                <?php foreach ($departments as $department): ?>
+                                    <option value="<?= (int) $department->department_id; ?>">
+                                        <?= htmlspecialchars($department->department_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_status" class="form-label">Status</label>
+                            <select id="modal_report_status" class="form-select lead-filter-multiselect-source" data-placeholder="All Statuses" multiple>
+                                <?php foreach ($statuses as $status): ?>
+                                    <option value="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_channel" class="form-label">Lead Source</label>
+                            <select id="modal_report_channel" class="form-select lead-filter-multiselect-source" data-placeholder="All Sources" multiple>
+                                <?php foreach ($channels as $channel): ?>
+                                    <option value="<?= htmlspecialchars($channel, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?= htmlspecialchars(strtoupper($channel), ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_disposition" class="form-label">Stage</label>
+                            <select id="modal_report_disposition" class="form-select lead-filter-multiselect-source" data-placeholder="All Stages" multiple>
+                                <?php foreach ($dispositions as $disposition): ?>
+                                    <option value="<?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" id="modal_report_start_date" class="form-control" required>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6">
+                            <label for="modal_report_end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="date" id="modal_report_end_date" class="form-control" required>
+                        </div>
+
+                        <div class="col-12">
+                            <div id="initial-agent-report-filter-error" class="text-danger" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -287,6 +435,11 @@
         if (!$ || !$.fn.DataTable) {
             return;
         }
+
+        $('#agent-report-filter-modal')
+            .appendTo('.content-wrapper')
+            .addClass('show')
+            .attr('aria-hidden', 'false');
 
         $('.report-select2').each(function () {
             var $select = $(this);
@@ -418,7 +571,7 @@
             syncReportMultiSelect($select, $widget);
         }
 
-        $('#report_department, #report_status, #report_channel, #report_disposition').each(function () {
+        $('#report_department, #report_status, #report_channel, #report_disposition, #modal_report_department, #modal_report_status, #modal_report_channel, #modal_report_disposition').each(function () {
             initializeReportMultiSelect(this);
         });
 
@@ -430,43 +583,83 @@
         });
 
         var $error = $('#report-filter-error');
-        var table = $('#server-side-data-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ordering: true,
-            searching: true,
-            scrollX: true,
-            autoWidth: false,
-            pageLength: 10,
-            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-            order: [[10, 'desc']],
-            ajax: {
-                url: <?= json_encode(base_url('agent/Reports/data_table')); ?>,
-                type: 'POST',
-                data: function (data) {
-                    data.department = $('#report_department').val() || [];
-                    data.status = $('#report_status').val() || [];
-                    data.channel = $('#report_channel').val() || [];
-                    data.disposition = $('#report_disposition').val() || [];
-                    data.start_date = $('#report_start_date').val();
-                    data.end_date = $('#report_end_date').val();
-                    data[window.CSRF.name] = window.CSRF.hash;
-                },
-                dataSrc: function (json) {
-                    if (json.csrfHash) {
-                        window.CSRF.hash = json.csrfHash;
-                    }
-                    $error.hide().text('');
-                    return json.data || [];
-                },
-                error: function (xhr) {
-                    var response = xhr.responseJSON || {};
-                    if (response.csrfHash) {
-                        window.CSRF.hash = response.csrfHash;
-                    }
-                    $error.text(response.message || 'Unable to load the report. Please refresh and try again.').show();
-                }
+        var table = null;
+
+        function initReportTable() {
+            if (table) {
+                return table;
             }
+
+            table = $('#server-side-data-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ordering: true,
+                searching: true,
+                scrollX: true,
+                autoWidth: false,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                order: [[10, 'desc']],
+                ajax: {
+                    url: <?= json_encode(base_url('agent/Reports/data_table')); ?>,
+                    type: 'POST',
+                    data: function (data) {
+                        data.department = $('#report_department').val() || [];
+                        data.status = $('#report_status').val() || [];
+                        data.channel = $('#report_channel').val() || [];
+                        data.disposition = $('#report_disposition').val() || [];
+                        data.start_date = $('#report_start_date').val();
+                        data.end_date = $('#report_end_date').val();
+                        data[window.CSRF.name] = window.CSRF.hash;
+                    },
+                    dataSrc: function (json) {
+                        if (json.csrfHash) {
+                            window.CSRF.hash = json.csrfHash;
+                        }
+                        $error.hide().text('');
+                        return json.data || [];
+                    },
+                    error: function (xhr) {
+                        var response = xhr.responseJSON || {};
+                        if (response.csrfHash) {
+                            window.CSRF.hash = response.csrfHash;
+                        }
+                        $error.text(response.message || 'Unable to load the report. Please refresh and try again.').show();
+                    }
+                }
+            });
+
+            return table;
+        }
+
+        $('#initial-agent-report-filter-form').on('submit', function (event) {
+            event.preventDefault();
+
+            var start = $('#modal_report_start_date').val();
+            var end = $('#modal_report_end_date').val();
+            var $initialError = $('#initial-agent-report-filter-error');
+            $initialError.text('');
+
+            if (!start || !end) {
+                $initialError.text('Start Date and End Date are required.');
+                return;
+            }
+
+            if (start > end) {
+                $initialError.text('Start Date cannot be after End Date.');
+                return;
+            }
+
+            $('#report_department').val($('#modal_report_department').val() || []).trigger('change.reportMultiSelect');
+            $('#report_status').val($('#modal_report_status').val() || []).trigger('change.reportMultiSelect');
+            $('#report_channel').val($('#modal_report_channel').val() || []).trigger('change.reportMultiSelect');
+            $('#report_disposition').val($('#modal_report_disposition').val() || []).trigger('change.reportMultiSelect');
+            $('#report_start_date').val(start);
+            $('#report_end_date').val(end);
+
+            $('#agent-report-results').show();
+            $('#agent-report-filter-modal').removeClass('show').attr('aria-hidden', 'true');
+            initReportTable();
         });
 
         $('#report-filter-form').on('submit', function (event) {
@@ -480,14 +673,22 @@
             }
 
             $error.hide().text('');
-            table.ajax.reload();
+            if (table) {
+                table.ajax.reload();
+            }
+        });
+
+        $('#report_start_date, #report_end_date').on('change', function () {
+            $('#report-filter-form').trigger('submit');
         });
 
         $('#reset-report-filters').on('click', function () {
             $('#report-filter-form')[0].reset();
             $('.lead-filter-multiselect-source').val([]).trigger('change');
             $error.hide().text('');
-            table.search('').ajax.reload();
+            if (table) {
+                table.search('').ajax.reload();
+            }
         });
     });
 </script>
