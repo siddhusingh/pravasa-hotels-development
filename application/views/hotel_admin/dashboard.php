@@ -985,14 +985,14 @@
 					}
 
 					if ($rendered.length) {
-						$rendered[0].style.setProperty('height', '54px', 'important');
-						$rendered[0].style.setProperty('line-height', '54px', 'important');
-						$rendered[0].style.setProperty('padding-top', '0', 'important');
-						$rendered[0].style.setProperty('padding-bottom', '0', 'important');
+						$rendered[0].style.setProperty();
+						$rendered[0].style.setProperty();
+						$rendered[0].style.setProperty();
+						$rendered[0].style.setProperty();
 					}
 
 					if ($arrow.length) {
-						$arrow[0].style.setProperty('height', '54px', 'important');
+						$arrow[0].style.setProperty();
 						$arrow[0].style.setProperty('top', '0', 'important');
 					}
 				});
