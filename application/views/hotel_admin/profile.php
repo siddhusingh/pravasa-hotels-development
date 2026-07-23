@@ -16,7 +16,7 @@
           </div>
         </div>
         <div class="header-banner">
-          <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+          <img src="<?= base_url('assets/new_img/profile_img.png'); ?>" alt="">
         </div>
       </div>
 

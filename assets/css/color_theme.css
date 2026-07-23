@@ -485,7 +485,8 @@ Theme Primary Color
   background: #0c1a32; }
 
 .dark-skin.theme-primary.fixed .main-header {
-  background: #111827; }
+  /* background: #111827; */
+ }
 .dark-skin.theme-primary .main-header {
   background: transparent; }
 

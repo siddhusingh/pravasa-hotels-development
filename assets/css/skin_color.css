@@ -186,7 +186,8 @@ body.dark-skin {
     color: #a1a4b5;
     background-color: #151535; }
   body.dark-skin .main-header .navbar {
-    background-color: #0D1219; }
+    /* background-color: #0D1219;  */
+  }
   body.dark-skin .d-dark {
     display: block; }
   body.dark-skin .d-light {
@@ -793,7 +794,8 @@ body.dark-skin {
   background-color: #0D1219;
   border-color: #2A3340; }
 .dark-skin .main-header .logo-box {
-  background: #0D1219 !important; }
+  /* background: #0D1219 !important; */
+ }
   .dark-skin .main-header .logo-box > a.push-btn {
     background-color: #0D1219; }
 .dark-skin .main-header .app-menu .search-bx input[type="search"] {
@@ -811,7 +813,8 @@ body.dark-skin {
 .dark-skin .main-header .navbar .res-only-view {
   color: #ffffff; }
 .dark-skin .main-header .navbar .nav > li > a {
-  background-color: #0D1219; }
+  /* background-color: #0D1219;  */
+}
   .dark-skin .main-header .navbar .nav > li > a:hover, .dark-skin .main-header .navbar .nav > li > a:active, .dark-skin .main-header .navbar .nav > li > a:focus {
     background-color: rgba(14, 14, 35, 0.05); }
 .dark-skin .main-header .navbar .nav .open > a {

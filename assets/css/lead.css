@@ -970,11 +970,11 @@
 /* Label */
 
 .ticket-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #000;
-  margin-bottom: 8px;
+    font-size: 12px;
+    text-transform: capitalize;
+    letter-spacing: normal;
+    color: #000;
+    margin-bottom: 8px;
 }
 
 .ticket-label strong {
@@ -1237,6 +1237,7 @@ form#leadEditForm .col-md-4,
 div#Edit_dynamicFields .col-lg-4.col-md-6,
 div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   width: 20%;
+  margin-bottom:10px
 }
 
 /* ============== lead list =========== */
@@ -1622,21 +1623,341 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   /* padding-top: 0; */
 }
 
-.timeline .timeline-item h6 {
-    font-size: 17px;
-    font-weight: 600;
-    text-transform: uppercase;
+
+/*==========================================
+        LEAD CALL HISTORY
+==========================================*/
+
+.Lead_Call_History{
+
+    border:none;
+    border-radius:22px;
+    overflow:hidden;
+    background:#fff;
+
+    box-shadow:
+    0 20px 60px rgba(18,38,63,.12);
+
 }
-.timeline .timeline-item {
-    position: relative;
-    float: left;
-    clear: left;
-    width: 50%;
-    margin-bottom: 20px;
-    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
-    padding: 6px 9px;
-    border-radius: 8px;
+
+
+/*==========================
+HEADER
+===========================*/
+
+.Lead_Call_History .modal-header{
+
+    border:none;
+
+    padding:22px 30px;
+
+    background:#000;
+
 }
-.box-header .col-md-3 {
-    margin-bottom: 8px;
+
+.Lead_Call_History .modal-title{
+
+    color:#fff;
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+.Lead_Call_History .btn-close{
+
+    filter:invert(1);
+
+    opacity:1;
+
+    transition:.30s;
+
+}
+
+.Lead_Call_History .btn-close:hover{
+
+    transform:rotate(90deg);
+
+}
+
+
+/*==========================
+BODY
+===========================*/
+
+.Lead_Call_History .modal-body{
+
+    padding:25px;
+
+    background:#f7f9fc;
+
+}
+
+
+/*==========================
+TABLE
+===========================*/
+
+.Lead_Call_History .table{
+
+    margin:0;
+
+    border-collapse:separate;
+
+    border-spacing:0 12px;
+
+}
+
+.Lead_Call_History table thead{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:5;
+
+}
+
+.Lead_Call_History table thead th{
+
+    border:none;
+
+    background:#eef3ff;
+
+    color:#384152;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    padding:16px;
+
+    white-space:nowrap;
+
+}
+
+
+/*==========================
+ROWS
+===========================*/
+
+.Lead_Call_History tbody tr{
+
+    background:#fff;
+
+    transition:.30s;
+
+    box-shadow:
+
+    0 5px 20px rgba(0,0,0,.05);
+
+}
+
+.Lead_Call_History tbody tr:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+
+    0 10px 30px rgba(108,99,255,.15);
+
+}
+
+.Lead_Call_History tbody td{
+
+    border:none;
+
+    padding:18px 16px;
+
+    vertical-align:middle;
+
+    color:#555;
+
+}
+
+
+/*==========================
+FIRST LAST
+===========================*/
+
+.Lead_Call_History tbody tr td:first-child{
+
+    border-radius:14px 0 0 14px;
+
+    font-weight:700;
+
+    color:#6C63FF;
+
+}
+
+.Lead_Call_History tbody tr td:last-child{
+
+    border-radius:0 14px 14px 0;
+
+}
+
+
+/*==========================
+TABLE BORDER
+===========================*/
+
+.Lead_Call_History table{
+
+    border:none;
+
+}
+
+
+/*==========================
+RESPONSIVE TABLE
+===========================*/
+
+.Lead_Call_History .table-responsive{
+
+    border-radius:18px;
+
+}
+
+
+/*==========================
+EMPTY DATA
+===========================*/
+
+.Lead_Call_History tbody td[colspan]{
+
+    padding:60px;
+
+    color:#8b95a5;
+
+    font-size:17px;
+
+    font-weight:600;
+
+}
+
+
+/*==========================
+SCROLLBAR
+===========================*/
+
+.Lead_Call_History .table-responsive::-webkit-scrollbar{
+
+    height:8px;
+
+}
+
+.Lead_Call_History .table-responsive::-webkit-scrollbar-thumb{
+
+    background:#6C63FF;
+
+    border-radius:20px;
+
+}
+
+.Lead_Call_History .table-responsive::-webkit-scrollbar-track{
+
+    background:#eceef5;
+
+}
+
+
+/*==========================
+BADGE COLORS
+===========================*/
+
+.Lead_Call_History tbody td:nth-child(4){
+
+    font-weight:700;
+
+    color:#16a34a;
+
+}
+
+
+/*==========================
+AUDIO
+===========================*/
+
+.Lead_Call_History audio{
+
+    width:170px;
+
+    height:38px;
+
+}
+
+
+/*==========================
+RESPONSIVE
+===========================*/
+
+@media(max-width:992px){
+
+.Lead_Call_History .modal-body{
+
+padding:18px;
+
+}
+
+.Lead_Call_History table thead th{
+
+font-size:13px;
+
+padding:14px;
+
+}
+
+.Lead_Call_History tbody td{
+
+font-size:13px;
+
+padding:14px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.Lead_Call_History .modal-title{
+
+font-size:20px;
+
+}
+
+.Lead_Call_History .modal-body{
+
+padding:12px;
+
+}
+
+.Lead_Call_History audio{
+
+width:130px;
+
+}
+
+}
+
+@media(max-width:576px){
+
+.Lead_Call_History{
+
+border-radius:16px;
+
+}
+
+.Lead_Call_History .modal-header{
+
+padding:18px;
+
+}
+
+.Lead_Call_History table{
+
+min-width:900px;
+
+}
+
 }

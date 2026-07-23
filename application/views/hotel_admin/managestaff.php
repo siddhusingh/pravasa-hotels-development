@@ -22,7 +22,7 @@
                     </ol>
                 </div>
             </div>
-            <div class="header-banner"><img src="<?= base_url('assets/new_img-add.png'); ?>" alt="Staff management"></div>
+            <div class="header-banner"><img src="<?= base_url('assets/new_img/staff_members_img.png'); ?>" alt="Staff management"></div>
         </div>
 
         <section class="content">
@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 <div class="header-banner">
-                    <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+                    <img src="<?= base_url('assets/new_img/staff_members_img.png'); ?>" alt="">
                     <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
