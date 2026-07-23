@@ -111,6 +111,7 @@
     padding-right: 0;
     padding-left: 0;
     margin: 0;
+    top: 4px;
   }
   a.waves-effect.waves-light.btn-primary-light.svg-bt-icon svg {
     color: #000;
@@ -511,5 +512,41 @@
 .ticket-label {
     font-size: 11px;
     margin-bottom: 4px;
+    letter-spacing: normal;
 }
+.ticket-value {
+    min-height: 36px;
+    border-radius: 4px;
+    min-height: 36px;
+    font-size: 12px;
+    padding: 0 6px;
+    line-height: 36px;
+    height: 36px;
+    -webkit-border-radius: 4px !important;
 }
+.ticket-section {
+    margin: 0px 0px;
+    margin-bottom: 8px;
+    padding: 7px 5px;
+}
+#viewLeadModal .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.box-header .col-md-3 {
+    margin-bottom: 11px;
+}
+div#top_stats_html {
+  margin-top: 20px;
+}
+div#chart_department ,div#chart_status,div#chart_disposition, div#chart_source, div#chart_guest_type, div#chart_template_name{
+    height: 250px!important;
+}
+.chart-container {
+    padding: 7px;
+    margin-bottom: 10px;
+}
+
+}
+

@@ -15,7 +15,7 @@
                     </ol>
                 </div>
             </div>
-            <div class="header-banner"><img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt=""></div>
+            <div class="header-banner"><img src="<?php echo base_url('assets/new_img/department_img.png'); ?>" alt=""></div>
         </div>
 
         <section class="content">
@@ -64,7 +64,7 @@
                     </div>
                 </div>
                 <div class="header-banner">
-                    <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
+                    <img src="<?php echo base_url('assets/new_img/department_img.png'); ?>" alt="">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
