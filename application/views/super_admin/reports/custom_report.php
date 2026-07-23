@@ -1,117 +1,4 @@
 <!-- Content Wrapper. Contains page content -->
-<style>
-    .theme-primary .dt-buttons .dt-button {
-        background-color: #f3f1edff !important
-    }
-
-    .theme-primary .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        border: 1px solid #23211d;
-        background-color: #ffffff;
-    }
-
-    .lead-report-filters .report-multiselect-source {
-        display: none !important;
-    }
-
-    .lead-report-filters .report-multiselect {
-        position: relative;
-        width: 100%;
-    }
-
-     
-
-    .lead-report-filters .report-multiselect-toggle::after {
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 6px solid #6c757d;
-        content: '';
-        margin-left: 10px;
-    }
-
-    .lead-report-filters .report-multiselect.is-open .report-multiselect-toggle::after {
-        border-bottom: 6px solid #6c757d;
-        border-top: 0;
-    }
-
-    .lead-report-filters .report-multiselect-menu {
-         background: #fff;
-        border: 1px solid #fff;
-        border-radius: 6px;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-        display: none;
-        left: 0;
-        max-height: 260px;
-        overflow-y: auto;
-        padding: 6px 0;
-        position: absolute;
-        right: 0;
-        top: calc(100% + 4px);
-        z-index: 1055;
-    }
-
-    .lead-report-filters .report-multiselect.is-open .report-multiselect-menu {
-        display: block;
-    }
-
-    .lead-report-filters .report-multiselect-option {
-        align-items: center;
-        cursor: pointer;
-        display: flex;
-        gap: 9px;
-        margin: 0;
-        padding: 8px 12px;
-    }
-
-    .lead-report-filters .report-multiselect-option:hover {
-        background: rgba(255, 255, 255, 0.35);
-    }
-
-    .lead-report-filters .report-multiselect-option input[type="checkbox"] {
-        -webkit-appearance: checkbox !important;
-        appearance: checkbox !important;
-        accent-color: #1473d2;
-        clip: auto !important;
-        cursor: pointer;
-        display: inline-block !important;
-        flex: 0 0 18px;
-        height: 18px !important;
-        margin: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        position: static !important;
-        visibility: visible !important;
-        width: 18px !important;
-    }
-
-    .lead-report-filters .report-multiselect-select-all {
-        border-bottom: 1px solid #e9ecef;
-        font-weight: 600;
-    }
-
-    .lead-report-filters .report-multiselect-empty {
-        color: #6c757d;
-        padding: 9px 12px;
-    }
-
-    .lead-report-filters .select2-container {
-        width: 100% !important;
-    }
-
-    .lead-report-filters .select2-container--default .select2-selection--single {
-        box-sizing: border-box;
-        height: 56px !important;
-        padding: 13px 14px;
-    }
-
-    .lead-report-filters .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 28px;
-        padding-left: 0;
-    }
-
-    .lead-report-filters .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 54px;
-    }
-</style>
 <div class="content-wrapper">
     <div class="container-full">
         <!-- Content Header (Page header) -->
@@ -151,7 +38,7 @@
                             $filterOpen = !empty($this->input->get());
                             ?>
 
-                            <div>
+                            <div id="report-results" style="display: none;">
 
                                 <div id="filter-section" class="lead-report-filters">
                                     <div class="mb-4">
@@ -270,7 +157,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
                             <div class="">
 
@@ -430,6 +316,7 @@
 
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -440,6 +327,118 @@
     </section>
     <!-- /.content -->
 </div>
+</div>
+
+<div class="new_modal_design report-filter-overlay" id="report-filter-modal" tabindex="-1"
+    role="dialog" aria-labelledby="report-filter-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4 class="modal-title" id="report-filter-modal-title">Report Filters</h4>
+                    <p class="mb-0 text-muted">Select a required date range and any additional filters.</p>
+                </div>
+            </div>
+            <form id="initial-report-filter-form" autocomplete="off" novalidate>
+                <div class="modal-body lead-report-filters">
+                    <div class="row align-items-end">
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_property" class="form-label">Property</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_property">
+                                <?php foreach ($properties as $property) { ?>
+                                    <option value="<?= $property->hotel_id; ?>"><?= $property->hotel_name; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_department" class="form-label">Department</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_department">
+                                <?php foreach ($departments as $dept) { ?>
+                                    <option value="<?= $dept->department_id; ?>"><?= $dept->department_name; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_assigned_to_filter" class="form-label">Assigned User</label>
+                            <select id="modal_assigned_to_filter" class="form-control">
+                                <option value="">All Assigned Users</option>
+                                <?php foreach ($assigned_users as $user): ?>
+                                    <option value="<?= $user->id . '|' . $user->role ?>">
+                                        <?= htmlspecialchars($user->name ?? 'Unknown') ?>
+                                        (<?= ucfirst(str_replace('_', ' ', $user->role)) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_created_by" class="form-label">Creator</label>
+                            <select id="modal_created_by" class="form-control">
+                                <option value="">All Creators</option>
+                                <?php foreach ($creators as $user): ?>
+                                    <option value="<?= $user->id . '|' . $user->role ?>">
+                                        <?= htmlspecialchars($user->name ?? 'Unknown') ?>
+                                        (<?= ucfirst(str_replace('_', ' ', $user->role)) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_status" class="form-label">Status</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_status">
+                                <option value="Open">Open</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_channel" class="form-label">Lead Source</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_channel">
+                                <?php foreach ($user_channel as $channelObj): ?>
+                                    <?php $channel = $channelObj->user_channel; ?>
+                                    <option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_disposition" class="form-label">Stage</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_disposition">
+                                <option value="Not Contacted">Not Contacted</option>
+                                <option value="General Information">General Information</option>
+                                <option value="Quotation Sent">Quotation Sent</option>
+                                <option value="Negotiations">Negotiations</option>
+                                <option value="Contract Done">Contract Done</option>
+                                <option value="Advance Received">Advance Received</option>
+                                <option value="Lead Won">Lead Won</option>
+                                <option value="Lead Lost">Lead Lost</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_business_type" class="form-label">Business Type</label>
+                            <select class="form-control" id="modal_business_type">
+                                <option value="">Select Business</option>
+                                <option value="business">Business</option>
+                                <option value="non_business">Non-Business</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="modal_start_date" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="modal_end_date" required>
+                        </div>
+                        <div class="col-12">
+                            <div id="report-filter-error" class="text-danger" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="submit-report-filters">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 
@@ -555,13 +554,16 @@
     function initializeSingleSelect2() {
         if (!$.fn.select2) return;
 
-        $('#assigned_to_filter, #created_by, #business_type').each(function() {
+        $('#assigned_to_filter, #created_by, #business_type, #modal_assigned_to_filter, #modal_created_by, #modal_business_type').each(function() {
             const $select = $(this);
             if (!$select.hasClass('select2-hidden-accessible')) {
-                $select.select2({
+                const options = {
                     width: '100%',
                     minimumResultsForSearch: 0
-                });
+                };
+                const $overlay = $select.closest('.modal, .report-filter-overlay');
+                if ($overlay.length) options.dropdownParent = $overlay;
+                $select.select2(options);
             }
         });
     }
@@ -573,6 +575,11 @@
         initializeReportMultiSelect('#status', 'Select Options');
         initializeReportMultiSelect('#channel', 'Select Options');
         initializeReportMultiSelect('#disposition', 'Select Options');
+        initializeReportMultiSelect('#modal_property', 'Select Options');
+        initializeReportMultiSelect('#modal_department', 'Select Options');
+        initializeReportMultiSelect('#modal_status', 'Select Options');
+        initializeReportMultiSelect('#modal_channel', 'Select Options');
+        initializeReportMultiSelect('#modal_disposition', 'Select Options');
         initializeSingleSelect2();
 
         $(document).off('click.reportMultiSelect').on('click.reportMultiSelect', function(e) {
@@ -588,6 +595,7 @@
         });
 
         let table; // keep a reference to DataTable instance
+        let filtersReady = false;
 
         // 🔹 Initialize DataTable
         function initDataTable() {
@@ -637,9 +645,6 @@
             });
         }
 
-
-        initDataTable();
-
         function getUserFilterData(selector) {
             let val = $(selector).val();
 
@@ -660,8 +665,49 @@
 
         // 🔹 Event binding for all filters (works for dynamic elements too)
         $(document).on('change', '#property, #department, #status, #channel, #disposition, #start_date, #end_date, #business_type, #created_by, #assigned_to_filter', function() {
+            if (!filtersReady || !table) return;
             table.ajax.reload(null, true);
         });
+
+        $('#initial-report-filter-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const startDate = $('#modal_start_date').val();
+            const endDate = $('#modal_end_date').val();
+            const $error = $('#report-filter-error');
+            $error.text('');
+
+            if (!startDate || !endDate) {
+                $error.text('Start Date and End Date are required.');
+                return;
+            }
+
+            if (endDate < startDate) {
+                $error.text('End Date must be the same as or later than Start Date.');
+                return;
+            }
+
+            $('#property').val($('#modal_property').val()).trigger('change.reportMultiSelect');
+            $('#department').val($('#modal_department').val()).trigger('change.reportMultiSelect');
+            $('#status').val($('#modal_status').val()).trigger('change.reportMultiSelect');
+            $('#channel').val($('#modal_channel').val()).trigger('change.reportMultiSelect');
+            $('#disposition').val($('#modal_disposition').val()).trigger('change.reportMultiSelect');
+            $('#assigned_to_filter').val($('#modal_assigned_to_filter').val()).trigger('change.select2');
+            $('#created_by').val($('#modal_created_by').val()).trigger('change.select2');
+            $('#business_type').val($('#modal_business_type').val()).trigger('change.select2');
+            $('#start_date').val(startDate);
+            $('#end_date').val(endDate);
+
+            filtersReady = true;
+            $('#report-results').show();
+            $('#report-filter-modal').removeClass('show').attr('aria-hidden', 'true');
+            initDataTable();
+        });
+
+        $('#report-filter-modal')
+            .appendTo('.content-wrapper')
+            .addClass('show')
+            .attr('aria-hidden', 'false');
 
     });
     })(window.jQuery);
