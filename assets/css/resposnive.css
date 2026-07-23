@@ -417,6 +417,7 @@
     gap: 8px;
     justify-content: left;
     margin-top: 11px;
+    flex-wrap: wrap;
   }
 
   .lead_edtid_broder_child_name_bnt {
@@ -491,5 +492,24 @@
     font-size: 14px;
     width: auto!important;
     padding: 0;
+}
+.lead_edtid_broder a, .lead_edtid_broder_child, .lead_edtid_broder span.badge.bg-secondary-light, .lead_edtid_broder button {
+    padding: 4px 11px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+.lead_edtid_broder_child span.badge {
+    font-size: 11px !important;
+}
+.lead_edtid_broder span {
+    font-size: 11px;
+    color: #000;
+}
+.ticket-section .col-md-4.mb-3 {
+    width: 50%;
+}
+.ticket-label {
+    font-size: 11px;
+    margin-bottom: 4px;
 }
 }

@@ -28,12 +28,6 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
       color: #28a745;
    }
 
-   .guest-comment {
-      background-color: #f4f7fd;
-      border-radius: 15px;
-      padding: 15px;
-      color: #666;
-   }
 
    .reply-box {
       background-color: #fde7ed;
@@ -379,80 +373,7 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
       top: 0;
    }
 </style>
-<style>
-   /* Timeline Container */
-   .timeline {
-      position: relative !important;
-      margin: 0 !important;
-      padding-left: 40px !important;
-      list-style: none !important;
-      border-left: 3px solid #007bff !important;
-   }
 
-   /* Timeline Item */
-   .timeline-item {
-      position: relative !important;
-      margin-bottom: 30px !important;
-      padding-left: 20px !important;
-      transition: all 0.3s ease !important;
-      background-color: transparent !important;
-      border-radius: 0 !important;
-   }
-
-   .timeline-item:hover {
-      background-color: #f8f9fa !important;
-      border-radius: 5px !important;
-      padding-left: 25px !important;
-   }
-
-   /* Timeline Dot */
-   .timeline-item::before {
-      content: '' !important;
-      position: absolute !important;
-      left: -12px !important;
-      top: 0 !important;
-      width: 16px !important;
-      height: 16px !important;
-      background-color: #fff !important;
-      border: 3px solid #007bff !important;
-      border-radius: 50% !important;
-      z-index: 1 !important;
-      transition: transform 0.3s ease !important;
-   }
-
-   .timeline-item:hover::before {
-      transform: scale(1.2) !important;
-   }
-
-   /* Status Header */
-   .timeline-item h6 {
-      font-size: 1rem !important;
-      font-weight: 600 !important;
-      color: #007bff !important;
-      margin-bottom: 5px !important;
-   }
-
-   /* Time & Byline */
-   .timeline-item small {
-      display: block !important;
-      font-size: 0.85rem !important;
-      color: #6c757d !important;
-      margin-bottom: 6px !important;
-   }
-
-   /* Remarks */
-   .timeline-item p {
-      margin: 0 !important;
-      font-size: 0.95rem !important;
-      color: #333 !important;
-   }
-
-   /* No Remark Text */
-   .timeline-item p em {
-      color: #999 !important;
-      font-style: italic !important;
-   }
-</style>
 
 
 
@@ -681,7 +602,7 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
    <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
-            <h5 class="modal-title" id="statusHistoryLabel">Lead Status History</h5>
+            <h5 class="modal-title" id="statusHistoryLabel">Lead Status History </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
@@ -693,7 +614,311 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
    </div>
 </div>
 
+<style>
+   /*==================================================
+        LEAD STATUS HISTORY MODAL
+==================================================*/
 
+#statusHistoryModal .modal-content{
+    border:0;
+    border-radius:18px;
+    overflow:hidden;
+    background:#f8faff;
+    box-shadow:0 25px 60px rgba(0,0,0,.15);
+}
+
+#statusHistoryModal .modal-header{
+    background:#fff;
+    border-bottom:1px solid #edf2f7;
+    padding:20px 28px;
+}
+
+#statusHistoryModal .modal-title{
+    font-size:28px;
+    font-weight:700;
+    color:#1e293b;
+}
+
+#statusHistoryModal .btn-close{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    transition:.3s;
+}
+
+#statusHistoryModal .btn-close:hover{
+    background:#eef4ff;
+    transform:rotate(90deg);
+}
+
+#statusHistoryModal .modal-body{
+    background:#f8faff;
+    padding:30px;
+}
+
+
+/*==========================
+TIMELINE
+===========================*/
+
+.timeline{
+
+    list-style:none;
+
+    margin:0;
+
+    padding:0 0 0 45px;
+
+    position:relative;
+
+}
+
+.timeline::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:10px;
+
+    top:0;
+
+    bottom:0;
+
+    width:3px;
+
+    border-radius:50px;
+
+    background:linear-gradient(#4f7cff,#9db7ff);
+
+}
+
+
+/*==========================
+ITEM
+===========================*/
+
+.timeline-item{
+
+    position:relative;
+
+    margin-bottom:22px;
+
+    padding:20px;
+
+    background:#fff;
+
+    border-radius:16px;
+
+    border:1px solid #edf2f7;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.05);
+
+    transition:.3s;
+
+}
+
+.timeline-item:last-child{
+
+    margin-bottom:0;
+
+}
+
+.timeline-item:hover{
+
+    transform:translateX(8px);
+
+    box-shadow:0 18px 35px rgba(79,124,255,.12);
+
+    border-color:#4f7cff;
+
+}
+
+
+/*==========================
+DOT
+===========================*/
+
+.timeline-item::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:-44px;
+
+    top:26px;
+
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:#4f7cff;
+
+    border:4px solid #fff;
+
+    box-shadow:0 0 0 6px rgba(79,124,255,.18);
+
+}
+
+
+/*==========================
+STATUS
+===========================*/
+
+.timeline-item h6{
+
+    margin:0;
+
+    color:#2563eb;
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+
+/*==========================
+DATE
+===========================*/
+
+.timeline-item small{
+
+    display:inline-block;
+
+    margin:14px 0;
+
+    background:#eef4ff;
+
+    color:#64748b;
+
+    padding:8px 16px;
+
+    border-radius:50px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+
+/*==========================
+REMARK
+===========================*/
+
+.timeline-item p{
+
+    margin:0;
+
+    background:#f8fafc;
+
+    border-left:4px solid #4f7cff;
+
+    border-radius:10px;
+
+    padding:14px 18px;
+
+    color:#475569;
+
+    line-height:1.7;
+
+}
+
+
+/*==========================
+SCROLLBAR
+===========================*/
+
+#statusHistoryModal .modal-body::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+#statusHistoryModal .modal-body::-webkit-scrollbar-thumb{
+
+    background:#c4d2ff;
+
+    border-radius:30px;
+
+}
+
+
+/*==========================
+RESPONSIVE
+===========================*/
+
+@media(max-width:768px){
+
+#statusHistoryModal .modal-body{
+
+padding:18px;
+
+}
+
+#statusHistoryModal .modal-title{
+
+font-size:22px;
+
+}
+
+.timeline{
+
+padding-left:30px;
+
+}
+
+.timeline::before{
+
+left:8px;
+
+}
+
+.timeline-item{
+
+padding:16px;
+
+}
+
+.timeline-item::before{
+
+left:-30px;
+
+width:14px;
+
+height:14px;
+
+}
+
+.timeline-item h6{
+
+font-size:16px;
+
+}
+
+.timeline-item small{
+
+font-size:12px;
+
+padding:6px 12px;
+
+}
+
+.timeline-item p{
+
+font-size:14px;
+
+}
+
+}
+#statusHistoryModal .modal-dialog{
+    max-width:1000px;
+}
+</style>
 <!-- Call Confirmation Modal -->
 <div class="modal modal-lg" id="confirmCallModal" tabindex="-1" aria-labelledby="confirmCallModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -769,10 +994,10 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
 <div class="modal modal-lg" id="callHistoryModal" tabindex="-1" aria-hidden="true">
    <div class="modal-dialog  modal-dialog-scrollable modal-xl">
       <!-- Increased size for wider view -->
-      <div class="modal-content">
+      <div class="modal-content Lead_Call_History">
          <div class="modal-header">
             <h5 class="modal-title">Call History</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
          </div>
          <div class="modal-body">
             <div class="table-responsive">
@@ -800,6 +1025,8 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
       </div>
    </div>
 </div>
+
+
 <!-- Status Remark Modal -->
 <!-- /.content-wrapper -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
