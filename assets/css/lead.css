@@ -1,1536 +1,1622 @@
-   /*=========================================================
+/*=========================================================
         PREMIUM CALL CONFIRMATION MODAL
 =========================================================*/
 
-#confirmCallModal .modal-dialog{
-    max-width:420px;
-    margin:2rem auto;
+#confirmCallModal .modal-dialog {
+  max-width: 420px;
+  margin: 2rem auto;
 }
 
-#confirmCallModal .modal-content{
+#confirmCallModal .modal-content {
+  border: none;
+  border-radius: 30px;
+  overflow: hidden;
 
-    border:none;
-    border-radius:30px;
-    overflow:hidden;
+  background: #fff;
 
-    background:#fff;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18);
 
-    box-shadow:
-    0 25px 70px rgba(0,0,0,.18);
-
-    position:relative;
-
+  position: relative;
 }
 
 /* Glow */
 
-#confirmCallModal .modal-content:before{
+#confirmCallModal .modal-content:before {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  top: -120px;
+  right: -80px;
 
-top:-120px;
-right:-80px;
+  width: 240px;
+  height: 240px;
 
-width:240px;
-height:240px;
+  background: #9f8be7;
 
-background:#9F8BE7;
+  opacity: 0.15;
 
-opacity:.15;
-
-filter:blur(70px);
-
+  filter: blur(70px);
 }
 
 /* Header */
 
-#confirmCallModal .modal-header{
+#confirmCallModal .modal-header {
+  border: none;
 
-border:none;
+  padding: 30px 30px 15px;
 
-padding:30px 30px 15px;
+  display: block;
 
-display:block;
+  text-align: center;
 
-text-align:center;
-
-position:relative;
-
+  position: relative;
 }
 
 /* Phone Circle */
 
-#confirmCallModal .modal-header::before{
+#confirmCallModal .modal-header::before {
+  content: "☎";
 
-content:"☎";
+  display: flex;
 
-display:flex;
+  align-items: center;
 
-align-items:center;
+  justify-content: center;
 
-justify-content:center;
+  margin: 0 auto 18px;
 
-margin:0 auto 18px;
+  width: 95px;
+  height: 95px;
 
-width:95px;
-height:95px;
+  border-radius: 50%;
 
-border-radius:50%;
+  background: #9f8be7;
 
-background:#9F8BE7;
+  font-size: 42px;
 
-font-size:42px;
+  color: #fff;
 
-color:#fff;
+  box-shadow: 0 18px 40px rgba(112, 83, 244, 0.35);
 
-box-shadow:
-
-0 18px 40px rgba(112,83,244,.35);
-
-animation:phonePulse 2s infinite;
-
+  animation: phonePulse 2s infinite;
 }
 
 /* Title */
 
-#confirmCallModal .modal-title{
+#confirmCallModal .modal-title {
+  font-size: 28px;
 
-font-size:28px;
+  font-weight: 700;
 
-font-weight:700;
-
-color:#222;
-
+  color: #222;
 }
 
 /* Close */
 
-#confirmCallModal .btn-close{
+#confirmCallModal .btn-close {
+  position: absolute;
 
-position:absolute;
+  right: 20px;
 
-right:20px;
-
-top:20px;
-
+  top: 20px;
 }
-
 
 /* Body */
 
-#confirmCallModal .modal-body{
+#confirmCallModal .modal-body {
+  padding: 10px 35px 30px;
 
-padding:10px 35px 30px;
+  text-align: center;
 
-text-align:center;
+  font-size: 17px;
 
-font-size:17px;
+  line-height: 32px;
 
-line-height:32px;
-
-color:#666;
-
+  color: #666;
 }
 
 /* Number */
 
-#call-number{
+#call-number {
+  display: block;
 
-display:block;
+  margin-top: 18px;
 
-margin-top:18px;
+  font-size: 30px;
 
-font-size:30px;
+  font-weight: 700;
 
-font-weight:700;
+  color: #111;
 
-color:#111;
+  letter-spacing: 2px;
 
-letter-spacing:2px;
+  padding: 15px;
 
-padding:15px;
+  border-radius: 16px;
 
-border-radius:16px;
+  background: #f6f4ff;
 
-background:#F6F4FF;
-
-border:1px solid #ECE6FF;
-
+  border: 1px solid #ece6ff;
 }
-
 
 /* Footer */
 
-#confirmCallModal .modal-footer{
+#confirmCallModal .modal-footer {
+  border: none;
 
-border:none;
+  padding: 25px;
 
-padding:25px;
+  display: flex;
 
-display:flex;
+  gap: 15px;
 
-gap:15px;
-
-justify-content:center;
-
+  justify-content: center;
 }
-
 
 /* Buttons */
 
-#confirmCallModal .btn{
+#confirmCallModal .btn {
+  flex: 1;
 
-flex:1;
+  height: 52px;
 
-height:52px;
+  border-radius: 16px;
 
-border-radius:16px;
+  font-size: 16px;
 
-font-size:16px;
+  font-weight: 700;
 
-font-weight:700;
-
-transition:.3s;
-
+  transition: 0.3s;
 }
-
 
 /* Cancel */
 
-#confirmCallModal .btn-secondary{
+#confirmCallModal .btn-secondary {
+  background: #f4f5f8;
 
-background:#F4F5F8;
+  border: none;
 
-border:none;
-
-color:#555;
-
+  color: #555;
 }
 
 #confirmCallModal .btn-secondary:hover {
-    background: #9F8BE7!important;
-    color: #fff!important;
+  background: #9f8be7 !important;
+  color: #fff !important;
 }
-
 
 /* Call */
 
-#confirmCallModal .btn-primary{
+#confirmCallModal .btn-primary {
+  background: #9f8be7;
 
-background:#9F8BE7;
+  border: none;
 
-border:none;
-
-box-shadow:
-
-0 12px 30px rgba(111,82,242,.30);
-
+  box-shadow: 0 12px 30px rgba(111, 82, 242, 0.3);
 }
 
-#confirmCallModal .btn-primary:hover{
+#confirmCallModal .btn-primary:hover {
+  transform: translateY(-3px);
 
-transform:translateY(-3px);
-
-box-shadow:
-
-0 20px 40px rgba(111,82,242,.35);
-
+  box-shadow: 0 20px 40px rgba(111, 82, 242, 0.35);
 }
-
 
 /* Backdrop */
 
-.modal-backdrop.show{
+.modal-backdrop.show {
+  backdrop-filter: blur(5px);
 
-backdrop-filter:blur(5px);
-
-opacity:.65;
-
+  opacity: 0.65;
 }
-
 
 /* Animation */
 
-@keyframes phonePulse{
+@keyframes phonePulse {
+  0% {
+    transform: scale(1);
+  }
 
-0%{
+  50% {
+    transform: scale(1.08);
+  }
 
-transform:scale(1);
-
+  100% {
+    transform: scale(1);
+  }
 }
-
-50%{
-
-transform:scale(1.08);
-
-}
-
-100%{
-
-transform:scale(1);
-
-}
-
-}
-
 
 /* Mobile */
 
-@media(max-width:576px){
+@media (max-width: 576px) {
+  #confirmCallModal .modal-dialog {
+    margin: 15px;
+  }
 
-#confirmCallModal .modal-dialog{
+  #confirmCallModal .modal-body {
+    padding: 10px 20px 25px;
+  }
 
-margin:15px;
-
+  #call-number {
+    font-size: 24px;
+  }
 }
 
-#confirmCallModal .modal-body{
-
-padding:10px 20px 25px;
-
-}
-
-#call-number{
-
-font-size:24px;
-
-}
-
-}
-
-
-
-
-  /*=====================================================
+/*=====================================================
         PREMIUM CALL PROGRESS MODALx
 ======================================================*/
 
-#callProgressModal .modal-dialog{
-    max-width:430px;
-    margin:2rem auto;
+#callProgressModal .modal-dialog {
+  max-width: 430px;
+  margin: 2rem auto;
 }
 
 #callProgressModal .modal-content {
-    border: none;
-    border-radius: 35px;
-    overflow: hidden;
-    background: #fff;
-    color: #000;
-    position: relative;
-    box-shadow: rgba(240, 243, 245, 0.3) 0px 1px 2px 0px, rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
-    box-shadow: rgb(255 255 255 / 49%) 0px 3px 12px, rgb(255 255 255 / 45%) 0px 3px 14px;
+  border: none;
+  border-radius: 35px;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  position: relative;
+  box-shadow:
+    rgba(240, 243, 245, 0.3) 0px 1px 2px 0px,
+    rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
+  box-shadow:
+    rgb(255 255 255 / 49%) 0px 3px 12px,
+    rgb(255 255 255 / 45%) 0px 3px 14px;
 }
-
 
 /* Decorative Glow */
 
-#callProgressModal .modal-content::before{
+#callProgressModal .modal-content::before {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  top: -80px;
+  left: -80px;
 
-top:-80px;
-left:-80px;
+  width: 220px;
+  height: 220px;
 
-width:220px;
-height:220px;
+  background: #9f8be7;
 
-background:#9F8BE7;
+  filter: blur(120px);
 
-filter:blur(120px);
-
-opacity:.35;
-
+  opacity: 0.35;
 }
 
-#callProgressModal .modal-content::after{
+#callProgressModal .modal-content::after {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  bottom: -100px;
+  right: -80px;
 
-bottom:-100px;
-right:-80px;
+  width: 250px;
+  height: 250px;
 
-width:250px;
-height:250px;
+  background: #5b6cff;
 
-background:#5B6CFF;
+  filter: blur(120px);
 
-filter:blur(120px);
-
-opacity:.25;
-
+  opacity: 0.25;
 }
-
 
 /* Header */
 
-#callProgressModal .modal-header{
+#callProgressModal .modal-header {
+  background: transparent;
 
-background:transparent;
+  border: none;
 
-border:none;
+  justify-content: center;
 
-justify-content:center;
+  padding-top: 28px;
 
-padding-top:28px;
+  padding-bottom: 10px;
 
-padding-bottom:10px;
+  position: relative;
 
-position:relative;
-
-z-index:5;
-
+  z-index: 5;
 }
 
-#callProgressModal .modal-title{
+#callProgressModal .modal-title {
+  font-size: 28px;
 
-font-size:28px;
+  font-weight: 700;
 
-font-weight:700;
+  color: #000;
 
-color:#000;
-
-letter-spacing:1px;
-
+  letter-spacing: 1px;
 }
 
 #callProgressModal .btn-close {
-    /* filter: invert(1); */
-    position: absolute;
-    right: 0;
-    top: 0;
-    /* filter: invert(1); */
-    opacity: .8;
-    background: #000000;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    height: 30px;
-    width: 30px;
-    line-height: normal;
-    border-radius: 30%!important;
-    font-size: 21px;
+  /* filter: invert(1); */
+  position: absolute;
+  right: 0;
+  top: 0;
+  /* filter: invert(1); */
+  opacity: 0.8;
+  background: #000000;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  height: 30px;
+  width: 30px;
+  line-height: normal;
+  border-radius: 30% !important;
+  font-size: 21px;
 }
-
 
 /* Body */
 
-#callProgressModal .modal-body{
+#callProgressModal .modal-body {
+  padding: 10px 35px 45px;
 
-padding:10px 35px 45px;
+  position: relative;
 
-position:relative;
-
-z-index:5;
-
+  z-index: 5;
 }
-
 
 /* Phone Circle */
 
-.call-animation{
+.call-animation {
+  width: 150px;
+  height: 150px;
 
-width:150px;
-height:150px;
+  margin: 20px auto;
 
-margin:20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-display:flex;
-align-items:center;
-justify-content:center;
+  font-size: 72px;
 
-font-size:72px;
+  border-radius: 50%;
 
-border-radius:50%;
+  background: linear-gradient(135deg, #9f8be7, #6d4bff);
 
-background:linear-gradient(135deg,#9F8BE7,#6D4BFF);
+  box-shadow:
+    0 0 0 12px rgba(159, 139, 231, 0.1),
+    0 0 0 24px rgba(159, 139, 231, 0.08),
+    0 25px 45px rgba(111, 75, 255, 0.45);
 
-box-shadow:
+  position: relative;
 
-0 0 0 12px rgba(159,139,231,.10),
-
-0 0 0 24px rgba(159,139,231,.08),
-
-0 25px 45px rgba(111,75,255,.45);
-
-position:relative;
-
-animation:phonePulse 2s infinite;
-
+  animation: phonePulse 2s infinite;
 }
-
 
 /* Ring */
 
-.call-animation::before{
+.call-animation::before {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  width: 180px;
+  height: 180px;
 
-width:180px;
-height:180px;
+  border-radius: 50%;
 
-border-radius:50%;
+  border: 2px solid rgba(159, 139, 231, 0.45);
 
-border:2px solid rgba(159,139,231,.45);
-
-animation:ringOne 2s infinite;
-
+  animation: ringOne 2s infinite;
 }
 
-.call-animation::after{
+.call-animation::after {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  width: 220px;
+  height: 220px;
 
-width:220px;
-height:220px;
+  border-radius: 50%;
 
-border-radius:50%;
+  border: 2px solid rgba(159, 139, 231, 0.25);
 
-border:2px solid rgba(159,139,231,.25);
-
-animation:ringTwo 2s infinite;
-
+  animation: ringTwo 2s infinite;
 }
-
 
 /* Calling */
 
-#callProgressModal h4{
+#callProgressModal h4 {
+  margin-top: 35px;
 
-margin-top:35px;
+  font-size: 18px;
 
-font-size:18px;
+  font-weight: 500;
 
-font-weight:500;
-
-color:#676974;
-
+  color: #676974;
 }
-
 
 /* Number */
 
-#progress-number{
+#progress-number {
+  display: block;
 
-display:block;
+  margin-top: 12px;
 
-margin-top:12px;
+  font-size: 34px;
 
-font-size:34px;
+  font-weight: 700;
 
-font-weight:700;
+  letter-spacing: 2px;
 
-letter-spacing:2px;
-
-color:#000;
-
+  color: #000;
 }
-
 
 /* Timer */
 
-#callProgressModal h5{
+#callProgressModal h5 {
+  margin-top: 25px;
 
-margin-top:25px;
+  font-size: 16px;
 
-font-size:16px;
+  font-weight: 500;
 
-font-weight:500;
-
-color:#000;
-
+  color: #000;
 }
 
 #call-timer {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 12px 30px;
-    border-radius: 50px;
-    background: rgb(65 57 57 / 8%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,.08);
-    font-size: 24px;
-    font-weight: 700;
-    color: #000000;
-    margin-left: 7px;
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 30px;
+  border-radius: 50px;
+  background: rgb(65 57 57 / 8%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  margin-left: 7px;
 }
-
 
 /* Calling Text */
 
-#callProgressModal h4::before{
+#callProgressModal h4::before {
+  content: "●";
 
-content:"●";
+  color: #00e676;
 
-color:#00E676;
+  margin-right: 10px;
 
-margin-right:10px;
-
-animation:blink 1s infinite;
-
+  animation: blink 1s infinite;
 }
-
 
 /* Animation */
 
-@keyframes phonePulse{
+@keyframes phonePulse {
+  0% {
+    transform: scale(1);
+  }
 
-0%{
+  50% {
+    transform: scale(1.08);
+  }
 
-transform:scale(1);
-
+  100% {
+    transform: scale(1);
+  }
 }
 
-50%{
+@keyframes ringOne {
+  0% {
+    transform: scale(0.8);
 
-transform:scale(1.08);
+    opacity: 1;
+  }
 
+  100% {
+    transform: scale(1.35);
+
+    opacity: 0;
+  }
 }
 
-100%{
+@keyframes ringTwo {
+  0% {
+    transform: scale(0.8);
 
-transform:scale(1);
+    opacity: 0.7;
+  }
 
+  100% {
+    transform: scale(1.6);
+
+    opacity: 0;
+  }
 }
 
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
 }
-
-@keyframes ringOne{
-
-0%{
-
-transform:scale(.8);
-
-opacity:1;
-
-}
-
-100%{
-
-transform:scale(1.35);
-
-opacity:0;
-
-}
-
-}
-
-@keyframes ringTwo{
-
-0%{
-
-transform:scale(.8);
-
-opacity:.7;
-
-}
-
-100%{
-
-transform:scale(1.6);
-
-opacity:0;
-
-}
-
-}
-
-@keyframes blink{
-
-50%{
-
-opacity:.2;
-
-}
-
-}
-
 
 /* Backdrop */
 
-.modal-backdrop.show{
+.modal-backdrop.show {
+  opacity: 0.75;
 
-opacity:.75;
-
-backdrop-filter:blur(7px);
-
+  backdrop-filter: blur(7px);
 }
-
 
 /* Responsive */
 
-@media(max-width:576px){
+@media (max-width: 576px) {
+  .call-animation {
+    width: 120px;
+    height: 120px;
 
-.call-animation{
+    font-size: 58px;
+  }
 
-width:120px;
-height:120px;
+  .call-animation::before {
+    width: 150px;
+    height: 150px;
+  }
 
-font-size:58px;
+  .call-animation::after {
+    width: 185px;
+    height: 185px;
+  }
 
+  #progress-number {
+    font-size: 28px;
+  }
+
+  #call-timer {
+    font-size: 20px;
+  }
 }
 
-.call-animation::before{
-
-width:150px;
-height:150px;
-
-}
-
-.call-animation::after{
-
-width:185px;
-height:185px;
-
-}
-
-#progress-number{
-
-font-size:28px;
-
-}
-
-#call-timer{
-
-font-size:20px;
-
-}
-
-}
-
-  /*=====================================================
+/*=====================================================
         PREMIUM CALL PROGRESS MODALx
 ======================================================*/
 
-#callProgressModal .modal-dialog{
-    max-width:430px;
-    margin:2rem auto;
+#callProgressModal .modal-dialog {
+  max-width: 430px;
+  margin: 2rem auto;
 }
 
 #callProgressModal .modal-content {
-    border: none;
-    border-radius: 35px;
-    overflow: hidden;
-    background: #fff;
-    color: #000;
-    position: relative;
-    box-shadow: rgba(240, 243, 245, 0.3) 0px 1px 2px 0px, rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
-    box-shadow: rgb(255 255 255 / 49%) 0px 3px 12px, rgb(255 255 255 / 45%) 0px 3px 14px;
+  border: none;
+  border-radius: 35px;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  position: relative;
+  box-shadow:
+    rgba(240, 243, 245, 0.3) 0px 1px 2px 0px,
+    rgba(249, 251, 252, 0.15) 0px 2px 6px 2px;
+  box-shadow:
+    rgb(255 255 255 / 49%) 0px 3px 12px,
+    rgb(255 255 255 / 45%) 0px 3px 14px;
 }
-
 
 /* Decorative Glow */
 
-#callProgressModal .modal-content::before{
+#callProgressModal .modal-content::before {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  top: -80px;
+  left: -80px;
 
-top:-80px;
-left:-80px;
+  width: 220px;
+  height: 220px;
 
-width:220px;
-height:220px;
+  background: #9f8be7;
 
-background:#9F8BE7;
+  filter: blur(120px);
 
-filter:blur(120px);
-
-opacity:.35;
-
+  opacity: 0.35;
 }
 
-#callProgressModal .modal-content::after{
+#callProgressModal .modal-content::after {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  bottom: -100px;
+  right: -80px;
 
-bottom:-100px;
-right:-80px;
+  width: 250px;
+  height: 250px;
 
-width:250px;
-height:250px;
+  background: #5b6cff;
 
-background:#5B6CFF;
+  filter: blur(120px);
 
-filter:blur(120px);
-
-opacity:.25;
-
+  opacity: 0.25;
 }
-
 
 /* Header */
 
-#callProgressModal .modal-header{
+#callProgressModal .modal-header {
+  background: transparent;
 
-background:transparent;
+  border: none;
 
-border:none;
+  justify-content: center;
 
-justify-content:center;
+  padding-top: 28px;
 
-padding-top:28px;
+  padding-bottom: 10px;
 
-padding-bottom:10px;
+  position: relative;
 
-position:relative;
-
-z-index:5;
-
+  z-index: 5;
 }
 
-#callProgressModal .modal-title{
+#callProgressModal .modal-title {
+  font-size: 28px;
 
-font-size:28px;
+  font-weight: 700;
 
-font-weight:700;
+  color: #000;
 
-color:#000;
-
-letter-spacing:1px;
-
+  letter-spacing: 1px;
 }
 
 #callProgressModal .btn-close {
-    /* filter: invert(1); */
-    position: absolute;
-    right: 0;
-    top: 0;
-    /* filter: invert(1); */
-    opacity: .8;
-    background: #000000;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    height: 30px;
-    width: 30px;
-    line-height: normal;
-    border-radius: 30%!important;
-    font-size: 21px;
+  /* filter: invert(1); */
+  position: absolute;
+  right: 0;
+  top: 0;
+  /* filter: invert(1); */
+  opacity: 0.8;
+  background: #000000;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  height: 30px;
+  width: 30px;
+  line-height: normal;
+  border-radius: 30% !important;
+  font-size: 21px;
 }
-
 
 /* Body */
 
-#callProgressModal .modal-body{
+#callProgressModal .modal-body {
+  padding: 10px 35px 45px;
 
-padding:10px 35px 45px;
+  position: relative;
 
-position:relative;
-
-z-index:5;
-
+  z-index: 5;
 }
-
 
 /* Phone Circle */
 
-.call-animation{
+.call-animation {
+  width: 150px;
+  height: 150px;
 
-width:150px;
-height:150px;
+  margin: 20px auto;
 
-margin:20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-display:flex;
-align-items:center;
-justify-content:center;
+  font-size: 72px;
 
-font-size:72px;
+  border-radius: 50%;
 
-border-radius:50%;
+  background: linear-gradient(135deg, #9f8be7, #6d4bff);
 
-background:linear-gradient(135deg,#9F8BE7,#6D4BFF);
+  box-shadow:
+    0 0 0 12px rgba(159, 139, 231, 0.1),
+    0 0 0 24px rgba(159, 139, 231, 0.08),
+    0 25px 45px rgba(111, 75, 255, 0.45);
 
-box-shadow:
+  position: relative;
 
-0 0 0 12px rgba(159,139,231,.10),
-
-0 0 0 24px rgba(159,139,231,.08),
-
-0 25px 45px rgba(111,75,255,.45);
-
-position:relative;
-
-animation:phonePulse 2s infinite;
-
+  animation: phonePulse 2s infinite;
 }
-
 
 /* Ring */
 
-.call-animation::before{
+.call-animation::before {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  width: 180px;
+  height: 180px;
 
-width:180px;
-height:180px;
+  border-radius: 50%;
 
-border-radius:50%;
+  border: 2px solid rgba(159, 139, 231, 0.45);
 
-border:2px solid rgba(159,139,231,.45);
-
-animation:ringOne 2s infinite;
-
+  animation: ringOne 2s infinite;
 }
 
-.call-animation::after{
+.call-animation::after {
+  content: "";
 
-content:"";
+  position: absolute;
 
-position:absolute;
+  width: 220px;
+  height: 220px;
 
-width:220px;
-height:220px;
+  border-radius: 50%;
 
-border-radius:50%;
+  border: 2px solid rgba(159, 139, 231, 0.25);
 
-border:2px solid rgba(159,139,231,.25);
-
-animation:ringTwo 2s infinite;
-
+  animation: ringTwo 2s infinite;
 }
-
 
 /* Calling */
 
-#callProgressModal h4{
+#callProgressModal h4 {
+  margin-top: 35px;
 
-margin-top:35px;
+  font-size: 18px;
 
-font-size:18px;
+  font-weight: 500;
 
-font-weight:500;
-
-color:#676974;
-
+  color: #676974;
 }
-
 
 /* Number */
 
-#progress-number{
+#progress-number {
+  display: block;
 
-display:block;
+  margin-top: 12px;
 
-margin-top:12px;
+  font-size: 34px;
 
-font-size:34px;
+  font-weight: 700;
 
-font-weight:700;
+  letter-spacing: 2px;
 
-letter-spacing:2px;
-
-color:#000;
-
+  color: #000;
 }
-
 
 /* Timer */
 
-#callProgressModal h5{
+#callProgressModal h5 {
+  margin-top: 25px;
 
-margin-top:25px;
+  font-size: 16px;
 
-font-size:16px;
+  font-weight: 500;
 
-font-weight:500;
-
-color:#000;
-
+  color: #000;
 }
 
 #call-timer {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 12px 30px;
-    border-radius: 50px;
-    background: rgb(65 57 57 / 8%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,.08);
-    font-size: 24px;
-    font-weight: 700;
-    color: #000000;
-    margin-left: 7px;
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 30px;
+  border-radius: 50px;
+  background: rgb(65 57 57 / 8%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  margin-left: 7px;
 }
-
 
 /* Calling Text */
 
-#callProgressModal h4::before{
+#callProgressModal h4::before {
+  content: "●";
 
-content:"●";
+  color: #00e676;
 
-color:#00E676;
+  margin-right: 10px;
 
-margin-right:10px;
-
-animation:blink 1s infinite;
-
+  animation: blink 1s infinite;
 }
-
 
 /* Animation */
 
-@keyframes phonePulse{
+@keyframes phonePulse {
+  0% {
+    transform: scale(1);
+  }
 
-0%{
+  50% {
+    transform: scale(1.08);
+  }
 
-transform:scale(1);
-
+  100% {
+    transform: scale(1);
+  }
 }
 
-50%{
+@keyframes ringOne {
+  0% {
+    transform: scale(0.8);
 
-transform:scale(1.08);
+    opacity: 1;
+  }
 
+  100% {
+    transform: scale(1.35);
+
+    opacity: 0;
+  }
 }
 
-100%{
+@keyframes ringTwo {
+  0% {
+    transform: scale(0.8);
 
-transform:scale(1);
+    opacity: 0.7;
+  }
 
+  100% {
+    transform: scale(1.6);
+
+    opacity: 0;
+  }
 }
 
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
 }
-
-@keyframes ringOne{
-
-0%{
-
-transform:scale(.8);
-
-opacity:1;
-
-}
-
-100%{
-
-transform:scale(1.35);
-
-opacity:0;
-
-}
-
-}
-
-@keyframes ringTwo{
-
-0%{
-
-transform:scale(.8);
-
-opacity:.7;
-
-}
-
-100%{
-
-transform:scale(1.6);
-
-opacity:0;
-
-}
-
-}
-
-@keyframes blink{
-
-50%{
-
-opacity:.2;
-
-}
-
-}
-
 
 /* Backdrop */
 
-.modal-backdrop.show{
+.modal-backdrop.show {
+  opacity: 0.75;
 
-opacity:.75;
-
-backdrop-filter:blur(7px);
-
+  backdrop-filter: blur(7px);
 }
-
 
 /* Responsive */
 
-@media(max-width:576px){
+@media (max-width: 576px) {
+  .call-animation {
+    width: 120px;
+    height: 120px;
 
-.call-animation{
+    font-size: 58px;
+  }
 
-width:120px;
-height:120px;
+  .call-animation::before {
+    width: 150px;
+    height: 150px;
+  }
 
-font-size:58px;
+  .call-animation::after {
+    width: 185px;
+    height: 185px;
+  }
 
+  #progress-number {
+    font-size: 28px;
+  }
+
+  #call-timer {
+    font-size: 20px;
+  }
 }
 
-.call-animation::before{
-
-width:150px;
-height:150px;
-
-}
-
-.call-animation::after{
-
-width:185px;
-height:185px;
-
-}
-
-#progress-number{
-
-font-size:28px;
-
-}
-
-#call-timer{
-
-font-size:20px;
-
-}
-
-}
-
-
-  /* ===========================
+/* ===========================
    LEAD DETAILS MODAL
 =========================== */
 
-#viewLeadModal .modal-dialog{
-    max-width:1200px;
+#viewLeadModal .modal-dialog {
+  max-width: 1200px;
 }
 
-#viewLeadModal .modal-content{
-    border:none;
-    border-radius:22px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 20px 60px rgba(0,0,0,.15);
+#viewLeadModal .modal-content {
+  border: none;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
-
 
 /* Header */
 
-#viewLeadModal .modal-header{
-
-    background:#fff;
-    color:#fff;
-    padding:10px 30px;
-    border:none;
-
+#viewLeadModal .modal-header {
+  background: #fff;
+  color: #fff;
+  padding: 10px 30px;
+  border: none;
 }
 
-#viewLeadModal .modal-title{
-
-    font-size:26px;
-    font-weight:700;
-    letter-spacing:.5px;
-
+#viewLeadModal .modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 #viewLeadModal .btn-close {
-    /* filter: invert(1); */
-    opacity: 1;
-    background-color: #9F8BE7;
-    color: #fff;
+  /* filter: invert(1); */
+  opacity: 1;
+  background-color: #9f8be7;
+  color: #fff;
 }
-
 
 /* Body */
 
-#viewLeadModal .modal-body{
-
-    background:#f6f8fc;
-    padding:20px;
-
+#viewLeadModal .modal-body {
+  background: #f6f8fc;
+  padding: 20px;
 }
-
-
 
 /* Container */
 
-
 /* Section */
 
-.ticket-section{
-
-    margin-bottom:25px;
-    padding:22px;
-    border-radius:18px;
-    background:#fff;
-    border:1px solid #edf0f6;
-    box-shadow:0 8px 20px rgba(0,0,0,.04);
-    margin: 0px 0px;
-    margin-bottom: 10px ;
-
+.ticket-section {
+  margin-bottom: 25px;
+  padding: 22px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #edf0f6;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  margin: 0px 0px;
+  margin-bottom: 10px;
 }
 
-.ticket-section:last-child{
-    margin-bottom:0;
+.ticket-section:last-child {
+  margin-bottom: 0;
 }
-
 
 /* Label */
 
-.ticket-label{
-
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    color:#8c8c8c;
-    margin-bottom:8px;
-
+.ticket-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
 }
 
-.ticket-label strong{
-
-    font-weight:600;
-
+.ticket-label strong {
+  font-weight: 600;
 }
-
 
 /* Value */
 
 .ticket-value {
-    min-height: 51px;
-    background: #fafbff;
-    border: 1px solid #e9ecf5;
-    border-radius: 8px;
-    min-height: 46px;
-    display: flex;
-    align-items: baseline;
-    font-size: 13px;
-    color: #222;
-    font-weight: 500;
-    transition: .3s;
-    padding: 0 8px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    display: flow-root;
-    line-height: 46px;
-    background-color: #fff !important;
-    border: 1px solid #00000000 !important;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
-    height: 46px;
-    -webkit-border-radius: 8px !important;
+  min-height: 51px;
+  background: #fafbff;
+  border: 1px solid #e9ecf5;
+  border-radius: 8px;
+  min-height: 46px;
+  display: flex;
+  align-items: baseline;
+  font-size: 13px;
+  color: #222;
+  font-weight: 500;
+  transition: 0.3s;
+  padding: 0 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: flow-root;
+  line-height: 46px;
+  background-color: #fff !important;
+  border: 1px solid #00000000 !important;
+  box-shadow:
+    rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
+  height: 46px;
+  -webkit-border-radius: 8px !important;
 }
 
-.ticket-value:hover{
-
-    border-color:#9F8BE7;
-    box-shadow:0 0 0 3px rgba(159,139,231,.15);
-
+.ticket-value:hover {
+  border-color: #9f8be7;
+  box-shadow: 0 0 0 3px rgba(159, 139, 231, 0.15);
 }
-
 
 /* Grid Spacing */
 
 .ticket-section .col-md-4,
-.ticket-section .col-md-6{
-
-    margin-bottom:18px;
-
+.ticket-section .col-md-6 {
+  margin-bottom: 18px;
 }
-
-
 
 /* Scroll */
 
-#viewLeadModal .modal-body::-webkit-scrollbar{
-
-    width:8px;
-
+#viewLeadModal .modal-body::-webkit-scrollbar {
+  width: 8px;
 }
 
-#viewLeadModal .modal-body::-webkit-scrollbar-thumb{
-
-    background:#9F8BE7;
-    border-radius:20px;
-
+#viewLeadModal .modal-body::-webkit-scrollbar-thumb {
+  background: #9f8be7;
+  border-radius: 20px;
 }
-
 
 /* Responsive */
 
-@media(max-width:768px){
+@media (max-width: 768px) {
+  #viewLeadModal .modal-body {
+    padding: 15px;
+  }
 
-#viewLeadModal .modal-body{
+  .ticket-section {
+    padding: 15px;
+  }
 
-padding:15px;
-
+  .ticket-value {
+    font-size: 14px;
+  }
 }
 
-
-
-.ticket-section{
-
-padding:15px;
-
-}
-
-.ticket-value{
-
-font-size:14px;
-
-}
-
-}
-
-  /*=========================================================
+/*=========================================================
         WHATSAPP TEMPLATE MODAL
 =========================================================*/
 
-#whatsappTemplateModal .modal-dialog{
-    max-width:650px;
+#whatsappTemplateModal .modal-dialog {
+  max-width: 650px;
 }
 
-#whatsappTemplateModal .modal-content{
+#whatsappTemplateModal .modal-content {
+  border: none;
+  border-radius: 24px;
+  overflow: hidden;
 
-    border:none;
-    border-radius:24px;
-    overflow:hidden;
+  background: #fff;
 
-    background:#fff;
-
-    box-shadow:
-    0 25px 70px rgba(0,0,0,.15);
-
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
 }
-
 
 /*================ HEADER =================*/
 
-#whatsappTemplateModal .modal-header{
+#whatsappTemplateModal .modal-header {
+  background: linear-gradient(135deg, #25d366, #128c7e);
 
-    background:linear-gradient(135deg,#25D366,#128C7E);
+  color: #fff;
 
-    color:#fff;
+  border: none;
 
-    border:none;
-
-    padding:22px 30px;
-
+  padding: 22px 30px;
 }
 
-#whatsappTemplateModal .modal-title{
+#whatsappTemplateModal .modal-title {
+  font-size: 24px;
 
-    font-size:24px;
+  font-weight: 700;
 
-    font-weight:700;
+  display: flex;
 
-    display:flex;
+  align-items: center;
 
-    align-items:center;
-
-    gap:12px;
-
+  gap: 12px;
 }
 
-#whatsappTemplateModal .modal-title i{
+#whatsappTemplateModal .modal-title i {
+  color: #fff !important;
 
-    color:#fff !important;
-
-    font-size:34px;
-
+  font-size: 34px;
 }
 
-#whatsappTemplateModal .btn-close{
+#whatsappTemplateModal .btn-close {
+  filter: invert(1);
 
-    filter:invert(1);
-
-    opacity:1;
-
+  opacity: 1;
 }
-
 
 /*================ BODY =================*/
 
-#whatsappTemplateModal .modal-body{
+#whatsappTemplateModal .modal-body {
+  padding: 35px;
 
-    padding:35px;
-
-    background:#F8FAFC;
-
+  background: #f8fafc;
 }
-
 
 /* Label */
 
-#whatsappTemplateModal .form-label{
+#whatsappTemplateModal .form-label {
+  font-size: 15px;
 
-    font-size:15px;
+  font-weight: 600;
 
-    font-weight:600;
+  color: #444;
 
-    color:#444;
-
-    margin-bottom:10px;
-
+  margin-bottom: 10px;
 }
-
 
 /* Select */
 
-#whatsappTemplateModal .form-control{
+#whatsappTemplateModal .form-control {
+  height: 56px;
 
-    height:56px;
+  border-radius: 14px;
 
-    border-radius:14px;
+  border: 2px solid #e5e7eb;
 
-    border:2px solid #E5E7EB;
+  font-size: 15px;
 
-    font-size:15px;
+  padding: 0 18px;
 
-    padding:0 18px;
+  box-shadow: none;
 
-    box-shadow:none;
+  transition: 0.3s;
 
-    transition:.3s;
-
-    background:#fff;
-
+  background: #fff;
 }
 
-#whatsappTemplateModal .form-control:focus{
+#whatsappTemplateModal .form-control:focus {
+  border-color: #25d366;
 
-    border-color:#25D366;
-
-    box-shadow:0 0 0 4px rgba(37,211,102,.15);
-
+  box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.15);
 }
-
 
 /*================ SEND BUTTON =================*/
 
-#sendWhatsappMessage{
+#sendWhatsappMessage {
+  min-width: 220px;
 
-    min-width:220px;
+  height: 52px;
 
-    height:52px;
+  border: none;
 
-    border:none;
+  border-radius: 14px;
 
-    border-radius:14px;
+  background: linear-gradient(135deg, #25d366, #128c7e);
 
-    background:linear-gradient(135deg,#25D366,#128C7E);
+  font-size: 16px;
 
-    font-size:16px;
+  font-weight: 700;
 
-    font-weight:700;
+  transition: 0.3s;
 
-    transition:.3s;
-
-    box-shadow:0 12px 30px rgba(18,140,126,.25);
-
+  box-shadow: 0 12px 30px rgba(18, 140, 126, 0.25);
 }
 
-#sendWhatsappMessage:hover{
+#sendWhatsappMessage:hover {
+  transform: translateY(-3px);
 
-    transform:translateY(-3px);
-
-    box-shadow:0 20px 35px rgba(18,140,126,.35);
-
+  box-shadow: 0 20px 35px rgba(18, 140, 126, 0.35);
 }
-
 
 /*================ FOOTER =================*/
 
-#whatsappTemplateModal .modal-footer{
+#whatsappTemplateModal .modal-footer {
+  border: none;
 
-    border:none;
+  background: #fff;
 
-    background:#fff;
-
-    padding:20px 30px;
-
+  padding: 20px 30px;
 }
 
-#whatsappTemplateModal .btn-secondary{
+#whatsappTemplateModal .btn-secondary {
+  border: none;
 
-    border:none;
+  border-radius: 12px;
 
-    border-radius:12px;
+  padding: 10px 24px;
 
-    padding:10px 24px;
+  background: #eceff3;
 
-    background:#ECEFF3;
+  color: #555;
 
-    color:#555;
-
-    font-weight:600;
-
+  font-weight: 600;
 }
 
-#whatsappTemplateModal .btn-secondary:hover{
-
-    background: #9f8be7 !important;;
-    color: #fff !important;;
-
-
+#whatsappTemplateModal .btn-secondary:hover {
+  background: #9f8be7 !important;
+  color: #fff !important;
 }
-
 
 /*================ SCROLLBAR =================*/
 
-#whatsappTemplateModal .modal-body::-webkit-scrollbar{
-
-    width:8px;
-
+#whatsappTemplateModal .modal-body::-webkit-scrollbar {
+  width: 8px;
 }
 
-#whatsappTemplateModal .modal-body::-webkit-scrollbar-thumb{
+#whatsappTemplateModal .modal-body::-webkit-scrollbar-thumb {
+  background: #25d366;
 
-    background:#25D366;
-
-    border-radius:20px;
-
+  border-radius: 20px;
 }
-
 
 /*================ MOBILE =================*/
 
-@media(max-width:768px){
+@media (max-width: 768px) {
+  #whatsappTemplateModal .modal-body {
+    padding: 20px;
+  }
 
-#whatsappTemplateModal .modal-body{
-
-padding:20px;
-
-}
-
-#sendWhatsappMessage{
-
-width:100%;
-
-}
-
+  #sendWhatsappMessage {
+    width: 100%;
+  }
 }
 
 .row.ticket-section .col-md-6.mb-3 {
-    width: 20%;
+  width: 20%;
 }
 form#leadEditForm .col-md-4,
 div#Edit_dynamicFields .col-lg-4.col-md-6,
 div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
-    width: 20%;
+  width: 20%;
 }
+
+/* ============== lead list =========== */
+
+.row.lead_list_main_data.mb-3 {
+  gap: 21px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 {
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 11px 9px;
+  width: 22%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 99;
+  margin-top: 10px;
+}
+.row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 i {
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #fff;
+  position: absolute;
+  top: -15px;
+  left: -12px;
+}
+.row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 strong {
+  margin-left: 19px;
+}
+.row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 span {
+  font-size: 14px;
+  padding-left: 5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.lead_edtid_broder {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+.lead_edtid_broder a,
+.lead_edtid_broder_child,
+.lead_edtid_broder span.badge.bg-secondary-light {
+  background: transparent;
+  background-color: transparent;
+  padding: 9px 11px;
+  border-radius: 8px;
+  /* border: 1px solid #00000021 !important; */
+  color: #000 !important;
+  display: block;
+  overflow: hidden;
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  font-size: 12px;
+  opacity: 1;
+}
+.card.lead_card_ac {
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 22px;
+
+  /* border: 1px solid rgba(226,232,240,.9); */
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fcfdff 35%,
+    #f5f8ff 100%
+  ) !important;
+
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+
+  transition: all 0.35s ease;
+  border-bottom: 2px solid #000 !important;
+}
+
+/* Hover */
+.card.lead_card_ac:hover {
+  transform: translateY(-5px);
+  border-color: #090909;
+  box-shadow:
+    rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+    rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important;
+  border: 0px solid #000 !important;
+}
+
+/* Top Right Glow */
+
+.card.lead_card_ac::before {
+  content: "";
+
+  position: absolute;
+
+  top: -90px;
+
+  right: -90px;
+
+  width: 240px;
+
+  height: 240px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(59, 130, 246, 0.05) 35%,
+    transparent 75%
+  );
+}
+
+/* Bottom Left Glow */
+
+.card.lead_card_ac::after {
+  content: "";
+
+  position: absolute;
+
+  bottom: -110px;
+
+  left: -90px;
+
+  width: 260px;
+
+  height: 260px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.08) 0%,
+    rgba(168, 85, 247, 0.04) 35%,
+    transparent 75%
+  );
+}
+
+/* Light shine */
+
+.card.lead_card_ac .lead_card_ac-header {
+  position: relative;
+
+  z-index: 2;
+}
+
+.card.lead_card_ac .lead_list_main_data,
+.card.lead_card_ac .crm-comment,
+.card.lead_card_ac .lead_Quotation_details {
+  position: relative;
+
+  z-index: 2;
+}
+
+/*=====================================
+      Lead Action Toolbar
+======================================*/
+
+.lead_Quotation_details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 0px;
+  padding-top: 18px;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Disposition */
+
+.lead_Quotation_details [id^="disposition"] {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #495057;
+  /* margin-right: auto; */
+}
+
+.lead-disposition {
+  color: #000;
+  font-weight: 700;
+}
+
+/* Buttons */
+
+.lead_Quotation_details .btn {
+  height: auto;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+  box-shadow: none;
+}
+
+.lead_Quotation_details .btn i {
+  margin-right: 8px;
+
+  font-size: 15px;
+}
+
+/* Call */
+
+.call-lead {
+  background: #0d6efd;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.call-lead:hover {
+  background: #0b5ed7;
+}
+
+/* WhatsApp */
+
+.lead_Quotation_details a[href*="wa.me"] {
+  background: #25d366;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.lead_Quotation_details a[href*="wa.me"]:hover {
+  background: #1da851;
+}
+
+/* WhatsApp Template */
+
+.sendWhastappTempMsg {
+  background: #198754;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.sendWhastappTempMsg:hover {
+  background: #157347;
+}
+
+/* View Calls */
+
+.view-calls {
+  background: #6c757d;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.view-calls:hover {
+  background: #5c636a;
+}
+
+/* Status */
+
+.view-status-history {
+  background: #6f42c1;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.view-status-history:hover {
+  background: #5a32a3;
+}
+
+/* Details */
+
+.view-lead-details {
+  background: #212529;
+
+  color: #fff !important;
+
+  border: none;
+}
+
+.view-lead-details:hover {
+  background: #000;
+}
+
+/* Hover */
+
+.lead_Quotation_details .btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive */
+
+.guest-comment {
+  background-color: #ffffff;
+  border-radius: 5px;
+  padding: 11px;
+  color: #000000;
+  box-shadow:
+    rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
+    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+.lead_edtid_broder_child_name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  margin-right: 20px;
+}
+.lead_edtid_broder_child_name:after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  border-bottom: 1px solid;
+  background-color: #000000;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 50%;
+}
+.lead_edtid_broder_child_name strong {
+  font-weight: 500;
+  font-size: 14px;
+}
+.lead_edtid_broder_child_name i {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  margin-bottom: 3px;
+  box-shadow:
+    rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  margin-right: 3px;
+}
+
+.lead_edtid_broder_child span.badge {
+  color: #000;
+}
+.lead_edtid_broder_child_name_bnt span {
+  font-size: 12px;
+  border-radius: 5px !important;
+  padding: 5px 12px;
+}
+.lead_edtid_broder_child_name_bnt {
+  gap: 6px;
+  display: flex;
+}
+
+.lead_edtid_broder_child span.badge {
+  padding: 0;
+  margin: 0;
+  /* height: auto; */
+  /* padding-top: 0; */
+}
+

@@ -33,80 +33,84 @@
 
 
     ?>
-    <div class="card shadow-sm mb-4 p-3 rounded-4 border <?= $statusClass; ?>" id="lead_card-<?= $lead['id'] ?>">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="card lead_card_ac shadow-sm mb-4 p-3 rounded-4 border <?= $statusClass; ?>" id="lead_card-<?= $lead['id'] ?>">
+        <div class="lead_card_ac-header d-flex justify-content-between align-items-center mb-2">
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                <strong><?= $lead['city_name']; ?> - <?= $lead['hotel_name']; ?></strong>
-                <span class="badge bg-success rounded-pill text-capitalize"><?= $lead['user_channel']; ?></span>
-                <span class="badge bg-<?= $badgeColor ?> rounded-pill" title="Lead Type"><?= ucfirst($lead['lead_type']); ?></span>
-                <?= $businessBadge ?>
-
+                <div class="lead_edtid_broder_child_name">
+                     <i class="fa fa-map-marker" aria-hidden="true"></i>
+                     <strong><?= $lead['city_name']; ?> - <?= $lead['hotel_name']; ?></strong>
+                </div>
+                <div class="lead_edtid_broder_child_name_bnt">
+                    <span class="badge bg-success rounded-pill text-capitalize"><?= $lead['user_channel']; ?></span>
+                    <span class="badge bg-<?= $badgeColor ?> rounded-pill" title="Lead Type"><?= ucfirst($lead['lead_type']); ?></span>
+                    <?= $businessBadge ?>
+                </div>
             </div>
+            <div class="lead_edtid_broder">
+                <div style="">
+                    <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
+                        <?php $lead_history_route = $this->session->userdata('role_as') === 'super_admin' ? 'manage-leads' : 'view-leads'; ?>
+                        <a class="badge  text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
+                    <?php else: ?>
+                        <span class="badge ">New Guest</span>
+                    <?php endif; ?>
 
-            <div style="margin-left:100px">
-                <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
-                    <?php $lead_history_route = $this->session->userdata('role_as') === 'super_admin' ? 'manage-leads' : 'view-leads'; ?>
-                    <a class="badge bg-warning-light text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
-                <?php else: ?>
-                    <span class="badge bg-secondary-light">New Guest</span>
-                <?php endif; ?>
 
+                    <?php
+                    $logged_in_role      = $this->session->userdata('role_as');
+                    $agentSession        = $this->session->userdata('agent_session');
+                    $logged_in_user_id   = $agentSession['id'] ?? null;
 
-                <?php
-                $logged_in_role      = $this->session->userdata('role_as');
-                $agentSession        = $this->session->userdata('agent_session');
-                $logged_in_user_id   = $agentSession['id'] ?? null;
+                    // normalize status
+                    $lead_status = strtolower(trim($lead['status']));
 
-                // normalize status
-                $lead_status = strtolower(trim($lead['status']));
+                    // Allow:
+                    // 1. Assigned user
+                    // 2. super_admin
+                    // 3. hotel_admin
+                    // and lead should not be closed
 
-                // Allow:
-                // 1. Assigned user
-                // 2. super_admin
-                // 3. hotel_admin
-                // and lead should not be closed
-
-                $canTransfer =
-                    (
+                    $canTransfer =
                         (
-                            ($lead['is_assigned'] == 1) &&
-                            ($lead['assigned_to'] == $logged_in_user_id)
+                            (
+                                ($lead['is_assigned'] == 1) &&
+                                ($lead['assigned_to'] == $logged_in_user_id)
+                            )
+                            ||
+                            in_array($logged_in_role, ['super_admin', 'hotel_admin', 'admin'])
                         )
-                        ||
-                        in_array($logged_in_role, ['super_admin', 'hotel_admin', 'admin'])
-                    )
-                    &&
-                    ($lead_status !== 'closed');
-                ?>
+                        &&
+                        ($lead_status !== 'closed');
+                    ?>
 
-                <button class="btn btn-warning-light btn-sm transferLeadBtn"
-                    data-id="<?= $lead['id']; ?>"
-                    style="<?= $canTransfer ? '' : 'display:none;' ?>">
-                    <i class="fa fa-exchange"></i> Transfer Lead
-                </button>
-
-
-                <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
-                    <button class="btn btn-warning-light btn-sm deleteLeadBtn"
-                        data-id="<?php echo $lead['id']; ?>">
-                        <i class="fa fa-trash"></i> Delete
+                    <button class="btn  btn-sm transferLeadBtn"
+                        data-id="<?= $lead['id']; ?>"
+                        style="<?= $canTransfer ? '' : 'display:none;' ?>">
+                        <i class="fa fa-exchange"></i> Transfer Lead
                     </button>
 
-                <?php } ?>
+
+                    <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
+                        <button class="btn  btn-sm deleteLeadBtn"
+                            data-id="<?php echo $lead['id']; ?>">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+
+                    <?php } ?>
 
 
 
+                </div>
+
+                <div class="lead_edtid_broder_child" title="template Name">
+                    <span class="badge "><i class="fa fa-book"></i> : <?= $lead['template_name']; ?></span>
+                </div>
+
+                <a href="javascript:void(0)" class="badge  editLeadDetails" data-lead-id="<?= $lead['id'] ?>"><i class="fa fa-edit"></i> Edit</a>
             </div>
-
-            <div title="template Name">
-                <span class="badge bg-warning-light"><i class="fa fa-book"></i> : <?= $lead['template_name']; ?></span>
-            </div>
-
-            <a href="javascript:void(0)" class="badge bg-warning-light editLeadDetails" data-lead-id="<?= $lead['id'] ?>"><i class="fa fa-edit"></i> Edit</a>
         </div>
 
-        <div class="row mb-2">
+        <div class="row lead_list_main_data mb-3">
             <div class="col-md-3 col-sm-6 mb-2">
                 <i class="fa fa-building text-secondary me-1"></i>
                 <strong>Department:</strong> <span class="lead-department"><?= $lead['department_name']; ?></span>
@@ -125,9 +129,9 @@
             </div>
         </div>
 
-        <div class="guest-comment mb-2"><?= $lead['query']; ?></div>
+        <div class="guest-comment crm-comment mb-2"><?= $lead['query']; ?></div>
 
-        <div class="d-flex justify-content-end gap-2 mt-2">
+        <div class="lead_Quotation_details">
             <?php if ($lead['disposition'] != ''): ?>
                 <span id="disposition-<?= $lead['id']; ?>" title="Stage">
                     Dis. : <b><span class="lead-disposition"><?= $lead['disposition']; ?></span></b>

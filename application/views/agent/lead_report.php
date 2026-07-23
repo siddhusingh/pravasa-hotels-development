@@ -19,12 +19,7 @@
         color: #28a745;
     }
 
-   .guest-comment {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 12px 9px;
-    color: #000;
-}
+
 
     .reply-box {
         background-color: #fde7ed;
@@ -116,7 +111,7 @@
             rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
         color: #495057;
         display: flex;
-        height: 60px;
+        height: 46px;
         justify-content: space-between;
         padding: 0 14px;
         text-align: left;
