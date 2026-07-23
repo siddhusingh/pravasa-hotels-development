@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="header-banner">
-                    <img src="<?php echo base_url('assets/new_img/Manage_Country.png'); ?>" alt="">
+                    <img src="<?php echo base_url('assets/new_img-add.png'); ?>" alt="">
                 </div>
         </div>
 
@@ -104,12 +104,12 @@
          
          <div class="modal-body ps-3 pe-3 row">
             <!--  <form class="ps-3 pe-3" action="#"> -->
-            <div class="col-sm-6 mb-3">
+            <div class="col-sm-12 mb-3">
                <label for="username" class="form-label">Country Code</label>
                <input class="form-control" type="email" id="country_code" required="" placeholder="+91">
                <span id="country_code_error" class="validation text-danger"></span>
             </div>
-            <div class="col-sm-6 mb-3">
+            <div class="col-sm-12 mb-3">
                <label for="username" class="form-label">Country Name</label>
                <input class="form-control" type="email" id="country_name" required="" placeholder="India">
                <span id="country_name_error" class="validation text-danger"></span>
