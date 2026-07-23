@@ -973,7 +973,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8c8c8c;
+  color: #000;
   margin-bottom: 8px;
 }
 
@@ -1293,7 +1293,8 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
 }
 .lead_edtid_broder a,
 .lead_edtid_broder_child,
-.lead_edtid_broder span.badge.bg-secondary-light {
+.lead_edtid_broder span.badge.bg-secondary-light,
+.lead_edtid_broder button {
   background: transparent;
   background-color: transparent;
   padding: 9px 11px;
@@ -1602,6 +1603,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
 
 .lead_edtid_broder_child span.badge {
   color: #000;
+  font-size: 12px !important;
 }
 .lead_edtid_broder_child_name_bnt span {
   font-size: 12px;
@@ -1620,3 +1622,21 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   /* padding-top: 0; */
 }
 
+.timeline .timeline-item h6 {
+    font-size: 17px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.timeline .timeline-item {
+    position: relative;
+    float: left;
+    clear: left;
+    width: 50%;
+    margin-bottom: 20px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+    padding: 6px 9px;
+    border-radius: 8px;
+}
+.box-header .col-md-3 {
+    margin-bottom: 8px;
+}

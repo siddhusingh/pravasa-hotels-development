@@ -47,12 +47,12 @@
                 </div>
             </div>
             <div class="lead_edtid_broder">
-                <div style="">
+               
                     <?php if (!empty($lead['is_repeatative']) && $lead['is_repeatative']): ?>
                         <?php $lead_history_route = $this->session->userdata('role_as') === 'super_admin' ? 'manage-leads' : 'view-leads'; ?>
                         <a class="badge  text-dark" href="<?= base_url($lead_history_route . '?phone=' . urlencode($lead['phone_number'])) ?>" title="View Visit History">Repeatative Guest</a>
                     <?php else: ?>
-                        <span class="badge ">New Guest</span>
+                        <button class="btn  btn-sm transferLeadBtn">New Guest</button>
                     <?php endif; ?>
 
 
@@ -100,7 +100,7 @@
 
 
 
-                </div>
+          
 
                 <div class="lead_edtid_broder_child" title="template Name">
                     <span class="badge "><i class="fa fa-book"></i> : <?= $lead['template_name']; ?></span>
