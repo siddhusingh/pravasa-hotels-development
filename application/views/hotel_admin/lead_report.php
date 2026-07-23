@@ -468,7 +468,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
             <div class="col-12">
                <div class="box">
                   <div class="box-header">
-                     <h4 class="box-title">Lead Reports</h4>
+                     <h4 class="box-title">Lead Reports </h4>
                      <div class="row mt-2">
                         <div class="col-md-3">
                            <input type="text" id="lead-search" class="form-control" placeholder="Search by name or phone...">
