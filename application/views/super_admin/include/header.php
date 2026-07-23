@@ -151,24 +151,24 @@
 				<div class="responsive_logo">
 					<a href="<?php echo base_url('super-admin-dashbaord') ?>" class="logo">
 					<!-- logo-->
-					<div class="logo-mini w-40">
-						<span class="light-logo"><img src="<?= !empty($branding->logo)
-																? base_url($branding->logo)
-																: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
-						<span class="dark-logo"><img src="<?= !empty($branding->logo)
-																? base_url($branding->logo)
-																: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
-					</div>
+						<div class="logo-mini w-40">
+							<span class="light-logo"><img src="<?= !empty($branding->logo)
+																	? base_url($branding->logo)
+																	: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+							<span class="dark-logo"><img src="<?= !empty($branding->logo)
+																	? base_url($branding->logo)
+																	: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+						</div>
 
-					<div class="logo-lg">
-						<span class="light-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
+						<div class="logo-lg">
+							<span class="light-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
+																							? base_url($branding->logo)
+																							: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
+							<span class="dark-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
 																						? base_url($branding->logo)
 																						: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
-						<span class="dark-logo" style="height: 90px;"><img src="<?= !empty($branding->logo)
-																					? base_url($branding->logo)
-																					: base_url('assets/images/default-logo.png') ?>" style="     height:50%; "></span>
-					</div>
-				</a>
+						</div>
+					</a>
 				</div>
 
 				<div class="navbar-custom-menu r-side">

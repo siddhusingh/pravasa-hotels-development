@@ -89,7 +89,7 @@
                </div>
             </div>
             <div class="header-banner">
-               <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+               <img src="<?= base_url('assets/new_img/city_img.png'); ?>" alt="">
                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
          </div>
