@@ -293,6 +293,11 @@
         width: 100%;
     }
 
+    #report-filter-modal.report-filter-compact .modal-content,
+    #report-filter-modal.report-filter-compact .modal-body {
+        overflow: visible !important;
+    }
+
     #report-filter-modal .modal-header {
         padding: 24px 28px 12px;
     }

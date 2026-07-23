@@ -97,8 +97,13 @@
     .dataTables_scrollHeadInner {
         width: 100%important;
     }
-    .new_table_box table tbody td:first-child {
+.new_table_box table tbody td:first-child {
     text-align: left!important;
+}
+
+#report-filter-modal.report-filter-compact .modal-content,
+#report-filter-modal.report-filter-compact .modal-body {
+    overflow: visible !important;
 }
 </style>
 <div class="content-wrapper">
@@ -140,6 +145,7 @@
                             $filterOpen = !empty($this->input->get());
                             ?>
 
+                            <div id="report-results" style="display: none;">
                             <div class="row">
 
                                 <form method="GET" action="<?= base_url('Reports'); ?>" class="mb-4 lead-report-filters">
@@ -288,6 +294,7 @@
 
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -298,6 +305,56 @@
     </section>
     <!-- /.content -->
 </div>
+</div>
+
+<div class="new_modal_design report-filter-overlay report-filter-compact" id="report-filter-modal" tabindex="-1"
+    role="dialog" aria-labelledby="report-filter-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4 class="modal-title" id="report-filter-modal-title">Report Filters</h4>
+                    <p class="mb-0 text-muted">Select a required date range and any additional filters.</p>
+                </div>
+            </div>
+            <form id="initial-report-filter-form" autocomplete="off" novalidate>
+                <div class="modal-body lead-report-filters">
+                    <div class="row align-items-end">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_property" class="form-label">Property</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_property">
+                                <?php foreach ($properties as $property) { ?>
+                                    <option value="<?= $property->hotel_id; ?>"><?= $property->hotel_name; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_department" class="form-label">Department</label>
+                            <select class="form-control report-multiselect-source" multiple id="modal_department">
+                                <?php foreach ($departments as $dept) { ?>
+                                    <option value="<?= $dept->department_id; ?>"><?= $dept->department_name; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="modal_start_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="modal_end_date" required>
+                        </div>
+                        <div class="col-12">
+                            <div id="report-filter-error" class="text-danger" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="submit-report-filters">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 
@@ -440,9 +497,12 @@
 
     $(document).ready(function() {
         var table;
+        var filtersReady = false;
 
         initializeReportMultiSelect('#property', 'Select Options');
         initializeReportMultiSelect('#department', 'Select Options');
+        initializeReportMultiSelect('#modal_property', 'Select Options');
+        initializeReportMultiSelect('#modal_department', 'Select Options');
 
         $(document).off('click.reportMultiSelect').on('click.reportMultiSelect', function(e) {
             if (!$(e.target).closest('.report-multiselect').length) {
@@ -470,9 +530,6 @@
                 destroy: true
             });
         }
-
-        // Initialize initially
-        initDataTable();
 
         // Function to fetch filtered data
         function fetchLeads(reset = false) {
@@ -514,9 +571,43 @@
 
         // Trigger fetch on filter change
         $(document).on('change', '#property, #department, #start_date, #end_date', function() {
-            console.log("Filters changed");
+            if (!filtersReady) return;
             fetchLeads(true);
         });
+
+        $('#initial-report-filter-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const startDate = $('#modal_start_date').val();
+            const endDate = $('#modal_end_date').val();
+            const $error = $('#report-filter-error');
+            $error.text('');
+
+            if (!startDate || !endDate) {
+                $error.text('Start Date and End Date are required.');
+                return;
+            }
+
+            if (endDate < startDate) {
+                $error.text('End Date must be the same as or later than Start Date.');
+                return;
+            }
+
+            $('#property').val($('#modal_property').val()).trigger('change.reportMultiSelect');
+            $('#department').val($('#modal_department').val()).trigger('change.reportMultiSelect');
+            $('#start_date').val(startDate);
+            $('#end_date').val(endDate);
+
+            filtersReady = true;
+            $('#report-results').show();
+            $('#report-filter-modal').removeClass('show').attr('aria-hidden', 'true');
+            fetchLeads(true);
+        });
+
+        $('#report-filter-modal')
+            .appendTo('.content-wrapper')
+            .addClass('show')
+            .attr('aria-hidden', 'false');
     });
     })(window.jQuery);
 </script>
