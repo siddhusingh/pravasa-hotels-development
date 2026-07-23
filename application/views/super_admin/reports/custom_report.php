@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/reports.css">
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
