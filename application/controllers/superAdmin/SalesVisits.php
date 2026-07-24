@@ -215,6 +215,50 @@ class SalesVisits extends CI_Controller
             return;
         }
 
+        $dynamicStage = trim((string) $this->input->post('disposition', true));
+        $dynamicDepartment = strtolower(trim((string) ($department_data->department_name ?? '')));
+        if ($dynamicDepartment === 'restaurants') {
+            $dynamicDepartment = 'restaurant';
+        } elseif ($dynamicDepartment === 'banquets') {
+            $dynamicDepartment = 'banquet';
+        }
+
+        $dynamicValue = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+
+        $dynamicValidationError = '';
+        if ($dynamicStage === 'Lead Lost' && $dynamicValue('reason') === '') {
+            $dynamicValidationError = 'Please select a lead lost reason';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'rooms' && $dynamicValue('meal_plan') === '') {
+            $dynamicValidationError = 'Please select a meal plan';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'banquet' && $dynamicValue('banquet_id') === '') {
+            $dynamicValidationError = 'Please select a banquet';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
+            foreach ([
+                'restaurant_id' => 'Please select a restaurant',
+                'slot_type_id' => 'Please select a slot type',
+                'time_slot_id' => 'Please select a time slot',
+                'table_category_id' => 'Please select a table category',
+                'table_reservation_status' => 'Please select a reservation status'
+            ] as $field => $message) {
+                if ($dynamicValue($field) === '') {
+                    $dynamicValidationError = $message;
+                    break;
+                }
+            }
+
+            $dynamicTableIds = $this->input->post('table_id');
+            if ($dynamicValidationError === '' && (empty($dynamicTableIds) || (is_array($dynamicTableIds) && count(array_filter($dynamicTableIds)) === 0))) {
+                $dynamicValidationError = 'Please select at least one table';
+            }
+        }
+
+        if ($dynamicValidationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $dynamicValidationError]);
+            return;
+        }
+
         $name          = trim($personMetdata->first_name . ' ' . $personMetdata->last_name);
         $mobile_number = $personMetdata->mobile_number;
         $email         = $personMetdata->email;
@@ -268,6 +312,75 @@ class SalesVisits extends CI_Controller
                 'creator_user_role' => $assigned_role,
                 'created_at'        => date('Y-m-d H:i:s')
             ];
+
+            $dynamicFields = [];
+
+            if ($dynamicStage === 'Lead Lost') {
+                $dynamicFields = ['reason'];
+            } elseif ($dynamicStage === 'Lead Won') {
+                $dynamicFields = ['amount'];
+            } elseif ($dynamicStage === 'Quotation Sent') {
+                $dynamicFields = ['promotional_offers', 'followup_date', 'second_followup_date'];
+
+                if ($dynamicDepartment === 'rooms') {
+                    $dynamicFields = array_merge($dynamicFields, [
+                        'roomtype',
+                        'meal_plan',
+                        'checkin_date',
+                        'checkout_date',
+                        'number_of_rooms',
+                        'pax',
+                        'adults',
+                        'kids',
+                        'revenue_room',
+                        'revenue_fnb',
+                        'revenue_other',
+                        'amount'
+                    ]);
+                } elseif ($dynamicDepartment === 'restaurant') {
+                    $dynamicFields = array_merge($dynamicFields, [
+                        'booking_date',
+                        'pax',
+                        'restaurant_id',
+                        'slot_type_id',
+                        'time_slot_id',
+                        'arrival_time',
+                        'table_category_id',
+                        'table_reservation_status',
+                        'amount',
+                        'special_occasion',
+                        'special_request'
+                    ]);
+                } elseif ($dynamicDepartment === 'banquet') {
+                    $dynamicFields = array_merge($dynamicFields, [
+                        'booking_date',
+                        'pax',
+                        'banquet_id',
+                        'amount'
+                    ]);
+                }
+            } elseif (in_array($dynamicStage, ['Negotiations', 'Not Contacted', 'Advance Received'], true)) {
+                $dynamicFields = ['booking_date', 'followup_date', 'second_followup_date'];
+            }
+
+            foreach ($dynamicFields as $dynamicField) {
+                $dynamicValue = $this->input->post($dynamicField, true);
+                if ($dynamicValue !== null && $dynamicValue !== '') {
+                    $leadData[$dynamicField] = $dynamicValue;
+                }
+            }
+
+            if ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
+                $tableIds = $this->input->post('table_id');
+                if (is_array($tableIds)) {
+                    $tableIds = array_values(array_filter(array_map('trim', $tableIds), 'strlen'));
+                    if (!empty($tableIds)) {
+                        $leadData['table_id'] = implode(',', $tableIds);
+                    }
+                } elseif ($tableIds !== null && $tableIds !== '') {
+                    $leadData['table_id'] = trim((string) $tableIds);
+                }
+            }
 
             /* ===================== STATUS LOGIC ===================== */
             $status      = $this->input->post('status', true);

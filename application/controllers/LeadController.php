@@ -973,8 +973,8 @@ class LeadController extends CI_Controller
         $data['selected_department'] = $department_id;
 
 
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted'=>0]);
+        $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted'=>0]);
 
         $data['all_assignable_users'] = $this->LeadModel->get_all_assignable_users('hotel_admin', '');
 
@@ -984,9 +984,9 @@ class LeadController extends CI_Controller
 
 
 
-        $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
+        $data['roomtype'] = $this->Common_model->getAllData('roomtype', ['is_deleted'=>0]);
 
-        $data['ratetype'] = $this->Common_model->getAllData('ratetype', '');
+        $data['ratetype'] = $this->Common_model->getAllData('ratetype', ['is_deleted'=>0]);
 
         $this->load->view('super_admin/include/header');
         $this->load->view('super_admin/include/sidebar');

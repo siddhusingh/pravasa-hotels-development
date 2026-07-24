@@ -157,6 +157,116 @@
         border-radius: 5px !important;
         box-shadow: none !important;
     }
+
+    #salesVisitForm .table-multiselect-source {
+        display: none !important;
+    }
+
+    #salesVisitForm .table-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #salesVisitForm .table-multiselect-toggle {
+        align-items: center;
+        background: #fff !important;
+        border: 1px solid #b8c0cc !important;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057 !important;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #salesVisitForm .table-multiselect-source.is-invalid + .table-multiselect .table-multiselect-toggle {
+        border-color: #dc3545 !important;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle,
+    #salesVisitForm .table-multiselect-toggle:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+        outline: 0;
+    }
+
+    #salesVisitForm .table-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #salesVisitForm .table-multiselect-menu {
+        background: #fff;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1055;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-menu {
+        display: block;
+    }
+
+    #salesVisitForm .table-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    #salesVisitForm .table-multiselect-option:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    #salesVisitForm .table-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #salesVisitForm .table-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #salesVisitForm .table-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
+    }
 </style>
 
 <!-- Content Wrapper -->
@@ -212,7 +322,7 @@
                                             <select name="property" id="property" class="form-control" required>
                                                 <option selected disabled value="">Select Hotel</option>
                                                 <?php foreach ($hotel_admin as $each) { ?>
-                                                    <option value="<?php echo encrypt_id($each->hotel_id) ?>"><?php echo $each->hotel_name ?></option>
+                                                    <option value="<?php echo encrypt_id($each->hotel_id) ?>" data-raw-id="<?php echo (int) $each->hotel_id ?>"><?php echo $each->hotel_name ?></option>
                                                 <?php } ?>
                                             </select>
                                             <span id="property_error" class="text-danger small validation-message"></span>
@@ -226,7 +336,7 @@
                                             <select name="type" id="type" class="form-control" required>
                                                 <option selected disabled value="">Select Department</option>
                                                 <?php foreach ($departments as $each) { ?>
-                                                    <option value="<?php echo encrypt_id($each->department_id) ?>"
+                                                    <option value="<?php echo encrypt_id($each->department_id) ?>" data-raw-id="<?php echo (int) $each->department_id ?>"
                                                         data-name="<?php echo $each->department_name; ?>"><?php echo $each->department_name ?></option>
                                                 <?php } ?>
                                             </select>
@@ -325,7 +435,7 @@
                                     <input type="hidden" id="leadDepartment" name="leadDepartment">
 
 
-                                    <div id="dynamicFields"></div>
+                                    <div id="dynamicFields" class="row g-3"></div>
 
 
 
@@ -398,12 +508,6 @@
                                     <div class="col-sm-4">
                                         <label>Lunch</label>
                                         <input type="number" step="0.01" name="lunch" class="form-control" id="lunch">
-                                    </div>
-
-                                    <!-- Entertainment -->
-                                    <div class="col-sm-4">
-                                        <label>Entertainment</label>
-                                        <input type="number" step="0.01" name="entertainment" class="form-control" id="entertainment">
                                     </div>
 
                                     <!-- Total -->
@@ -1237,21 +1341,21 @@
     });
 
 
-    $("#disposition").change(function() {
+    $(".legacy-sales-dynamic-disabled").change(function() {
 
         let property = $("#property").val();
         updateDynamicFieldsForEdit("", property);
 
     })
 
-    $("#type").change(function() {
+    $(".legacy-sales-dynamic-disabled").change(function() {
 
         let property = $("#property").val();
         updateDynamicFieldsForEdit("", property);
 
     })
 
-    $("#property").change(function() {
+    $(".legacy-sales-dynamic-disabled").change(function() {
 
         let property = $("#property").val();
         updateDynamicFieldsForEdit("", property);
@@ -1580,6 +1684,495 @@
         });
     }
 
+    let salesDynamicAjaxQueue = $.Deferred().resolve().promise();
+    let salesDynamicGeneration = 0;
+
+    function salesDynamicRequest(options) {
+        const runRequest = function() {
+            if ((options.type || 'GET').toUpperCase() === 'POST') {
+                options.data = csrfData(options.data || {});
+            }
+            return $.ajax(options);
+        };
+
+        salesDynamicAjaxQueue = salesDynamicAjaxQueue.then(runRequest, runRequest);
+        return salesDynamicAjaxQueue;
+    }
+
+    function normalizeSalesDepartment(name) {
+        name = String(name || '').trim().toLowerCase();
+        if (name === 'restaurants') return 'restaurant';
+        if (name === 'banquets') return 'banquet';
+        return name;
+    }
+
+    function resetSalesDynamicFields() {
+        $.each(salesDynamicDependencyObservers, function(_, observer) {
+            observer.disconnect();
+        });
+        salesDynamicDependencyObservers.length = 0;
+
+        $('#dynamicFields select.select2-hidden-accessible').each(function() {
+            $(this).select2('destroy');
+        });
+        $('#dynamicFields').empty();
+    }
+
+    function initializeSalesDynamicSelects() {
+        initializeSalesVisitSelect2($('#dynamicFields select:not([multiple])'));
+        $('#dynamicFields select:not([multiple])').trigger('change.select2');
+        observeSalesDynamicDependencies();
+    }
+
+    let salesDynamicRefreshTimer = null;
+    const salesDynamicObservers = [];
+    const salesDynamicDependencyObservers = [];
+
+    function scheduleSalesDynamicRefresh() {
+        window.clearTimeout(salesDynamicRefreshTimer);
+        salesDynamicRefreshTimer = window.setTimeout(refreshSalesDynamicFields, 0);
+    }
+
+    function observeSalesDynamicControls() {
+        if (!window.MutationObserver) {
+            return;
+        }
+
+        $.each(['property', 'type', 'disposition'], function(_, fieldId) {
+            const renderedSelection = document.getElementById('select2-' + fieldId + '-container');
+
+            if (!renderedSelection || renderedSelection.dataset.salesDynamicObserved === 'true') {
+                return;
+            }
+
+            renderedSelection.dataset.salesDynamicObserved = 'true';
+            const observer = new MutationObserver(scheduleSalesDynamicRefresh);
+            observer.observe(renderedSelection, {
+                childList: true,
+                characterData: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['title']
+            });
+            salesDynamicObservers.push(observer);
+        });
+    }
+
+    function observeSalesDynamicDependencies() {
+        if (!window.MutationObserver) {
+            return;
+        }
+
+        const dependencies = {
+            restaurant_id: function(value) {
+                if (value) {
+                    loadSalesTableCategories(value);
+                } else {
+                    $('#table_category_id').html('<option value="">Select Category</option>').trigger('change.select2');
+                    $('#table_id').empty();
+                    initializeSalesTableMultiSelect();
+                }
+            },
+            slot_type_id: function(value) {
+                if (value) {
+                    loadSalesTimeSlots(value);
+                } else {
+                    $('#time_slot_id').html('<option value="">Select Time Slot</option>').trigger('change.select2');
+                }
+            },
+            table_category_id: function(value) {
+                const restaurantId = $('#restaurant_id').val();
+                if (restaurantId && value) {
+                    loadSalesTables(restaurantId, value);
+                } else {
+                    $('#table_id').empty();
+                    initializeSalesTableMultiSelect();
+                }
+            }
+        };
+
+        $.each(dependencies, function(fieldId, loadDependency) {
+            const $field = $('#' + fieldId);
+            const renderedSelection = document.getElementById('select2-' + fieldId + '-container');
+
+            if (!$field.length || !renderedSelection) {
+                return;
+            }
+
+            let previousValue = String($field.val() || '');
+            const observer = new MutationObserver(function() {
+                const currentValue = String($field.val() || '');
+                if (currentValue === previousValue) {
+                    return;
+                }
+
+                previousValue = currentValue;
+                loadDependency(currentValue);
+            });
+
+            observer.observe(renderedSelection, {
+                childList: true,
+                characterData: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['title']
+            });
+            salesDynamicDependencyObservers.push(observer);
+        });
+    }
+
+    function refreshSalesDynamicFields() {
+        salesDynamicGeneration += 1;
+        const stage = $('#disposition').val() || '';
+        const department = normalizeSalesDepartment($('#type option:selected').data('name'));
+        const hotelId = $('#property option:selected').data('raw-id') || '';
+        const departmentId = $('#type option:selected').data('raw-id') || '';
+        const $container = $('#dynamicFields');
+        const today = new Date().toISOString().split('T')[0];
+
+        $('#leadDepartment').val(department);
+        resetSalesDynamicFields();
+
+        if (stage === 'Lead Lost') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Reason <span class="text-danger">*</span></label>
+                    <select name="reason" id="reason" class="form-select">
+                        <option value="">Select Reason</option>
+                        <option value="Budget Issue">Budget Issue</option>
+                        <option value="Date Unavailable">Date Unavailable</option>
+                        <option value="No Response">No Response</option>
+                        <option value="Chose Competitor">Chose Competitor</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Duplicate Lead">Duplicate Lead</option>
+                    </select>
+                    <div class="text-danger error-label" id="reason_error"></div>
+                </div>`);
+        }
+
+        if (stage === 'Lead Won') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Expected Revenue</label>
+                    <input type="number" name="amount" id="amount" class="form-control" step="0.01">
+                </div>`);
+        }
+
+        if (stage === 'Quotation Sent') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Promotional Offer</label>
+                    <select name="promotional_offers" id="promotional_offers" class="form-select">
+                        <option value="">Select Offer</option>
+                    </select>
+                </div>`);
+
+            if (department === 'rooms') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Room Type</label><select name="roomtype" id="roomtype" class="form-select"><option value="">Select Room Type</option></select></div>
+                    <div class="col-md-3 mb-3"><label>Meal Plan <span class="text-danger">*</span></label><select name="meal_plan" id="meal_plan" class="form-select"><option value="">Select Meal Plan</option></select><div class="text-danger error-label" id="meal_plan_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Check-in Date</label><input type="date" name="checkin_date" id="checkin_date" class="form-control"><span class="error-text text-danger"></span></div>
+                    <div class="col-md-3 mb-3"><label>Check-out Date</label><input type="date" name="checkout_date" id="checkout_date" class="form-control"><span class="error-text text-danger"></span></div>
+                    <div class="col-md-3 mb-3"><label>Number of Rooms</label><input type="number" name="number_of_rooms" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Adults</label><input type="number" name="adults" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Kids</label><input type="number" name="kids" class="form-control" min="0"></div>
+                    <div class="col-md-3 mb-3"><label>Room Revenue</label><input type="number" name="revenue_room" id="revenue_room" class="form-control revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>F&amp;B Revenue</label><input type="number" name="revenue_fnb" id="revenue_fnb" class="form-control revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>Other Revenue</label><input type="number" name="revenue_other" id="revenue_other" class="form-control revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" id="amount" class="form-control" step="0.01" readonly></div>`);
+                loadSalesRoomTypes(hotelId);
+                loadSalesMealPlans();
+            } else if (department === 'restaurant') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Restaurant <span class="text-danger">*</span></label><select name="restaurant_id" id="restaurant_id" class="form-select"><option value="">Select Restaurant</option></select><div class="text-danger error-label" id="restaurant_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Slot Type <span class="text-danger">*</span></label><select name="slot_type_id" id="slot_type_id" class="form-select"><option value="">Select Slot</option></select><div class="text-danger error-label" id="slot_type_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Time Slot <span class="text-danger">*</span></label><select name="time_slot_id" id="time_slot_id" class="form-select"><option value="">Select Time Slot</option></select><div class="text-danger error-label" id="time_slot_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Arrival Time</label><input type="time" name="arrival_time" class="form-control"></div>
+                    <div class="col-md-3 mb-3"><label>Table Category <span class="text-danger">*</span></label><select name="table_category_id" id="table_category_id" class="form-select"><option value="">Select Category</option></select><div class="text-danger error-label" id="table_category_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Tables <span class="text-danger">*</span></label><select name="table_id[]" id="table_id" class="form-control" multiple></select><div class="text-danger error-label" id="table_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Table Reservation Status <span class="text-danger">*</span></label><select name="table_reservation_status" id="table_reservation_status" class="form-select"><option value="">Select Status</option><option value="Reserved">Reserved</option><option value="Seated">Seated</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select><div class="text-danger error-label" id="table_reservation_status_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" class="form-control" step="0.01"></div>
+                    <div class="col-md-6 mb-3"><label>Special Occasion (if any)</label><input type="text" name="special_occasion" class="form-control"></div>
+                    <div class="col-md-6 mb-3"><label>Special Request</label><textarea name="special_request" class="form-control"></textarea></div>`);
+                loadSalesRestaurants(hotelId);
+                loadSalesSlotTypes();
+                initializeSalesTableMultiSelect();
+            } else if (department === 'banquet') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Banquet <span class="text-danger">*</span></label><select name="banquet_id" id="banquet_id" class="form-select"><option value="">Select Banquet</option></select><div class="text-danger error-label" id="banquet_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" class="form-control" step="0.01"></div>`);
+                loadSalesBanquets(hotelId);
+            }
+
+            $container.append(`
+                <div class="col-md-4 mt-3 mb-4"><label>Follow-up Date</label><input type="date" name="followup_date" class="form-control"></div>
+                <div class="col-md-4 mt-3 mb-4"><label>2nd Follow-up Date</label><input type="date" name="second_followup_date" class="form-control"></div>`);
+            loadSalesPromotionalOffers(departmentId);
+        }
+
+        if (stage === 'Negotiations' || stage === 'Not Contacted' || stage === 'Advance Received') {
+            $container.append(`
+                <div class="col-md-3 mb-3"><label>Booking Enquiry Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                <div class="col-md-3 mb-3"><label>Follow-up Date</label><input type="date" name="followup_date" class="form-control"></div>
+                <div class="col-md-3 mb-3"><label>2nd Follow-up Date</label><input type="date" name="second_followup_date" class="form-control"></div>`);
+        }
+
+        initializeSalesDynamicSelects();
+    }
+
+    function loadSalesSelect(url, data, selector, placeholder, valueKey, labelBuilder, afterLoad) {
+        const requestGeneration = salesDynamicGeneration;
+        const $select = $(selector).html(`<option value="">Loading...</option>`);
+        salesDynamicRequest({
+            url: url,
+            type: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function(res) {
+                refreshCsrf(res);
+                if (requestGeneration !== salesDynamicGeneration || !$(selector).length) {
+                    return;
+                }
+                let html = `<option value="">${placeholder}</option>`;
+                if (res.status === 'success' || res.status === true) {
+                    $.each(res.data || [], function(_, row) {
+                        html += `<option value="${row[valueKey]}">${labelBuilder(row)}</option>`;
+                    });
+                }
+                $select.html(html).trigger('change.select2');
+                if (typeof afterLoad === 'function') {
+                    afterLoad($select);
+                }
+            }
+        });
+    }
+
+    function loadSalesRestaurants(hotelId) {
+        loadSalesSelect(
+            "<?= base_url('lead/get-restaurants') ?>",
+            {hotel_id: hotelId},
+            '#restaurant_id',
+            'Select Restaurant',
+            'id',
+            row => row.restaurant_name,
+            function($restaurant) {
+                const $available = $restaurant.find('option').filter(function() {
+                    return String(this.value).trim() !== '';
+                });
+                if ($available.length === 1) {
+                    $restaurant.val($available.first().val()).trigger('change');
+                }
+            }
+        );
+    }
+
+    function loadSalesBanquets(hotelId) {
+        loadSalesSelect("<?= base_url('lead/get-banquets') ?>", {hotel_id: hotelId}, '#banquet_id', 'Select Banquet', 'banquet_id', row => row.banquet_name);
+    }
+
+    function loadSalesRoomTypes(hotelId) {
+        loadSalesSelect("<?= base_url('lead/get-room-types') ?>", {hotel_id: hotelId}, '#roomtype', 'Select Room Type', 'roomtype_id', row => row.roomtype_name);
+    }
+
+    function loadSalesMealPlans() {
+        loadSalesSelect("<?= base_url('lead/get-meal-plans') ?>", {}, '#meal_plan', 'Select Meal Plan', 'id', row => row.plan);
+    }
+
+    function loadSalesPromotionalOffers(departmentId) {
+        loadSalesSelect("<?= base_url('lead/get-promotional-offers') ?>", {department_id: departmentId}, '#promotional_offers', 'Select Offer', 'id', row => row.offer_name);
+    }
+
+    function loadSalesSlotTypes() {
+        const requestGeneration = salesDynamicGeneration;
+        const $select = $('#slot_type_id').html('<option value="">Loading...</option>');
+        $.ajax({
+            url: "<?= base_url('lead/get-slot-types') ?>",
+            type: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                if (requestGeneration !== salesDynamicGeneration || !$('#slot_type_id').length) {
+                    return;
+                }
+                let html = '<option value="">Select Slot</option>';
+                $.each(res.data || [], function(_, row) {
+                    html += `<option value="${row.id}">${row.slot_name} (${row.start_time} - ${row.end_time})</option>`;
+                });
+                $select.html(html).trigger('change.select2');
+            }
+        });
+    }
+
+    function loadSalesTimeSlots(slotTypeId) {
+        loadSalesSelect("<?= base_url('lead/get-time-slots') ?>", {slot_type_id: slotTypeId}, '#time_slot_id', 'Select Time Slot', 'id', row => `${row.start_time} - ${row.end_time}`);
+    }
+
+    function loadSalesTableCategories(restaurantId) {
+        loadSalesSelect(
+            "<?= base_url('lead/get-table-categories') ?>",
+            {restaurant_id: restaurantId},
+            '#table_category_id',
+            'Select Category',
+            'id',
+            row => row.category_name,
+            function($category) {
+                const $available = $category.find('option').filter(function() {
+                    return String(this.value).trim() !== '';
+                });
+                if ($available.length === 1) {
+                    $category.val($available.first().val()).trigger('change');
+                }
+            }
+        );
+    }
+
+    function loadSalesTables(restaurantId, categoryId) {
+        const requestGeneration = salesDynamicGeneration;
+        salesDynamicRequest({
+            url: "<?= base_url('lead/get-tables') ?>",
+            type: 'POST',
+            data: {restaurant_id: restaurantId, category_id: categoryId},
+            dataType: 'json',
+            success: function(res) {
+                refreshCsrf(res);
+                if (requestGeneration !== salesDynamicGeneration || !$('#table_id').length) {
+                    return;
+                }
+                let html = '';
+                $.each(res.data || [], function(_, row) {
+                    html += `<option value="${row.id}">Table ${row.table_name} (${row.capacity} Seats)</option>`;
+                });
+                $('#table_id').html(html);
+                initializeSalesTableMultiSelect();
+            }
+        });
+    }
+
+    function syncSalesTableMultiSelect($select, $widget) {
+        const values = ($select.val() || []).map(String);
+        const total = $widget.find('.table-multiselect-item').length;
+        const selectedCount = values.length;
+        $widget.find('.table-multiselect-item').each(function() {
+            $(this).prop('checked', values.includes(String($(this).val())));
+        });
+        $widget.find('.table-multiselect-all')
+            .prop('checked', total > 0 && selectedCount === total)
+            .prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+        let summary = 'Select Table';
+        if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+        } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
+        }
+
+        $widget.find('.table-multiselect-summary').text(summary);
+    }
+
+    function initializeSalesTableMultiSelect() {
+        const $select = $('#table_id');
+        if (!$select.length) return;
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.next('.table-multiselect').remove();
+        $select.addClass('table-multiselect-source');
+        const $widget = $('<div>', {class: 'table-multiselect'});
+        const $toggle = $('<button>', {type: 'button', class: 'table-multiselect-toggle', 'aria-expanded': 'false'})
+            .append($('<span>', {class: 'table-multiselect-summary', text: 'Select Table'}));
+        const $menu = $('<div>', {class: 'table-multiselect-menu'});
+        const $options = $select.find('option').filter(function() { return String(this.value).trim() !== ''; });
+
+        if ($options.length) {
+            $menu.append($('<label>', {class: 'table-multiselect-option table-multiselect-select-all'})
+                .append($('<input>', {type: 'checkbox', class: 'table-multiselect-all'}), $('<span>', {text: 'Select all'})));
+            $options.each(function() {
+                $menu.append($('<label>', {class: 'table-multiselect-option'})
+                    .append($('<input>', {type: 'checkbox', class: 'table-multiselect-item', value: this.value}), $('<span>').text($(this).text().trim())));
+            });
+        } else {
+            $menu.append($('<div>', {class: 'table-multiselect-empty', text: 'No tables available'}));
+        }
+
+        $widget.append($toggle, $menu);
+        $select.after($widget);
+        $toggle.on('click', function() {
+            const open = !$widget.hasClass('is-open');
+            $('.table-multiselect').not($widget).removeClass('is-open')
+                .find('.table-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', open);
+            $toggle.attr('aria-expanded', open ? 'true' : 'false');
+        });
+        $widget.on('change', '.table-multiselect-all', function() {
+            const values = this.checked ? $widget.find('.table-multiselect-item').map(function() { return this.value; }).get() : [];
+            $select.val(values).trigger('change');
+        });
+        $widget.on('change', '.table-multiselect-item', function() {
+            const values = $widget.find('.table-multiselect-item:checked').map(function() { return this.value; }).get();
+            $select.val(values).trigger('change');
+        });
+        $select.off('change.salesTables').on('change.salesTables', function() {
+            syncSalesTableMultiSelect($select, $widget);
+        });
+        syncSalesTableMultiSelect($select, $widget);
+    }
+
+    $('#property, #type, #disposition')
+        .off('.salesLeadDynamic')
+        .on('change.salesLeadDynamic select2:select.salesLeadDynamic select2:clear.salesLeadDynamic', scheduleSalesDynamicRefresh);
+
+    $(observeSalesDynamicControls);
+
+    $(document)
+        .off('change.salesTimeSlots', '#slot_type_id')
+        .on('change.salesTimeSlots', '#slot_type_id', function() {
+            const value = $(this).val();
+            if (value) loadSalesTimeSlots(value);
+            else $('#time_slot_id').html('<option value="">Select Time Slot</option>').trigger('change.select2');
+        })
+        .off('change.salesTableCategories', '#restaurant_id')
+        .on('change.salesTableCategories', '#restaurant_id', function() {
+            const value = $(this).val();
+            if (value) loadSalesTableCategories(value);
+            else $('#table_category_id').html('<option value="">Select Category</option>').trigger('change.select2');
+        })
+        .off('change.salesTables', '#table_category_id')
+        .on('change.salesTables', '#table_category_id', function() {
+            const restaurantId = $('#restaurant_id').val();
+            const categoryId = $(this).val();
+            if (restaurantId && categoryId) {
+                loadSalesTables(restaurantId, categoryId);
+            } else {
+                $('#table_id').empty();
+                initializeSalesTableMultiSelect();
+            }
+        });
+
+    $(document).on('click.salesTables', function(event) {
+        if (!$(event.target).closest('.table-multiselect').length) {
+            $('.table-multiselect').removeClass('is-open').find('.table-multiselect-toggle').attr('aria-expanded', 'false');
+        }
+    });
+
+    $(document).on('input.salesPax', '#dynamicFields input[name="adults"], #dynamicFields input[name="kids"]', function() {
+        const adults = parseInt($('#dynamicFields input[name="adults"]').val(), 10) || 0;
+        const kids = parseInt($('#dynamicFields input[name="kids"]').val(), 10) || 0;
+        $('#dynamicFields input[name="pax"]').val(adults + kids);
+    });
+
+    $(document).on('input.salesRevenue', '#dynamicFields .revenue-field', function() {
+        const total = (parseFloat($('#revenue_room').val()) || 0) +
+            (parseFloat($('#revenue_fnb').val()) || 0) +
+            (parseFloat($('#revenue_other').val()) || 0);
+        $('#amount').val(total.toFixed(2));
+    });
+
     function salesVisitField(field) {
         return $('#' + field);
     }
@@ -1650,7 +2243,31 @@
             errors.slot_type_id = 'Please select a slot type.';
         }
 
-        $.each(['kms_run', 'rate_per_km', 'parking_charges', 'lunch', 'entertainment'], function(_, field) {
+        const stage = value('disposition');
+        const department = normalizeSalesDepartment($('#leadDepartment').val());
+
+        if (stage === 'Lead Lost' && !value('reason')) {
+            errors.reason = 'Please select a reason.';
+        }
+
+        if (stage === 'Quotation Sent') {
+            if (department === 'rooms' && !value('meal_plan')) {
+                errors.meal_plan = 'Please select a meal plan.';
+            }
+            if (department === 'banquet' && !value('banquet_id')) {
+                errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'restaurant') {
+                if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
+                if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
+                if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';
+                if (!value('table_category_id')) errors.table_category_id = 'Please select a table category.';
+                if (!$('#table_id').val() || $('#table_id').val().length === 0) errors.table_id = 'Please select at least one table.';
+                if (!value('table_reservation_status')) errors.table_reservation_status = 'Please select a reservation status.';
+            }
+        }
+
+        $.each(['kms_run', 'rate_per_km', 'parking_charges', 'lunch'], function(_, field) {
             const rawValue = value(field);
             if (rawValue !== '' && (!$.isNumeric(rawValue) || Number(rawValue) < 0)) {
                 errors[field] = 'Enter a valid non-negative amount.';
@@ -1710,7 +2327,6 @@
         let rate_per_km = $('#rate_per_km').val();
         let parking_charges = $('#parking_charges').val();
         let lunch = $('#lunch').val();
-        let entertainment = $('#entertainment').val();
         let total_amount = $('#total_amount').val();
 
         /* ================== BASIC VALIDATION ================== */
@@ -1731,10 +2347,19 @@
                         if (this.files.length > 0) {
                             formData.append(name, this.files[0]);
                         }
+                    } else if (name === 'table_id[]') {
+                        // Appended separately so every selected table is submitted.
                     } else {
                         formData.append(name, $(this).val());
                     }
                 });
+
+            const selectedTables = $('#table_id').val();
+            if (selectedTables) {
+                $.each(Array.isArray(selectedTables) ? selectedTables : [selectedTables], function(_, tableId) {
+                    formData.append('table_id[]', tableId);
+                });
+            }
 
             /* ========== APPEND MAIN FIELDS ========== */
             formData.append('user_channel', userChannel);
@@ -1760,7 +2385,6 @@
             formData.append('rate_per_km', rate_per_km);
             formData.append('parking_charges', parking_charges);
             formData.append('lunch', lunch);
-            formData.append('entertainment', entertainment);
             formData.append('total_amount', total_amount);
             appendCsrf(formData);
 
@@ -2049,20 +2673,19 @@ $(document).ready(function () {
             let ratePerKm = parseFloat($('#rate_per_km').val()) || 0;
             let parkingCharges = parseFloat($('#parking_charges').val()) || 0;
             let lunch = parseFloat($('#lunch').val()) || 0;
-            let entertainment = parseFloat($('#entertainment').val()) || 0;
 
             // Travel calculation
             let travelAmount = kmsRun * ratePerKm;
 
             // Final total
-            let totalAmount = travelAmount + parkingCharges + lunch + entertainment;
+            let totalAmount = travelAmount + parkingCharges + lunch;
 
             // Set total with 2 decimal points
             $('#total_amount').val(totalAmount.toFixed(2));
         }
 
         // Trigger calculation on change / keyup
-        $('#kms_run, #rate_per_km, #parking_charges, #lunch, #entertainment')
+        $('#kms_run, #rate_per_km, #parking_charges, #lunch')
             .on('keyup change', function() {
                 calculateTotalAmount();
             });
