@@ -574,11 +574,6 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label>Deals In</label>
-                        <input type="text" class="form-control" name="deals_in">
-                    </div>
-
-                    <div class="col-md-6 mb-3">
                         <label>Details</label>
                         <textarea class="form-control" name="details"></textarea>
                     </div>
