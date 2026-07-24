@@ -384,6 +384,7 @@
                                                 <option value="business">Business</option>
                                                 <option value="non_business">Non-Business</option>
                                             </select>
+                                            <span class="input_brek_space"></span>
                                         </div>
                                         <!-- Start Date -->
                                         <div class="col-md-3">
@@ -692,7 +693,7 @@ REMARK
 
     padding:14px 18px;
 
-    color:#475569;
+    color:#000;
 
     line-height:1.7;
 
@@ -1962,7 +1963,7 @@ font-size:14px;
                 container.append(`
 
         <div class="col-md-3 mb-3">
-            <label class="form-label">Promotional Offer</label>
+            <label class="form-label">Promotional Offer </label>
             <select name="promotional_offers" class="form-select" id="edit_promotional_offers"></select>
         </div>
 

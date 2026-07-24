@@ -2401,7 +2401,7 @@ Margin property
 .rtl .treeview-menu > li > a {
   padding: 5px 25px 5px 5px; }
   .rtl .treeview-menu > li > a > i {
-    padding-left: 20px;
+    padding-left: 10px;
     padding-right: 10px;
     float: right;
     display: inline-table;

@@ -42,52 +42,7 @@
 
 </head>
 
-<style>
-  .bg-white {
-    --bs-bg-opacity: 1;
-    background-color: #fff !important;
-  }
 
-
-
-  /* Force black bold inputs for login */
-  .rounded10 .form-control {
-    background-color: transparent !important;
-    border: 2px solid #000 !important;
-    border-color: #000 !important;
-    color: #000 !important;
-    font-weight: 600 !important;
-  }
-
-  /* Placeholder text */
-  .rounded10 .form-control::placeholder {
-    color: #000 !important;
-    font-weight: 600 !important;
-    opacity: 0.85 !important;
-  }
-
-  /* Input group icon wrapper */
-  .rounded10 .input-group-text {
-    background-color: transparent !important;
-    border: 2px solid #000 !important;
-    border-color: #000 !important;
-  }
-
-  /* Icon color */
-  .rounded10 .input-group-text i {
-    color: #000 !important;
-    font-weight: 600 !important;
-  }
-
-  /* Focus state */
-  .rounded10 .form-control:focus {
-    border: 2px solid #000 !important;
-    border-color: #000 !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-    color: #000 !important;
-  }
-</style>
 
 
 <body class="hold-transition theme-primary bg-img"
@@ -100,7 +55,7 @@
       ">
 
 
-  <div class="container h-p100">
+  <div class="container h-p100 login_page">
     <div class="row align-items-center justify-content-md-center h-p100">
 
       <div class="col-12">
