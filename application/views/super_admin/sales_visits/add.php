@@ -57,6 +57,106 @@
         min-height: 18px;
         margin-top: 4px;
     }
+
+    #salesVisitForm .company-label-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    #salesVisitForm .quick-add-button {
+        padding: 3px 10px;
+        line-height: 1.35;
+        white-space: nowrap;
+    }
+
+    #salesVisitForm .quick-add-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
+    #quickAddCompanyModal .error-label {
+        display: none;
+        margin-top: 4px;
+        font-size: 0.85rem;
+    }
+
+    #quickAddCompanyModal .select2-container {
+        width: 100% !important;
+    }
+
+    #quickAddCompanyModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #quickAddCompanyModal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-right: 35px !important;
+        padding-left: 13px !important;
+    }
+
+    #quickAddCompanyModal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    #quickAddCompanyModal select.is-invalid + .select2-container .select2-selection {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+    }
+
+    .quick-add-company-select2-dropdown .select2-search__field {
+        min-height: 34px !important;
+        height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+
+    #quickAddContactModal .contact-validation {
+        display: none;
+        margin-top: 4px;
+        font-size: 0.85rem;
+    }
+
+    #quickAddContactModal .select2-container {
+        width: 100% !important;
+    }
+
+    #quickAddContactModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    }
+
+    #quickAddContactModal .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-right: 35px !important;
+        padding-left: 13px !important;
+    }
+
+    #quickAddContactModal .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    #quickAddContactModal select.is-invalid + .select2-container .select2-selection {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+    }
+
+    .quick-add-contact-select2-dropdown .select2-search__field {
+        min-height: 34px !important;
+        height: 34px !important;
+        padding: 5px 9px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <!-- Content Wrapper -->
@@ -156,7 +256,10 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label for="company_id"><span class="field-label-icon fa fa-building-o" aria-hidden="true"></span>Company <span class="required-asterisk">*</span></label>
+                                        <div class="company-label-row">
+                                            <label for="company_id"><span class="field-label-icon fa fa-building-o" aria-hidden="true"></span>Company <span class="required-asterisk">*</span></label>
+                                            <button type="button" class="btn btn-primary-light btn-sm quick-add-button" id="open-quick-add-company">Quick Add</button>
+                                        </div>
                                         <select name="company_id" id="company_id" class="form-control" required>
                                             <option value="">Select Company</option>
                                             <?php foreach ($companies as $c) { ?>
@@ -170,7 +273,10 @@
 
                                     <!-- Person Met -->
                                  <div class="col-md-4">
-    <label for="person_met"><span class="field-label-icon fa fa-user" aria-hidden="true"></span>Person Met <span class="required-asterisk">*</span></label>
+    <div class="company-label-row">
+        <label for="person_met"><span class="field-label-icon fa fa-user" aria-hidden="true"></span>Person Met <span class="required-asterisk">*</span></label>
+        <button type="button" class="btn btn-primary-light btn-sm quick-add-button" id="open-quick-add-contact" disabled>Quick Add</button>
+    </div>
 
     <select
         name="person_met"
@@ -338,6 +444,354 @@
     </div>
 </div>
 
+<!-- ================= QUICK ADD COMPANY MODAL ================= -->
+<div class="modal modal-lg new_modal_design" id="quickAddCompanyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <form id="quickAddCompanyForm" enctype="multipart/form-data" novalidate>
+            <div class="modal-content">
+                <div class="custom-page-header">
+                    <div class="header-left">
+                        <div class="header-icon-box">
+                            <i class="fa fa-building"></i>
+                        </div>
+                        <div class="header-content">
+                            <div class="modal-header hotel_modal_header">
+                                <h5>Add Company</h5>
+                                <div class="hotel_banner"></div>
+                            </div>
+                            <ol class="custom-breadcrumb">
+                                <li>
+                                    <i class="fa fa-info-circle"></i>
+                                    Fill in the details to add a company.
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="header-banner">
+                        <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body ps-3 pe-3 row">
+                    <div class="col-md-4 mb-3">
+                        <label>Company Group <span class="required-asterisk">*</span></label>
+                        <select class="form-select" name="company_group_id" id="quick_company_group_id">
+                            <option value="">Select</option>
+                            <?php foreach ($company_groups as $g) { ?>
+                                <option value="<?= encrypt_id($g->id) ?>"><?= htmlspecialchars($g->company_group_name, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php } ?>
+                        </select>
+                        <div class="error-label text-danger" id="quick_company_group_id_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Company Name <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-control" name="company_name" id="quick_company_name">
+                        <div class="error-label text-danger" id="quick_company_name_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Email <span class="required-asterisk">*</span></label>
+                        <input type="email" class="form-control" name="email" id="quick_email">
+                        <div class="error-label text-danger" id="quick_email_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Secondary Email</label>
+                        <input type="email" class="form-control" name="secondary_email">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Phone</label>
+                        <input type="text" class="form-control" name="phone_number">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Mobile <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-control" name="mobile_number" id="quick_mobile_number">
+                        <div class="error-label text-danger" id="quick_mobile_number_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>GST Number</label>
+                        <input type="text" class="form-control" name="gst_number">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Country <span class="required-asterisk">*</span></label>
+                        <select class="form-select" name="country_id" id="quick_country_id">
+                            <option value="">Select Country</option>
+                            <?php foreach ($countries as $c) { ?>
+                                <option value="<?= encrypt_id($c->country_id) ?>"><?= htmlspecialchars($c->country_name, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php } ?>
+                        </select>
+                        <div class="error-label text-danger" id="quick_country_id_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>State <span class="required-asterisk">*</span></label>
+                        <select class="form-select" name="state_id" id="quick_state_id">
+                            <option value="">Select State</option>
+                            <?php foreach ($states as $s) { ?>
+                                <option value="<?= encrypt_id($s->state_id) ?>"><?= htmlspecialchars($s->state_name, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php } ?>
+                        </select>
+                        <div class="error-label text-danger" id="quick_state_id_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>City <span class="required-asterisk">*</span></label>
+                        <select class="form-select" name="city_id" id="quick_city_id">
+                            <option value="">Select City</option>
+                            <?php foreach ($cities as $c) { ?>
+                                <option value="<?= encrypt_id($c->city_id) ?>"><?= htmlspecialchars($c->city_name, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php } ?>
+                        </select>
+                        <div class="error-label text-danger" id="quick_city_id_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Area <span class="required-asterisk">*</span></label>
+                        <select class="form-select" name="area_id" id="quick_area_id">
+                            <option value="">Select</option>
+                            <?php foreach ($areas as $a) { ?>
+                                <option value="<?= encrypt_id($a->area_id) ?>"><?= htmlspecialchars($a->area_name, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php } ?>
+                        </select>
+                        <div class="error-label text-danger" id="quick_area_id_error"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Pincode</label>
+                        <input type="text" class="form-control" name="pincode">
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label>Address <span class="required-asterisk">*</span></label>
+                        <textarea class="form-control" name="address" id="quick_address"></textarea>
+                        <div class="error-label text-danger" id="quick_address_error"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label>Deals In</label>
+                        <input type="text" class="form-control" name="deals_in">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label>Details</label>
+                        <textarea class="form-control" name="details"></textarea>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Creditibility</label>
+                        <select class="form-select" name="company_creditibility">
+                            <option value="Credit Not Allowed">Credit Not Allowed</option>
+                            <option value="Credit Allowed">Credit Allowed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Credit Form</label>
+                        <input type="file" class="form-control" name="credit_form_file">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Status</label>
+                        <select class="form-select" name="status" id="quick_company_status">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================= QUICK ADD CONTACT MODAL ================= -->
+<div class="modal modal-lg new_modal_design" id="quickAddContactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <form id="quickAddContactForm" novalidate>
+            <div class="modal-content">
+                <div class="custom-page-header">
+                    <div class="header-left">
+                        <div class="header-icon-box">
+                            <i class="fa fa-address-book"></i>
+                        </div>
+                        <div class="header-content">
+                            <div class="modal-header hotel_modal_header">
+                                <h5>Add Contact</h5>
+                                <div class="hotel_banner"></div>
+                            </div>
+                            <ol class="custom-breadcrumb">
+                                <li>
+                                    <i class="fa fa-info-circle"></i>
+                                    Fill in the details to add a company contact.
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="header-banner">
+                        <img src="<?= base_url('assets/new_img-add.png'); ?>" alt="">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body ps-3 pe-3">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Company Name <span class="required-asterisk">*</span></label>
+                            <select class="form-control" id="quick_contact_company_display" disabled>
+                                <option value="">Select Company</option>
+                                <?php foreach ($companies as $company) { ?>
+                                    <option value="<?= encrypt_id($company->company_id); ?>">
+                                        <?= htmlspecialchars($company->company_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                            <input type="hidden" name="company_id" id="quick_contact_company_id">
+                            <span class="text-danger contact-validation" id="quick_contact_company_id_error"></span>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Title <span class="required-asterisk">*</span></label>
+                            <select class="form-select" name="title" id="quick_contact_title">
+                                <option value="">Select</option>
+                                <option>Mr</option>
+                                <option>Mrs</option>
+                                <option>Ms</option>
+                                <option>Dr</option>
+                            </select>
+                            <span class="text-danger contact-validation" id="quick_contact_title_error"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">First Name <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" name="first_name" id="quick_contact_first_name">
+                            <span class="text-danger contact-validation" id="quick_contact_first_name_error"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Last Name <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" name="last_name" id="quick_contact_last_name">
+                            <span class="text-danger contact-validation" id="quick_contact_last_name_error"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Designation</label>
+                            <select class="form-control" name="designation_id" id="quick_contact_designation_id">
+                                <option value="">Select Designation</option>
+                                <?php foreach ($designations as $designation) { ?>
+                                    <option value="<?= encrypt_id($designation->id); ?>">
+                                        <?= htmlspecialchars($designation->designation_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Grade</label>
+                            <input type="text" class="form-control" name="grade">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Email <span class="required-asterisk">*</span></label>
+                            <input type="email" class="form-control" name="email" id="quick_contact_email">
+                            <span class="text-danger contact-validation" id="quick_contact_email_error"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" name="phone_number">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Mobile <span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-control" name="mobile_number" id="quick_contact_mobile_number">
+                            <span class="text-danger contact-validation" id="quick_contact_mobile_number_error"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Country</label>
+                            <select class="form-control" name="country_id" id="quick_contact_country_id">
+                                <option value="">Select Country</option>
+                                <?php foreach ($countries as $each) { ?>
+                                    <option value="<?= encrypt_id($each->country_id); ?>">
+                                        <?= htmlspecialchars($each->country_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">State</label>
+                            <select class="form-control" name="state_id" id="quick_contact_state_id">
+                                <option value="">Select State</option>
+                                <?php foreach ($states as $state) { ?>
+                                    <option value="<?= encrypt_id($state->state_id); ?>">
+                                        <?= htmlspecialchars($state->state_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">City</label>
+                            <select class="form-control" name="city" id="quick_contact_city">
+                                <option value="">Select City</option>
+                                <?php foreach ($cities as $city) { ?>
+                                    <option value="<?= encrypt_id($city->city_id); ?>">
+                                        <?= htmlspecialchars($city->city_name, ENT_QUOTES, 'UTF-8'); ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Pincode</label>
+                            <input type="text" class="form-control" name="pincode">
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" name="date_of_birth">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Date of Anniversary</label>
+                            <input type="date" class="form-control" name="date_of_anniversary">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="quick_contact_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- JS -->
 <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
@@ -391,6 +845,291 @@
             }
         });
     }
+
+    function initializeQuickAddCompanySelect2() {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $('#quick_company_group_id, #quick_country_id, #quick_state_id, #quick_city_id, #quick_area_id').each(function() {
+            const $select = $(this);
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                $select.select2({
+                    width: '100%',
+                    placeholder: $select.find('option:first').text(),
+                    allowClear: false,
+                    dropdownParent: $('#quickAddCompanyModal'),
+                    dropdownCssClass: 'quick-add-company-select2-dropdown'
+                });
+            }
+        });
+    }
+
+    function resetQuickAddCompanyForm() {
+        const $form = $('#quickAddCompanyForm');
+        $form[0].reset();
+        $form.find('.error-label').text('').hide();
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('select').trigger('change.select2');
+    }
+
+    function showQuickAddCompanyFieldError(field, message) {
+        $('#quick_' + field + '_error').text(message).show();
+        $('#quick_' + field).addClass('is-invalid');
+    }
+
+    $(document).ready(function() {
+        initializeQuickAddCompanySelect2();
+
+        $(document).on('click', '#open-quick-add-company', function() {
+            resetQuickAddCompanyForm();
+            $('#quickAddCompanyModal').modal('show');
+        });
+
+        $('#quickAddCompanyForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const requiredFields = [
+                'company_group_id',
+                'company_name',
+                'email',
+                'mobile_number',
+                'country_id',
+                'state_id',
+                'city_id',
+                'area_id',
+                'address'
+            ];
+            let hasError = false;
+
+            $form.find('.error-label').text('').hide();
+            $form.find('.is-invalid').removeClass('is-invalid');
+
+            requiredFields.forEach(function(field) {
+                const value = String($('#quick_' + field).val() || '').trim();
+
+                if (value === '') {
+                    showQuickAddCompanyFieldError(field, 'This field is required');
+                    hasError = true;
+                }
+            });
+
+            const email = String($('#quick_email').val() || '').trim();
+            if (email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showQuickAddCompanyFieldError('email', 'Please enter a valid email address');
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            const companyName = String($('#quick_company_name').val() || '').trim();
+            const companyStatus = $('#quick_company_status').val();
+            const $submitButton = $form.find('button[type="submit"]');
+            const formData = new FormData(this);
+            appendCsrf(formData);
+
+            $.ajax({
+                url: "<?= base_url('company-save') ?>",
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                beforeSend: function() {
+                    $submitButton.prop('disabled', true).text('Saving...');
+                },
+                success: function(response) {
+                    refreshCsrf(response);
+
+                    if (!response.status) {
+                        toastr.error(response.message || 'Unable to add the company');
+                        return;
+                    }
+
+                    toastr.success(response.message || 'Company added successfully');
+                    $('#quickAddCompanyModal').modal('hide');
+
+                    if (companyStatus === '1' && response.record_id) {
+                        const companyOption = new Option(companyName, response.record_id, true, true);
+                        $('#company_id').append(companyOption).trigger('change');
+                        $('#quick_contact_company_display')
+                            .append(new Option(companyName, response.record_id, false, false))
+                            .trigger('change.select2');
+                    } else {
+                        toastr.info('The inactive company was saved but is not available for this sales visit.');
+                    }
+
+                    resetQuickAddCompanyForm();
+                },
+                error: function() {
+                    toastr.error('Server error! Please try again');
+                },
+                complete: function() {
+                    $submitButton.prop('disabled', false).text('Save');
+                }
+            });
+        });
+    });
+
+    function initializeQuickAddContactSelect2() {
+        if (!$.fn.select2) {
+            return;
+        }
+
+        $('#quick_contact_company_display, #quick_contact_designation_id, #quick_contact_country_id, #quick_contact_state_id, #quick_contact_city').each(function() {
+            const $select = $(this);
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                $select.select2({
+                    width: '100%',
+                    placeholder: $select.find('option:first').text(),
+                    allowClear: false,
+                    dropdownParent: $('#quickAddContactModal'),
+                    dropdownCssClass: 'quick-add-contact-select2-dropdown'
+                });
+            }
+        });
+    }
+
+    function resetQuickAddContactForm() {
+        const $form = $('#quickAddContactForm');
+        $('#quick_contact_company_display option[data-transient="true"]').remove();
+        $form[0].reset();
+        $form.find('.contact-validation').text('').hide();
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('select').trigger('change.select2');
+    }
+
+    function showQuickAddContactFieldError(field, message) {
+        $('#quick_contact_' + field + '_error').text(message).show();
+
+        if (field === 'company_id') {
+            $('#quick_contact_company_display').addClass('is-invalid');
+        } else {
+            $('#quick_contact_' + field).addClass('is-invalid');
+        }
+    }
+
+    function syncQuickAddContactButton() {
+        const hasCompany = Boolean($('#company_id').val());
+        $('#open-quick-add-contact')
+            .prop('disabled', !hasCompany)
+            .attr('title', hasCompany ? 'Quick add a person' : 'Select a company first');
+    }
+
+    $(document).ready(function() {
+        initializeQuickAddContactSelect2();
+        syncQuickAddContactButton();
+
+        $(document).on('change.quickAddContact', '#company_id', syncQuickAddContactButton);
+
+        $(document).on('click', '#open-quick-add-contact', function() {
+            const companyId = $('#company_id').val();
+            const companyName = $.trim($('#company_id option:selected').text());
+
+            if (!companyId) {
+                toastr.info('Please select a company first.');
+                return;
+            }
+
+            resetQuickAddContactForm();
+            $('#quick_contact_company_id').val(companyId);
+
+            const $companyDisplay = $('#quick_contact_company_display');
+            if ($companyDisplay.find('option').filter(function() {
+                return this.value === companyId;
+            }).length === 0) {
+                const companyOption = new Option(companyName, companyId, true, true);
+                companyOption.setAttribute('data-transient', 'true');
+                $companyDisplay.append(companyOption);
+            }
+
+            $companyDisplay.val(companyId).trigger('change');
+            $('#quickAddContactModal').modal('show');
+        });
+
+        $('#quickAddContactForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const requiredFields = [
+                'company_id',
+                'title',
+                'first_name',
+                'last_name',
+                'email',
+                'mobile_number'
+            ];
+            let hasError = false;
+
+            $form.find('.contact-validation').text('').hide();
+            $form.find('.is-invalid').removeClass('is-invalid');
+
+            requiredFields.forEach(function(field) {
+                const value = String($('#quick_contact_' + field).val() || '').trim();
+
+                if (value === '') {
+                    showQuickAddContactFieldError(field, 'This field is required');
+                    hasError = true;
+                }
+            });
+
+            const email = String($('#quick_contact_email').val() || '').trim();
+            if (email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showQuickAddContactFieldError('email', 'Please enter a valid email address');
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            const companyId = $('#quick_contact_company_id').val();
+            const contactStatus = $('#quick_contact_status').val();
+            const $submitButton = $form.find('button[type="submit"]');
+            const requestData = $form.serialize() + '&' +
+                encodeURIComponent(window.CSRF.name) + '=' + encodeURIComponent(window.CSRF.hash);
+
+            $.ajax({
+                url: "<?= base_url('company-contact-save') ?>",
+                type: 'POST',
+                data: requestData,
+                dataType: 'json',
+                beforeSend: function() {
+                    $submitButton.prop('disabled', true).text('Saving...');
+                },
+                success: function(response) {
+                    refreshCsrf(response);
+
+                    if (!response.status) {
+                        toastr.error(response.message || 'Unable to add the contact');
+                        return;
+                    }
+
+                    toastr.success(response.message || 'Contact added successfully');
+                    $('#quickAddContactModal').modal('hide');
+
+                    if (contactStatus === 'Active' && response.record_id) {
+                        loadCompanyContacts(companyId, response.record_id);
+                    } else {
+                        toastr.info('The inactive contact was saved but is not available for this sales visit.');
+                    }
+
+                    resetQuickAddContactForm();
+                },
+                error: function() {
+                    toastr.error('Server error! Please try again');
+                },
+                complete: function() {
+                    $submitButton.prop('disabled', false).text('Save');
+                }
+            });
+        });
+    });
 
     $(document).ready(function() {
         initializeSalesVisitSelect2('#salesVisitForm');
@@ -1111,7 +1850,7 @@
 </script>
 
 <script>
-function loadCompanyContacts(companyId) {
+function loadCompanyContacts(companyId, selectedPerson = '') {
     const company_id = companyId || '';
 
     const $personSelect = $('#person_met');
@@ -1129,7 +1868,8 @@ function loadCompanyContacts(companyId) {
             url: "<?= base_url('superAdmin/SalesVisits/get_company_contacts') ?>",
             type: "POST",
             data: csrfData({
-                company_id: company_id
+                company_id: company_id,
+                selected_contact_id: selectedPerson
             }),
             dataType: "json",
 
@@ -1149,7 +1889,12 @@ function loadCompanyContacts(companyId) {
                             ? `${fullName} (${row.mobile_number})`
                             : fullName;
 
-                        $personSelect.append(new Option(label, row.contact_id));
+                        $personSelect.append(new Option(
+                            label,
+                            row.contact_id,
+                            false,
+                            row.contact_id === selectedPerson
+                        ));
                     });
 
                 } else {

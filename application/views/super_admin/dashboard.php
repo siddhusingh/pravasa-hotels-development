@@ -1240,9 +1240,6 @@
 				if ($.fn.select2) {
 					$('#filter_lead_stats_count select, .quick-filter-box select').each(function() {
 						const $select = $(this);
-						this.style.setProperty();
-						this.style.setProperty();
-						this.style.setProperty();
 
 						if (!$select.hasClass('select2-hidden-accessible')) {
 							$select.select2({
@@ -1258,9 +1255,6 @@
 
 						[$container, $selection].forEach(function($element) {
 							if ($element.length) {
-								$element[0].style.setProperty();
-								$element[0].style.setProperty();
-								$element[0].style.setProperty();
 								$element[0].style.setProperty('box-sizing', 'border-box', 'important');
 							}
 						});

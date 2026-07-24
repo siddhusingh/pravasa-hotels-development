@@ -134,18 +134,37 @@ class SalesVisits extends CI_Controller
         $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
         $data['hotel_admin'] = $this->Common_model->getAllData('hotel_admin', ['is_deleted' => 0]);
         $data['companies'] = $this->Common_model->getAllData('companies', ['status' => 1, 'is_deleted' => 0]);
+        $data['company_groups'] = $this->Common_model->getAllData('company_groups', ['is_deleted' => 0]);
+        $data['designations'] = $this->Common_model->getAllData('designations', ['is_deleted' => 0]);
+        $data['countries'] = $this->Common_model->getAllData('country', ['is_deleted' => 0]);
+        $data['states'] = $this->db
+            ->select('s.*')
+            ->from('state s')
+            ->join('country c', 'c.country_id = s.country_id', 'inner')
+            ->where('s.is_deleted', 0)
+            ->where('c.is_deleted', 0)
+            ->get()
+            ->result();
+        $data['cities'] = $this->db
+            ->select('ci.*')
+            ->from('city ci')
+            ->join('state s', 's.state_id = ci.state_id', 'inner')
+            ->join('country c', 'c.country_id = ci.country_id', 'inner')
+            ->where('ci.is_deleted', 0)
+            ->where('s.is_deleted', 0)
+            ->where('c.is_deleted', 0)
+            ->get()
+            ->result();
 
-
-        $this->db->select('a.*, 
-                       su1.full_name as primary_user_name, 
-                       su2.full_name as secondary_user_name,
-                       s.state_name');
-
+        $this->db->select('a.*, su1.full_name as primary_user_name, su2.full_name as secondary_user_name, s.state_name');
         $this->db->from('areas a');
         $this->db->join('sales_users su1', 'su1.id = a.primary_user_id', 'left');
         $this->db->join('sales_users su2', 'su2.id = a.secondary_user_id', 'left');
-        $this->db->join('state s', 's.state_id = a.state_id', 'left'); // Assuming you have a states table
+        $this->db->join('state s', 's.state_id = a.state_id', 'inner');
+        $this->db->join('country c', 'c.country_id = s.country_id', 'inner');
         $this->db->where('a.is_deleted', 0);
+        $this->db->where('s.is_deleted', 0);
+        $this->db->where('c.is_deleted', 0);
         $query = $this->db->get();
         $data['areas'] = $query->result();
 
