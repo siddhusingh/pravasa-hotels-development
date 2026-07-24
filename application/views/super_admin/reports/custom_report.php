@@ -133,6 +133,7 @@
                                                     <option value="Lead Won">Lead Won</option>
                                                     <option value="Lead Lost">Lead Lost</option>
                                                 </select>
+                                                
                                             </div>
                                             <!-- Business / Non-Business -->
                                             <div class="col-md-3">
@@ -400,7 +401,7 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="modal_disposition" class="form-label">Stage</label>
+                            <label for="modal_disposition" class="form-label">Stage </label>
                             <select class="form-control report-multiselect-source" multiple id="modal_disposition">
                                 <option value="Not Contacted">Not Contacted</option>
                                 <option value="General Information">General Information</option>

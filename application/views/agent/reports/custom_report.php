@@ -271,7 +271,7 @@
                                     </div>
 
                                     <div class="col-xl-3 col-md-6">
-                                        <label for="report_disposition" class="form-label">Stage</label>
+                                        <label for="report_disposition" class="form-label">Stage array_diff_assoc</label>
                                         <select id="report_disposition" name="disposition[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Stages" multiple>
                                             <?php foreach ($dispositions as $disposition): ?>
                                                 <option value="<?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>">

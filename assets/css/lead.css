@@ -144,14 +144,12 @@
 
 #confirmCallModal .modal-footer {
   border: none;
-
-  padding: 25px;
-
-  display: flex;
-
+  padding: 20px;
+  display: block;
   gap: 15px;
-
   justify-content: center;
+  margin: 0 auto;
+  padding-top: 0;
 }
 
 /* Buttons */
@@ -159,7 +157,7 @@
 #confirmCallModal .btn {
   flex: 1;
 
-  height: 52px;
+  height: auto;
 
   border-radius: 16px;
 
@@ -970,11 +968,11 @@
 /* Label */
 
 .ticket-label {
-    font-size: 12px;
-    text-transform: capitalize;
-    letter-spacing: normal;
-    color: #000;
-    margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: capitalize;
+  letter-spacing: normal;
+  color: #000;
+  margin-bottom: 8px;
 }
 
 .ticket-label strong {
@@ -1233,11 +1231,12 @@
 .row.ticket-section .col-md-6.mb-3 {
   width: 20%;
 }
+
 form#leadEditForm .col-md-4,
 div#Edit_dynamicFields .col-lg-4.col-md-6,
 div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   width: 20%;
-  margin-bottom:10px
+  margin-bottom: 10px;
 }
 
 /* ============== lead list =========== */
@@ -1247,6 +1246,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   justify-content: center;
   margin-top: 10px;
 }
+
 .row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 {
   box-shadow:
     rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
@@ -1261,6 +1261,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   z-index: 99;
   margin-top: 10px;
 }
+
 .row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 i {
   box-shadow:
     rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
@@ -1276,9 +1277,11 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   top: -15px;
   left: -12px;
 }
+
 .row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 strong {
   margin-left: 19px;
 }
+
 .row.lead_list_main_data.mb-3 .col-md-3.col-sm-6.mb-2 span {
   font-size: 14px;
   padding-left: 5px;
@@ -1286,12 +1289,14 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
 .lead_edtid_broder {
   display: flex;
   gap: 15px;
   justify-content: center;
   align-items: center;
 }
+
 .lead_edtid_broder a,
 .lead_edtid_broder_child,
 .lead_edtid_broder span.badge.bg-secondary-light,
@@ -1310,6 +1315,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   font-size: 12px;
   opacity: 1;
 }
+
 .card.lead_card_ac {
   position: relative;
   overflow: hidden;
@@ -1566,6 +1572,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
     rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
     rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
 }
+
 .lead_edtid_broder_child_name {
   display: flex;
   align-items: center;
@@ -1573,6 +1580,7 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   position: relative;
   margin-right: 20px;
 }
+
 .lead_edtid_broder_child_name:after {
   content: "";
   position: absolute;
@@ -1584,10 +1592,12 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   height: 2px;
   border-radius: 50%;
 }
+
 .lead_edtid_broder_child_name strong {
   font-weight: 500;
   font-size: 14px;
 }
+
 .lead_edtid_broder_child_name i {
   width: 35px;
   height: 35px;
@@ -1606,11 +1616,13 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   color: #000;
   font-size: 12px !important;
 }
+
 .lead_edtid_broder_child_name_bnt span {
   font-size: 12px;
   border-radius: 5px !important;
   padding: 5px 12px;
 }
+
 .lead_edtid_broder_child_name_bnt {
   gap: 6px;
   display: flex;
@@ -1623,341 +1635,255 @@ div#Edit_dynamicFields .col-lg-4.col-md-12.col-sm-12 {
   /* padding-top: 0; */
 }
 
-
 /*==========================================
         LEAD CALL HISTORY
 ==========================================*/
 
-.Lead_Call_History{
+.Lead_Call_History {
+  border: none;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fff;
 
-    border:none;
-    border-radius:22px;
-    overflow:hidden;
-    background:#fff;
-
-    box-shadow:
-    0 20px 60px rgba(18,38,63,.12);
-
+  box-shadow: 0 20px 60px rgba(18, 38, 63, 0.12);
 }
-
 
 /*==========================
 HEADER
 ===========================*/
 
-.Lead_Call_History .modal-header{
+.Lead_Call_History .modal-header {
+  border: none;
 
-    border:none;
+  padding: 22px 30px;
 
-    padding:22px 30px;
-
-    background:#000;
-
+  background: #000;
 }
 
-.Lead_Call_History .modal-title{
+.Lead_Call_History .modal-title {
+  color: #fff;
 
-    color:#fff;
+  font-size: 24px;
 
-    font-size:24px;
-
-    font-weight:700;
-
+  font-weight: 700;
 }
 
-.Lead_Call_History .btn-close{
+.Lead_Call_History .btn-close {
+  filter: invert(1);
 
-    filter:invert(1);
+  opacity: 1;
 
-    opacity:1;
-
-    transition:.30s;
-
+  transition: 0.3s;
 }
 
-.Lead_Call_History .btn-close:hover{
-
-    transform:rotate(90deg);
-
+.Lead_Call_History .btn-close:hover {
+  transform: rotate(90deg);
 }
-
 
 /*==========================
 BODY
 ===========================*/
 
-.Lead_Call_History .modal-body{
+.Lead_Call_History .modal-body {
+  padding: 25px;
 
-    padding:25px;
-
-    background:#f7f9fc;
-
+  background: #f7f9fc;
 }
-
 
 /*==========================
 TABLE
 ===========================*/
 
-.Lead_Call_History .table{
+.Lead_Call_History .table {
+  margin: 0;
 
-    margin:0;
+  border-collapse: separate;
 
-    border-collapse:separate;
-
-    border-spacing:0 12px;
-
+  border-spacing: 0 12px;
 }
 
-.Lead_Call_History table thead{
+.Lead_Call_History table thead {
+  position: sticky;
 
-    position:sticky;
+  top: 0;
 
-    top:0;
-
-    z-index:5;
-
+  z-index: 5;
 }
 
-.Lead_Call_History table thead th{
+.Lead_Call_History table thead th {
+  border: none;
 
-    border:none;
+  background: #eef3ff;
 
-    background:#eef3ff;
+  color: #384152;
 
-    color:#384152;
+  font-size: 14px;
 
-    font-size:14px;
+  font-weight: 700;
 
-    font-weight:700;
+  padding: 16px;
 
-    padding:16px;
-
-    white-space:nowrap;
-
+  white-space: nowrap;
 }
-
 
 /*==========================
 ROWS
 ===========================*/
 
-.Lead_Call_History tbody tr{
+.Lead_Call_History tbody tr {
+  background: #fff;
 
-    background:#fff;
+  transition: 0.3s;
 
-    transition:.30s;
-
-    box-shadow:
-
-    0 5px 20px rgba(0,0,0,.05);
-
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
 
-.Lead_Call_History tbody tr:hover{
+.Lead_Call_History tbody tr:hover {
+  transform: translateY(-3px);
 
-    transform:translateY(-3px);
-
-    box-shadow:
-
-    0 10px 30px rgba(108,99,255,.15);
-
+  box-shadow: 0 10px 30px rgba(108, 99, 255, 0.15);
 }
 
-.Lead_Call_History tbody td{
+.Lead_Call_History tbody td {
+  border: none;
 
-    border:none;
+  padding: 18px 16px;
 
-    padding:18px 16px;
+  vertical-align: middle;
 
-    vertical-align:middle;
-
-    color:#555;
-
+  color: #555;
 }
-
 
 /*==========================
 FIRST LAST
 ===========================*/
 
-.Lead_Call_History tbody tr td:first-child{
+.Lead_Call_History tbody tr td:first-child {
+  border-radius: 14px 0 0 14px;
 
-    border-radius:14px 0 0 14px;
+  font-weight: 700;
 
-    font-weight:700;
-
-    color:#6C63FF;
-
+  color: #6c63ff;
 }
 
-.Lead_Call_History tbody tr td:last-child{
-
-    border-radius:0 14px 14px 0;
-
+.Lead_Call_History tbody tr td:last-child {
+  border-radius: 0 14px 14px 0;
 }
-
 
 /*==========================
 TABLE BORDER
 ===========================*/
 
-.Lead_Call_History table{
-
-    border:none;
-
+.Lead_Call_History table {
+  border: none;
 }
-
 
 /*==========================
 RESPONSIVE TABLE
 ===========================*/
 
-.Lead_Call_History .table-responsive{
-
-    border-radius:18px;
-
+.Lead_Call_History .table-responsive {
+  border-radius: 18px;
 }
-
 
 /*==========================
 EMPTY DATA
 ===========================*/
 
-.Lead_Call_History tbody td[colspan]{
+.Lead_Call_History tbody td[colspan] {
+  padding: 60px;
 
-    padding:60px;
+  color: #8b95a5;
 
-    color:#8b95a5;
+  font-size: 17px;
 
-    font-size:17px;
-
-    font-weight:600;
-
+  font-weight: 600;
 }
-
 
 /*==========================
 SCROLLBAR
 ===========================*/
 
-.Lead_Call_History .table-responsive::-webkit-scrollbar{
-
-    height:8px;
-
+.Lead_Call_History .table-responsive::-webkit-scrollbar {
+  height: 8px;
 }
 
-.Lead_Call_History .table-responsive::-webkit-scrollbar-thumb{
+.Lead_Call_History .table-responsive::-webkit-scrollbar-thumb {
+  background: #6c63ff;
 
-    background:#6C63FF;
-
-    border-radius:20px;
-
+  border-radius: 20px;
 }
 
-.Lead_Call_History .table-responsive::-webkit-scrollbar-track{
-
-    background:#eceef5;
-
+.Lead_Call_History .table-responsive::-webkit-scrollbar-track {
+  background: #eceef5;
 }
-
 
 /*==========================
 BADGE COLORS
 ===========================*/
 
-.Lead_Call_History tbody td:nth-child(4){
+.Lead_Call_History tbody td:nth-child(4) {
+  font-weight: 700;
 
-    font-weight:700;
-
-    color:#16a34a;
-
+  color: #16a34a;
 }
-
 
 /*==========================
 AUDIO
 ===========================*/
 
-.Lead_Call_History audio{
+.Lead_Call_History audio {
+  width: 170px;
 
-    width:170px;
-
-    height:38px;
-
+  height: 38px;
 }
-
 
 /*==========================
 RESPONSIVE
 ===========================*/
 
-@media(max-width:992px){
+@media (max-width: 992px) {
+  .Lead_Call_History .modal-body {
+    padding: 18px;
+  }
 
-.Lead_Call_History .modal-body{
+  .Lead_Call_History table thead th {
+    font-size: 13px;
 
-padding:18px;
+    padding: 14px;
+  }
 
+  .Lead_Call_History tbody td {
+    font-size: 13px;
+
+    padding: 14px;
+  }
 }
 
-.Lead_Call_History table thead th{
+@media (max-width: 768px) {
+  .Lead_Call_History .modal-title {
+    font-size: 20px;
+  }
 
-font-size:13px;
+  .Lead_Call_History .modal-body {
+    padding: 12px;
+  }
 
-padding:14px;
-
+  .Lead_Call_History audio {
+    width: 130px;
+  }
 }
 
-.Lead_Call_History tbody td{
+@media (max-width: 576px) {
+  .Lead_Call_History {
+    border-radius: 16px;
+  }
 
-font-size:13px;
+  .Lead_Call_History .modal-header {
+    padding: 18px;
+  }
 
-padding:14px;
-
-}
-
-}
-
-@media(max-width:768px){
-
-.Lead_Call_History .modal-title{
-
-font-size:20px;
-
-}
-
-.Lead_Call_History .modal-body{
-
-padding:12px;
-
-}
-
-.Lead_Call_History audio{
-
-width:130px;
-
-}
-
-}
-
-@media(max-width:576px){
-
-.Lead_Call_History{
-
-border-radius:16px;
-
-}
-
-.Lead_Call_History .modal-header{
-
-padding:18px;
-
-}
-
-.Lead_Call_History table{
-
-min-width:900px;
-
-}
-
+  .Lead_Call_History table {
+    min-width: 900px;
+  }
 }

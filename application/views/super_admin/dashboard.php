@@ -885,7 +885,7 @@
 					.quick-filter-box .form-label {
 						font-size: 13px;
 						font-weight: 700;
-						color: #475569;
+						color: #000;
 						margin-bottom: 6px;
 					}
 

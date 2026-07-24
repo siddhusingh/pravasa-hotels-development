@@ -506,6 +506,7 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
                                     <option value="Lead Won">Lead Won</option>
                                     <option value="Lead Lost">Lead Lost</option>
                                  </select>
+                                 
                               </div>
                               <!-- Business / Non-Business -->
                               <div class="col-md-3">
@@ -515,16 +516,19 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
                                     <option value="business">Business</option>
                                     <option value="non_business">Non-Business</option>
                                  </select>
+                                 <span class="input_brek_space"></span>
                               </div>
                               <!-- Start Date -->
                               <div class="col-md-3">
                                  <label for="start_date" class="form-label">Start Date</label>
                                  <input type="date" name="start_date" class="form-control filter-input" id="start_date">
+                                 <span class="input_brek_space"></span>
                               </div>
                               <!-- End Date -->
                               <div class="col-md-3">
                                  <label for="end_date" class="form-label">End Date</label>
                                  <input type="date" name="end_date" class="form-control filter-input" id="end_date">
+                                       <span class="input_brek_space"></span>
                               </div>
                               <!-- Search -->
                            </div>
@@ -822,7 +826,7 @@ REMARK
 
     padding:14px 18px;
 
-    color:#475569;
+    color:#000;
 
     line-height:1.7;
 
