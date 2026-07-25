@@ -32,6 +32,116 @@
         min-height: 18px;
         margin-top: 4px;
     }
+
+    #salesVisitForm .table-multiselect-source {
+        display: none !important;
+    }
+
+    #salesVisitForm .table-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #salesVisitForm .table-multiselect-toggle {
+        align-items: center;
+        background: #fff !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057 !important;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #salesVisitForm .table-multiselect-source.is-invalid + .table-multiselect .table-multiselect-toggle {
+        border-color: #dc3545 !important;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle,
+    #salesVisitForm .table-multiselect-toggle:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+        outline: 0;
+    }
+
+    #salesVisitForm .table-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #salesVisitForm .table-multiselect-menu {
+        background: #fff;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1055;
+    }
+
+    #salesVisitForm .table-multiselect.is-open .table-multiselect-menu {
+        display: block;
+    }
+
+    #salesVisitForm .table-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    #salesVisitForm .table-multiselect-option:hover {
+        background: #f5f3ff;
+    }
+
+    #salesVisitForm .table-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #8f72dc;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #salesVisitForm .table-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #salesVisitForm .table-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
+    }
 </style>
 
 <!-- Content Wrapper -->
@@ -90,6 +200,7 @@
                                             <option value="">Select Hotel</option>
                                             <?php foreach ($hotel_admin as $each) { ?>
                                                 <option value="<?= encrypt_id($each->hotel_id) ?>"
+                                                    data-raw-id="<?= (int) $each->hotel_id ?>"
                                                     <?= ($sales_visit->property == $each->hotel_id) ? 'selected' : '' ?>>
                                                     <?= html_escape($each->hotel_name) ?>
                                                 </option>
@@ -105,6 +216,7 @@
                                             <option value="">Select Department</option>
                                             <?php foreach ($departments as $each) { ?>
                                                 <option value="<?= encrypt_id($each->department_id) ?>"
+                                                    data-raw-id="<?= (int) $each->department_id ?>"
                                                     data-name="<?= html_escape($each->department_name) ?>"
                                                     <?= ($sales_visit->type == $each->department_id) ? 'selected' : '' ?>>
                                                     <?= html_escape($each->department_name) ?>
@@ -124,13 +236,53 @@
                                         </select>
                                     </div>
 
-                                    <!-- Report Date -->
+                                    <!-- Visit Date -->
                                     <div class="col-md-4">
-                                        <label for="report_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Report Date <span class="required-asterisk">*</span></label>
+                                        <label for="report_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Visit Date <span class="required-asterisk">*</span></label>
                                         <input type="date" id="report_date" name="report_date"
                                             value="<?= date('Y-m-d', strtotime($sales_visit->report_date)) ?>"
                                             class="form-control" required>
                                         <span id="report_date_error" class="text-danger small validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="follow_up_1_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Follow Up 1 Date <span class="required-asterisk">*</span></label>
+                                        <input type="date" id="follow_up_1_date" name="follow_up_1_date"
+                                            value="<?= !empty($sales_visit->follow_up_1_date) ? html_escape(date('Y-m-d', strtotime($sales_visit->follow_up_1_date))) : '' ?>"
+                                            class="form-control" required>
+                                        <span id="follow_up_1_date_error" class="text-danger small validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="follow_up_2_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Follow Up 2 Date <span class="required-asterisk">*</span></label>
+                                        <input type="date" id="follow_up_2_date" name="follow_up_2_date"
+                                            value="<?= !empty($sales_visit->follow_up_2_date) ? html_escape(date('Y-m-d', strtotime($sales_visit->follow_up_2_date))) : '' ?>"
+                                            class="form-control" required>
+                                        <span id="follow_up_2_date_error" class="text-danger small validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="visit_type"><span class="field-label-icon fa fa-handshake-o" aria-hidden="true"></span>Visit Type <span class="required-asterisk">*</span></label>
+                                        <select name="visit_type" id="visit_type" class="form-control" required>
+                                            <?php $selectedVisitType = $sales_visit->visit_type ?: 'Relationship Visit'; ?>
+                                            <option value="Relationship Visit" <?= $selectedVisitType === 'Relationship Visit' ? 'selected' : '' ?>>Relationship Visit</option>
+                                            <option value="Follow-up Visit" <?= $selectedVisitType === 'Follow-up Visit' ? 'selected' : '' ?>>Follow-up Visit</option>
+                                            <option value="Support &amp; Service" <?= $selectedVisitType === 'Support & Service' ? 'selected' : '' ?>>Support &amp; Service</option>
+                                        </select>
+                                        <span id="visit_type_error" class="text-danger small validation-message"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="visit_mode"><span class="field-label-icon fa fa-map-marker" aria-hidden="true"></span>Visit Mode <span class="required-asterisk">*</span></label>
+                                        <select name="visit_mode" id="visit_mode" class="form-control" required>
+                                            <?php $selectedVisitMode = $sales_visit->visit_mode ?: 'Physical Visit'; ?>
+                                            <option value="Physical Visit" <?= $selectedVisitMode === 'Physical Visit' ? 'selected' : '' ?>>Physical Visit</option>
+                                            <option value="Online Meeting" <?= $selectedVisitMode === 'Online Meeting' ? 'selected' : '' ?>>Online Meeting</option>
+                                            <option value="Phone Call" <?= $selectedVisitMode === 'Phone Call' ? 'selected' : '' ?>>Phone Call</option>
+                                            <option value="Teams Meeting" <?= $selectedVisitMode === 'Teams Meeting' ? 'selected' : '' ?>>Teams Meeting</option>
+                                            <option value="Google Meet" <?= $selectedVisitMode === 'Google Meet' ? 'selected' : '' ?>>Google Meet</option>
+                                        </select>
+                                        <span id="visit_mode_error" class="text-danger small validation-message"></span>
                                     </div>
 
                                     <!-- Company -->
@@ -199,7 +351,9 @@
                                     <input type="hidden" name="leadDepartment" id="leadDepartment"
                                         value="<?= strtolower($sales_visit->lead_department) ?>">
 
-                                    <div id="dynamicFields"></div>
+                                    <div class="col-12">
+                                        <div id="dynamicFields" class="row g-3"></div>
+                                    </div>
 
                                     <!-- Agenda -->
                                     <div class="col-sm-4">
@@ -303,6 +457,64 @@
                                             readonly>
                                     </div>
 
+                                    <hr class="mt-3">
+
+                                    <h5 class="mt-3">Visit Attachment &amp; Location</h5>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Attachment Image</label>
+                                        <button type="button" id="openVisitCamera" class="btn btn-outline-primary">
+                                            <i class="fa fa-camera me-1" aria-hidden="true"></i>
+                                            <?= !empty($sales_visit->attachment_image) ? 'Retake Photo' : 'Open Camera' ?>
+                                        </button>
+                                        <small class="text-muted d-block mt-2">Capture a replacement attachment using the live camera.</small>
+                                        <div id="visitAttachmentName" class="small mt-1">
+                                            <?= !empty($sales_visit->attachment_image) ? html_escape(basename($sales_visit->attachment_image)) : '' ?>
+                                        </div>
+                                        <img id="visitAttachmentPreview"
+                                            class="img-thumbnail mt-2 <?= empty($sales_visit->attachment_image) ? 'd-none' : '' ?>"
+                                            src="<?= !empty($sales_visit->attachment_image) ? html_escape(base_url($sales_visit->attachment_image)) : '' ?>"
+                                            alt="Sales visit attachment"
+                                            style="max-height: 180px; max-width: 100%;">
+                                        <div id="visitCameraStatus" class="small mt-2 text-muted"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="visit_location_details">Current Visit Location</label>
+                                        <div class="input-group">
+                                            <input type="text" id="visit_location_details" name="visit_location_details"
+                                                class="form-control" placeholder="Location not captured"
+                                                value="<?= html_escape($sales_visit->location_details ?? '') ?>" readonly>
+                                            <button type="button" id="captureVisitLocation" class="btn btn-outline-primary">
+                                                <i class="fa fa-map-marker me-1" aria-hidden="true"></i>
+                                                <?= isset($sales_visit->latitude, $sales_visit->longitude) ? 'Capture Again' : 'Capture Location' ?>
+                                            </button>
+                                        </div>
+                                        <input type="hidden" id="visit_latitude" name="visit_latitude"
+                                            value="<?= isset($sales_visit->latitude) ? html_escape($sales_visit->latitude) : '' ?>">
+                                        <input type="hidden" id="visit_longitude" name="visit_longitude"
+                                            value="<?= isset($sales_visit->longitude) ? html_escape($sales_visit->longitude) : '' ?>">
+                                        <div id="visitLocationStatus" class="small mt-2 text-muted">
+                                            <?= isset($sales_visit->latitude, $sales_visit->longitude)
+                                                ? 'Saved visit location. Capture again to replace it.'
+                                                : 'Capture the current location during the sales visit.' ?>
+                                        </div>
+                                        <a id="visitGoogleMapsLink"
+                                            class="small <?= isset($sales_visit->latitude, $sales_visit->longitude) ? '' : 'd-none' ?>"
+                                            href="<?= isset($sales_visit->latitude, $sales_visit->longitude)
+                                                ? 'https://www.openstreetmap.org/?mlat=' . rawurlencode($sales_visit->latitude) .
+                                                    '&mlon=' . rawurlencode($sales_visit->longitude) . '#map=17/' .
+                                                    rawurlencode($sales_visit->latitude) . '/' . rawurlencode($sales_visit->longitude)
+                                                : '#' ?>"
+                                            target="_blank" rel="noopener noreferrer">
+                                            <i class="fa fa-map me-1" aria-hidden="true"></i> View on OpenStreetMap
+                                        </a>
+                                        <div id="visitLocationMap" class="border rounded mt-2 overflow-hidden" style="height: 340px; width: 100%;">
+                                            <div class="h-100 d-flex align-items-center justify-content-center text-muted text-center px-3">
+                                                Loading development map...
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="col-sm-12">
                                         <label>Remarks</label>
@@ -336,17 +548,394 @@
     </div>
 </div>
 
+<!-- ================= SALES VISIT CAMERA MODAL ================= -->
+<style>
+    #visitCameraModal .visit-camera-dialog {
+        max-width: 440px;
+    }
+
+    #visitCameraModal #visitCameraVideo {
+        display: block;
+        width: 100%;
+        height: clamp(360px, 60vh, 560px);
+        object-fit: cover;
+        background: #111;
+    }
+
+    @media (max-width: 575.98px) {
+        #visitCameraModal .visit-camera-dialog {
+            max-width: calc(100% - 24px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #visitCameraModal #visitCameraVideo {
+            height: 55vh;
+            min-height: 320px;
+        }
+    }
+</style>
+<div class="modal fade" id="visitCameraModal" tabindex="-1" aria-labelledby="visitCameraModalLabel"
+    aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered visit-camera-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="visitCameraModalLabel">
+                    <i class="fa fa-camera me-2" aria-hidden="true"></i>Capture Attachment
+                </h5>
+            </div>
+            <div class="modal-body">
+                <video id="visitCameraVideo" class="rounded" autoplay muted playsinline></video>
+                <canvas id="visitCameraCanvas" class="d-none"></canvas>
+                <div id="visitCameraModalStatus" class="small mt-2 text-muted">Opening camera...</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancelVisitCamera" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="captureVisitPhoto" class="btn btn-primary" disabled>
+                    <i class="fa fa-camera me-1" aria-hidden="true"></i> Capture &amp; Add
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JS -->
 <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 <script
     src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynhtKqsOSAKtMZIF3EVJp6y69COQ=" crossorigin="">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
     toastr.options = {
         positionClass: "toast-top-right",
         timeOut: "3000"
     };
+</script>
+
+<script>
+    let salesVisitMap = null;
+    let salesVisitMarker = null;
+
+    function salesVisitMarkerIcon() {
+        return L.divIcon({
+            className: '',
+            html: '<span aria-hidden="true" style="display:block;width:28px;height:28px;background:#8f72dc;border:3px solid #fff;border-radius:50% 50% 50% 0;box-shadow:0 2px 6px rgba(0,0,0,.35);transform:rotate(-45deg);"></span>',
+            iconSize: [34, 42],
+            iconAnchor: [17, 38]
+        });
+    }
+
+    function showSalesVisitMapLocation(latitude, longitude) {
+        if (!salesVisitMap) {
+            return;
+        }
+
+        const coordinates = [Number(latitude), Number(longitude)];
+        salesVisitMap.setView(coordinates, 17);
+
+        if (salesVisitMarker) {
+            salesVisitMarker.setLatLng(coordinates);
+        } else {
+            salesVisitMarker = L.marker(coordinates, {
+                title: 'Current sales visit location',
+                icon: salesVisitMarkerIcon()
+            }).addTo(salesVisitMap);
+        }
+    }
+
+    window.initSalesVisitMap = function() {
+        const mapElement = document.getElementById('visitLocationMap');
+        if (!mapElement || !window.L) {
+            return;
+        }
+
+        const savedLatitude = <?= isset($sales_visit->latitude) ? json_encode((float) $sales_visit->latitude) : 'null' ?>;
+        const savedLongitude = <?= isset($sales_visit->longitude) ? json_encode((float) $sales_visit->longitude) : 'null' ?>;
+        const hasSavedLocation = savedLatitude !== null && savedLongitude !== null;
+
+        mapElement.innerHTML = '';
+        salesVisitMap = L.map(mapElement).setView(
+            hasSavedLocation ? [savedLatitude, savedLongitude] : [22.9734, 78.6569],
+            hasSavedLocation ? 17 : 5
+        );
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(salesVisitMap);
+
+        if (hasSavedLocation) {
+            showSalesVisitMapLocation(savedLatitude, savedLongitude);
+        }
+    };
+
+    window.initSalesVisitMap();
+
+    $(document).ready(function() {
+        let attachmentPreviewUrl = '';
+        let visitCameraStream = null;
+        let visitLocationWatchId = null;
+        let visitLocationTimer = null;
+        window.salesVisitCapturedImage = null;
+
+        function displayVisitAttachment(file) {
+            if (attachmentPreviewUrl) {
+                URL.revokeObjectURL(attachmentPreviewUrl);
+            }
+
+            attachmentPreviewUrl = URL.createObjectURL(file);
+            $('#visitAttachmentName').text(file.name);
+            $('#visitAttachmentPreview').attr('src', attachmentPreviewUrl).removeClass('d-none');
+        }
+
+        function stopVisitCamera() {
+            if (visitCameraStream) {
+                visitCameraStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                visitCameraStream = null;
+            }
+
+            const video = document.getElementById('visitCameraVideo');
+            if (video) {
+                video.srcObject = null;
+            }
+            $('#captureVisitPhoto').prop('disabled', true);
+        }
+
+        $('#openVisitCamera').on('click', async function() {
+            const $status = $('#visitCameraStatus');
+            const $modalStatus = $('#visitCameraModalStatus');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                $('#visitCameraModal').modal('show');
+                $modalStatus.removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Live camera is not supported by this browser or device.');
+                return;
+            }
+
+            stopVisitCamera();
+            $status.removeClass('text-danger text-success').addClass('text-muted').text('Opening camera...');
+            $modalStatus.removeClass('text-danger text-success').addClass('text-muted').text('Opening camera...');
+            $('#visitCameraModal').modal('show');
+
+            try {
+                visitCameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: {
+                            ideal: 'environment'
+                        }
+                    },
+                    audio: false
+                });
+
+                const video = document.getElementById('visitCameraVideo');
+                video.srcObject = visitCameraStream;
+                await video.play();
+                $('#captureVisitPhoto').prop('disabled', false);
+                $status.text('');
+                $modalStatus.removeClass('text-muted text-danger').addClass('text-success')
+                    .text('Camera is ready. Position the attachment and tap Capture & Add.');
+            } catch (error) {
+                stopVisitCamera();
+                const permissionDenied = error && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+                const message = permissionDenied
+                    ? 'Camera permission was denied. Please allow camera access and try again.'
+                    : 'Unable to open the camera on this device.';
+                $status.removeClass('text-muted text-success').addClass('text-danger').text(message);
+                $modalStatus.removeClass('text-muted text-success').addClass('text-danger').text(message);
+            }
+        });
+
+        $('#captureVisitPhoto').on('click', function() {
+            const video = document.getElementById('visitCameraVideo');
+            const canvas = document.getElementById('visitCameraCanvas');
+
+            if (!video.videoWidth || !video.videoHeight) {
+                $('#visitCameraModalStatus').removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Camera image is not ready yet.');
+                return;
+            }
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    $('#visitCameraModalStatus').removeClass('text-muted text-success').addClass('text-danger')
+                        .text('Unable to capture the photo.');
+                    return;
+                }
+
+                window.salesVisitCapturedImage = new File(
+                    [blob],
+                    'sales_visit_' + Date.now() + '.jpg',
+                    { type: 'image/jpeg' }
+                );
+                displayVisitAttachment(window.salesVisitCapturedImage);
+                stopVisitCamera();
+                $('#visitCameraModal').modal('hide');
+                $('#visitCameraStatus').removeClass('text-muted text-danger').addClass('text-success')
+                    .text('Replacement photo captured successfully.');
+                $('#openVisitCamera').html('<i class="fa fa-camera me-1" aria-hidden="true"></i> Retake Photo');
+            }, 'image/jpeg', 0.9);
+        });
+
+        $('#visitCameraModal').on('hidden.bs.modal', function() {
+            stopVisitCamera();
+        });
+
+        $('#cancelVisitCamera').on('click', function() {
+            stopVisitCamera();
+            $('#visitCameraModal').modal('hide');
+        });
+
+        function stopVisitLocationWatch() {
+            if (visitLocationWatchId !== null) {
+                navigator.geolocation.clearWatch(visitLocationWatchId);
+                visitLocationWatchId = null;
+            }
+            if (visitLocationTimer) {
+                window.clearTimeout(visitLocationTimer);
+                visitLocationTimer = null;
+            }
+        }
+
+        function displayVisitLocation(position, isFinal) {
+            const latitude = position.coords.latitude.toFixed(8);
+            const longitude = position.coords.longitude.toFixed(8);
+            const accuracy = Math.round(position.coords.accuracy || 0);
+
+            $('#visit_latitude').val(latitude);
+            $('#visit_longitude').val(longitude);
+            $('#visitGoogleMapsLink')
+                .attr('href', 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(latitude) +
+                    '&mlon=' + encodeURIComponent(longitude) + '#map=17/' +
+                    encodeURIComponent(latitude) + '/' + encodeURIComponent(longitude))
+                .removeClass('d-none');
+
+            showSalesVisitMapLocation(latitude, longitude);
+
+            if (isFinal) {
+                $('#visit_location_details').val('Finding full address...');
+
+                const finishAddressLookup = function(address, lookupSucceeded) {
+                    $('#visit_location_details').val(address);
+                    $('#visitLocationStatus')
+                        .removeClass('text-muted text-danger text-success')
+                        .addClass(lookupSucceeded ? 'text-success' : 'text-danger')
+                        .text(
+                            lookupSucceeded
+                                ? 'Current address captured (accuracy ±' + accuracy + ' metres).'
+                                : 'Coordinates captured, but the full address could not be found.'
+                        );
+                    $('#captureVisitLocation').prop('disabled', false)
+                        .html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Again');
+                };
+
+                fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' +
+                    encodeURIComponent(latitude) + '&lon=' + encodeURIComponent(longitude), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Address lookup failed');
+                        }
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        if (result && result.display_name) {
+                            finishAddressLookup(result.display_name, true);
+                        } else {
+                            finishAddressLookup('Latitude: ' + latitude + ', Longitude: ' + longitude, false);
+                        }
+                    })
+                    .catch(function() {
+                        finishAddressLookup('Latitude: ' + latitude + ', Longitude: ' + longitude, false);
+                    });
+            } else {
+                $('#visit_location_details').val('Locating address...');
+                $('#visitLocationStatus').removeClass('text-danger text-success').addClass('text-muted')
+                    .text('Improving location accuracy... Current accuracy ±' + accuracy + ' metres.');
+            }
+        }
+
+        $('#captureVisitLocation').on('click', function() {
+            const $button = $(this);
+            const $status = $('#visitLocationStatus');
+
+            if (!navigator.geolocation) {
+                $status.removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Location capture is not supported by this browser.');
+                return;
+            }
+
+            stopVisitLocationWatch();
+            let bestPosition = null;
+
+            $button.prop('disabled', true).text('Locating...');
+            $status.removeClass('text-danger text-success').addClass('text-muted')
+                .text('Waiting for a high-accuracy device location...');
+
+            visitLocationWatchId = navigator.geolocation.watchPosition(function(position) {
+                if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) {
+                    bestPosition = position;
+                    displayVisitLocation(bestPosition, false);
+                }
+
+                if (position.coords.accuracy <= 25) {
+                    stopVisitLocationWatch();
+                    displayVisitLocation(bestPosition, true);
+                }
+            }, function(error) {
+                stopVisitLocationWatch();
+
+                if (bestPosition) {
+                    displayVisitLocation(bestPosition, true);
+                    return;
+                }
+
+                let message = 'Unable to capture the current location.';
+                if (error.code === error.PERMISSION_DENIED) {
+                    message = 'Location permission was denied.';
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    message = 'The current location is unavailable.';
+                } else if (error.code === error.TIMEOUT) {
+                    message = 'Location capture timed out. Please try again.';
+                }
+
+                $status.removeClass('text-muted text-success').addClass('text-danger').text(message);
+                $button.prop('disabled', false)
+                    .html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Location');
+            }, {
+                enableHighAccuracy: true,
+                timeout: 12000,
+                maximumAge: 0
+            });
+
+            visitLocationTimer = window.setTimeout(function() {
+                stopVisitLocationWatch();
+                if (bestPosition) {
+                    displayVisitLocation(bestPosition, true);
+                } else {
+                    $status.removeClass('text-muted text-success').addClass('text-danger')
+                        .text('No location reading was received. Please check device location settings and try again.');
+                    $button.prop('disabled', false)
+                        .html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Location');
+                }
+            }, 10000);
+        });
+
+        $(window).on('beforeunload', function() {
+            stopVisitCamera();
+            stopVisitLocationWatch();
+        });
+    });
 </script>
 
 <script>
@@ -370,8 +959,8 @@
     }
 
     function initializeSalesVisitSelects(scope) {
-        $(scope).find('select').not('.select2-hidden-accessible').each(function() {
-            var noSearch = ['lead_type', 'disposition', 'lead_status', 'status'].indexOf(this.id) !== -1;
+        $(scope).find('select').not('[multiple], .select2-hidden-accessible').each(function() {
+            var noSearch = ['lead_type', 'disposition', 'lead_status', 'status', 'visit_type', 'visit_mode'].indexOf(this.id) !== -1;
             $(this).select2({
                 dropdownParent: $('#salesVisitForm'),
                 minimumResultsForSearch: noSearch ? Infinity : 0,
@@ -392,10 +981,10 @@
 
         // Pass full object safely to JS
         const salesVisit = <?= json_encode($sales_visit, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-        salesVisit.restaurant_id = <?= json_encode(!empty($sales_visit->restaurant_id) ? encrypt_id($sales_visit->restaurant_id) : '') ?>;
-        salesVisit.slot_type_id = <?= json_encode(!empty($sales_visit->slot_type_id) ? encrypt_id($sales_visit->slot_type_id) : '') ?>;
+        salesVisit.restaurant_id = <?= json_encode(!empty($sales_visit->restaurant_id) ? (string) $sales_visit->restaurant_id : '') ?>;
+        salesVisit.slot_type_id = <?= json_encode(!empty($sales_visit->slot_type_id) ? (string) $sales_visit->slot_type_id : '') ?>;
 
-        updateDynamicFieldsForEdit(salesVisit);
+        refreshEditSalesDynamicFields(salesVisit);
     });
 
 
@@ -513,11 +1102,20 @@
     });
 
 
+    let editSalesDynamicRefreshTimer = null;
+
+    function scheduleEditSalesDynamicRefresh() {
+        window.clearTimeout(editSalesDynamicRefreshTimer);
+        editSalesDynamicRefreshTimer = window.setTimeout(function() {
+            refreshEditSalesDynamicFields();
+        }, 0);
+    }
+
     $(document).ready(function() {
         $('#disposition, #type, #property')
             .off('change.salesVisitDynamicFields')
-            .on('change.salesVisitDynamicFields', function() {
-                updateDynamicFieldsForEdit('', $('#property').val());
+            .on('change.salesVisitDynamicFields select2:select.salesVisitDynamicFields select2:clear.salesVisitDynamicFields', function() {
+                scheduleEditSalesDynamicRefresh();
             });
     });
 
@@ -525,10 +1123,21 @@
     function updateDynamicFieldsForEdit(data = "") {
         const disposition = $("#disposition").val();
         let property = $("#property").val();
+        const leadStatusByStage = {
+            'Not Contacted': 'Open',
+            'Contacted': 'In Progress',
+            'Quotation Sent': 'In Progress',
+            'Negotiations': 'In Progress',
+            'Contract Done': 'Closed',
+            'Advance Received': 'Closed',
+            'Lead Won': 'Closed',
+            'Lead Lost': 'Closed'
+        };
 
         let department = $('#type').find(':selected').data('name')?.toLowerCase();
 
         $('#leadDepartment').val(department);
+        $('#lead_status').val(leadStatusByStage[disposition] || 'Open').trigger('change.select2');
 
         let existingLeadData = data;
 
@@ -851,6 +1460,567 @@
         });
     }
 
+    let editSalesDynamicGeneration = 0;
+    let editSalesDynamicData = {};
+    let editSalesDynamicAjaxQueue = $.Deferred().resolve().promise();
+
+    function editSalesDynamicRequest(options) {
+        const runRequest = function() {
+            if ((options.type || 'GET').toUpperCase() === 'POST') {
+                options.data = csrfData(options.data || {});
+            }
+            return $.ajax(options);
+        };
+
+        editSalesDynamicAjaxQueue = editSalesDynamicAjaxQueue.then(runRequest, runRequest);
+        return editSalesDynamicAjaxQueue;
+    }
+
+    function normalizeEditSalesDepartment(name) {
+        name = String(name || '').trim().toLowerCase();
+        if (name === 'restaurants') return 'restaurant';
+        if (name === 'banquets') return 'banquet';
+        return name;
+    }
+
+    function editSalesDynamicValue(data, key) {
+        if (!data || typeof data !== 'object' || data[key] === null || typeof data[key] === 'undefined') {
+            return '';
+        }
+        return data[key];
+    }
+
+    function editSalesDynamicValues(data, key) {
+        const value = editSalesDynamicValue(data, key);
+        if (Array.isArray(value)) {
+            return value.map(String);
+        }
+        if (value === '') {
+            return [];
+        }
+        return String(value).split(',').map(function(item) {
+            return item.trim();
+        }).filter(Boolean);
+    }
+
+    function resetEditSalesDynamicFields() {
+        $('#dynamicFields select.select2-hidden-accessible').each(function() {
+            $(this).select2('destroy');
+        });
+        $('#dynamicFields').empty();
+    }
+
+    function applyEditSalesDynamicValues(data) {
+        if (!data || typeof data !== 'object') {
+            return;
+        }
+
+        $.each(data, function(key, value) {
+            const $field = $('#dynamicFields').find('[name="' + key + '"]');
+            if ($field.length && value !== null && typeof value !== 'undefined') {
+                $field.val(value);
+            }
+        });
+    }
+
+    function initializeEditSalesDynamicSelects() {
+        initializeSalesVisitSelects($('#dynamicFields'));
+        $('#dynamicFields select:not([multiple])').trigger('change.select2');
+        initializeEditSalesTableMultiSelect();
+    }
+
+    function loadEditSalesSelect(options) {
+        const requestGeneration = editSalesDynamicGeneration;
+        const $select = $(options.selector).html('<option value="">Loading...</option>');
+
+        const requestOptions = {
+            url: options.url,
+            type: options.type || 'POST',
+            dataType: 'json',
+            success: function(response) {
+                refreshCsrf(response);
+
+                if (requestGeneration !== editSalesDynamicGeneration || !$(options.selector).length) {
+                    return;
+                }
+
+                let html = '<option value="">' + options.placeholder + '</option>';
+                $.each(response.data || [], function(_, row) {
+                    html += '<option value="' + row[options.valueKey] + '">' + options.label(row) + '</option>';
+                });
+
+                $select.html(html);
+                if (options.selected !== null && typeof options.selected !== 'undefined' && options.selected !== '') {
+                    $select.val(String(options.selected));
+                }
+                $select.trigger('change.select2');
+
+                if (typeof options.afterLoad === 'function') {
+                    options.afterLoad($select);
+                }
+            }
+        };
+
+        requestOptions.data = options.data || {};
+        editSalesDynamicRequest(requestOptions);
+    }
+
+    function loadEditSalesRestaurants(hotelId, selected, afterLoad) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-restaurants') ?>",
+            type: 'GET',
+            data: {hotel_id: hotelId},
+            selector: '#restaurant_id',
+            placeholder: 'Select Restaurant',
+            valueKey: 'id',
+            label: function(row) { return row.restaurant_name; },
+            selected: selected,
+            afterLoad: afterLoad
+        });
+    }
+
+    function loadEditSalesBanquets(hotelId, selected) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-banquets') ?>",
+            type: 'GET',
+            data: {hotel_id: hotelId},
+            selector: '#banquet_id',
+            placeholder: 'Select Banquet',
+            valueKey: 'banquet_id',
+            label: function(row) { return row.banquet_name; },
+            selected: selected
+        });
+    }
+
+    function loadEditSalesRoomTypes(hotelId, selected) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-room-types') ?>",
+            type: 'GET',
+            data: {hotel_id: hotelId},
+            selector: '#roomtype',
+            placeholder: 'Select Room Type',
+            valueKey: 'roomtype_id',
+            label: function(row) { return row.roomtype_name; },
+            selected: selected
+        });
+    }
+
+    function loadEditSalesMealPlans(selected) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-meal-plans') ?>",
+            type: 'GET',
+            data: {},
+            selector: '#meal_plan',
+            placeholder: 'Select Meal Plan',
+            valueKey: 'id',
+            label: function(row) { return row.plan; },
+            selected: selected
+        });
+    }
+
+    function loadEditSalesPromotionalOffers(departmentId, selected) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-promotional-offers') ?>",
+            type: 'GET',
+            data: {department_id: departmentId},
+            selector: '#promotional_offers',
+            placeholder: 'Select Offer',
+            valueKey: 'id',
+            label: function(row) { return row.offer_name; },
+            selected: selected
+        });
+    }
+
+    function loadEditSalesSlotTypes(selected, afterLoad) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-slot-types') ?>",
+            type: 'GET',
+            selector: '#slot_type_id',
+            placeholder: 'Select Slot',
+            valueKey: 'id',
+            label: function(row) { return row.slot_name + ' (' + row.start_time + ' - ' + row.end_time + ')'; },
+            selected: selected,
+            afterLoad: afterLoad
+        });
+    }
+
+    function loadEditSalesTimeSlots(slotTypeId, selected) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-time-slots') ?>",
+            type: 'GET',
+            data: {slot_type_id: slotTypeId},
+            selector: '#time_slot_id',
+            placeholder: 'Select Time Slot',
+            valueKey: 'id',
+            label: function(row) { return row.start_time + ' - ' + row.end_time; },
+            selected: selected
+        });
+    }
+
+    function loadEditSalesTableCategories(restaurantId, selected, afterLoad) {
+        loadEditSalesSelect({
+            url: "<?= base_url('lead/get-table-categories') ?>",
+            type: 'GET',
+            data: {restaurant_id: restaurantId},
+            selector: '#table_category_id',
+            placeholder: 'Select Category',
+            valueKey: 'id',
+            label: function(row) { return row.category_name; },
+            selected: selected,
+            afterLoad: afterLoad
+        });
+    }
+
+    function loadEditSalesTables(restaurantId, categoryId, selectedValues) {
+        const requestGeneration = editSalesDynamicGeneration;
+        editSalesDynamicRequest({
+            url: "<?= base_url('lead/get-tables') ?>",
+            type: 'GET',
+            data: {
+                restaurant_id: restaurantId,
+                category_id: categoryId
+            },
+            dataType: 'json',
+            success: function(response) {
+                refreshCsrf(response);
+                if (requestGeneration !== editSalesDynamicGeneration || !$('#table_id').length) {
+                    return;
+                }
+
+                let html = '';
+                $.each(response.data || [], function(_, row) {
+                    html += '<option value="' + row.id + '">Table ' + row.table_name + ' (' + row.capacity + ' Seats)</option>';
+                });
+                $('#table_id').html(html).val(selectedValues || []);
+                initializeEditSalesTableMultiSelect();
+            }
+        });
+    }
+
+    function syncEditSalesTableMultiSelect($select, $widget) {
+        const values = ($select.val() || []).map(String);
+        const total = $widget.find('.table-multiselect-item').length;
+        const selectedCount = values.length;
+
+        $widget.find('.table-multiselect-item').each(function() {
+            $(this).prop('checked', values.includes(String($(this).val())));
+        });
+        $widget.find('.table-multiselect-all')
+            .prop('checked', total > 0 && selectedCount === total)
+            .prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+        let summary = 'Select Table';
+        if (selectedCount > 0 && selectedCount === total) {
+            summary = 'All selected (' + selectedCount + ')';
+        } else if (selectedCount > 0) {
+            summary = selectedCount + ' selected';
+        }
+        $widget.find('.table-multiselect-summary').text(summary);
+    }
+
+    function initializeEditSalesTableMultiSelect() {
+        const $select = $('#table_id');
+        if (!$select.length) {
+            return;
+        }
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.next('.table-multiselect').remove();
+        $select.addClass('table-multiselect-source');
+
+        const $widget = $('<div>', {class: 'table-multiselect'});
+        const $toggle = $('<button>', {
+            type: 'button',
+            class: 'table-multiselect-toggle',
+            'aria-expanded': 'false'
+        }).append($('<span>', {class: 'table-multiselect-summary', text: 'Select Table'}));
+        const $menu = $('<div>', {class: 'table-multiselect-menu'});
+        const $options = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '';
+        });
+
+        if ($options.length) {
+            $menu.append(
+                $('<label>', {class: 'table-multiselect-option table-multiselect-select-all'})
+                    .append(
+                        $('<input>', {type: 'checkbox', class: 'table-multiselect-all'}),
+                        $('<span>', {text: 'Select all'})
+                    )
+            );
+            $options.each(function() {
+                $menu.append(
+                    $('<label>', {class: 'table-multiselect-option'})
+                        .append(
+                            $('<input>', {
+                                type: 'checkbox',
+                                class: 'table-multiselect-item',
+                                value: this.value
+                            }),
+                            $('<span>').text($(this).text().trim())
+                        )
+                );
+            });
+        } else {
+            $menu.append($('<div>', {
+                class: 'table-multiselect-empty',
+                text: 'No tables available'
+            }));
+        }
+
+        $widget.append($toggle, $menu);
+        $select.after($widget);
+
+        $toggle.on('click', function() {
+            const open = !$widget.hasClass('is-open');
+            $('.table-multiselect').not($widget)
+                .removeClass('is-open')
+                .find('.table-multiselect-toggle')
+                .attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', open);
+            $toggle.attr('aria-expanded', open ? 'true' : 'false');
+        });
+
+        $widget.on('change', '.table-multiselect-all', function() {
+            const values = this.checked
+                ? $widget.find('.table-multiselect-item').map(function() { return this.value; }).get()
+                : [];
+            $select.val(values).trigger('change');
+        });
+
+        $widget.on('change', '.table-multiselect-item', function() {
+            const values = $widget.find('.table-multiselect-item:checked').map(function() {
+                return this.value;
+            }).get();
+            $select.val(values).trigger('change');
+        });
+
+        $select.off('change.editSalesTablesWidget').on('change.editSalesTablesWidget', function() {
+            syncEditSalesTableMultiSelect($select, $widget);
+        });
+        syncEditSalesTableMultiSelect($select, $widget);
+    }
+
+    function refreshEditSalesDynamicFields(existingData) {
+        editSalesDynamicGeneration += 1;
+        editSalesDynamicData = existingData && typeof existingData === 'object' ? existingData : {};
+
+        const stage = $('#disposition').val() || '';
+        const department = normalizeEditSalesDepartment($('#type option:selected').data('name'));
+        const hotelId = $('#property option:selected').data('raw-id') || '';
+        const departmentId = $('#type option:selected').data('raw-id') || '';
+        const today = new Date().toISOString().split('T')[0];
+        const leadStatusByStage = {
+            'Not Contacted': 'Open',
+            'Contacted': 'In Progress',
+            'Quotation Sent': 'In Progress',
+            'Negotiations': 'In Progress',
+            'Contract Done': 'Closed',
+            'Advance Received': 'Closed',
+            'Lead Won': 'Closed',
+            'Lead Lost': 'Closed'
+        };
+        const $container = $('#dynamicFields');
+
+        $('#lead_status').val(leadStatusByStage[stage] || 'Open').trigger('change.select2');
+        $('#leadDepartment').val(department);
+        resetEditSalesDynamicFields();
+
+        if (stage === 'Lead Lost') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Reason <span class="text-danger">*</span></label>
+                    <select name="reason" id="reason" class="form-select">
+                        <option value="">Select Reason</option>
+                        <option value="Budget Issue">Budget Issue</option>
+                        <option value="Date Unavailable">Date Unavailable</option>
+                        <option value="No Response">No Response</option>
+                        <option value="Chose Competitor">Chose Competitor</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Duplicate Lead">Duplicate Lead</option>
+                    </select>
+                    <div class="text-danger error-label" id="reason_error"></div>
+                </div>`);
+        }
+
+        if (stage === 'Lead Won') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Expected Revenue</label>
+                    <input type="number" name="amount" id="amount" class="form-control" step="0.01">
+                </div>`);
+        }
+
+        if (stage === 'Quotation Sent') {
+            $container.append(`
+                <div class="col-md-3 mb-3">
+                    <label>Promotional Offer</label>
+                    <select name="promotional_offers" id="promotional_offers" class="form-select">
+                        <option value="">Select Offer</option>
+                    </select>
+                </div>`);
+
+            if (department === 'rooms') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Room Type</label><select name="roomtype" id="roomtype" class="form-select"><option value="">Select Room Type</option></select></div>
+                    <div class="col-md-3 mb-3"><label>Meal Plan <span class="text-danger">*</span></label><select name="meal_plan" id="meal_plan" class="form-select"><option value="">Select Meal Plan</option></select><div class="text-danger error-label" id="meal_plan_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Check-in Date</label><input type="date" name="checkin_date" id="checkin_date" class="form-control"><span class="error-text text-danger"></span></div>
+                    <div class="col-md-3 mb-3"><label>Check-out Date</label><input type="date" name="checkout_date" id="checkout_date" class="form-control"><span class="error-text text-danger"></span></div>
+                    <div class="col-md-3 mb-3"><label>Number of Rooms</label><input type="number" name="number_of_rooms" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Adults</label><input type="number" name="adults" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Kids</label><input type="number" name="kids" class="form-control" min="0"></div>
+                    <div class="col-md-3 mb-3"><label>Room Revenue</label><input type="number" name="revenue_room" id="revenue_room" class="form-control edit-revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>F&amp;B Revenue</label><input type="number" name="revenue_fnb" id="revenue_fnb" class="form-control edit-revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>Other Revenue</label><input type="number" name="revenue_other" id="revenue_other" class="form-control edit-revenue-field" step="0.01"></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" id="amount" class="form-control" step="0.01" readonly></div>`);
+                loadEditSalesRoomTypes(hotelId, editSalesDynamicValue(editSalesDynamicData, 'roomtype'));
+                loadEditSalesMealPlans(editSalesDynamicValue(editSalesDynamicData, 'meal_plan'));
+            } else if (department === 'restaurant') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Restaurant <span class="text-danger">*</span></label><select name="restaurant_id" id="restaurant_id" class="form-select"><option value="">Select Restaurant</option></select><div class="text-danger error-label" id="restaurant_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Slot Type <span class="text-danger">*</span></label><select name="slot_type_id" id="slot_type_id" class="form-select"><option value="">Select Slot</option></select><div class="text-danger error-label" id="slot_type_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Time Slot <span class="text-danger">*</span></label><select name="time_slot_id" id="time_slot_id" class="form-select"><option value="">Select Time Slot</option></select><div class="text-danger error-label" id="time_slot_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Arrival Time</label><input type="time" name="arrival_time" class="form-control"></div>
+                    <div class="col-md-3 mb-3"><label>Table Category <span class="text-danger">*</span></label><select name="table_category_id" id="table_category_id" class="form-select"><option value="">Select Category</option></select><div class="text-danger error-label" id="table_category_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Tables <span class="text-danger">*</span></label><select name="table_id[]" id="table_id" class="form-control" multiple></select><div class="text-danger error-label" id="table_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Table Reservation Status <span class="text-danger">*</span></label><select name="table_reservation_status" id="table_reservation_status" class="form-select"><option value="">Select Status</option><option value="Reserved">Reserved</option><option value="Seated">Seated</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select><div class="text-danger error-label" id="table_reservation_status_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" class="form-control" step="0.01"></div>
+                    <div class="col-md-6 mb-3"><label>Special Occasion (if any)</label><input type="text" name="special_occasion" class="form-control"></div>
+                    <div class="col-md-6 mb-3"><label>Special Request</label><textarea name="special_request" class="form-control"></textarea></div>`);
+
+                const restaurantId = editSalesDynamicValue(editSalesDynamicData, 'restaurant_id');
+                const slotTypeId = editSalesDynamicValue(editSalesDynamicData, 'slot_type_id');
+                const categoryId = editSalesDynamicValue(editSalesDynamicData, 'table_category_id');
+
+                loadEditSalesRestaurants(hotelId, restaurantId, function($restaurantSelect) {
+                    const activeRestaurantId = $restaurantSelect.val() || restaurantId;
+                    if (activeRestaurantId) {
+                        loadEditSalesTableCategories(activeRestaurantId, categoryId, function($categorySelect) {
+                            const activeCategoryId = $categorySelect.val() || categoryId;
+                            if (activeCategoryId) {
+                                loadEditSalesTables(activeRestaurantId, activeCategoryId, editSalesDynamicValues(editSalesDynamicData, 'table_id'));
+                            }
+                        });
+                    }
+                });
+                loadEditSalesSlotTypes(slotTypeId, function($slotTypeSelect) {
+                    const activeSlotTypeId = $slotTypeSelect.val() || slotTypeId;
+                    if (activeSlotTypeId) {
+                        loadEditSalesTimeSlots(activeSlotTypeId, editSalesDynamicValue(editSalesDynamicData, 'time_slot_id'));
+                    }
+                });
+            } else if (department === 'banquet') {
+                $container.append(`
+                    <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                    <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3"><label>Banquet <span class="text-danger">*</span></label><select name="banquet_id" id="banquet_id" class="form-select"><option value="">Select Banquet</option></select><div class="text-danger error-label" id="banquet_id_error"></div></div>
+                    <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" class="form-control" step="0.01"></div>`);
+                loadEditSalesBanquets(hotelId, editSalesDynamicValue(editSalesDynamicData, 'banquet_id'));
+            }
+
+            $container.append(`
+                <div class="col-md-4 mt-3 mb-4"><label>Follow-up Date</label><input type="date" name="followup_date" class="form-control"></div>
+                <div class="col-md-4 mt-3 mb-4"><label>2nd Follow-up Date</label><input type="date" name="second_followup_date" class="form-control"></div>`);
+            loadEditSalesPromotionalOffers(departmentId, editSalesDynamicValue(editSalesDynamicData, 'promotional_offers'));
+        }
+
+        if (stage === 'Negotiations' || stage === 'Not Contacted' || stage === 'Advance Received') {
+            $container.append(`
+                <div class="col-md-3 mb-3"><label>Booking Enquiry Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
+                <div class="col-md-3 mb-3"><label>Follow-up Date</label><input type="date" name="followup_date" class="form-control"></div>
+                <div class="col-md-3 mb-3"><label>2nd Follow-up Date</label><input type="date" name="second_followup_date" class="form-control"></div>`);
+        }
+
+        applyEditSalesDynamicValues(editSalesDynamicData);
+        initializeEditSalesDynamicSelects();
+        bindEditSalesDynamicDependencies();
+    }
+
+    let editSalesTimeSlotDependencyTimer = null;
+    let editSalesCategoryDependencyTimer = null;
+    let editSalesTableDependencyTimer = null;
+
+    function bindEditSalesDynamicDependencies() {
+        $('#slot_type_id')
+            .off('.editSalesTimeSlots')
+            .on('change.editSalesTimeSlots select2:select.editSalesTimeSlots select2:close.editSalesTimeSlots', function() {
+                window.clearTimeout(editSalesTimeSlotDependencyTimer);
+                editSalesTimeSlotDependencyTimer = window.setTimeout(function() {
+                    const value = $('#slot_type_id').val();
+                    if (value) {
+                        loadEditSalesTimeSlots(value, '');
+                    } else {
+                        $('#time_slot_id').html('<option value="">Select Time Slot</option>').trigger('change.select2');
+                    }
+                }, 0);
+        });
+
+        $('#restaurant_id')
+            .off('.editSalesTableCategories')
+            .on('change.editSalesTableCategories select2:select.editSalesTableCategories select2:close.editSalesTableCategories', function() {
+                window.clearTimeout(editSalesCategoryDependencyTimer);
+                editSalesCategoryDependencyTimer = window.setTimeout(function() {
+                    const value = $('#restaurant_id').val();
+                    if (value) {
+                        loadEditSalesTableCategories(value, '', null);
+                    } else {
+                        $('#table_category_id').html('<option value="">Select Category</option>').trigger('change.select2');
+                        $('#table_id').empty();
+                        initializeEditSalesTableMultiSelect();
+                    }
+                }, 0);
+        });
+
+        $('#table_category_id')
+            .off('.editSalesTables')
+            .on('change.editSalesTables select2:select.editSalesTables select2:close.editSalesTables', function() {
+                window.clearTimeout(editSalesTableDependencyTimer);
+                editSalesTableDependencyTimer = window.setTimeout(function() {
+                    const restaurantId = $('#restaurant_id').val();
+                    const categoryId = $('#table_category_id').val();
+                    if (restaurantId && categoryId) {
+                        loadEditSalesTables(restaurantId, categoryId, []);
+                    } else {
+                        $('#table_id').empty();
+                        initializeEditSalesTableMultiSelect();
+                    }
+                }, 0);
+        });
+
+        $('#dynamicFields input[name="adults"], #dynamicFields input[name="kids"]')
+            .off('.editSalesPax')
+            .on('input.editSalesPax', function() {
+            const adults = parseInt($('#dynamicFields input[name="adults"]').val(), 10) || 0;
+            const kids = parseInt($('#dynamicFields input[name="kids"]').val(), 10) || 0;
+            $('#dynamicFields input[name="pax"]').val(adults + kids);
+        });
+
+        $('#dynamicFields .edit-revenue-field')
+            .off('.editSalesRevenue')
+            .on('input.editSalesRevenue', function() {
+            const total = (parseFloat($('#revenue_room').val()) || 0) +
+                (parseFloat($('#revenue_fnb').val()) || 0) +
+                (parseFloat($('#revenue_other').val()) || 0);
+            $('#amount').val(total.toFixed(2));
+        });
+    }
+
+    $(document)
+        .off('click.editSalesTablesMenu')
+        .on('click.editSalesTablesMenu', function(event) {
+            if (!$(event.target).closest('.table-multiselect').length) {
+                $('.table-multiselect')
+                    .removeClass('is-open')
+                    .find('.table-multiselect-toggle')
+                    .attr('aria-expanded', 'false');
+            }
+        });
+
 
 
     function salesVisitField(field) {
@@ -912,6 +2082,10 @@
         if (!value('property')) errors.property = 'Please select a hotel.';
         if (!value('type')) errors.type = 'Please select a department.';
         if (!value('report_date')) errors.report_date = 'Please select a report date.';
+        if (!value('follow_up_1_date')) errors.follow_up_1_date = 'Please select the first follow-up date.';
+        if (!value('follow_up_2_date')) errors.follow_up_2_date = 'Please select the second follow-up date.';
+        if (!value('visit_type')) errors.visit_type = 'Please select a visit type.';
+        if (!value('visit_mode')) errors.visit_mode = 'Please select a visit mode.';
         if (!value('company_id')) errors.company_id = 'Please select a company.';
         if (!value('person_met')) errors.person_met = 'Please select the person met.';
         if (!value('discussion_summary')) errors.discussion_summary = 'Discussion summary is required.';
@@ -921,6 +2095,30 @@
         }
         if ($('#slot_type_id').length && !value('slot_type_id')) {
             errors.slot_type_id = 'Please select a slot type.';
+        }
+
+        const stage = value('disposition');
+        const department = normalizeEditSalesDepartment($('#leadDepartment').val());
+
+        if (stage === 'Lead Lost' && !value('reason')) {
+            errors.reason = 'Please select a reason.';
+        }
+
+        if (stage === 'Quotation Sent') {
+            if (department === 'rooms' && !value('meal_plan')) {
+                errors.meal_plan = 'Please select a meal plan.';
+            }
+            if (department === 'banquet' && !value('banquet_id')) {
+                errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'restaurant') {
+                if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
+                if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
+                if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';
+                if (!value('table_category_id')) errors.table_category_id = 'Please select a table category.';
+                if (!$('#table_id').val() || $('#table_id').val().length === 0) errors.table_id = 'Please select at least one table.';
+                if (!value('table_reservation_status')) errors.table_reservation_status = 'Please select a reservation status.';
+            }
         }
 
         $.each(['kms_run', 'rate_per_km', 'parking_charges', 'lunch', 'entertainment'], function(_, field) {
@@ -964,6 +2162,10 @@
 
         /* ================== SALES VISIT FIELDS ================== */
         let report_date = $('#report_date').val();
+        let follow_up_1_date = $('#follow_up_1_date').val();
+        let follow_up_2_date = $('#follow_up_2_date').val();
+        let visit_type = $('#visit_type').val();
+        let visit_mode = $('#visit_mode').val();
         let company_id = $('#company_id').val();
         let person_met = $('#person_met').val();
         let agenda = $('#agenda').val();
@@ -977,6 +2179,9 @@
         let lunch = $('#lunch').val();
         let entertainment = $('#entertainment').val();
         let total_amount = $('#total_amount').val();
+        let visit_latitude = $('#visit_latitude').val();
+        let visit_longitude = $('#visit_longitude').val();
+        let visit_location_details = $('#visit_location_details').val();
 
         /* ================== BASIC VALIDATION ================== */
 
@@ -997,10 +2202,19 @@
                         if (this.files.length > 0) {
                             formData.append(name, this.files[0]);
                         }
+                    } else if (name === 'table_id[]') {
+                        // Appended separately so each selected table is submitted.
                     } else {
                         formData.append(name, $(this).val());
                     }
                 });
+
+            const selectedTables = $('#table_id').val();
+            if (selectedTables) {
+                $.each(Array.isArray(selectedTables) ? selectedTables : [selectedTables], function(_, tableId) {
+                    formData.append('table_id[]', tableId);
+                });
+            }
 
             /* ========== APPEND MAIN FIELDS ========== */
             formData.append('user_channel', userChannel);
@@ -1015,6 +2229,10 @@
 
             /* ========== SALES VISIT DATA ========== */
             formData.append('report_date', report_date);
+            formData.append('follow_up_1_date', follow_up_1_date);
+            formData.append('follow_up_2_date', follow_up_2_date);
+            formData.append('visit_type', visit_type);
+            formData.append('visit_mode', visit_mode);
             formData.append('company_id', company_id);
             formData.append('person_met', person_met);
             formData.append('agenda', agenda);
@@ -1028,6 +2246,12 @@
             formData.append('lunch', lunch);
             formData.append('entertainment', entertainment);
             formData.append('total_amount', total_amount);
+            if (window.salesVisitCapturedImage) {
+                formData.append('visit_attachment', window.salesVisitCapturedImage);
+            }
+            formData.append('visit_latitude', visit_latitude);
+            formData.append('visit_longitude', visit_longitude);
+            formData.append('visit_location_details', visit_location_details);
             appendCsrf(formData);
 
             /* ================== AJAX ================== */

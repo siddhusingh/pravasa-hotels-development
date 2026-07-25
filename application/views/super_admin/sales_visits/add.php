@@ -360,9 +360,43 @@
 
                                     <!-- Report Date -->
                                     <div class="col-md-4">
-                                        <label for="report_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Report Date <span class="required-asterisk">*</span></label>
+                                        <label for="report_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Visit Date <span class="required-asterisk">*</span></label>
                                         <input type="date" id="report_date" name="report_date" class="form-control" required>
                                         <span class="text-danger small validation-message" id="report_date_error"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="follow_up_1_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Follow Up 1 Date <span class="required-asterisk">*</span></label>
+                                        <input type="date" id="follow_up_1_date" name="follow_up_1_date" class="form-control" required>
+                                        <span class="text-danger small validation-message" id="follow_up_1_date_error"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="follow_up_2_date"><span class="field-label-icon fa fa-calendar" aria-hidden="true"></span>Follow Up 2 Date <span class="required-asterisk">*</span></label>
+                                        <input type="date" id="follow_up_2_date" name="follow_up_2_date" class="form-control" required>
+                                        <span class="text-danger small validation-message" id="follow_up_2_date_error"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="visit_type"><span class="field-label-icon fa fa-handshake-o" aria-hidden="true"></span>Visit Type <span class="required-asterisk">*</span></label>
+                                        <select name="visit_type" id="visit_type" class="form-control" required>
+                                            <option value="Relationship Visit" selected>Relationship Visit</option>
+                                            <option value="Follow-up Visit">Follow-up Visit</option>
+                                            <option value="Support &amp; Service">Support &amp; Service</option>
+                                        </select>
+                                        <span class="text-danger small validation-message" id="visit_type_error"></span>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="visit_mode"><span class="field-label-icon fa fa-map-marker" aria-hidden="true"></span>Visit Mode <span class="required-asterisk">*</span></label>
+                                        <select name="visit_mode" id="visit_mode" class="form-control" required>
+                                            <option value="Physical Visit" selected>Physical Visit</option>
+                                            <option value="Online Meeting">Online Meeting</option>
+                                            <option value="Phone Call">Phone Call</option>
+                                            <option value="Teams Meeting">Teams Meeting</option>
+                                            <option value="Google Meet">Google Meet</option>
+                                        </select>
+                                        <span class="text-danger small validation-message" id="visit_mode_error"></span>
                                     </div>
 
                                     <div class="col-md-4">
@@ -516,10 +550,40 @@
                                         <input type="number" step="0.01" name="total_amount" class="form-control" id="total_amount" readonly>
                                     </div>
 
-                                    <!-- Remarks -->
-                                    <div class="col-sm-12">
-                                        <label>Remarks</label>
-                                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                                    <hr class="mt-3">
+
+                                    <h5 class="mt-3">Visit Attachment &amp; Location</h5>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Attachment Image</label>
+                                        <button type="button" id="openVisitCamera" class="btn btn-outline-primary">
+                                            <i class="fa fa-camera me-1" aria-hidden="true"></i> Open Camera
+                                        </button>
+                                        <small class="text-muted d-block mt-2">Capture the attachment using the live camera.</small>
+                                        <div id="visitAttachmentName" class="small mt-1"></div>
+                                        <img id="visitAttachmentPreview" class="img-thumbnail mt-2 d-none" alt="Selected sales visit attachment" style="max-height: 180px; max-width: 100%;">
+                                        <div id="visitCameraStatus" class="small mt-2 text-muted"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="visit_location_details">Current Visit Location</label>
+                                        <div class="input-group">
+                                            <input type="text" id="visit_location_details" name="visit_location_details" class="form-control" placeholder="Location not captured" readonly>
+                                            <button type="button" id="captureVisitLocation" class="btn btn-outline-primary">
+                                                <i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Location
+                                            </button>
+                                        </div>
+                                        <input type="hidden" id="visit_latitude" name="visit_latitude">
+                                        <input type="hidden" id="visit_longitude" name="visit_longitude">
+                                        <div id="visitLocationStatus" class="small mt-2 text-muted">Capture the current location during the sales visit.</div>
+                                        <a id="visitGoogleMapsLink" class="small d-none" href="#" target="_blank" rel="noopener noreferrer">
+                                            <i class="fa fa-map me-1" aria-hidden="true"></i> View on OpenStreetMap
+                                        </a>
+                                        <div id="visitLocationMap" class="border rounded mt-2 overflow-hidden" style="height: 340px; width: 100%;">
+                                            <div class="h-100 d-flex align-items-center justify-content-center text-muted text-center px-3">
+                                                Loading development map...
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Submit -->
@@ -545,6 +609,57 @@
                 </div>
             </div>
         </section>
+    </div>
+</div>
+
+<!-- ================= SALES VISIT CAMERA MODAL ================= -->
+<style>
+    #visitCameraModal .visit-camera-dialog {
+        max-width: 440px;
+    }
+
+    #visitCameraModal #visitCameraVideo {
+        display: block;
+        width: 100%;
+        height: clamp(360px, 60vh, 560px);
+        object-fit: cover;
+        background: #111;
+    }
+
+    @media (max-width: 575.98px) {
+        #visitCameraModal .visit-camera-dialog {
+            max-width: calc(100% - 24px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #visitCameraModal #visitCameraVideo {
+            height: 55vh;
+            min-height: 320px;
+        }
+    }
+</style>
+<div class="modal fade" id="visitCameraModal" tabindex="-1" aria-labelledby="visitCameraModalLabel"
+    aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered visit-camera-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="visitCameraModalLabel">
+                    <i class="fa fa-camera me-2" aria-hidden="true"></i>Capture Attachment
+                </h5>
+            </div>
+            <div class="modal-body">
+                <video id="visitCameraVideo" class="rounded" autoplay muted playsinline></video>
+                <canvas id="visitCameraCanvas" class="d-none"></canvas>
+                <div id="visitCameraModalStatus" class="small mt-2 text-muted">Opening camera...</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancelVisitCamera" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="captureVisitPhoto" class="btn btn-primary" disabled>
+                    <i class="fa fa-camera me-1" aria-hidden="true"></i> Capture &amp; Add
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -896,12 +1011,324 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 <script
     src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynhtKqsOSAKtMZIF3EVJp6y69COQ=" crossorigin="">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
     toastr.options = {
         positionClass: "toast-top-right",
         timeOut: "3000"
     };
+</script>
+
+<script>
+    let salesVisitMap = null;
+    let salesVisitMarker = null;
+
+    window.initSalesVisitMap = function() {
+        const mapElement = document.getElementById('visitLocationMap');
+        if (!mapElement || !window.L) {
+            return;
+        }
+
+        mapElement.innerHTML = '';
+        salesVisitMap = L.map(mapElement).setView([22.9734, 78.6569], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(salesVisitMap);
+    };
+
+    window.initSalesVisitMap();
+
+    $(document).ready(function() {
+        let attachmentPreviewUrl = '';
+        let visitCameraStream = null;
+        let visitLocationWatchId = null;
+        let visitLocationTimer = null;
+        window.salesVisitCapturedImage = null;
+
+        function displayVisitAttachment(file) {
+            if (attachmentPreviewUrl) {
+                URL.revokeObjectURL(attachmentPreviewUrl);
+                attachmentPreviewUrl = '';
+            }
+
+            if (!file) {
+                $('#visitAttachmentName').text('');
+                $('#visitAttachmentPreview').attr('src', '').addClass('d-none');
+                return;
+            }
+
+            attachmentPreviewUrl = URL.createObjectURL(file);
+            $('#visitAttachmentName').text(file.name);
+            $('#visitAttachmentPreview').attr('src', attachmentPreviewUrl).removeClass('d-none');
+        }
+
+        function stopVisitCamera() {
+            if (visitCameraStream) {
+                visitCameraStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                visitCameraStream = null;
+            }
+
+            const video = document.getElementById('visitCameraVideo');
+            if (video) {
+                video.srcObject = null;
+            }
+            $('#captureVisitPhoto').prop('disabled', true);
+        }
+
+        $('#openVisitCamera').on('click', async function() {
+            const $status = $('#visitCameraStatus');
+            const $modalStatus = $('#visitCameraModalStatus');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                $('#visitCameraModal').modal('show');
+                $modalStatus.removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Live camera is not supported by this browser or device.');
+                return;
+            }
+
+            stopVisitCamera();
+            $status.removeClass('text-danger text-success').addClass('text-muted').text('Opening camera...');
+            $modalStatus.removeClass('text-danger text-success').addClass('text-muted').text('Opening camera...');
+            $('#visitCameraModal').modal('show');
+
+            try {
+                visitCameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: {
+                            ideal: 'environment'
+                        }
+                    },
+                    audio: false
+                });
+
+                const video = document.getElementById('visitCameraVideo');
+                video.srcObject = visitCameraStream;
+                await video.play();
+                $('#captureVisitPhoto').prop('disabled', false);
+                $status.text('');
+                $modalStatus.removeClass('text-muted text-danger').addClass('text-success')
+                    .text('Camera is ready. Position the attachment and tap Capture & Add.');
+            } catch (error) {
+                stopVisitCamera();
+                const permissionDenied = error && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+                const message = permissionDenied
+                    ? 'Camera permission was denied. Please allow camera access and try again.'
+                    : 'Unable to open the camera on this device.';
+                $status.removeClass('text-muted text-success').addClass('text-danger').text(message);
+                $modalStatus.removeClass('text-muted text-success').addClass('text-danger').text(message);
+            }
+        });
+
+        $('#captureVisitPhoto').on('click', function() {
+            const video = document.getElementById('visitCameraVideo');
+            const canvas = document.getElementById('visitCameraCanvas');
+
+            if (!video.videoWidth || !video.videoHeight) {
+                $('#visitCameraModalStatus').removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Camera image is not ready yet.');
+                return;
+            }
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    $('#visitCameraModalStatus').removeClass('text-muted text-success').addClass('text-danger')
+                        .text('Unable to capture the photo.');
+                    return;
+                }
+
+                window.salesVisitCapturedImage = new File(
+                    [blob],
+                    'sales_visit_' + Date.now() + '.jpg',
+                    { type: 'image/jpeg' }
+                );
+                displayVisitAttachment(window.salesVisitCapturedImage);
+                stopVisitCamera();
+                $('#visitCameraModal').modal('hide');
+                $('#visitCameraStatus').removeClass('text-muted text-danger').addClass('text-success').text('Photo captured successfully.');
+            }, 'image/jpeg', 0.9);
+        });
+
+        $('#visitCameraModal').on('hidden.bs.modal', function() {
+            stopVisitCamera();
+        });
+
+        $('#cancelVisitCamera').on('click', function() {
+            stopVisitCamera();
+            $('#visitCameraModal').modal('hide');
+        });
+
+        function stopVisitLocationWatch() {
+            if (visitLocationWatchId !== null) {
+                navigator.geolocation.clearWatch(visitLocationWatchId);
+                visitLocationWatchId = null;
+            }
+            if (visitLocationTimer) {
+                window.clearTimeout(visitLocationTimer);
+                visitLocationTimer = null;
+            }
+        }
+
+        function displayVisitLocation(position, isFinal) {
+            const latitude = position.coords.latitude.toFixed(8);
+            const longitude = position.coords.longitude.toFixed(8);
+            const accuracy = Math.round(position.coords.accuracy || 0);
+            const location = {
+                lat: Number(latitude),
+                lng: Number(longitude)
+            };
+
+            $('#visit_latitude').val(latitude);
+            $('#visit_longitude').val(longitude);
+            $('#visitGoogleMapsLink')
+                .attr('href', 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(latitude) +
+                    '&mlon=' + encodeURIComponent(longitude) + '#map=17/' +
+                    encodeURIComponent(latitude) + '/' + encodeURIComponent(longitude))
+                .removeClass('d-none');
+
+            if (salesVisitMap) {
+                salesVisitMap.setView([location.lat, location.lng], 17);
+                if (salesVisitMarker) {
+                    salesVisitMarker.setLatLng([location.lat, location.lng]);
+                } else {
+                    const markerIcon = L.divIcon({
+                        className: '',
+                        html: '<span aria-hidden="true" style="display:block;width:28px;height:28px;background:#8f72dc;border:3px solid #fff;border-radius:50% 50% 50% 0;box-shadow:0 2px 6px rgba(0,0,0,.35);transform:rotate(-45deg);"></span>',
+                        iconSize: [34, 42],
+                        iconAnchor: [17, 38]
+                    });
+                    salesVisitMarker = L.marker([location.lat, location.lng], {
+                        title: 'Current sales visit location',
+                        icon: markerIcon
+                    }).addTo(salesVisitMap);
+                }
+            }
+
+            if (isFinal) {
+                $('#visit_location_details').val('Finding full address...');
+
+                const finishAddressLookup = function(address, lookupSucceeded) {
+                    $('#visit_location_details').val(address);
+                    $('#visitLocationStatus')
+                        .removeClass('text-muted text-danger text-success')
+                        .addClass(lookupSucceeded ? 'text-success' : 'text-danger')
+                        .text(
+                            lookupSucceeded
+                                ? 'Current address captured (accuracy ±' + accuracy + ' metres).'
+                                : 'Coordinates captured, but the full address could not be found.'
+                        );
+                    $('#captureVisitLocation').prop('disabled', false)
+                        .html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Again');
+                };
+
+                fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' +
+                    encodeURIComponent(latitude) + '&lon=' + encodeURIComponent(longitude), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Address lookup failed');
+                        }
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        if (result && result.display_name) {
+                            finishAddressLookup(result.display_name, true);
+                        } else {
+                            finishAddressLookup('Latitude: ' + latitude + ', Longitude: ' + longitude, false);
+                        }
+                    })
+                    .catch(function() {
+                        finishAddressLookup('Latitude: ' + latitude + ', Longitude: ' + longitude, false);
+                    });
+            } else {
+                $('#visit_location_details').val('Locating address...');
+                $('#visitLocationStatus').removeClass('text-danger text-success').addClass('text-muted')
+                    .text('Improving location accuracy... Current accuracy ±' + accuracy + ' metres.');
+            }
+        }
+
+        $('#captureVisitLocation').on('click', function() {
+            const $button = $(this);
+            const $status = $('#visitLocationStatus');
+
+            if (!navigator.geolocation) {
+                $status.removeClass('text-muted text-success').addClass('text-danger')
+                    .text('Location capture is not supported by this browser.');
+                return;
+            }
+
+            stopVisitLocationWatch();
+            let bestPosition = null;
+
+            $button.prop('disabled', true).text('Locating...');
+            $status.removeClass('text-danger text-success').addClass('text-muted')
+                .text('Waiting for a high-accuracy device location...');
+
+            visitLocationWatchId = navigator.geolocation.watchPosition(function(position) {
+                if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) {
+                    bestPosition = position;
+                    displayVisitLocation(bestPosition, false);
+                }
+
+                if (position.coords.accuracy <= 25) {
+                    stopVisitLocationWatch();
+                    displayVisitLocation(bestPosition, true);
+                }
+            }, function(error) {
+                stopVisitLocationWatch();
+
+                if (bestPosition) {
+                    displayVisitLocation(bestPosition, true);
+                    return;
+                }
+
+                let message = 'Unable to capture the current location.';
+                if (error.code === error.PERMISSION_DENIED) {
+                    message = 'Location permission was denied.';
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    message = 'The current location is unavailable.';
+                } else if (error.code === error.TIMEOUT) {
+                    message = 'Location capture timed out. Please try again.';
+                }
+
+                $status.removeClass('text-muted text-success').addClass('text-danger').text(message);
+                $button.prop('disabled', false).html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Location');
+            }, {
+                enableHighAccuracy: true,
+                timeout: 12000,
+                maximumAge: 0
+            });
+
+            visitLocationTimer = window.setTimeout(function() {
+                stopVisitLocationWatch();
+                if (bestPosition) {
+                    displayVisitLocation(bestPosition, true);
+                } else {
+                    $status.removeClass('text-muted text-success').addClass('text-danger')
+                        .text('No location reading was received. Please check device location settings and try again.');
+                    $button.prop('disabled', false)
+                        .html('<i class="fa fa-map-marker me-1" aria-hidden="true"></i> Capture Location');
+                }
+            }, 10000);
+        });
+
+        $(window).on('beforeunload', function() {
+            stopVisitCamera();
+            stopVisitLocationWatch();
+        });
+    });
 </script>
 
 <script>
@@ -1824,12 +2251,23 @@
     function refreshSalesDynamicFields() {
         salesDynamicGeneration += 1;
         const stage = $('#disposition').val() || '';
+        const leadStatusByStage = {
+            'Not Contacted': 'Open',
+            'Contacted': 'In Progress',
+            'Quotation Sent': 'In Progress',
+            'Negotiations': 'In Progress',
+            'Contract Done': 'Closed',
+            'Advance Received': 'Closed',
+            'Lead Won': 'Closed',
+            'Lead Lost': 'Closed'
+        };
         const department = normalizeSalesDepartment($('#type option:selected').data('name'));
         const hotelId = $('#property option:selected').data('raw-id') || '';
         const departmentId = $('#type option:selected').data('raw-id') || '';
         const $container = $('#dynamicFields');
         const today = new Date().toISOString().split('T')[0];
 
+        $('#lead_status').val(leadStatusByStage[stage] || 'Open').trigger('change.select2');
         $('#leadDepartment').val(department);
         resetSalesDynamicFields();
 
@@ -2232,6 +2670,10 @@
         if (!value('property')) errors.property = 'Please select a hotel.';
         if (!value('type')) errors.type = 'Please select a department.';
         if (!value('report_date')) errors.report_date = 'Please select a report date.';
+        if (!value('follow_up_1_date')) errors.follow_up_1_date = 'Please select the first follow-up date.';
+        if (!value('follow_up_2_date')) errors.follow_up_2_date = 'Please select the second follow-up date.';
+        if (!value('visit_type')) errors.visit_type = 'Please select a visit type.';
+        if (!value('visit_mode')) errors.visit_mode = 'Please select a visit mode.';
         if (!value('company_id')) errors.company_id = 'Please select a company.';
         if (!value('person_met')) errors.person_met = 'Please select the person met.';
         if (!value('discussion_summary')) errors.discussion_summary = 'Discussion summary is required.';
@@ -2309,13 +2751,16 @@
         let lead_type = $('select[name="lead_type"]').val();
 
         let query = $('#discussion_summary').val();
-        let remarks = $('textarea[name="remarks"]').val();
 
         let leadDepartment = $('#leadDepartment').val();
         let disposition = $('#disposition').val() || '';
 
         /* ================== SALES VISIT FIELDS ================== */
         let report_date = $('#report_date').val();
+        let follow_up_1_date = $('#follow_up_1_date').val();
+        let follow_up_2_date = $('#follow_up_2_date').val();
+        let visit_type = $('#visit_type').val();
+        let visit_mode = $('#visit_mode').val();
         let company_id = $('#company_id').val();
         let person_met = $('#person_met').val();
         let agenda = $('#agenda').val();
@@ -2328,9 +2773,12 @@
         let parking_charges = $('#parking_charges').val();
         let lunch = $('#lunch').val();
         let total_amount = $('#total_amount').val();
+        let visit_latitude = $('#visit_latitude').val();
+        let visit_longitude = $('#visit_longitude').val();
+        let visit_location_details = $('#visit_location_details').val();
 
         /* ================== BASIC VALIDATION ================== */
-        if (userChannel && property && department && report_date && company_id && person_met && query) {
+        if (userChannel && property && department && report_date && follow_up_1_date && follow_up_2_date && visit_type && visit_mode && company_id && person_met && query) {
 
             let formData = new FormData();
 
@@ -2367,13 +2815,16 @@
             formData.append('type', department);
             formData.append('status', lead_status);
             formData.append('query', query);
-            formData.append('remarks', remarks);
             formData.append('lead_type', lead_type);
             formData.append('leadDepartment', leadDepartment);
             formData.append('disposition', disposition);
 
             /* ========== SALES VISIT DATA ========== */
             formData.append('report_date', report_date);
+            formData.append('follow_up_1_date', follow_up_1_date);
+            formData.append('follow_up_2_date', follow_up_2_date);
+            formData.append('visit_type', visit_type);
+            formData.append('visit_mode', visit_mode);
             formData.append('company_id', company_id);
             formData.append('person_met', person_met);
             formData.append('agenda', agenda);
@@ -2386,6 +2837,13 @@
             formData.append('parking_charges', parking_charges);
             formData.append('lunch', lunch);
             formData.append('total_amount', total_amount);
+            const attachmentFile = window.salesVisitCapturedImage;
+            if (attachmentFile) {
+                formData.append('visit_attachment', attachmentFile);
+            }
+            formData.append('visit_latitude', visit_latitude);
+            formData.append('visit_longitude', visit_longitude);
+            formData.append('visit_location_details', visit_location_details);
             appendCsrf(formData);
 
             /* ================== AJAX ================== */
