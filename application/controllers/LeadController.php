@@ -4280,7 +4280,7 @@ class LeadController extends CI_Controller
 
     public function getRestaurantsByHotel()
     {
-        $hotel_id = $this->input->post('hotel_id');
+        $hotel_id = $this->input->get_post('hotel_id');
 
         $restaurants = $this->db
             ->where('hotel_id', $hotel_id)
@@ -4297,7 +4297,7 @@ class LeadController extends CI_Controller
 
     public function getBanquetsByHotel()
     {
-        $hotel_id = $this->input->post('hotel_id');
+        $hotel_id = $this->input->get_post('hotel_id');
 
         if (empty($hotel_id)) {
             echo json_encode([
@@ -4335,7 +4335,7 @@ class LeadController extends CI_Controller
 
     public function getPromotionalOffersByDepartment()
     {
-        $department_id = $this->input->post('department_id');
+        $department_id = $this->input->get_post('department_id');
 
         if (empty($department_id)) {
             echo json_encode([
@@ -4360,7 +4360,7 @@ class LeadController extends CI_Controller
 
     public function getRoomTypesByHotel()
     {
-        $hotel_id = $this->input->post('hotel_id');
+        $hotel_id = $this->input->get_post('hotel_id');
 
         if (empty($hotel_id)) {
             echo json_encode([
@@ -4400,7 +4400,7 @@ class LeadController extends CI_Controller
 
     public function getTimeSlots()
     {
-        $slot_type_id = $this->input->post('slot_type_id');
+        $slot_type_id = $this->input->get_post('slot_type_id');
 
         if (!$slot_type_id) {
             echo json_encode([
@@ -4427,7 +4427,7 @@ class LeadController extends CI_Controller
 
     public function getTableCategories()
     {
-        $restaurant_id = $this->input->post('restaurant_id');
+        $restaurant_id = $this->input->get_post('restaurant_id');
 
         if (!$restaurant_id) {
             echo json_encode([
@@ -4456,8 +4456,8 @@ class LeadController extends CI_Controller
 
     public function getTables()
     {
-        $restaurant_id = $this->input->post('restaurant_id');
-        $category_id   = $this->input->post('category_id');
+        $restaurant_id = $this->input->get_post('restaurant_id');
+        $category_id   = $this->input->get_post('category_id');
 
         if (!$restaurant_id || !$category_id) {
             echo json_encode([

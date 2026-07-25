@@ -98,6 +98,87 @@ class SalesVisits extends CI_Controller
         return '';
     }
 
+    private function validateAddSalesVisitFields()
+    {
+        foreach (['follow_up_1_date', 'follow_up_2_date'] as $field) {
+            $date = trim((string) $this->input->post($field));
+            $parsedDate = DateTime::createFromFormat('Y-m-d', $date);
+
+            if ($date === '' || !$parsedDate || $parsedDate->format('Y-m-d') !== $date) {
+                return 'Please enter valid follow-up dates';
+            }
+        }
+
+        $visitType = trim((string) $this->input->post('visit_type', true));
+        $visitMode = trim((string) $this->input->post('visit_mode', true));
+        $allowedVisitTypes = ['Relationship Visit', 'Follow-up Visit', 'Support & Service'];
+        $allowedVisitModes = ['Physical Visit', 'Online Meeting', 'Phone Call', 'Teams Meeting', 'Google Meet'];
+
+        if (!in_array($visitType, $allowedVisitTypes, true)) {
+            return 'Please select a valid visit type';
+        }
+
+        if (!in_array($visitMode, $allowedVisitModes, true)) {
+            return 'Please select a valid visit mode';
+        }
+
+        return '';
+    }
+
+    private function validateSalesVisitLocation()
+    {
+        $latitude = trim((string) $this->input->post('visit_latitude'));
+        $longitude = trim((string) $this->input->post('visit_longitude'));
+
+        if (($latitude === '') !== ($longitude === '')) {
+            return 'Please capture a complete visit location';
+        }
+
+        if ($latitude !== '' && (!is_numeric($latitude) || (float) $latitude < -90 || (float) $latitude > 90)) {
+            return 'Invalid visit latitude';
+        }
+
+        if ($longitude !== '' && (!is_numeric($longitude) || (float) $longitude < -180 || (float) $longitude > 180)) {
+            return 'Invalid visit longitude';
+        }
+
+        return '';
+    }
+
+    private function uploadSalesVisitAttachment()
+    {
+        if (empty($_FILES['visit_attachment']['name'])) {
+            return ['success' => true, 'path' => ''];
+        }
+
+        $uploadPath = FCPATH . 'uploads/sales_visits/';
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true)) {
+            return ['success' => false, 'message' => 'Unable to create the sales visit attachment directory'];
+        }
+
+        $this->load->library('upload');
+        $this->upload->initialize([
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'jpg|jpeg|png|webp',
+            'max_size' => 5120,
+            'encrypt_name' => true,
+            'remove_spaces' => true,
+            'file_ext_tolower' => true
+        ]);
+
+        if (!$this->upload->do_upload('visit_attachment')) {
+            return [
+                'success' => false,
+                'message' => strip_tags($this->upload->display_errors('', ''))
+            ];
+        }
+
+        return [
+            'success' => true,
+            'path' => 'uploads/sales_visits/' . $this->upload->data('file_name')
+        ];
+    }
+
     /* ================= MANAGE PAGE ================= */
     public function index()
     {
@@ -184,6 +265,12 @@ class SalesVisits extends CI_Controller
     public function insert()
     {
         $validationError = $this->validateSalesVisitFields();
+        if ($validationError === '') {
+            $validationError = $this->validateAddSalesVisitFields();
+        }
+        if ($validationError === '') {
+            $validationError = $this->validateSalesVisitLocation();
+        }
         if ($validationError !== '') {
             $this->jsonResponse(['status' => false, 'message' => $validationError]);
             return;
@@ -601,9 +688,12 @@ class SalesVisits extends CI_Controller
                 $leadData['checkin_date']       = $this->input->post('checkin_date');
                 $leadData['checkout_date']      = $this->input->post('checkout_date');
             }
-
-
-
+            $attachmentUpload = $this->uploadSalesVisitAttachment();
+            if (!$attachmentUpload['success']) {
+                $this->jsonResponse(['status' => false, 'message' => $attachmentUpload['message']]);
+                return;
+            }
+            $attachmentPath = $attachmentUpload['path'];
 
             /* ===================== INSERT LEAD ===================== */
             $insert_id = $this->LeadModel->insert_lead($leadData);
@@ -614,6 +704,10 @@ class SalesVisits extends CI_Controller
             $data = [
                 'user_id'            => $userId,
                 'report_date'        => $this->input->post('report_date'),
+                'follow_up_1_date'   => $this->input->post('follow_up_1_date'),
+                'follow_up_2_date'   => $this->input->post('follow_up_2_date'),
+                'visit_type'         => $this->input->post('visit_type', true),
+                'visit_mode'         => $this->input->post('visit_mode', true),
                 'company_id'         => $companyId,
                 'person_met'         => $personMet,
                 'agenda'             => $this->input->post('agenda'),
@@ -628,6 +722,10 @@ class SalesVisits extends CI_Controller
                 'lunch'              => $this->input->post('lunch'),
                 'entertainment'      => $this->input->post('entertainment'),
                 'total_amount'       => $this->input->post('total_amount'),
+                'attachment_image'   => $attachmentPath ?: null,
+                'latitude'           => $this->input->post('visit_latitude') !== '' ? $this->input->post('visit_latitude') : null,
+                'longitude'          => $this->input->post('visit_longitude') !== '' ? $this->input->post('visit_longitude') : null,
+                'location_details'   => $this->input->post('visit_location_details', true) ?: null,
 
                 'property'           => $property,
                 'type'               => $type,
@@ -643,6 +741,13 @@ class SalesVisits extends CI_Controller
 
             $insert = $this->db->insert('sales_visits', $data);
             $visitId = $insert ? $this->db->insert_id() : 0;
+
+            if (!$visitId && $attachmentPath !== '') {
+                $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $attachmentPath);
+                if (is_file($uploadedFile)) {
+                    unlink($uploadedFile);
+                }
+            }
 
             if ($visitId) {
                 $this->logActivity('create', $visitId, 'Created sales visit for company ID '.$companyId);
@@ -1148,6 +1253,12 @@ class SalesVisits extends CI_Controller
         }
 
         $validationError = $this->validateSalesVisitFields();
+        if ($validationError === '') {
+            $validationError = $this->validateAddSalesVisitFields();
+        }
+        if ($validationError === '') {
+            $validationError = $this->validateSalesVisitLocation();
+        }
         if ($validationError !== '') {
             $this->jsonResponse(['status' => false, 'message' => $validationError]);
             return;
@@ -1184,6 +1295,50 @@ class SalesVisits extends CI_Controller
 
         if (empty($property) || empty($type) || empty($companyId) || empty($personMet) || empty($personMetdata) || empty($hotel_data) || empty($department_data) || empty($company) || empty($travelModeData)) {
             $this->jsonResponse(['status' => false, 'message' => 'Invalid sales visit selection']);
+            return;
+        }
+
+        $dynamicStage = trim((string) $this->input->post('disposition', true));
+        $dynamicDepartment = strtolower(trim((string) ($department_data->department_name ?? '')));
+        if ($dynamicDepartment === 'restaurants') {
+            $dynamicDepartment = 'restaurant';
+        } elseif ($dynamicDepartment === 'banquets') {
+            $dynamicDepartment = 'banquet';
+        }
+
+        $dynamicValue = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+
+        $dynamicValidationError = '';
+        if ($dynamicStage === 'Lead Lost' && $dynamicValue('reason') === '') {
+            $dynamicValidationError = 'Please select a lead lost reason';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'rooms' && $dynamicValue('meal_plan') === '') {
+            $dynamicValidationError = 'Please select a meal plan';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'banquet' && $dynamicValue('banquet_id') === '') {
+            $dynamicValidationError = 'Please select a banquet';
+        } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
+            foreach ([
+                'restaurant_id' => 'Please select a restaurant',
+                'slot_type_id' => 'Please select a slot type',
+                'time_slot_id' => 'Please select a time slot',
+                'table_category_id' => 'Please select a table category',
+                'table_reservation_status' => 'Please select a reservation status'
+            ] as $field => $message) {
+                if ($dynamicValue($field) === '') {
+                    $dynamicValidationError = $message;
+                    break;
+                }
+            }
+
+            $dynamicTableIds = $this->input->post('table_id');
+            if ($dynamicValidationError === '' && (empty($dynamicTableIds) || (is_array($dynamicTableIds) && count(array_filter($dynamicTableIds)) === 0))) {
+                $dynamicValidationError = 'Please select at least one table';
+            }
+        }
+
+        if ($dynamicValidationError !== '') {
+            $this->jsonResponse(['status' => false, 'message' => $dynamicValidationError]);
             return;
         }
 
@@ -1348,11 +1503,91 @@ class SalesVisits extends CI_Controller
             $leadData['checkout_date'] = $this->input->post('checkout_date');
         }
 
+        $dynamicFields = [];
+
+        if ($dynamicStage === 'Lead Lost') {
+            $dynamicFields = ['reason'];
+        } elseif ($dynamicStage === 'Lead Won') {
+            $dynamicFields = ['amount'];
+        } elseif ($dynamicStage === 'Quotation Sent') {
+            $dynamicFields = ['promotional_offers', 'followup_date', 'second_followup_date'];
+
+            if ($dynamicDepartment === 'rooms') {
+                $dynamicFields = array_merge($dynamicFields, [
+                    'roomtype',
+                    'meal_plan',
+                    'checkin_date',
+                    'checkout_date',
+                    'number_of_rooms',
+                    'pax',
+                    'adults',
+                    'kids',
+                    'revenue_room',
+                    'revenue_fnb',
+                    'revenue_other',
+                    'amount'
+                ]);
+            } elseif ($dynamicDepartment === 'restaurant') {
+                $dynamicFields = array_merge($dynamicFields, [
+                    'booking_date',
+                    'pax',
+                    'restaurant_id',
+                    'slot_type_id',
+                    'time_slot_id',
+                    'arrival_time',
+                    'table_category_id',
+                    'table_reservation_status',
+                    'amount',
+                    'special_occasion',
+                    'special_request'
+                ]);
+            } elseif ($dynamicDepartment === 'banquet') {
+                $dynamicFields = array_merge($dynamicFields, [
+                    'booking_date',
+                    'pax',
+                    'banquet_id',
+                    'amount'
+                ]);
+            }
+        } elseif (in_array($dynamicStage, ['Negotiations', 'Not Contacted', 'Advance Received'], true)) {
+            $dynamicFields = ['booking_date', 'followup_date', 'second_followup_date'];
+        }
+
+        foreach ($dynamicFields as $dynamicField) {
+            $postedDynamicValue = $this->input->post($dynamicField, true);
+            if ($postedDynamicValue !== null && $postedDynamicValue !== '') {
+                $leadData[$dynamicField] = $postedDynamicValue;
+            }
+        }
+
+        if ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
+            $tableIds = $this->input->post('table_id');
+            if (is_array($tableIds)) {
+                $tableIds = array_values(array_filter(array_map('trim', $tableIds), 'strlen'));
+                if (!empty($tableIds)) {
+                    $leadData['table_id'] = implode(',', $tableIds);
+                }
+            } elseif ($tableIds !== null && $tableIds !== '') {
+                $leadData['table_id'] = trim((string) $tableIds);
+            }
+        }
+
+        $attachmentUpload = $this->uploadSalesVisitAttachment();
+        if (!$attachmentUpload['success']) {
+            $this->jsonResponse(['status' => false, 'message' => $attachmentUpload['message']]);
+            return;
+        }
+        $replacementAttachmentPath = $attachmentUpload['path'];
+
         $this->db->where('id', $lead_id)->update('leads', $leadData);
 
         $visitData = [
             'user_id'            => $userId,
             'report_date'        => $this->input->post('report_date'),
+            'follow_up_1_date'   => $this->input->post('follow_up_1_date'),
+            'follow_up_2_date'   => $this->input->post('follow_up_2_date'),
+            'visit_type'         => $this->input->post('visit_type', true),
+            'visit_mode'         => $this->input->post('visit_mode', true),
             'company_id'         => $companyId,
             'person_met'         => $personMet,
             'agenda'             => $this->input->post('agenda'),
@@ -1366,11 +1601,18 @@ class SalesVisits extends CI_Controller
             'lunch'              => $this->input->post('lunch'),
             'entertainment'      => $this->input->post('entertainment'),
             'total_amount'       => $this->input->post('total_amount'),
+            'latitude'           => $this->input->post('visit_latitude') !== '' ? $this->input->post('visit_latitude') : null,
+            'longitude'          => $this->input->post('visit_longitude') !== '' ? $this->input->post('visit_longitude') : null,
+            'location_details'   => $this->input->post('visit_location_details', true) ?: null,
             'property'           => $property,
             'type'               => $type,
             'remarks'            => $this->input->post('remarks'),
             'updated_at'         => date('Y-m-d H:i:s')
         ];
+
+        if ($replacementAttachmentPath !== '') {
+            $visitData['attachment_image'] = $replacementAttachmentPath;
+        }
 
         $visitUpdated = $this->db
             ->where('visit_id', $visit_id)
@@ -1379,6 +1621,12 @@ class SalesVisits extends CI_Controller
             ->update('sales_visits', $visitData);
 
         if (!$visitUpdated) {
+            if ($replacementAttachmentPath !== '') {
+                $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $replacementAttachmentPath);
+                if (is_file($uploadedFile)) {
+                    unlink($uploadedFile);
+                }
+            }
             $this->jsonResponse(['status' => false, 'message' => 'Unable to update sales visit']);
             return;
         }
