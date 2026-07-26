@@ -25,4 +25,13 @@ $route['sales/companies/save'] = 'Sales/Companies/save';
 $route['sales/companies/details'] = 'Sales/Companies/getDetails';
 $route['sales/companies/delete'] = 'Sales/Companies/delete';
 
+$route['sales/visits'] = 'Sales/Visits/index';
+$route['sales/visits/add'] = 'Sales/Visits/add';
+$route['sales/visits/create'] = 'Sales/Visits/insert';
+$route['sales/visits/calendar'] = 'Sales/Visits/getCalendarVisits';
+$route['sales/visits/details'] = 'Sales/Visits/getVisitDetails';
+$route['sales/visits/company-contacts'] = 'Sales/Visits/get_company_contacts';
+$route['sales/visits/restaurants'] = 'Sales/Visits/get_restaurants';
+$route['sales/visits/slot-types'] = 'Sales/Visits/get_slot_types';
+
 
