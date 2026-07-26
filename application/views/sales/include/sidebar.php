@@ -91,16 +91,17 @@ $salesAction = $this->uri->segment(3);
                         </span>
                      </a>
                      <ul class="treeview-menu">
-                        <li class="<?= ($salesPage === 'company-contacts') ? 'active' : '' ?>">
-                           <a href="<?= base_url('sales/company-contacts') ?>">
-                              <i class="fa fa-address-book-o" aria-hidden="true"></i>
-                              Contacts
-                           </a>
-                        </li>
                         <li class="<?= ($salesPage === 'companies') ? 'active' : '' ?>">
                            <a href="<?= base_url('sales/companies') ?>">
                               <i class="fa fa-building-o" aria-hidden="true"></i>
                               Companies
+                           </a>
+                        </li>
+
+                        <li class="<?= ($salesPage === 'company-contacts') ? 'active' : '' ?>">
+                           <a href="<?= base_url('sales/company-contacts') ?>">
+                              <i class="fa fa-address-book-o" aria-hidden="true"></i>
+                              Contacts
                            </a>
                         </li>
                      </ul>

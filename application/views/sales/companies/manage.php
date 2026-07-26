@@ -11,28 +11,28 @@
         min-height: 18px;
     }
 
-    #companyContactModal .select2-container {
+    #companyModal .select2-container {
         width: 100% !important;
     }
 
-    #companyContactModal .select2-container .select2-selection--single {
+    #companyModal .select2-container .select2-selection--single {
         height: 46px !important;
         border: 1px solid #d9d9d9 !important;
         border-radius: 8px !important;
         box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
     }
 
-    #companyContactModal .select2-selection--single .select2-selection__rendered {
+    #companyModal .select2-selection--single .select2-selection__rendered {
         line-height: 44px !important;
         padding-left: 13px !important;
         padding-right: 35px !important;
     }
 
-    #companyContactModal .select2-selection--single .select2-selection__arrow {
+    #companyModal .select2-selection--single .select2-selection__arrow {
         height: 44px !important;
     }
 
-    .company-contact-select2-dropdown .select2-search__field {
+    .company-select2-dropdown .select2-search__field {
         height: 34px !important;
         min-height: 34px !important;
         padding: 5px 9px !important;
@@ -40,7 +40,6 @@
         border-radius: 5px !important;
         box-shadow: none !important;
     }
-
 </style>
 
 <div class="content-wrapper">
@@ -48,22 +47,22 @@
         <div class="custom-page-header">
             <div class="header-left">
                 <div class="header-icon-box">
-                    <i class="fa fa-address-book"></i>
+                    <i class="fa fa-building"></i>
                 </div>
                 <div class="header-content">
-                    <h2 class="header-title">Manage Company Contacts</h2>
+                    <h2 class="header-title">Manage Companies</h2>
                     <ol class="custom-breadcrumb">
                         <li><i class="fa fa-home"></i></li>
                         <li>Sales Executive</li>
                         <li><i class="fa fa-angle-right"></i></li>
                         <li>Company &amp; Corporate</li>
                         <li><i class="fa fa-angle-right"></i></li>
-                        <li class="active">Company Contact Management</li>
+                        <li class="active">Company Management</li>
                     </ol>
                 </div>
             </div>
             <div class="header-banner">
-                <img src="<?= base_url('assets/new_img/company_img.png') ?>" alt="Company contacts">
+                <img src="<?= base_url('assets/new_img-add.png') ?>" alt="">
             </div>
         </div>
 
@@ -72,10 +71,10 @@
                 <div class="col-12">
                     <div class="box new_table_box">
                         <div class="box-header">
-                            <h4 class="box-title">Contact List</h4>
+                            <h4 class="box-title">Company List</h4>
                             <div class="float-right" style="float:right;">
-                                <button type="button" class="btn btn-primary-light btn-sm" id="openAddContact">
-                                    Add Contact +
+                                <button type="button" class="btn btn-primary-light btn-sm" id="openAddCompany">
+                                    Add Company +
                                 </button>
                             </div>
                         </div>
@@ -86,13 +85,11 @@
                                     <thead>
                                         <tr>
                                             <th>Sr. No.</th>
+                                            <th>Company Group</th>
                                             <th>Company Name</th>
-                                            <th>Title</th>
-                                            <th>Full Name</th>
-                                            <th>Designation</th>
                                             <th>Email</th>
+                                            <th>Area User</th>
                                             <th>Mobile</th>
-                                            <th>Phone</th>
                                             <th>City</th>
                                             <th>State</th>
                                             <th>Status</th>
@@ -109,26 +106,26 @@
     </div>
 </div>
 
-<div class="modal modal-lg new_modal_design" id="companyContactModal" tabindex="-1">
+<div class="modal modal-lg new_modal_design" id="companyModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <form id="companyContactForm" class="modal-content">
-            <input type="hidden" name="contact_id" id="contact_record_id">
+        <form id="companyForm" class="modal-content" enctype="multipart/form-data">
+            <input type="hidden" name="company_id" id="company_record_id">
 
             <div class="custom-page-header">
                 <div class="header-left">
                     <div class="header-icon-box">
-                        <i class="fa fa-address-book"></i>
+                        <i class="fa fa-building"></i>
                     </div>
                     <div class="header-content">
                         <div class="modal-header hotel_modal_header">
-                            <h5 id="contactModalTitle">Add Contact</h5>
+                            <h5 id="companyModalTitle">Add Company</h5>
                             <div class="hotel_banner"></div>
                         </div>
                         <ol class="custom-breadcrumb">
                             <li>
                                 <i class="fa fa-info-circle"></i>
-                                <span id="contactModalDescription">
-                                    Fill in the details to add a company contact.
+                                <span id="companyModalDescription">
+                                    Fill in the details to add a company.
                                 </span>
                             </li>
                         </ol>
@@ -141,17 +138,12 @@
             </div>
 
             <div class="modal-body ps-3 pe-3">
-                <?php
-                $this->load->view(
-                    'sales/company_contacts/form_fields',
-                    ['field_prefix' => 'contact_']
-                );
-                ?>
+                <?php $this->load->view('sales/companies/form_fields'); ?>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="saveContactButton">
+                <button type="submit" class="btn btn-primary" id="saveCompanyButton">
                     Save
                 </button>
             </div>
@@ -167,16 +159,19 @@ window.CSRF = window.CSRF || {
 
 window.addEventListener('load', function () {
     var table;
-    var form = $('#companyContactForm');
-    var modal = $('#companyContactModal');
-    var saveButton = $('#saveContactButton');
+    var form = $('#companyForm');
+    var modal = $('#companyModal');
+    var saveButton = $('#saveCompanyButton');
     var requiredFields = [
-        'company_id',
-        'title',
-        'first_name',
-        'last_name',
+        'company_group_id',
+        'company_name',
         'email',
-        'mobile_number'
+        'mobile_number',
+        'country_id',
+        'state_id',
+        'city_id',
+        'area_id',
+        'address'
     ];
 
     function toast(type, message) {
@@ -199,8 +194,8 @@ window.addEventListener('load', function () {
     }
 
     function showFieldError(field, message) {
-        $('#contact_' + field).addClass('is-invalid');
-        $('#contact_' + field + '_error').text(message);
+        $('#company_' + field).addClass('is-invalid');
+        $('#company_' + field + '_error').text(message);
     }
 
     function setProcessing(processing, mode) {
@@ -215,10 +210,11 @@ window.addEventListener('load', function () {
 
     function resetForm() {
         form[0].reset();
-        $('#contact_record_id').val('');
+        $('#company_record_id').val('');
         form.find('option[data-transient="true"]').remove();
         form.find('select').val('').trigger('change');
-        $('#contact_status').val('Active').trigger('change');
+        $('#company_creditibility').val('Credit Not Allowed').trigger('change');
+        $('#company_status').val('1').trigger('change');
         clearErrors();
     }
 
@@ -227,7 +223,7 @@ window.addEventListener('load', function () {
             return;
         }
 
-        form.find('.contact-select2').each(function () {
+        form.find('.company-select2').each(function () {
             var select = $(this);
             if (select.hasClass('select2-hidden-accessible')) {
                 return;
@@ -238,7 +234,7 @@ window.addEventListener('load', function () {
                 placeholder: select.find('option:first').text(),
                 allowClear: false,
                 dropdownParent: modal,
-                dropdownCssClass: 'company-contact-select2-dropdown'
+                dropdownCssClass: 'company-select2-dropdown'
             });
         });
     }
@@ -268,16 +264,33 @@ window.addEventListener('load', function () {
         clearErrors();
 
         requiredFields.forEach(function (field) {
-            var value = String($('#contact_' + field).val() || '').trim();
+            var value = String($('#company_' + field).val() || '').trim();
             if (value === '') {
                 showFieldError(field, 'This field is required');
                 valid = false;
             }
         });
 
-        var email = String($('#contact_email').val() || '').trim();
-        if (email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        var email = String($('#company_email').val() || '').trim();
+        var secondaryEmail = String($('#company_secondary_email').val() || '').trim();
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (email !== '' && !emailPattern.test(email)) {
             showFieldError('email', 'Please enter a valid email address');
+            valid = false;
+        }
+        if (secondaryEmail !== '' && !emailPattern.test(secondaryEmail)) {
+            showFieldError('secondary_email', 'Please enter a valid secondary email');
+            valid = false;
+        }
+
+        var creditFile = document.getElementById('company_credit_form_file');
+        if (
+            creditFile &&
+            creditFile.files.length > 0 &&
+            creditFile.files[0].size > 5 * 1024 * 1024
+        ) {
+            toast('error', 'Credit form file must not exceed 5 MB.');
             valid = false;
         }
 
@@ -287,51 +300,51 @@ window.addEventListener('load', function () {
     function openAddModal() {
         resetForm();
         modal.attr('data-mode', 'add');
-        $('#contactModalTitle').text('Add Contact');
-        $('#contactModalDescription').text('Fill in the details to add a company contact.');
+        $('#companyModalTitle').text('Add Company');
+        $('#companyModalDescription').text('Fill in the details to add a company.');
         saveButton.text('Save');
         modal.modal('show');
     }
 
-    function populateEditForm(contact) {
-        $('#contact_record_id').val(contact.contact_id);
+    function populateEditForm(company) {
+        $('#company_record_id').val(company.company_id);
         setEncryptedSelectValue(
-            '#contact_company_id',
-            contact.company_id,
-            contact.company_name
+            '#company_company_group_id',
+            company.company_group_id,
+            company.company_group_name
         );
-        $('#contact_title').val(contact.title);
-        $('#contact_first_name').val(contact.first_name);
-        $('#contact_last_name').val(contact.last_name);
+        $('#company_company_name').val(company.company_name);
+        $('#company_email').val(company.email);
+        $('#company_secondary_email').val(company.secondary_email);
+        $('#company_phone_number').val(company.phone_number);
+        $('#company_mobile_number').val(company.mobile_number);
+        $('#company_gst_number').val(company.gst_number);
         setEncryptedSelectValue(
-            '#contact_designation_id',
-            contact.designation,
-            contact.designation_name
-        );
-        $('#contact_grade').val(contact.grade);
-        $('#contact_email').val(contact.email);
-        $('#contact_phone_number').val(contact.phone_number);
-        $('#contact_mobile_number').val(contact.mobile_number);
-        setEncryptedSelectValue(
-            '#contact_country_id',
-            contact.country,
-            contact.country_name
+            '#company_country_id',
+            company.country_id,
+            company.country_name
         );
         setEncryptedSelectValue(
-            '#contact_state_id',
-            contact.state,
-            contact.state_name
+            '#company_state_id',
+            company.state_id,
+            company.state_name
         );
         setEncryptedSelectValue(
-            '#contact_city',
-            contact.city,
-            contact.city_name
+            '#company_city_id',
+            company.city_id,
+            company.city_name
         );
-        $('#contact_pincode').val(contact.pincode);
-        $('#contact_address').val(contact.address);
-        $('#contact_date_of_birth').val(contact.date_of_birth);
-        $('#contact_date_of_anniversary').val(contact.date_of_anniversary);
-        $('#contact_status').val(contact.status).trigger('change');
+        setEncryptedSelectValue(
+            '#company_area_id',
+            company.area_id,
+            company.area_name
+        );
+        $('#company_pincode').val(company.pincode);
+        $('#company_address').val(company.address);
+        $('#company_deals_in').val(company.deals_in);
+        $('#company_details').val(company.details);
+        $('#company_creditibility').val(company.company_creditibility).trigger('change');
+        $('#company_status').val(String(company.status)).trigger('change');
     }
 
     initSelect2();
@@ -342,10 +355,10 @@ window.addEventListener('load', function () {
         ordering: true,
         searching: true,
         columnDefs: [
-            { targets: 11, orderable: false, searchable: false }
+            { targets: 9, orderable: false, searchable: false }
         ],
         ajax: {
-            url: '<?= base_url('sales/company-contacts/table') ?>',
+            url: '<?= base_url('sales/companies/table') ?>',
             type: 'POST',
             data: function (data) {
                 data[window.CSRF.name] = window.CSRF.hash;
@@ -355,37 +368,35 @@ window.addEventListener('load', function () {
                 return response.data || [];
             },
             error: function () {
-                toast('error', 'Unable to load company contacts.');
+                toast('error', 'Unable to load companies.');
             }
         }
     });
 
-    $(document).on('click', '#openAddContact', openAddModal);
+    $(document).on('click', '#openAddCompany', openAddModal);
 
-    $(document).on('click', '.edit-contact', function () {
+    $(document).on('click', '.edit-company', function () {
         var recordId = $(this).data('record_id');
         resetForm();
 
         $.ajax({
-            url: '<?= base_url('sales/company-contacts/details') ?>',
+            url: '<?= base_url('sales/companies/details') ?>',
             type: 'POST',
             dataType: 'json',
             data: {
-                contact_id: recordId,
+                company_id: recordId,
                 [window.CSRF.name]: window.CSRF.hash
             },
             success: function (response) {
                 updateCsrf(response);
                 if (!response.status) {
-                    toast('error', response.message || 'Unable to load contact details.');
+                    toast('error', response.message || 'Unable to load company details.');
                     return;
                 }
 
                 modal.attr('data-mode', 'edit');
-                $('#contactModalTitle').text('Edit Contact');
-                $('#contactModalDescription').text(
-                    'Fill in the details to update this company contact.'
-                );
+                $('#companyModalTitle').text('Edit Company');
+                $('#companyModalDescription').text('Fill in the details to update this company.');
                 saveButton.text('Update');
                 populateEditForm(response.data);
                 modal.modal('show');
@@ -399,7 +410,7 @@ window.addEventListener('load', function () {
                 }
             },
             error: function () {
-                toast('error', 'Server error while fetching contact details.');
+                toast('error', 'Server error while fetching company details.');
             }
         });
     });
@@ -414,28 +425,29 @@ window.addEventListener('load', function () {
         var mode = modal.attr('data-mode') === 'edit' ? 'edit' : 'add';
         setProcessing(true, mode);
 
-        var requestData = form.serializeArray();
-        requestData.push({
-            name: window.CSRF.name,
-            value: window.CSRF.hash
-        });
+        var requestData = new FormData(form[0]);
+        requestData.append(window.CSRF.name, window.CSRF.hash);
 
         $.ajax({
-            url: '<?= base_url('sales/company-contacts/save') ?>',
+            url: '<?= base_url('sales/companies/save') ?>',
             type: 'POST',
             dataType: 'json',
-            data: $.param(requestData),
+            data: requestData,
+            contentType: false,
+            processData: false,
             success: function (response) {
                 updateCsrf(response);
                 if (!response.status) {
-                    toast('error', response.message || 'Unable to save contact.');
+                    toast('error', response.message || 'Unable to save company.');
                     return;
                 }
 
                 toast(
                     'success',
                     response.message ||
-                    (mode === 'edit' ? 'Contact updated successfully.' : 'Contact added successfully.')
+                    (mode === 'edit'
+                        ? 'Company updated successfully.'
+                        : 'Company added successfully.')
                 );
                 modal.modal('hide');
                 resetForm();
@@ -450,12 +462,12 @@ window.addEventListener('load', function () {
         });
     });
 
-    $(document).on('click', '.delete-contact', function () {
+    $(document).on('click', '.delete-company', function () {
         var recordId = $(this).data('record_id');
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'This contact will be removed from the active company contact list.',
+            text: 'This company will be removed from the active company list.',
             icon: 'question',
             showCancelButton: true,
             showCloseButton: true,
@@ -467,7 +479,7 @@ window.addEventListener('load', function () {
             }
 
             $.ajax({
-                url: '<?= base_url('sales/company-contacts/delete') ?>',
+                url: '<?= base_url('sales/companies/delete') ?>',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -477,11 +489,11 @@ window.addEventListener('load', function () {
                 success: function (response) {
                     updateCsrf(response);
                     if (!response.status) {
-                        toast('error', response.message || 'Unable to delete contact.');
+                        toast('error', response.message || 'Unable to delete company.');
                         return;
                     }
 
-                    toast('success', response.message || 'Contact deleted successfully.');
+                    toast('success', response.message || 'Company deleted successfully.');
                     table.draw(false);
                 },
                 error: function () {
@@ -489,10 +501,6 @@ window.addEventListener('load', function () {
                 }
             });
         });
-    });
-
-    modal.on('hidden.bs.modal', function () {
-        resetForm();
     });
 });
 </script>

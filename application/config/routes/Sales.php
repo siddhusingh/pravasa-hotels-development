@@ -19,4 +19,10 @@ $route['sales/company-contacts/save'] = 'Sales/CompanyContacts/save';
 $route['sales/company-contacts/details'] = 'Sales/CompanyContacts/getDetails';
 $route['sales/company-contacts/delete'] = 'Sales/CompanyContacts/delete';
 
+$route['sales/companies'] = 'Sales/Companies/index';
+$route['sales/companies/table'] = 'Sales/Companies/get_companies_table';
+$route['sales/companies/save'] = 'Sales/Companies/save';
+$route['sales/companies/details'] = 'Sales/Companies/getDetails';
+$route['sales/companies/delete'] = 'Sales/Companies/delete';
+
 
