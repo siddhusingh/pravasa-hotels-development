@@ -19,6 +19,30 @@
         <td><?= html_escape($visit->sales_user_name ?? '-') ?></td>
     </tr>
     <tr>
+        <th>Visit Type</th>
+        <td><?= html_escape($visit->visit_type ?? '-') ?></td>
+    </tr>
+    <tr>
+        <th>Visit Mode</th>
+        <td><?= html_escape($visit->visit_mode ?? '-') ?></td>
+    </tr>
+    <tr>
+        <th>Report Date</th>
+        <td>
+            <?= !empty($visit->report_date)
+                ? date('d-m-Y', strtotime($visit->report_date))
+                : '-' ?>
+        </td>
+    </tr>
+    <tr>
+        <th>Created Date</th>
+        <td>
+            <?= !empty($visit->created_at)
+                ? date('d-m-Y h:i A', strtotime($visit->created_at))
+                : '-' ?>
+        </td>
+    </tr>
+    <tr>
         <th>Agenda</th>
         <td><?= html_escape($visit->agenda ?? '-') ?></td>
     </tr>
