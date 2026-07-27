@@ -76,6 +76,18 @@ class Main extends CI_Controller
 
             $data['total_revenue'] = $this->Common_model->get_total_revenue_from_leads();
 
+            $today = date('Y-m-d');
+            $data['today_leads'] = $this->Common_model->count_all('leads', [], $today, $today);
+            $data['open_leads'] = $data['lead_status_counts']['Open'];
+            $data['today_followups'] = $this->db
+                ->where('DATE(followup_date)', $today)
+                ->where('is_deleted', 0)
+                ->count_all_results('leads');
+            $won_and_lost = $data['lead_status_counts']['Lead_Won'] + $data['lead_status_counts']['Lead_Lost'];
+            $data['conversion_rate'] = $won_and_lost > 0
+                ? ($data['lead_status_counts']['Lead_Won'] / $won_and_lost) * 100
+                : 0;
+
 
 
 
@@ -490,6 +502,34 @@ class Main extends CI_Controller
 
 
         $data['csrfHash'] = $this->security->get_csrf_hash();
+
+        $today = date('Y-m-d');
+        $data['today_leads'] = $this->Common_model->count_all(
+            'leads',
+            ['property' => $property, 'type' => $department],
+            $today,
+            $today,
+            $created_id,
+            $created_role,
+            $assigned_id,
+            $assigned_role,
+            $channel,
+            $disposition
+        );
+        $this->db->where('DATE(followup_date)', $today)->where('is_deleted', 0);
+        if (!empty($property)) $this->db->where('property', $property);
+        if (!empty($department)) $this->db->where('type', $department);
+        if (!empty($created_id) && !empty($created_role)) {
+            $this->db->where('created_by', $created_id)->where('creator_user_role', $created_role);
+        }
+        if (!empty($assigned_id) && !empty($assigned_role)) {
+            $this->db->where('assigned_to', $assigned_id)->where('assigned_person_user_role', $assigned_role);
+        }
+        if (!empty($channel)) $this->db->where('user_channel', $channel);
+        if (!empty($disposition)) $this->db->where('disposition', $disposition);
+        $data['today_followups'] = $this->db->count_all_results('leads');
+        $won_and_lost = $data['Lead_Won'] + $data['Lead_Lost'];
+        $data['conversion_rate'] = $won_and_lost > 0 ? ($data['Lead_Won'] / $won_and_lost) * 100 : 0;
         echo json_encode($data);
     }
 

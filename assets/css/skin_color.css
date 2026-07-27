@@ -82,7 +82,8 @@ File: scss
   background: #ffffff !important;
   color: #ffffff; }
 .light-skin .sidebar a {
-  color: #000000; }
+  color: #000000bd;
+  }
   .light-skin .sidebar a:hover {
     text-decoration: none; }
 .light-skin .sidebar-form {

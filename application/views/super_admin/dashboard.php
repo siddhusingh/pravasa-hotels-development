@@ -10,53 +10,22 @@ text.highcharts-credits {
 </style>
 
 <style>
-.lead-kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-    margin: 0 !important;
-}
 
-.lead-kpi-row .col-xl-3.col-md-6.col-12 {
-    margin-bottom: 14px;
-}
-
-.lead-kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-    margin: 0 !important;
-}
-
-
-
-.lead-kpi-row>[class*="col-"] {
-    width: auto;
-    max-width: none;
-    padding: 0;
-}
-
-.lead-kpi-row a {
-    display: block;
-    height: 100%;
-    color: inherit;
-    text-decoration: none;
-}
 
 .premium-card {
     position: relative;
     box-sizing: border-box;
-    min-height: 148px;
-    height: 100%;
     overflow: hidden;
     padding: 16px;
-    border: 1px solid #e9edf6;
-    border-radius: 17px;
+    /* border: 1px solid #e9edf6; */
+    border-radius: 8px;
     background: #fff;
     box-shadow: 0 7px 20px rgba(38, 27, 76, .06);
     transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
-    padding-top: 8px
+    padding-top: 8px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    /* box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px; */
 }
 
 .premium-card:hover {
@@ -80,15 +49,15 @@ text.highcharts-credits {
 
 .premium-card::after {
     content: "";
-    position: absolute;
+    /* position: absolute;
     z-index: 0;
-    right: -54px;
+    right: -46px;
     bottom: -66px;
     width: 160px;
     height: 160px;
     border-radius: 50%;
     background: radial-gradient(circle, rgb(159 139 231 / 23%), rgb(159 139 231 / 3%) 68%);
-    pointer-events: none;
+    pointer-events: none; */
 }
 
 .premium-card>* {
@@ -98,8 +67,7 @@ text.highcharts-credits {
 
 .card-top {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
     gap: 10px;
     height: 44px;
     margin: 0;
@@ -107,20 +75,26 @@ text.highcharts-credits {
 }
 
 .icon-box {
-    position: absolute;
-    top: 0px;
-    left: 0px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 13px;
+    border-radius: 50%;
     color: #fff;
     font-size: 18px;
-    box-shadow: 0 8px 16px rgba(31, 41, 55, .18);
+    /* box-shadow: 0 8px 16px rgba(31, 41, 55, .18); */
 }
 
+.row.main_row_data_desh .col-sm-2.col-12 .icon-box {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+}   
+.row.main_row_data_desh .col-sm-2.col-12 .stage-title {
+    font-size: 12px;
+    white-space: pre-line;
+}
 .growth {
     display: inline-flex;
     align-items: center;
@@ -145,63 +119,61 @@ text.highcharts-credits {
 }
 
 .stage-title {
-    position: absolute;
-    top: 73px;
-    left: 16px;
-    right: 16px;
     margin: 0;
     color: #000;
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 400;
     letter-spacing: .035em;
     line-height: 1.2;
-    text-transform: uppercase;
+    text-transform: unset;
     white-space: nowrap;
+    position: relative;
+    top: 3px;
 }
 
 .lead-count {
-    position: absolute;
-    top: 73px;
-    /* left: 16px; */
-    right: 16px;
     margin: 0;
     color: #101828;
-    font-size: 30px;
-    font-weight: 800;
+    font-size: 26px;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: -.05em;
+    margin-top:9px ;
 }
 
+.row.main_row_data_desh .col-sm-2.col-12 .lead-count {
+    margin: 0;
+    color: #101828;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -.05em;
+    margin-top: 9px;
+}
+.row.main_row_data_desh .col-sm-2.col-12 .revenue-box {
+    font-size: 13px!important;
+}
 .lead-count[data-lead-status="total_revenue"] {
     font-size: 28px;
 }
 
-/* .sparkline {
-    position: absolute;
-    z-index: 1;
-    right: 16px;
-    bottom: -6px;
-    left: 16px;
-    display: block;
-    height: 40px;
-    margin: 0;
-    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%239F8BE7' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='%239F8BE7' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M1 35 C14 44 23 38 34 30 S55 23 68 31 S89 39 103 26 S124 12 138 23 S158 38 174 29 S194 18 208 26 S229 38 244 25 S263 18 279 9 L279 48 L1 48Z' fill='url(%23g)'/%3E%3Cpath d='M1 35 C14 44 23 38 34 30 S55 23 68 31 S89 39 103 26 S124 12 138 23 S158 38 174 29 S194 18 208 26 S229 38 244 25 S263 18 279 9' fill='none' stroke='%239F8BE7' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='103' cy='26' r='2.7' fill='%239F8BE7'/%3E%3Ccircle cx='138' cy='23' r='2.7' fill='%239F8BE7'/%3E%3Ccircle cx='279' cy='9' r='2.7' fill='%239F8BE7'/%3E%3C/svg%3E");
-} */
-
 .sparkline {
-    position: absolute;
-    z-index: 1;
+        /* position: absolute; */
+    /* z-index: 1; */
     /* right: 0px; */
-    bottom: -3px;
-    left: -1px;
+    bottom: -11px;
+    left: -27px;
     display: block;
-    height: 52px;
+    height: 60px;
     margin: 0;
-    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%239F8BE7' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='%239F8BE7' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M1 35 C14 44 23 38 34 30 S55 23 68 31 S89 39 103 26 S124 12 138 23 S158 38 174 29 S194 18 208 26 S229 38 244 25 S263 18 279 9 L279 48 L1 48Z' fill='url(%23g)'/%3E%3Cpath d='M1 35 C14 44 23 38 34 30 S55 23 68 31 S89 39 103 26 S124 12 138 23 S158 38 174 29 S194 18 208 26 S229 38 244 25 S263 18 279 9' fill='none' stroke='%239F8BE7' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='103' cy='26' r='2.7' fill='%239F8BE7'/%3E%3Ccircle cx='138' cy='23' r='2.7' fill='%239F8BE7'/%3E%3Ccircle cx='279' cy='9' r='2.7' fill='%239F8BE7'/%3E%3C/svg%3E");
-    width: 278px;
-    background-size: cover;
-    transform: rotate(-7deg);
+    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%233B82F6' stop-opacity='.18'/%3E%3Cstop offset='1' stop-color='%233B82F6' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M20 120 L20 82 C45 82 70 82 95 81 C115 81 130 79 145 73 C158 68 170 69 182 63 C194 57 205 58 217 48 C228 39 240 34 252 40 C263 46 273 43 284 33 C294 24 306 30 317 25 C328 20 340 4 352 2 C364 6 375 20 387 12 C394 7 398 2 400 0 L400 120 Z' fill='url(%23g)'/%3E%3Cpath d='M20 82 C45 82 70 82 95 81 C115 81 130 79 145 73 C158 68 170 69 182 63 C194 57 205 58 217 48 C228 39 240 34 252 40 C263 46 273 43 284 33 C294 24 306 30 317 25 C328 20 340 4 352 2 C364 6 375 20 387 12 C394 7 398 2 400 0' fill='none' stroke='%233B82F6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='400' cy='0' r='4' fill='%233B82F6'/%3E%3C/svg%3E");
+        background-size: cover;
+    transform: rotate(-5deg);
     opacity: 0.3;
+    width: 271px;
+}
+.row.main_row_data_desh .col-sm-2.col-12 .sparkline {
+    display: none;
 }
 
 .sparkline span {
@@ -241,22 +213,24 @@ text.highcharts-credits {
 }
 
 .revenue-box {
-    position: absolute;
     z-index: 2;
-    left: 16px;
-    bottom: 5px;
     display: inline-flex;
     align-items: center;
-    min-height: 27px;
+    /* min-height: 27px; */
     padding: 6px 9px;
     border-radius: 9px;
-    background: #eaf8ef !important;
+    /* background: #eaf8ef !important; */
     color: #159947 !important;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 500;
     line-height: 1;
+    background: transparent;
+    margin-top: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
 }
-
 .lead-count[data-lead-status="total_revenue"]+.sparkline+.revenue-box {
     right: 16px;
     bottom: 5px;
@@ -266,27 +240,33 @@ text.highcharts-credits {
 }
 
 .bg-red {
-    background: linear-gradient(135deg, #fb7185, #e91e4d) !important;
+    background: #e91e4d12;
+    color: #e91e4d;
 }
 
 .bg-green {
-    background: linear-gradient(135deg, #26cf91, #00a76f) !important;
+    background: #00a76f10;
+    color: #00a76f;
 }
 
 .bg-blue {
-    background: linear-gradient(135deg, #4b95ff, #1768e8) !important;
+    background: #1767e811!important;
+    color: #1768e8;
 }
 
 .bg-orange {
-    background: linear-gradient(135deg, #ffb51c, #f57c00) !important;
+    background: #f57b000f!important;
+    color: #f57c00;
 }
 
 .bg-cyan {
-    background: linear-gradient(135deg, #1cc6df, #0797b5) !important;
+    background: #f57b000a !important;
+    color: #f57c00;
 }
 
 .bg-purple {
-    background: linear-gradient(135deg, #a663ff, #7021db) !important;
+    background: #6f21db11!important;
+    color: #7021db
 }
 
 .premium-card:has(.bg-red) .sparkline {
@@ -310,12 +290,12 @@ text.highcharts-credits {
 }
 
 .premium-card:has(.bg-red) .revenue-box {
-    background: #fff0f1 !important;
+    /* background: #fff0f1 !important; */
     color: #e91e4d !important;
 }
 
 .premium-card:has(.bg-orange) .revenue-box {
-    background: #fff4e6 !important;
+    /* background: #fff4e6 !important; */
     color: #ed7c00 !important;
 }
 
@@ -369,8 +349,7 @@ text.highcharts-credits {
 
 
                     <div class="box_supar_admin">
-                        <div class="box-header no-border pb-0">
-                        </div>
+                      
                         <div class="box-body">
                             <div class="row">
                                 <div id="">
@@ -410,9 +389,9 @@ text.highcharts-credits {
 
                                     #filter_lead_stats_count .select2-container,
                                     .quick-filter-box .select2-container {
-                                        height: 56px !important;
-                                        max-height: 56px !important;
-                                        min-height: 56px !important;
+                                        height: 46px !important;
+                                        max-height: 46px !important;
+                                        min-height: 46px !important;
                                         width: 100% !important;
                                     }
 
@@ -422,17 +401,17 @@ text.highcharts-credits {
                                         border: 1px solid #dbe3ee;
                                         border-radius: 12px;
                                         box-sizing: border-box !important;
-                                        height: 56px !important;
-                                        min-height: 56px !important;
-                                        max-height: 56px !important;
+                                        height: 46px !important;
+                                        min-height: 46px !important;
+                                        max-height: 46px !important;
                                         padding: 0 14px !important;
                                     }
 
                                     #filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__rendered,
                                     .quick-filter-box .select2-container .select2-selection--single .select2-selection__rendered {
                                         color: #1e293b;
-                                        height: 54px !important;
-                                        line-height: 54px !important;
+                                        height: 46px !important;
+                                        line-height: 46px !important;
                                         padding-bottom: 0 !important;
                                         padding-left: 0 !important;
                                         padding-right: 28px !important;
@@ -441,7 +420,7 @@ text.highcharts-credits {
 
                                     #filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__arrow,
                                     .quick-filter-box .select2-container .select2-selection--single .select2-selection__arrow {
-                                        height: 54px !important;
+                                        height: 46px !important;
                                         right: 8px !important;
                                         top: 0 !important;
                                     }
@@ -484,14 +463,116 @@ text.highcharts-credits {
                                     }
                                     </style>
 
+<style>
+    .row.main_row_data_desh .col-sm-3.col-12 {
+    width: 20%!important;
+    margin-bottom: 15px;
+}
+    .row.main_row_data_desh .col-sm-2.col-12 {
+    width: 14.28%!important;
+    margin-bottom: 15px;
+}
+</style>
 
+<div class="admin_name_details">
+
+    <div class="admin_left">
+
+        <h2>
+            Good Morning,
+            <?= htmlspecialchars($this->session->userdata('name')); ?>
+            👋
+        </h2>
+
+        <p>
+            Here's what's happening with your lead pipeline today.
+        </p>
+
+    </div>
+
+    <div class="admin_right">
+
+        <a href="<?= base_url('manage-leads/add') ?>" class="btn btn-primary-light btn-sm ">
+            <i class="fa fa-plus"></i>
+            Add Lead
+        </a>
+        <a href="" class="btn btn-primary-light btn-sm ">
+            <!-- Total Leads -->
+                                         
+            Total Leads : <span id="totalLeads"><?= $total_leads ?></span>
+                                           
+        </a>
+
+    </div>
+
+</div>
+<style>
+    .admin_name_details{
+
+    background:#fff;
+
+    border-bottom:1px solid #edf2f7;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+    margin-bottom: 18px 
+}
+
+.admin_left h2 {
+    margin: 0;
+    font-size: 27px;
+    font-weight: 600;
+    color: #000000;
+}
+
+.admin_left p{
+
+    margin-top:8px;
+
+    color:#6b7280;
+
+    font-size:14px;
+
+}
+
+.admin_right{
+
+    display:flex;
+
+    gap:15px;
+
+}
+a#toggleFilterBtn {
+    border-radius: 8px !important;
+    /* border: 1px solid #dbe3ee; */
+    font-size: 13px !important;
+    /* box-shadow: none !important; */
+    transition: 0.25s ease;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 2px 11px;
+    background-color: #fff !important;
+    border: 1px solid #00000000 !important;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px !important;
+    height: 46px;
+    -webkit-border-radius: 8px !important;
+    display: flex;
+    align-items: center;
+    padding-left: 11px;
+    gap: 9px;
+    color: #000;
+}
+form#filter_lead_stats_count .col-sm-3 {
+    width: 20%;
+}
+</style>
 
                                     <form id="filter_lead_stats_count">
                                         <div class="row align-items-end">
-
                                             <!-- Property -->
-                                            <div class="col-md-3">
-                                                <label for="top_filter_property" class="form-label">Property</label>
+                                            <div class="col-sm-3">
+                                                <!-- <label for="top_filter_property" class="form-label">Property</label> -->
                                                 <select name="property" id="top_filter_property" class="form-select">
                                                     <option value="">All Properties</option>
                                                     <?php foreach ($properties as $property) { ?>
@@ -504,8 +585,8 @@ text.highcharts-credits {
                                             </div>
 
                                             <!-- Department -->
-                                            <div class="col-md-3">
-                                                <label for="top_filter_department" class="form-label">Department</label>
+                                            <div class="col-sm-3">
+                                                <!-- <label for="top_filter_department" class="form-label">Department</label> -->
                                                 <select name="department" id="top_filter_department"
                                                     class="form-select">
                                                     <option value="">All Departments</option>
@@ -519,9 +600,9 @@ text.highcharts-credits {
                                             </div>
 
                                             <!-- Assigned To -->
-                                            <div class="col-md-3">
-                                                <label for="top_filter_assigned_to" class="form-label">Assigned
-                                                    User</label>
+                                            <div class="col-sm-3">
+                                                <!-- <label for="top_filter_assigned_to" class="form-label">Assigned
+                                                    User</label> -->
                                                 <select name="assigned_to" id="top_filter_assigned_to"
                                                     class="form-control">
                                                     <option value="">All Assigned Users</option>
@@ -540,8 +621,8 @@ text.highcharts-credits {
                                             </div>
 
                                             <!-- Created By -->
-                                            <div class="col-md-3">
-                                                <label for="top_filter_created_by" class="form-label">Created By</label>
+                                            <div class="col-sm-3">
+                                                <!-- <label for="top_filter_created_by" class="form-label">Created By</label> -->
                                                 <select name="created_by" id="top_filter_created_by"
                                                     class="form-control">
                                                     <option value="">All Creators</option>
@@ -559,9 +640,15 @@ text.highcharts-credits {
                                                 </select>
                                             </div>
 
+                                            <div class="col-sm-3">
+                                                <a type="button" id="toggleFilterBtn" class="">
+                                                    <i class="fa fa-filter"></i> More Filters
+                                                </a>
+                                            </div>
+
                                             <!-- Lead Source -->
-                                            <div class="col-md-3">
-                                                <label for="top_filter_channel" class="form-label">Lead Source</label>
+                                            <div class="col-sm-3 more-filter d-none">
+                                                <!-- <label for="top_filter_channel" class="form-label">Lead Source</label> -->
                                                 <select name="channel" id="top_filter_channel"
                                                     class="form-select filter-input">
                                                     <option value="">All Sources</option>
@@ -573,8 +660,8 @@ text.highcharts-credits {
                                             </div>
 
                                             <!-- Stage -->
-                                            <div class="col-md-2">
-                                                <label for="top_filter_disposition" class="form-label">Stage</label>
+                                            <div class="col-sm-3 more-filter d-none">
+                                                <!-- <label for="top_filter_disposition" class="form-label">Stage</label> -->
                                                 <select name="disposition" id="top_filter_disposition"
                                                     class="form-select filter-input">
                                                     <option value="">All Stages</option>
@@ -590,25 +677,22 @@ text.highcharts-credits {
                                             </div>
 
                                             <!-- Start Date -->
-                                            <div class="col-md-2">
-                                                <label for="top_filter_start_date" class="form-label">Start Date</label>
+                                            <div class="col-sm-3 more-filter d-none">
+                                                <!-- <label for="top_filter_start_date" class="form-label">Start Date</label> -->
                                                 <input type="date" name="start_date" id="top_filter_start_date"
                                                     class="form-control"
                                                     value="<?= $this->input->get('start_date'); ?>">
                                             </div>
 
                                             <!-- End Date -->
-                                            <div class="col-md-2">
-                                                <label for="top_filter_end_date" class="form-label">End Date</label>
+                                            <div class="col-sm-3 more-filter d-none">
+                                                <!-- <label for="top_filter_end_date" class="form-label">End Date</label> -->
                                                 <input type="date" name="end_date" id="top_filter_end_date"
                                                     class="form-control" value="<?= $this->input->get('end_date'); ?>">
                                             </div>
 
-                                            <!-- Total Leads -->
-                                            <div class="col-md-3">
-                                                <h5>Total Leads : <span id="totalLeads"><?= $total_leads ?></span></h5>
-                                            </div>
-
+                                            
+                                            
                                         </div>
                                     </form>
 
@@ -618,548 +702,368 @@ text.highcharts-credits {
                         </div>
 
                         <div class="box-body" id="top_stats_html">
-
-
-
-
-
-
-
-                            <div class="row lead-kpi-row">
+                            <div class="row main_row_data_desh">
 
                                 <!-- Total Open -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?status=Open') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-red">
-                                                    <i class="fa fa-folder-open"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 18%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Total Open</div>
-                                            <div class="lead-count" data-lead-status="Open">
-                                                <?= $lead_status_counts['Open']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" style="background:#fef2f2;color:#dc2626;">
-                                                ₹ <?= number_format($lead_revenue['Open']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-red">
+            <i class="fa fa-folder-open"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Total Open</div>
+
+            <div class="lead-count" data-lead-status="Open">
+                <?= $lead_status_counts['Open']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box">
+        ₹ <?= number_format($lead_revenue['Open']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
-
 
                                 <!-- In Progress -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?status=In+Progress') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-cyan">
-                                                    <i class="fa fa-spinner"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 12%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">In Progress</div>
-                                            <div class="lead-count" data-lead-status="In Progress">
-                                                <?= $lead_status_counts['In Progress']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box">
-                                                ₹ <?= number_format($lead_revenue['In Progress']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-cyan">
+            <i class="fa fa-spinner"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">In Progress</div>
+
+            <div class="lead-count" data-lead-status="In Progress">
+                <?= $lead_status_counts['In Progress']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box">
+        ₹ <?= number_format($lead_revenue['In Progress']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
 
-
-
                                 <!-- Total Closed -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?status=Closed') ?>">
                                         <div class="premium-card">
                                             <div class="card-top">
                                                 <div class="icon-box bg-green">
                                                     <i class="fa fa-check-circle"></i>
                                                 </div>
-                                                <span class="growth down">
-                                                    <i class="fa fa-arrow-down"></i> 5%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Total Closed</div>
-                                            <div class="lead-count" data-lead-status="Closed">
-                                                <?= $lead_status_counts['Closed']; ?>
+                                                <div class="">
+                                                    <div class="stage-title">Total Closed</div>
+                                                    <div class="lead-count" data-lead-status="Closed">
+                                                        <?= $lead_status_counts['Closed']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>                                      
+                                            <div class="revenue-box">
+                                                ₹ <?= number_format($lead_revenue['Closed']); ?> 
                                             </div>
                                             <div class="sparkline">
                                                 <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
                                             </div>
-                                            <div class="revenue-box">
-                                                ₹ <?= number_format($lead_revenue['Closed']); ?>
-                                            </div>
                                         </div>
                                     </a>
                                 </div>
-
-
 
                                 <!-- Not Assigned -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?status=Not-assigned') ?>">
-                                        <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-orange">
-                                                    <i class="fa fa-user-times"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 23%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Not Assigned</div>
-                                            <div class="lead-count" data-lead-status="Not Assigned">
-                                                <?= $lead_status_counts['Not_Assigned']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" style="background:#fff7ed;color:#ea580c;">
-                                                ₹ <?= number_format($lead_revenue['Not_Assigned']); ?>
-                                            </div>
-                                        </div>
+                                       <div class="premium-card">
+    <div class="card-top">
+        <div class="icon-box bg-orange">
+            <i class="fa fa-user-times"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Not Assigned</div>
+
+            <div class="lead-count" data-lead-status="Not Assigned">
+                <?= $lead_status_counts['Not_Assigned']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box">
+        ₹ <?= number_format($lead_revenue['Not_Assigned']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
 
-                            </div>
-
-
-
-
-                            <style type="text/plain">
-                                /* ===== Modern Horizontal KPI Card ===== */
-
-                            .stage-card {
-                                background: #ffffff;
-                                border-radius: 18px;
-                                padding: 16px 18px;
-                                border: 1px solid #edf1f7;
-                                box-shadow: 0 8px 22px rgba(0, 0, 0, .05);
-                                transition: .30s ease;
-                                height: 100%;
-                                position: relative;
-                                overflow: hidden;
-                                box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
-                            }
-
-                            .stage-card:hover {
-                                transform: translateY(-4px);
-                                box-shadow: 0 14px 28px rgba(0, 0, 0, .08);
-                            }
-
-                            .stage-card:before {
-                                content: "";
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 5px;
-                                height: 100%;
-                                border-radius: 20px;
-                            }
-
-                            .border-blue:before {
-                                background: #2563eb;
-                            }
-
-                            .border-orange:before {
-                                background: #ea580c;
-                            }
-
-                            .border-cyan:before {
-                                background: #0891b2;
-                            }
-
-                            .border-purple:before {
-                                background: #7c3aed;
-                            }
-
-                            .stage-flex {
-                                display: flex;
-                                align-items: center;
-                                justify-content: space-between;
-                                gap: 15px;
-                            }
-
-                            .left-content {
-                                flex: 1;
-                            }
-
-                           .stage-title {
-    position: absolute;
-    top: 73px;
-    left: 16px;
-    right: 16px;
-    margin: 0;
-    color: #000000;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: .035em;
-    line-height: 1.2;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-                            .lead-count {
-                                font-size: 28px;
-                                font-weight: 800;
-                                line-height: 1;
-                                margin-bottom: 8px;
-                            }
-
-                            .revenue-box {
-                                display: inline-block;
-                                font-size: 12px;
-                                font-weight: 700;
-                                padding: 5px 10px;
-                                border-radius: 30px;
-                                background: #f0fdf4;
-                                color: #16a34a;
-                            }
-
-                            .icon-box {
-                                width: 58px;
-                                height: 58px;
-                                border-radius: 16px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 24px;
-                                color: #fff;
-                                flex-shrink: 0;
-                            }
-
-                            /* Colors */
-                            .bg-blue {
-                                background: linear-gradient(135deg, #3b82f6, #2563eb);
-                            }
-
-                            .bg-orange {
-                                background: linear-gradient(135deg, #f59e0b, #ea580c);
-                            }
-
-                            .bg-cyan {
-                                background: linear-gradient(135deg, #06b6d4, #0891b2);
-                            }
-
-                            .bg-purple {
-                                background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-                            }
-
-                            @media(max-width:768px) {
-                                .lead-count {
-
-                                    font-size: 22px;
-                                }
-
-                                .icon-box {
-                                    width: 48px;
-                                    height: 48px;
-                                    font-size: 20px;
-                                }
-                            }
-                            </style>
-
-
-
-                            <div class="row lead-kpi-row">
-
-                                <!-- Not Contacted -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                 <!-- Not Contacted -->
+                                <div class="col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Not Contacted') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-blue">
-                                                    <i class="fa fa-phone"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 30%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Not Contacted</div>
-                                            <div class="lead-count" data-lead-status="Not_Contacted">
-                                                <?= $lead_status_counts['Not_Contacted']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Not_Contacted">
-                                                ₹ <?= number_format($lead_revenue['Not_Contacted']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-blue">
+            <i class="fa fa-phone"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Not Contacted</div>
+
+            <div class="lead-count" data-lead-status="Not_Contacted">
+                <?= $lead_status_counts['Not_Contacted']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Not_Contacted">
+        ₹ <?= number_format($lead_revenue['Not_Contacted']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
-
                                 <!-- Quotation Sent -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Quotation Sent') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-orange">
-                                                    <i class="fa fa-file-text"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 15%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Quotation Sent</div>
-                                            <div class="lead-count" data-lead-status="Quotation_Sent">
-                                                <?= $lead_status_counts['Quotation_Sent']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Quotation_Sent">
-                                                ₹ <?= number_format($lead_revenue['Quotation_Sent']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-orange">
+            <i class="fa fa-file-text"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Quotation Sent</div>
+
+            <div class="lead-count" data-lead-status="Quotation_Sent">
+                <?= $lead_status_counts['Quotation_Sent']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Quotation_Sent">
+        ₹ <?= number_format($lead_revenue['Quotation_Sent']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
 
                                 <!-- Negotiations -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Negotiations') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-cyan">
-                                                    <i class="fa fa-handshake"></i>
-                                                </div>
-                                                <span class="growth down">
-                                                    <i class="fa fa-arrow-down"></i> 3%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Negotiations</div>
-                                            <div class="lead-count" data-lead-status="Negotiations">
-                                                <?= $lead_status_counts['Negotiations']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Negotiations">
-                                                ₹ <?= number_format($lead_revenue['Negotiations']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-cyan">
+            <i class="fa fa-handshake"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Negotiations</div>
+
+            <div class="lead-count" data-lead-status="Negotiations">
+                <?= $lead_status_counts['Negotiations']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Negotiations">
+        ₹ <?= number_format($lead_revenue['Negotiations']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
 
                                 <!-- Contract Done -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Contract Done') ?>">
-                                        <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-purple">
-                                                    <i class="fa fa-file"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 8%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Contract Done</div>
-                                            <div class="lead-count" data-lead-status="Contract_Done">
-                                                <?= $lead_status_counts['Contract_Done']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Contract_Done">
-                                                ₹ <?= number_format($lead_revenue['Contract_Done']); ?>
-                                            </div>
-                                        </div>
+                                       <div class="premium-card">
+    <div class="card-top">
+        <div class="icon-box bg-purple">
+            <i class="fa fa-file"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Contract Done</div>
+
+            <div class="lead-count" data-lead-status="Contract_Done">
+                <?= $lead_status_counts['Contract_Done']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Contract_Done">
+        ₹ <?= number_format($lead_revenue['Contract_Done']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
-                            </div>
-
-
-
-                            <div class="row  lead-kpi-row">
 
                                 <!-- Advance Received -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Advance Received') ?>">
-                                        <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-orange">
-                                                    <i class="fa fa-money-bill"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 10%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Advance Received</div>
-                                            <div class="lead-count" data-lead-status="Advance_Received">
-                                                <?= $lead_status_counts['Advance_Received']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Advance_Received">
-                                                ₹ <?= number_format($lead_revenue['Advance_Received']); ?>
-                                            </div>
-                                        </div>
+                                       <div class="premium-card">
+    <div class="card-top">
+        <div class="icon-box bg-orange">
+            <i class="fa fa-money-bill"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Advance Received</div>
+
+            <div class="lead-count" data-lead-status="Advance_Received">
+                <?= $lead_status_counts['Advance_Received']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Advance_Received">
+        ₹ <?= number_format($lead_revenue['Advance_Received']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
 
                                 <!-- Lead Won -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Lead Won') ?>">
                                         <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-green">
-                                                    <i class="fa fa-trophy"></i>
-                                                </div>
-                                                <span class="growth up">
-                                                    <i class="fa fa-arrow-up"></i> 40%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Lead Won</div>
-                                            <div class="lead-count" data-lead-status="Lead_Won">
-                                                <?= $lead_status_counts['Lead_Won']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" data-lead-revenue="Lead_Won">
-                                                ₹ <?= number_format($lead_revenue['Lead_Won']); ?>
-                                            </div>
-                                        </div>
+    <div class="card-top">
+        <div class="icon-box bg-green">
+            <i class="fa fa-trophy"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Lead Won</div>
+
+            <div class="lead-count" data-lead-status="Lead_Won">
+                <?= $lead_status_counts['Lead_Won']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Lead_Won">
+        ₹ <?= number_format($lead_revenue['Lead_Won']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
-
 
                                 <!-- Lead Lost -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <a href="<?= base_url('manage-leads?disposition=Lead Lost') ?>">
-                                        <div class="premium-card">
-                                            <div class="card-top">
-                                                <div class="icon-box bg-red">
-                                                    <i class="fa fa-times-circle"></i>
-                                                </div>
-                                                <span class="growth down">
-                                                    <i class="fa fa-arrow-down"></i> 15%
-                                                </span>
-                                            </div>
-                                            <div class="stage-title">Lead Lost</div>
-                                            <div class="lead-count" data-lead-status="Lead_Lost">
-                                                <?= $lead_status_counts['Lead_Lost']; ?>
-                                            </div>
-                                            <div class="sparkline">
-                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                            </div>
-                                            <div class="revenue-box" style="background:#fef2f2;color:#dc2626;"
-                                                data-lead-revenue="Lead_Lost">
-                                                ₹ <?= number_format($lead_revenue['Lead_Lost']); ?>
-                                            </div>
-                                        </div>
+                                       <div class="premium-card">
+    <div class="card-top">
+        <div class="icon-box bg-red">
+            <i class="fa fa-times-circle"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Lead Lost</div>
+
+            <div class="lead-count" data-lead-status="Lead_Lost">
+                <?= $lead_status_counts['Lead_Lost']; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box" data-lead-revenue="Lead_Lost">
+        ₹ <?= number_format($lead_revenue['Lead_Lost']); ?>
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                     </a>
                                 </div>
 
-
                                 <!-- Total Revenue -->
-                                <div class="col-xl-3 col-md-6 col-12">
+                                <div class="col-sm-2 col-12">
                                     <div class="premium-card">
-                                        <div class="card-top">
-                                            <div class="icon-box bg-purple">
-                                                <i class="fa fa-inr"></i>
-                                            </div>
-                                            <span class="growth up">
-                                                <i class="fa fa-arrow-up"></i> 25%
-                                            </span>
-                                        </div>
-                                        <div class="stage-title">Total <br> Revenue</div>
-                                        <div class="lead-count" data-lead-status="total_revenue">
-                                            ₹ <?= number_format($total_revenue, 2); ?>
-                                        </div>
-                                        <div class="sparkline">
-                                            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                                        </div>
-                                        <div class="revenue-box">
-                                            Overall Collection
-                                        </div>
-                                    </div>
+    <div class="card-top">
+        <div class="icon-box bg-purple">
+            <i class="fa fa-inr"></i>
+        </div>
+
+        <div>
+            <div class="stage-title">Total Revenue</div>
+
+            <div class="lead-count" data-lead-status="total_revenue">
+                ₹ <?= number_format($total_revenue, 2); ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="revenue-box">
+        Overall Collection
+    </div>
+
+    <div class="sparkline">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
                                 </div>
-
                             </div>
-
-
-
-
-
                         </div>
                     </div>
                 </div>
 
 
-
-
-                <style>
-                /* ===== Quick Filters Modern UI ===== */
-
-                .quick-filter-box {
-                    background: #ffffff;
-                    border: 1px solid #e9eef5;
-                    border-radius: 18px;
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
-                    overflow: hidden;
-                }
-
-                .quick-filter-box .box-header {
-                    padding: 18px 20px 10px;
-                    border-bottom: 1px solid #eef2f7;
-                    background: linear-gradient(135deg, #f8fafc, #ffffff);
-                }
-
-                .quick-filter-box .box-title {
-                    margin: 0;
-                    font-size: 18px;
-                    font-weight: 700;
-                    color: #1e293b;
-                }
-
-                .quick-filter-box .box-body {
-                    padding: 18px 20px;
-                }
-
-                .quick-filter-box .form-label {
-                    font-size: 13px;
-                    font-weight: 700;
-                    color: #000;
-                    margin-bottom: 6px;
-                }
-                </style>
-
-
-
-                <div class="col-xxl-12 col-12">
-                    <div class="box quick-filter-box">
-
-                        <div class="box-header no-border pb-0">
-                            <h4 class="box-title">Quick Filters for Charts</h4>
-                        </div>
-
-                        <div class="box-body">
-                            <div class="row">
+                    <div class="quick-filter-box box-body">
                                 <form>
-                                    <div class="">
+                                    <div class="quick-filter-box_input_desh">
 
                                         <form method="GET" action="<?= base_url('manage-leads'); ?>" class="mb-4 px-3">
 
@@ -1167,7 +1071,7 @@ text.highcharts-credits {
 
                                                 <!-- Property -->
                                                 <div class="col-md-3">
-                                                    <label for="property" class="form-label">Property</label>
+                                                    <!-- <label for="property" class="form-label">Property</label> -->
                                                     <select name="property_bottom" class="form-select">
                                                         <option value="">All Properties</option>
                                                         <?php foreach ($properties as $property) { ?>
@@ -1181,7 +1085,7 @@ text.highcharts-credits {
 
                                                 <!-- Department -->
                                                 <div class="col-md-3">
-                                                    <label for="department" class="form-label">Department</label>
+                                                    <!-- <label for="department" class="form-label">Department</label> -->
                                                     <select name="department_bottom" class="form-select">
                                                         <option value="">All Departments</option>
                                                         <?php foreach ($departments as $dept) { ?>
@@ -1194,21 +1098,21 @@ text.highcharts-credits {
                                                 </div>
 
                                                 <!-- Start Date -->
-                                                <div class="col-md-2">
-                                                    <label for="start_date" class="form-label">Start Date</label>
+                                                <div class="col-md-3">
+                                                    <!-- <label for="start_date" class="form-label">Start Date</label> -->
                                                     <input type="date" name="start_date_bottom" class="form-control"
                                                         value="<?= $this->input->get('start_date'); ?>">
                                                 </div>
 
                                                 <!-- End Date -->
-                                                <div class="col-md-2">
-                                                    <label for="end_date" class="form-label">End Date</label>
+                                                <div class="col-md-3">
+                                                    <!-- <label for="end_date" class="form-label">End Date</label> -->
                                                     <input type="date" name="end_date_bottom" class="form-control"
                                                         value="<?= $this->input->get('end_date'); ?>">
                                                 </div>
 
                                                 <!-- Button -->
-                                                <div class="col-md-2 d-grid">
+                                                <div class="col-md-1 d-grid">
                                                     <button type="button" id="filter_bottom_button"
                                                         class="btn btn-primary">
                                                         Filter
@@ -1221,13 +1125,10 @@ text.highcharts-credits {
 
                                     </div>
                                 </form>
-                            </div>
-                        </div>
 
                     </div>
-                </div>
 
-                <div class="chart_box_main">
+                <div class="chart_box_main box-body">
                     <div class="chart_box_main_list row">
                         <div class="col-sm-6 chart_box_main_items">
                             <canvas id="chart_department_line"></canvas>
@@ -1248,6 +1149,9 @@ text.highcharts-credits {
                         </div>
                         <div class="col-sm-6 chart_box_main_items">
                             <canvas id="chart_polar_area"></canvas>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <div id="chart_zoom_line" style="height:360px;width:100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -1307,18 +1211,23 @@ text.highcharts-credits {
         <script src="https://code.highcharts.com/modules/accessibility.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://code.highcharts.com/modules/funnel.js"></script>
+        <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 
         <style>
+            .chart_zoom_line {
+                color:#000
+            }
         .chart_box_main_items canvas {
             background: #fff;
             border-radius: 25px;
-            padding: 20px;
+            padding: 10px;
             box-shadow:
                 0 15px 35px rgba(0, 0, 0, .12),
                 0 5px 10px rgba(0, 0, 0, .08);
             width: 100%;
-            height: 360px !important;
-            margin-bottom: 30px
+            height: 260px !important;
+            margin-bottom: 30px;
+             object-fit: contain;
         }
 
         .sales-funnel-box #sales_funnel_chart {
@@ -1435,7 +1344,89 @@ text.highcharts-credits {
         <script src="https://code.highcharts.com/modules/accessibility.js"></script>
         <script src="https://code.highcharts.com/modules/full-screen.js"></script>
 
+<script>
+    window.addEventListener("load", function () {
 
+    var dataPoints = [];
+    var y = 50;
+
+    for (var i = 1; i <= 60; i++) {
+
+        y += Math.random() * 10 - 5;
+
+        dataPoints.push({
+            x: new Date(2026, 6, i),
+            y: Math.round(y)
+        });
+
+    }
+
+    var chart = new CanvasJS.Chart("chart_zoom_line", {
+
+        animationEnabled: true,
+
+        zoomEnabled: true,
+        zoomType: "xy",
+
+        backgroundColor: "#ffffff",
+
+        title: {
+            text: "Lead Growth Trend",
+            fontFamily: "Poppins",
+            fontSize: 22,
+            fontWeight: "600"
+        },
+
+        axisX: {
+
+            valueFormatString: "DD MMM",
+
+            gridThickness: 0,
+
+            tickLength: 0
+
+        },
+
+        axisY: {
+
+            includeZero: false,
+
+            gridColor: "#eef2f7"
+
+        },
+
+        toolTip: {
+
+            shared: true,
+
+            cornerRadius: 8
+
+        },
+
+        data: [{
+
+            type: "splineArea",
+
+            lineThickness: 3,
+
+            color: "#3B82F6",
+
+            markerSize: 6,
+
+            markerColor: "#2563EB",
+
+            fillOpacity: .18,
+
+            dataPoints: dataPoints
+
+        }]
+
+    });
+
+    chart.render();
+
+});
+</script>
 
         <script>
         if (false) Highcharts.chart('sales_funnel_chart', {
@@ -2682,13 +2673,13 @@ text.highcharts-credits {
                         $selection[0].style.setProperty('padding', '0 14px', 'important');
                     }
                     if ($rendered.length) {
-                        $rendered[0].style.setProperty('height', '54px', 'important');
-                        $rendered[0].style.setProperty('line-height', '54px', 'important');
+                        $rendered[0].style.setProperty('height', '46px', 'important');
+                        $rendered[0].style.setProperty('line-height', '46px', 'important');
                         $rendered[0].style.setProperty('padding-top', '0', 'important');
                         $rendered[0].style.setProperty('padding-bottom', '0', 'important');
                     }
                     if ($arrow.length) {
-                        $arrow[0].style.setProperty('height', '54px', 'important');
+                        $arrow[0].style.setProperty('height', '46px', 'important');
                         $arrow[0].style.setProperty('top', '0', 'important');
                     }
                 });
@@ -2866,3 +2857,30 @@ text.highcharts-credits {
             return '₹ ' + amount.toLocaleString('en-IN');
         }
         </script>
+
+
+
+<script>
+    
+$("#toggleFilterBtn").click(function () {
+
+    $(".more-filter").slideToggle(200);
+
+    $(".more-filter").toggleClass("d-none");
+
+    if($(this).hasClass("open")){
+
+        $(this)
+            .removeClass("open")
+            .html('<i class="fa fa-filter"></i> More Filters');
+
+    }else{
+
+        $(this)
+            .addClass("open")
+            .html('<i class="fa fa-times"></i> Hide Filters');
+
+    }
+
+});
+</script>
