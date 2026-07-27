@@ -574,3 +574,5 @@ $route['view-followups-agent'] = 'agent/Leads/followups';
 
 
 //$route['superAdmin/tables/manage'] = 'Tables/manage';
+
+include APPPATH . 'config/routes/Sales.php';
