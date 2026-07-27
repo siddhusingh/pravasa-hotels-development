@@ -28,14 +28,102 @@ class WeeklyPlanner extends Sales_Controller
 
     public function fetch()
     {
-        $data['planners'] = $this->plannerQuery()->get()->result();
-        $data['is_planner_manager'] =
-            $this->salesUser->user_role === 'Sales Manager';
+        if (!$this->isPost()) {
+            show_error('Method Not Allowed', 405);
+        }
 
-        return $this->load->view(
-            'sales/weekly_planner/_table',
-            $data
+        $inputs = $this->input->post();
+        $draw = (int)($inputs['draw'] ?? 1);
+        $start = max(0, (int)($inputs['start'] ?? 0));
+        $length = (int)($inputs['length'] ?? 10);
+        $length = $length > 0 ? min($length, 100) : 10;
+        $search = trim((string)($inputs['search']['value'] ?? ''));
+        $isManager = $this->isManager();
+        $columns = $isManager
+            ? [
+                0 => 'wp.id',
+                1 => 'su.full_name',
+                2 => 'wp.planner_date',
+                3 => 'wp.activity_type',
+                5 => 'wp.description',
+                6 => 'wp.approval_status',
+                7 => 'wp.created_at'
+            ]
+            : [
+                0 => 'wp.id',
+                1 => 'wp.planner_date',
+                2 => 'wp.activity_type',
+                4 => 'wp.description',
+                5 => 'wp.approval_status',
+                6 => 'wp.created_at'
+            ];
+        $orderIndex = (int)($inputs['order'][0]['column'] ?? -1);
+        $orderColumn = $columns[$orderIndex] ?? '';
+        $orderDirection = strtoupper(
+            (string)($inputs['order'][0]['dir'] ?? 'DESC')
         );
+        if (!in_array($orderDirection, ['ASC', 'DESC'], true)) {
+            $orderDirection = 'DESC';
+        }
+
+        $this->plannerTableQuery('');
+        $recordsTotal = (int)$this->db->count_all_results();
+        $this->plannerTableQuery($search);
+        $recordsFiltered = (int)$this->db->count_all_results();
+
+        $this->plannerTableQuery($search);
+        $this->db->select(
+            'wp.*, c.company_name, cc.first_name, cc.last_name, ' .
+            'su.full_name AS sales_user_name, ' .
+            'approver.full_name AS approver_name'
+        );
+        if ($orderColumn !== '') {
+            $this->db->order_by($orderColumn, $orderDirection);
+        } elseif ($isManager) {
+            $this->db->order_by(
+                "FIELD(wp.approval_status, 'pending', 'approved')",
+                '',
+                false
+            );
+            $this->db->order_by('wp.planner_date', 'DESC');
+        } else {
+            $this->db->order_by('wp.planner_date', 'DESC');
+        }
+        $planners = $this->db
+            ->order_by('wp.id', 'DESC')
+            ->limit($length, $start)
+            ->get()
+            ->result();
+        $tableData = [];
+
+        foreach ($planners as $index => $planner) {
+            $row = [$start + $index + 1];
+            if ($isManager) {
+                $row[] = html_escape($planner->sales_user_name ?: '-');
+            }
+            $row[] = !empty($planner->planner_date)
+                ? date('d M Y', strtotime($planner->planner_date))
+                : '-';
+            $row[] = '<span class="text-capitalize">' .
+                html_escape($planner->activity_type) . '</span>';
+            $row[] = $this->plannerAccountHtml($planner);
+            $row[] = !empty($planner->description)
+                ? nl2br(html_escape($planner->description))
+                : '<span class="text-muted">-</span>';
+            $row[] = $this->plannerStatusHtml($planner, $isManager);
+            $row[] = !empty($planner->created_at)
+                ? date('d M Y h:i A', strtotime($planner->created_at))
+                : '-';
+            $row[] = $this->plannerActionHtml($planner, $isManager);
+            $tableData[] = $row;
+        }
+
+        return $this->jsonResponse([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $tableData
+        ]);
     }
 
     public function calendar()
@@ -382,6 +470,130 @@ class WeeklyPlanner extends Sales_Controller
             'message' => !empty($contacts) ? '' : 'No contacts found',
             'data' => $contacts
         ]);
+    }
+
+    private function plannerTableQuery($search)
+    {
+        $this->db
+            ->from('weekly_planner wp')
+            ->join(
+                'companies c',
+                'c.company_id = wp.company_id',
+                'left'
+            )
+            ->join(
+                'company_contacts cc',
+                'cc.contact_id = wp.contact_id',
+                'left'
+            )
+            ->join(
+                'sales_users su',
+                'su.id = wp.sales_user_id',
+                'left'
+            )
+            ->join(
+                'sales_users approver',
+                'approver.id = wp.approved_by',
+                'left'
+            )
+            ->where('wp.sales_user_id IS NOT NULL', null, false)
+            ->where('wp.is_deleted', 0);
+
+        if (!$this->isManager()) {
+            $this->db
+                ->where('wp.sales_user_id', $this->salesUserId)
+                ->where('wp.approval_status', 'approved');
+        }
+
+        if ($search !== '') {
+            $this->db
+                ->group_start()
+                ->like('su.full_name', $search)
+                ->or_like('wp.planner_date', $search)
+                ->or_like('wp.activity_type', $search)
+                ->or_like('wp.other_activity', $search)
+                ->or_like('wp.description', $search)
+                ->or_like('wp.approval_status', $search)
+                ->or_like('c.company_name', $search)
+                ->or_like('cc.first_name', $search)
+                ->or_like('cc.last_name', $search)
+                ->group_end();
+        }
+
+        return $this->db;
+    }
+
+    private function plannerAccountHtml($planner)
+    {
+        if ($planner->activity_type !== 'visit') {
+            return html_escape($planner->other_activity ?: '-');
+        }
+
+        if ($planner->account_type === 'existing') {
+            $contactName = trim(
+                ($planner->first_name ?? '') . ' ' .
+                ($planner->last_name ?? '')
+            );
+            $details = html_escape($planner->company_name ?: '-');
+            if ($contactName !== '') {
+                $details .= ' — ' . html_escape($contactName);
+            }
+
+            return '<span class="badge badge-info">Existing Customer</span>' .
+                '<div class="small mt-1">' . $details . '</div>';
+        }
+
+        $details = html_escape($planner->new_person_name ?: '-');
+        if (!empty($planner->new_person_mobile)) {
+            $details .= ' (' .
+                html_escape($planner->new_person_mobile) . ')';
+        }
+
+        return '<span class="badge badge-warning">New Customer</span>' .
+            '<div class="small mt-1">' . $details . '</div>';
+    }
+
+    private function plannerStatusHtml($planner, $isManager)
+    {
+        if ($planner->approval_status === 'pending') {
+            return '<span class="badge badge-warning">' .
+                'Pending Approval</span>';
+        }
+
+        $html = '<span class="badge badge-success">Approved</span>';
+        if ($isManager && !empty($planner->approver_name)) {
+            $html .= '<div class="small text-muted mt-1">By ' .
+                html_escape($planner->approver_name) . '</div>';
+        }
+        return $html;
+    }
+
+    private function plannerActionHtml($planner, $isManager)
+    {
+        $encryptedId = html_escape(encrypt_id($planner->id));
+        if ($isManager) {
+            if ($planner->approval_status !== 'pending') {
+                return '<span class="text-muted">—</span>';
+            }
+
+            return '<button type="button" ' .
+                'class="btn btn-success btn-sm approve-planner" ' .
+                'data-record_id="' . $encryptedId . '">' .
+                '<i class="fa fa-check" aria-hidden="true"></i> ' .
+                'Approve</button>';
+        }
+
+        return '<a href="javascript:void(0)" ' .
+            'class="text-fade hover-primary edit-planner" ' .
+            'data-record_id="' . $encryptedId . '" ' .
+            'title="Edit Weekly Planner" aria-label="Edit Weekly Planner">' .
+            '<i class="fa fa-edit fa-lg" aria-hidden="true"></i></a> ' .
+            '<a href="javascript:void(0)" ' .
+            'class="text-fade hover-primary delete-planner ml-2" ' .
+            'data-record_id="' . $encryptedId . '" ' .
+            'title="Delete Weekly Planner" ' .
+            'aria-label="Delete Weekly Planner">' .
+            '<i class="fa fa-trash-o fa-lg" aria-hidden="true"></i></a>';
     }
 
     private function plannerQuery()

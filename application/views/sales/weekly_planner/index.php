@@ -130,9 +130,27 @@
                     </div>
 
                     <div id="tableViewWrapper" class="table-responsive">
-                        <div class="text-center text-muted py-4">
-                            Loading weekly planners...
-                        </div>
+                        <table
+                            id="server-side-data-table"
+                            class="text-fade table table-bordered display"
+                            style="width:100%"
+                        >
+                            <thead>
+                                <tr class="text-dark">
+                                    <th>Sr. No.</th>
+                                    <?php if ($is_planner_manager): ?>
+                                        <th>Sales Executive</th>
+                                    <?php endif; ?>
+                                    <th>Date</th>
+                                    <th>Activity Type</th>
+                                    <th>Account / Activity</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Created Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                        </table>
                     </div>
                     <div id="calendarViewWrapper" class="d-none">
                         <div id="weeklyPlannerCalendar"></div>
@@ -647,6 +665,7 @@ window.addEventListener('load', function () {
 
     var isManager = <?= $is_planner_manager ? 'true' : 'false' ?>;
     var plannerCalendar = null;
+    var plannerTable = null;
 
     function csrfData(data) {
         data = data || {};
@@ -817,48 +836,59 @@ window.addEventListener('load', function () {
     }
 
     function initializeTable() {
-        var selector = '#weekly-planner-table';
-        if (
-            $.fn.DataTable &&
-            $(selector).length &&
-            $(selector).attr('data-has-rows') === '1' &&
-            !$.fn.DataTable.isDataTable(selector)
-        ) {
-            $(selector).DataTable({
-                order: [],
-                columnDefs: [
-                    {
-                        targets: -1,
-                        orderable: false,
-                        searchable: false
-                    }
-                ]
-            });
+        if (!$.fn.DataTable || plannerTable) {
+            return;
         }
-    }
 
-    function fetchPlannerTable() {
-        $.ajax({
-            url: <?= json_encode(
-                base_url('sales/weekly-planner/table')
-            ) ?>,
-            type: 'GET',
-            success: function (html) {
-                $('#tableViewWrapper').html(html);
-                initializeTable();
+        var actionIndex = isManager ? 8 : 7;
+        var nonOrderable = isManager ? [4, 5, 8] : [3, 4, 7];
+
+        plannerTable = $('#server-side-data-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ordering: true,
+            searching: true,
+            order: [],
+            ajax: {
+                url: <?= json_encode(
+                    base_url('sales/weekly-planner/table')
+                ) ?>,
+                type: 'POST',
+                data: function (data) {
+                    data[window.CSRF.name] = window.CSRF.hash;
+                },
+                dataSrc: function (response) {
+                    refreshCsrf(response);
+                    return response.data || [];
+                },
+                error: function (xhr) {
+                    var response = xhr.responseJSON || {};
+                    refreshCsrf(response);
+                    toast(
+                        'error',
+                        response.message ||
+                            'Unable to load weekly planners'
+                    );
+                }
             },
-            error: function () {
-                $('#tableViewWrapper').html(
-                    '<div class="alert alert-danger">' +
-                    'Unable to load weekly planners.' +
-                    '</div>'
-                );
-            }
+            columnDefs: [
+                {
+                    targets: nonOrderable,
+                    orderable: false
+                },
+                {
+                    targets: actionIndex,
+                    searchable: false,
+                    className: 'table-action min-w-100'
+                }
+            ]
         });
     }
 
     function refreshPlannerViews() {
-        fetchPlannerTable();
+        if (plannerTable) {
+            plannerTable.ajax.reload(null, false);
+        }
         if (plannerCalendar) {
             plannerCalendar.refetchEvents();
         }
@@ -929,7 +959,7 @@ window.addEventListener('load', function () {
 
     $(function () {
         initializeSelects();
-        fetchPlannerTable();
+        initializeTable();
 
         $('#btnTableView').on('click', function () {
             $(this)

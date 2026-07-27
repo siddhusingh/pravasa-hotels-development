@@ -34,7 +34,7 @@ $salesAction = $this->uri->segment(3);
                   <li class="<?= ($salesSection === 'sales' && $salesPage === 'weekly-planner') ? 'active' : '' ?>">
                      <a href="<?= base_url('sales/weekly-planner') ?>">
                         <i class="fa fa-lightbulb-o" aria-hidden="true"></i>
-                        <span>Weekly Planner Approvals</span>
+                        <span>Weekly Planner</span>
                      </a>
                   </li>
                <?php endif; ?>

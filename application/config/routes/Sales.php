@@ -33,6 +33,7 @@ $route['sales/companies/details'] = 'Sales/Companies/getDetails';
 $route['sales/companies/delete'] = 'Sales/Companies/delete';
 
 $route['sales/visits'] = 'Sales/Visits/index';
+$route['sales/visits/table'] = 'Sales/Visits/table';
 $route['sales/visits/add'] = 'Sales/Visits/add';
 $route['sales/visits/create'] = 'Sales/Visits/insert';
 $route['sales/visits/edit/(:any)'] = 'Sales/Visits/edit/$1';
