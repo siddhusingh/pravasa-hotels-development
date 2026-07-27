@@ -437,6 +437,394 @@ class Visits extends Sales_Controller
         ]);
     }
 
+    public function edit($encryptedVisitId)
+    {
+        $visitId = decrypt_id(trim((string)$encryptedVisitId));
+        if (empty($visitId)) {
+            show_404();
+            return;
+        }
+
+        $data['sales_visit'] = $this->db
+            ->select(
+                'l.*, sv.*, l.status AS lead_status, c.company_name, ' .
+                'cc.first_name, cc.last_name, ' .
+                'su.full_name AS sales_user_name'
+            )
+            ->from('sales_visits sv')
+            ->join('companies c', 'c.company_id = sv.company_id', 'left')
+            ->join(
+                'company_contacts cc',
+                'cc.contact_id = sv.person_met',
+                'left'
+            )
+            ->join('sales_users su', 'su.id = sv.user_id', 'left')
+            ->join(
+                'leads l',
+                'l.id = sv.lead_id_againts_visit',
+                'left'
+            )
+            ->where('sv.visit_id', $visitId)
+            ->where('sv.user_id', $this->salesUserId)
+            ->where('sv.status', 1)
+            ->where('sv.is_deleted', 0)
+            ->get()
+            ->row();
+
+        if (empty($data['sales_visit'])) {
+            show_404();
+            return;
+        }
+
+        $data['departments'] = $this->Common_model->getAllData(
+            'departments',
+            ['is_deleted' => 0]
+        );
+        $data['hotel_admin'] = $this->Common_model->getAllData(
+            'hotel_admin',
+            ['is_deleted' => 0]
+        );
+        $data['companies'] = $this->Common_model->getAllData(
+            'companies',
+            ['status' => 1, 'is_deleted' => 0]
+        );
+        $data['roomtype'] = $this->Common_model->getAllData(
+            'roomtype',
+            ['is_deleted' => 0]
+        );
+        $data['travel_modes'] = $this->Common_model->getAllData(
+            'travel_modes',
+            ['is_deleted' => 0]
+        );
+
+        $this->renderSalesPage('sales/sales_visits/edit', $data);
+    }
+
+    public function update($encryptedVisitId)
+    {
+        if (!$this->isPostRequest()) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Method not allowed'
+            ]);
+        }
+
+        $validationError = $this->validateBasicFields();
+        if ($validationError !== '') {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => $validationError
+            ]);
+        }
+
+        $visitId = decrypt_id(trim((string)$encryptedVisitId));
+        $salesVisit = $this->db
+            ->where('visit_id', $visitId)
+            ->where('user_id', $this->salesUserId)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->get('sales_visits')
+            ->row();
+
+        if (empty($visitId) || empty($salesVisit)) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Invalid sales visit'
+            ]);
+        }
+
+        $propertyId = $this->decryptRequired('property');
+        $departmentId = $this->decryptRequired('type');
+        $companyId = $this->decryptRequired('company_id');
+        $contactId = $this->decryptRequired('person_met');
+        $travelModeId = $this->decryptOptional('travel_mode');
+
+        $hotel = $this->activeRecord(
+            'hotel_admin',
+            ['hotel_id' => $propertyId]
+        );
+        $department = $this->activeRecord(
+            'departments',
+            ['department_id' => $departmentId]
+        );
+        $company = $this->activeRecord(
+            'companies',
+            ['company_id' => $companyId, 'status' => 1]
+        );
+        $contact = $this->activeRecord(
+            'company_contacts',
+            [
+                'contact_id' => $contactId,
+                'company_id' => $companyId,
+                'status' => 'Active'
+            ]
+        );
+        $travelMode = empty($travelModeId)
+            ? true
+            : $this->activeRecord(
+                'travel_modes',
+                ['id' => $travelModeId]
+            );
+
+        if (
+            empty($propertyId) ||
+            empty($departmentId) ||
+            empty($companyId) ||
+            empty($contactId) ||
+            empty($hotel) ||
+            empty($department) ||
+            empty($company) ||
+            empty($contact) ||
+            empty($travelMode)
+        ) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Invalid sales visit selection'
+            ]);
+        }
+
+        $stage = trim((string)$this->input->post('disposition', true));
+        $departmentName = $this->normalizeDepartment(
+            $department->department_name ?? ''
+        );
+        $dynamicError = $this->validateDynamicFields(
+            $stage,
+            $departmentName,
+            $propertyId,
+            $departmentId
+        );
+        if ($dynamicError !== '') {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => $dynamicError
+            ]);
+        }
+
+        $attachment = $this->uploadAttachment();
+        if (!$attachment['success']) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => $attachment['message']
+            ]);
+        }
+
+        $status = trim((string)$this->input->post('status', true));
+        $now = date('Y-m-d H:i:s');
+        $contactName = trim(
+            ($contact->first_name ?? '') . ' ' . ($contact->last_name ?? '')
+        );
+        $escalationHours = max(
+            0,
+            (float)($department->escalation_level_1 ?? 0)
+        );
+
+        $leadData = [
+            'user_name' => $contactName,
+            'phone_number' => $contact->mobile_number,
+            'email' => $contact->email,
+            'property' => $propertyId,
+            'type' => $departmentId,
+            'status' => $status,
+            'disposition' => $stage,
+            'query' => trim(
+                (string)$this->input->post('discussion_summary', true)
+            ),
+            'last_query' => trim(
+                (string)$this->input->post('discussion_summary', true)
+            ),
+            'remark' => trim((string)$this->input->post('remarks', true)),
+            'lead_type' => trim(
+                (string)$this->input->post('lead_type', true)
+            ),
+            'city' => $hotel->city_id ?? null,
+            'follow_up_time' => date(
+                'Y-m-d H:i:s',
+                time() + (int)round($escalationHours * 3600)
+            ),
+            'follow_up_level' => 1,
+        ];
+
+        if ($status === 'Closed') {
+            $leadData['completed_time'] = $now;
+        } else {
+            $leadData['responded_time'] = $now;
+        }
+        $this->addDynamicLeadData($leadData, $stage, $departmentName);
+
+        $kmsRun = $this->numericValue('kms_run');
+        $ratePerKm = $this->numericValue('rate_per_km');
+        $parking = $this->numericValue('parking_charges');
+        $lunch = $this->numericValue('lunch');
+        $entertainment = $this->numericValue('entertainment');
+        $totalAmount = ($kmsRun * $ratePerKm) +
+            $parking +
+            $lunch +
+            $entertainment;
+
+        $visitData = [
+            'report_date' => trim(
+                (string)$this->input->post('report_date', true)
+            ),
+            'follow_up_1_date' => trim(
+                (string)$this->input->post('follow_up_1_date', true)
+            ),
+            'follow_up_2_date' => trim(
+                (string)$this->input->post('follow_up_2_date', true)
+            ),
+            'visit_type' => trim(
+                (string)$this->input->post('visit_type', true)
+            ),
+            'visit_mode' => trim(
+                (string)$this->input->post('visit_mode', true)
+            ),
+            'company_id' => $companyId,
+            'person_met' => $contactId,
+            'agenda' => trim((string)$this->input->post('agenda', true)),
+            'discussion_summary' => trim(
+                (string)$this->input->post('discussion_summary', true)
+            ),
+            'conclusion' => trim(
+                (string)$this->input->post('conclusion', true)
+            ),
+            'area_covered' => trim(
+                (string)$this->input->post('area_covered', true)
+            ),
+            'travel_mode' => $travelModeId,
+            'kms_run' => $kmsRun,
+            'rate_per_km' => $ratePerKm,
+            'parking_charges' => $parking,
+            'lunch' => $lunch,
+            'entertainment' => $entertainment,
+            'total_amount' => $totalAmount,
+            'latitude' => $this->optionalCoordinate('visit_latitude'),
+            'longitude' => $this->optionalCoordinate('visit_longitude'),
+            'location_details' => $this->optionalText(
+                'visit_location_details'
+            ),
+            'property' => $propertyId,
+            'type' => $departmentId,
+            'remarks' => trim(
+                (string)$this->input->post('remarks', true)
+            ),
+            'updated_at' => $now
+        ];
+
+        if ($attachment['path'] !== '') {
+            $visitData['attachment_image'] = $attachment['path'];
+        }
+
+        $this->db->trans_begin();
+        $leadUpdated = $this->db
+            ->where('id', $salesVisit->lead_id_againts_visit)
+            ->update('leads', $leadData);
+        $visitUpdated = $this->db
+            ->where('visit_id', $visitId)
+            ->where('user_id', $this->salesUserId)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->update('sales_visits', $visitData);
+
+        if (
+            !$leadUpdated ||
+            !$visitUpdated ||
+            $this->db->trans_status() === false
+        ) {
+            $this->db->trans_rollback();
+            $this->deleteUploadedAttachment($attachment['path']);
+
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Unable to update sales visit'
+            ]);
+        }
+
+        $this->db->trans_commit();
+        if (
+            $attachment['path'] !== '' &&
+            !empty($salesVisit->attachment_image)
+        ) {
+            $this->deleteUploadedAttachment($salesVisit->attachment_image);
+        }
+
+        $this->logActivity(
+            'update',
+            $visitId,
+            'Updated sales visit for company ID ' . $companyId
+        );
+        $this->session->set_flashdata(
+            'sales_visit_success',
+            'Sales visit updated successfully.'
+        );
+
+        return $this->jsonResponse([
+            'status' => true,
+            'message' => 'Sales visit & lead updated successfully'
+        ]);
+    }
+
+    public function delete()
+    {
+        if (!$this->isPostRequest()) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Method not allowed'
+            ]);
+        }
+
+        $visitId = decrypt_id(trim((string)$this->input->post('id')));
+        if (empty($visitId)) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Invalid visit ID'
+            ]);
+        }
+
+        $visit = $this->db
+            ->where('visit_id', $visitId)
+            ->where('user_id', $this->salesUserId)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->get('sales_visits')
+            ->row();
+
+        if (empty($visit)) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Sales visit not found or already deleted'
+            ]);
+        }
+
+        $deleted = $this->db
+            ->where('visit_id', $visitId)
+            ->where('user_id', $this->salesUserId)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->update('sales_visits', [
+                'is_deleted' => 1,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+        if (!$deleted || $this->db->affected_rows() !== 1) {
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => $deleted
+                    ? 'Sales visit not found or already deleted'
+                    : 'Unable to delete sales visit'
+            ]);
+        }
+
+        $this->logActivity(
+            'delete',
+            $visitId,
+            'Soft deleted sales visit for company ID ' . $visit->company_id
+        );
+
+        return $this->jsonResponse([
+            'status' => true,
+            'message' => 'Sales visit deleted successfully'
+        ]);
+    }
+
     public function get_company_contacts()
     {
         if (!$this->isPostRequest()) {
@@ -447,6 +835,12 @@ class Visits extends Sales_Controller
         }
 
         $companyId = $this->decryptRequired('company_id');
+        $selectedContactToken = trim(
+            (string)$this->input->post('selected_contact_id')
+        );
+        $selectedContactId = $selectedContactToken !== ''
+            ? decrypt_id($selectedContactToken)
+            : null;
         $company = $this->activeRecord(
             'companies',
             ['company_id' => $companyId, 'status' => 1]
@@ -470,7 +864,12 @@ class Visits extends Sales_Controller
             ->result();
 
         foreach ($contacts as $contact) {
-            $contact->contact_id = encrypt_id($contact->contact_id);
+            $contact->contact_id = (
+                !empty($selectedContactId) &&
+                (int)$selectedContactId === (int)$contact->contact_id
+            )
+                ? $selectedContactToken
+                : encrypt_id($contact->contact_id);
         }
 
         return $this->jsonResponse([

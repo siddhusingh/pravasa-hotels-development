@@ -88,7 +88,7 @@
                      </div>
                      <div class="dropdown-divider my-30"></div>
                      <div>
-                        <?php if ($is_sales_executive): ?>
+                        <?php if ($is_sales_executive || $is_sales_manager): ?>
                            <div class="profile-menu-item">
                               <div class="me-15 bg-primary-light h-50 w-50 l-h-60 rounded text-center">
                                  <span class="icon-Library fs-24"><span class="path1"></span><span class="path2"></span></span>

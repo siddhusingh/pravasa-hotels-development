@@ -8,7 +8,7 @@ class Profile extends Sales_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->requireSalesRole(['Sales Executive']);
+        $this->requireSalesRole(['Sales Executive', 'Sales Manager']);
     }
 
     public function index()

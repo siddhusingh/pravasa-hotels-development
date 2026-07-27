@@ -17,34 +17,24 @@ $salesAction = $this->uri->segment(3);
                </li>
 
                <?php if ($is_sales_manager): ?>
-                  <li class="treeview <?= ($salesSection === 'sales' && $salesPage === 'executives') ? 'active menu-open' : '' ?>">
-                     <a href="#">
+                  <li class="<?= ($salesSection === 'sales' && $salesPage === 'executives') ? 'active' : '' ?>">
+                     <a href="<?= base_url('sales/executives') ?>">
                         <i class="fa fa-users" aria-hidden="true"></i>
                         <span>Sales Executives</span>
-                        <span class="pull-right-container">
-                           <i class="fa fa-angle-right pull-right"></i>
-                        </span>
                      </a>
-                     <ul class="treeview-menu">
-                        <li class="<?= ($salesPage === 'executives' && empty($salesAction)) ? 'active' : '' ?>">
-                           <a href="<?= base_url('sales/executives') ?>">
-                              <i class="fa fa-list" aria-hidden="true"></i>
-                              View Executives
-                           </a>
-                        </li>
-                        <li class="<?= ($salesPage === 'executives' && $salesAction === 'add') ? 'active' : '' ?>">
-                           <a href="<?= base_url('sales/executives/add') ?>">
-                              <i class="fa fa-user-plus" aria-hidden="true"></i>
-                              Add Executive
-                           </a>
-                        </li>
-                     </ul>
                   </li>
 
                   <li class="<?= ($salesSection === 'sales' && $salesPage === 'visits') ? 'active' : '' ?>">
                      <a href="<?= base_url('sales/visits') ?>">
                         <i class="fa fa-map-marker" aria-hidden="true"></i>
                         <span>All Sales Visits</span>
+                     </a>
+                  </li>
+
+                  <li class="<?= ($salesSection === 'sales' && $salesPage === 'weekly-planner') ? 'active' : '' ?>">
+                     <a href="<?= base_url('sales/weekly-planner') ?>">
+                        <i class="fa fa-lightbulb-o" aria-hidden="true"></i>
+                        <span>Weekly Planner Approvals</span>
                      </a>
                   </li>
                <?php endif; ?>
@@ -108,7 +98,7 @@ $salesAction = $this->uri->segment(3);
                   </li>
                <?php endif; ?>
 
-               <?php if ($is_sales_executive): ?>
+               <?php if ($is_sales_executive || $is_sales_manager): ?>
                   <li class="<?= ($salesSection === 'sales' && $salesPage === 'profile') ? 'active' : '' ?>">
                      <a href="<?= base_url('sales/profile') ?>">
                         <i class="fa fa-user" aria-hidden="true"></i>

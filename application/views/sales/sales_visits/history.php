@@ -76,6 +76,7 @@
                                             <th>Visit Mode</th>
                                             <th>Sales Executive</th>
                                             <th>Report Date</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -113,6 +114,57 @@
                                                     <?= !empty($visit->report_date)
                                                         ? date('d-m-Y', strtotime($visit->report_date))
                                                         : '-' ?>
+                                                </td>
+                                                <td class="text-center action-icons">
+                                                    <a
+                                                        href="<?= base_url(
+                                                            'sales/visits/edit/' .
+                                                            encrypt_id($visit->visit_id)
+                                                        ) ?>"
+                                                        class="text-fade hover-primary"
+                                                        title="Edit Sales Visit"
+                                                        aria-label="Edit Sales Visit"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <polygon points="16 3 21 8 8 21 3 21 3 16 16 3"></polygon>
+                                                        </svg>
+                                                    </a>
+                                                    <a
+                                                        href="javascript:void(0)"
+                                                        class="text-fade hover-primary delete-visit ml-2"
+                                                        data-record_id="<?= html_escape(
+                                                            encrypt_id($visit->visit_id)
+                                                        ) ?>"
+                                                        title="Delete Sales Visit"
+                                                        aria-label="Delete Sales Visit"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -156,6 +208,11 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
 
 <script>
+window.CSRF = window.CSRF || {
+    name: '<?= $this->security->get_csrf_token_name() ?>',
+    hash: '<?= $this->security->get_csrf_hash() ?>'
+};
+
 window.addEventListener('load', function () {
     var calendar = null;
 
@@ -163,10 +220,61 @@ window.addEventListener('load', function () {
         $('#server-side-data-table').DataTable({
             order: [[6, 'desc']],
             columnDefs: [
-                { targets: 2, orderable: false }
+                { targets: [2, 7], orderable: false }
             ]
         });
     }
+
+    $(document).on('click', '.delete-visit', function () {
+        var visitId = $(this).data('record_id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This sales visit will be removed from the active visit list.',
+            icon: 'question',
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            var requestData = { id: visitId };
+            requestData[window.CSRF.name] = window.CSRF.hash;
+
+            $.ajax({
+                url: <?= json_encode(base_url('sales/visits/delete')) ?>,
+                type: 'POST',
+                dataType: 'json',
+                data: requestData,
+                success: function (response) {
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+
+                    if (response.status) {
+                        toastr.success(response.message);
+                        window.location.reload();
+                    } else {
+                        toastr.error(
+                            response.message || 'Unable to delete sales visit'
+                        );
+                    }
+                },
+                error: function (xhr) {
+                    var response = xhr.responseJSON || {};
+                    if (response.csrfHash) {
+                        window.CSRF.hash = response.csrfHash;
+                    }
+                    toastr.error(
+                        response.message || 'Unable to delete sales visit'
+                    );
+                }
+            });
+        });
+    });
 
     function initializeCalendar() {
         if (calendar || typeof FullCalendar === 'undefined') {
