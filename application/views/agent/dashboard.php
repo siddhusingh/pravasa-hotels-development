@@ -1,40 +1,5 @@
 <!-- Content Wrapper. Contains page content -->
-<style>
-	.fw-500 {
-		font-size: 20px;
-	}
 
-	text.highcharts-credits {
-		display: none;
-	}
-
-	#filter_lead_stats_count .select2-container {
-		width: 100% !important;
-	}
-
-	#filter_lead_stats_count .select2-container .select2-selection--single {
-		height: 60px;
-		border: 1px solid #d9d9d9;
-		border-radius: 10px;
-	}
-
-	#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__rendered {
-		line-height: 58px;
-		padding-left: 14px;
-		padding-right: 36px;
-	}
-
-	#filter_lead_stats_count .select2-container .select2-selection--single .select2-selection__arrow {
-		height: 58px;
-		right: 10px;
-	}
-
-	#filter_lead_stats_count .select2-container--focus .select2-selection--single,
-	#filter_lead_stats_count .select2-container--open .select2-selection--single {
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, .08);
-	}
-</style>
 
 <div class="content-wrapper">
 	<div class="container-full">
@@ -43,92 +8,50 @@
 			<div class="row">
 
 
-
-
-				<!-- quick filters -->
-
-				<!-- quick filters -->
-
 				<div class="col-xxl-12 col-12">
 
 
 					<div class="box_supar_admin">
-						<div class="box-header no-border pb-0">
-						</div>
+					
 						<div class="box-body">
 							<div class="row">
 								<div id="">
+									<div class="admin_name_details">
 
-									<style>
-										/* ===== Professional Filter Panel UI ===== */
+										<div class="admin_left">
 
-										#filter_lead_stats_count {
-											/* background: #ffffff;
-											border: 1px solid #e9eef5;
-											border-radius: 18px;
-											padding: 18px;
-											box-shadow: 0 8px 24px rgba(0, 0, 0, .05); */
-											margin-bottom: 20px;
-										}
+											<h2>
+												Good Morning, Umesh <?php echo $profile_data->name; ?>
+												👋
+											</h2>
 
-										
+											<p>
+												Here's what's happening with your lead pipeline today.
+											</p>
 
-										#filter_lead_stats_count .form-control,
-										#filter_lead_stats_count .form-select {
-											/* border-radius: 12px;
-											border: 1px solid #dbe3ee;
-											font-size: 14px;
-											box-shadow: none !important;
-											transition: .25s ease; */
-										}
+										</div>
 
-										#filter_lead_stats_count .form-control:focus,
-										#filter_lead_stats_count .form-select:focus {
-											border-color: #3b82f6;
-											box-shadow: 0 0 0 3px rgba(59, 130, 246, .08) !important;
-										}
+										<div class="admin_right">
 
-										#filter_lead_stats_count .row {
-											row-gap: 14px;
-										}
+											<a href="<?= base_url('manage-leads	') ?>" class="btn btn-primary-light btn-sm ">
+												<i class="fa fa-plus"></i>
+												Add Lead
+											</a>
+											<a href="" class="btn btn-primary-light btn-sm ">
+												<!-- Total Leads -->
+																			
+												Total Leads : <span id="totalLeads"><?= $total_leads ?></span>
+																			
+											</a>
 
-										#filter_lead_stats_count h5 {
-											background: linear-gradient(135deg, #2563eb, #1d4ed8);
-											color: #fff;
-											margin: 0;
-											height: 31px;
-											display: flex;
-											align-items: center;
-											justify-content: center;
-											border-radius: 8px;
-											font-size: 15px;
-											font-weight: 700;
-											padding: 0 15px;
-										}
+										</div>
 
-										#filter_lead_stats_count h5 span {
-											margin-left: 6px;
-											font-size: 18px;
-										}
-
-										@media(max-width:768px) {
-											#filter_lead_stats_count {
-												padding: 15px;
-											}
-
-											#filter_lead_stats_count h5 {
-												margin-top: 4px;
-											}
-										}
-									</style>
-
-
-
+									</div>
 									<form id="filter_lead_stats_count">
 										<div class="row align-items-end">
 
 											<!-- Property -->
-											<div class="col-md-3 d-none">
+											<div class="col-sm-3 ">
 												<label for="top_filter_property" class="form-label">Property</label>
 								<select name="property" id="top_filter_property" class="form-select dashboard-filter-select">
 													<option value="">All Properties</option>
@@ -141,10 +64,10 @@
 											</div>
 
 											<!-- Department -->
-											<div class="col-md-3 d-none">
+											<div class="col-sm-3 ">
 												<label for="top_filter_department" class="form-label">Department</label>
 								<select name="department" id="top_filter_department" class="form-select dashboard-filter-select">
-													<option value="">All Departments</option>
+													<!-- <option value="">All Departments</option> -->
 													<?php foreach ($departments as $dept) { ?>
 														<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
 															<?= $dept->department_name; ?>
@@ -154,8 +77,8 @@
 											</div>
 
 											<!-- Assigned To -->
-											<div class="col-md-3 d-none">
-												<label for="top_filter_assigned_to d-none" class="form-label">Assigned User</label>
+											<div class="col-sm-3 ">
+												<!-- <label for="top_filter_assigned_to d-none" class="form-label">Assigned User</label> -->
 								<select name="assigned_to" id="top_filter_assigned_to" class="form-control dashboard-filter-select">
 													<option value="">All Assigned Users</option>
 
@@ -174,7 +97,7 @@
 											</div>
 
 											<!-- Created By -->
-											<div class="col-md-3 d-none">
+											<div class="col-sm-3 ">
 												<label for="top_filter_created_by" class="form-label">Created By</label>
 								<select name="created_by" id="top_filter_created_by" class="form-control dashboard-filter-select">
 													<option value="">All Creators</option>
@@ -192,12 +115,17 @@
 													<?php endforeach; ?>
 												</select>
 											</div>
+											<div class="col-sm-3">
+                                                <a type="button" id="toggleFilterBtn" class="">
+                                                    <i class="fa fa-filter"></i> More Filters
+                                                </a>
+                                            </div>
 
 											<!-- Lead Source -->
-											<div class="col-md-3">
+											<div class="col-sm-3 more-filter d-none">
 												<label for="top_filter_channel" class="form-label">Lead Source</label>
 								<select name="channel" id="top_filter_channel" class="form-select filter-input dashboard-filter-select">
-													<option value="">All Sources</option>
+													<!-- <option value="">All Sources</option> -->
 													<?php foreach ($user_channel as $channelObj): ?>
 														<?php $channel = $channelObj->user_channel; ?>
 														<option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
@@ -205,8 +133,10 @@
 												</select>
 											</div>
 
+											
+
 											<!-- Stage -->
-											<div class="col-md-3">
+											<div class="col-sm-3 more-filter d-none">
 												<label for="top_filter_disposition" class="form-label">Stage</label>
 								<select name="disposition" id="top_filter_disposition" class="form-select filter-input dashboard-filter-select">
 													<option value="">All Stages</option>
@@ -222,8 +152,8 @@
 											</div>
 
 											<!-- Start Date -->
-											<div class="col-md-2">
-												<label for="top_filter_start_date" class="form-label">Start Date</label>
+											<div class="col-sm-3 more-filter d-none">
+												<!-- <label for="top_filter_start_date" class="form-label">Start Date</label> -->
 												<input type="date"
 													name="start_date"
 													id="top_filter_start_date"
@@ -232,8 +162,8 @@
 											</div>
 
 											<!-- End Date -->
-											<div class="col-md-2">
-												<label for="top_filter_end_date" class="form-label">End Date</label>
+											<div class="col-sm-3 more-filter d-none">
+												<!-- <label for="top_filter_end_date" class="form-label">End Date</label> -->
 												<input type="date"
 													name="end_date"
 													id="top_filter_end_date"
@@ -241,10 +171,6 @@
 													value="<?= $this->input->get('end_date'); ?>">
 											</div>
 
-											<!-- Total Leads -->
-											<div class="col-md-2">
-												<h5>Total Leads : <span id="totalLeads"><?= $total_leads ?></span></h5>
-											</div>
 
 										</div>
 									</form>
@@ -255,17 +181,10 @@
 						</div>
 
 						<div class="box-body" id="top_stats_html">
-
-
-
-
-
-
-
-							<div class="row">
+							<div class="row main_row_data_desh">
 
 								<!-- Total Open -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-3 col-12">
 									<a href="<?= base_url('view-agents-leads?status=Open') ?>">
 										<div class="stage-card border-red">
 											<div class="stage-flex">
@@ -291,388 +210,338 @@
 									</a>
 								</div>
 
-
-
 								<!-- In Progress -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-3 col-12">
 									<a href="<?= base_url('view-agents-leads?status=In+Progress') ?>">
-										<div class="stage-card border-cyan">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-cyan">
+                                                    <i class="fa fa-spinner"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">In Progress</div>
+                                                <div>
+                                                    <div class="stage-title">In Progress</div>
 
-													<div class="lead-count text-info" data-lead-status="In Progress">
-														<?= $lead_status_counts['In Progress']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="In Progress">
+                                                        <?= $lead_status_counts['In Progress']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box d-none">
-														₹ <?= number_format($lead_revenue['In Progress']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box">
+                                                ₹ <?= number_format($lead_revenue['In Progress']); ?>
+                                            </div>
 
-												<div class="icon-box bg-cyan">
-													<i class="fa fa-spinner"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
-
 
 								<!-- Total Closed -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-3 col-12">
 									<a href="<?= base_url('view-agents-leads?status=Closed') ?>">
-										<div class="stage-card border-green">
-											<div class="stage-flex">
-
-												<div class="left-content">
-													<div class="stage-title">Total Closed</div>
-
-													<div class="lead-count text-success" data-lead-status="Closed">
-														<?= $lead_status_counts['Closed']; ?>
-													</div>
-
-													<div class="revenue-box d-none">
-														₹ <?= number_format($lead_revenue['Closed']); ?>
-													</div>
-												</div>
-
-												<div class="icon-box bg-green">
-													<i class="fa fa-check-circle"></i>
-												</div>
-
-											</div>
-										</div>
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-green">
+                                                    <i class="fa fa-check-circle"></i>
+                                                </div>
+                                                <div class="">
+                                                    <div class="stage-title">Total Closed</div>
+                                                    <div class="lead-count" data-lead-status="Closed">
+                                                        <?= $lead_status_counts['Closed']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>                                      
+                                            <div class="revenue-box">
+                                                ₹ <?= number_format($lead_revenue['Closed']); ?> 
+                                            </div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
-
 
 								<!-- Not Assigned -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-3 col-12">
 									<a href="<?= base_url('view-agents-leads?status=Not-assigned') ?>">
-										<div class="stage-card border-orange">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-orange">
+                                                    <i class="fa fa-user-times"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Not Assigned</div>
+                                                <div>
+                                                    <div class="stage-title">Not Assigned</div>
 
-													<div class="lead-count text-warning" data-lead-status="Not Assigned">
-														<?= $lead_status_counts['Not_Assigned']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Not Assigned">
+                                                        <?= $lead_status_counts['Not_Assigned']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box d-none" style="background:#fff7ed;color:#ea580c;">
-														₹ <?= number_format($lead_revenue['Not_Assigned']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box">
+                                                ₹ <?= number_format($lead_revenue['Not_Assigned']); ?>
+                                            </div>
 
-												<div class="icon-box bg-orange">
-													<i class="fa fa-user-times"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
-							</div>
-
-
-
-
-							<div class="row mt-3">
 
 								<!-- Not Contacted -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-3 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Not Contacted') ?>">
-										<div class="stage-card border-blue">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-blue">
+                                                    <i class="fa fa-phone"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Not Contacted</div>
+                                                <div>
+                                                    <div class="stage-title">Not Contacted</div>
 
-													<div class="lead-count text-primary" data-lead-status="Not_Contacted">
-														<?= $lead_status_counts['Not_Contacted']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Not_Contacted">
+                                                        <?= $lead_status_counts['Not_Contacted']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Not_Contacted">
-														₹ <?= number_format($lead_revenue['Not_Contacted']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Not_Contacted">
+                                                ₹ <?= number_format($lead_revenue['Not_Contacted']); ?>
+                                            </div>
 
-												<div class="icon-box bg-blue">
-													<i class="fa fa-phone"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
 
 								<!-- Quotation Sent -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Quotation Sent') ?>">
-										<div class="stage-card border-orange">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-orange">
+                                                    <i class="fa fa-file-text"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Quotation Sent</div>
+                                                <div>
+                                                    <div class="stage-title">Quotation Sent</div>
 
-													<div class="lead-count text-warning" data-lead-status="Quotation_Sent">
-														<?= $lead_status_counts['Quotation_Sent']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Quotation_Sent">
+                                                        <?= $lead_status_counts['Quotation_Sent']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Quotation_Sent">
-														₹ <?= number_format($lead_revenue['Quotation_Sent']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Quotation_Sent">
+                                                ₹ <?= number_format($lead_revenue['Quotation_Sent']); ?>
+                                            </div>
 
-												<div class="icon-box bg-orange">
-													<i class="fa fa-file-text"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
 
 								<!-- Negotiations -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Negotiations') ?>">
-										<div class="stage-card border-cyan">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-cyan">
+                                                    <i class="fa fa-handshake"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Negotiations</div>
+                                                <div>
+                                                    <div class="stage-title">Negotiations</div>
 
-													<div class="lead-count text-info" data-lead-status="Negotiations">
-														<?= $lead_status_counts['Negotiations']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Negotiations">
+                                                        <?= $lead_status_counts['Negotiations']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Negotiations">
-														₹ <?= number_format($lead_revenue['Negotiations']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Negotiations">
+                                                ₹ <?= number_format($lead_revenue['Negotiations']); ?>
+                                            </div>
 
-												<div class="icon-box bg-cyan">
-													<i class="fa fa-handshake"></i>
-												</div>
-
-											</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
 										</div>
 									</a>
 								</div>
-
 
 								<!-- Contract Done -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Contract Done') ?>">
-										<div class="stage-card border-purple">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-purple">
+                                                    <i class="fa fa-file"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Contract Done</div>
+                                                <div>
+                                                    <div class="stage-title">Contract Done</div>
 
-													<div class="lead-count text-purple" data-lead-status="Contract_Done">
-														<?= $lead_status_counts['Contract_Done']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Contract_Done">
+                                                        <?= $lead_status_counts['Contract_Done']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Contract_Done">
-														₹ <?= number_format($lead_revenue['Contract_Done']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Contract_Done">
+                                                ₹ <?= number_format($lead_revenue['Contract_Done']); ?>
+                                            </div>
 
-												<div class="icon-box bg-purple">
-													<i class="fa fa-file"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
-							</div>
-
-
-
-							<div class="row mt-3">
 
 								<!-- Advance Received -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Advance Received') ?>">
-										<div class="stage-card border-orange">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-orange">
+                                                    <i class="fa fa-money-bill"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Advance Received</div>
+                                                <div>
+                                                    <div class="stage-title">Advance Received</div>
 
-													<div class="lead-count text-warning" data-lead-status="Advance_Received">
-														<?= $lead_status_counts['Advance_Received']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Advance_Received">
+                                                        <?= $lead_status_counts['Advance_Received']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Advance_Received">
-														₹ <?= number_format($lead_revenue['Advance_Received']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Advance_Received">
+                                                ₹ <?= number_format($lead_revenue['Advance_Received']); ?>
+                                            </div>
 
-												<div class="icon-box bg-orange">
-													<i class="fa fa-money-bill"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
 
 								<!-- Lead Won -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Lead Won') ?>">
-										<div class="stage-card border-green">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-green">
+                                                    <i class="fa fa-trophy"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Lead Won</div>
+                                                <div>
+                                                    <div class="stage-title">Lead Won</div>
 
-													<div class="lead-count text-success" data-lead-status="Lead_Won">
-														<?= $lead_status_counts['Lead_Won']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Lead_Won">
+                                                        <?= $lead_status_counts['Lead_Won']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" data-lead-revenue="Lead_Won">
-														₹ <?= number_format($lead_revenue['Lead_Won']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Lead_Won">
+                                                ₹ <?= number_format($lead_revenue['Lead_Won']); ?>
+                                            </div>
 
-												<div class="icon-box bg-green">
-													<i class="fa fa-trophy"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
-
 
 								<!-- Lead Lost -->
-								<div class="col-xl-3 col-md-6 col-12">
+								<div class="col-sm-2 col-12">
 									<a href="<?= base_url('view-agents-leads?disposition=Lead Lost') ?>">
-										<div class="stage-card border-red">
-											<div class="stage-flex">
+										<div class="premium-card">
+                                            <div class="card-top">
+                                                <div class="icon-box bg-red">
+                                                    <i class="fa fa-times-circle"></i>
+                                                </div>
 
-												<div class="left-content">
-													<div class="stage-title">Lead Lost</div>
+                                                <div>
+                                                    <div class="stage-title">Lead Lost</div>
 
-													<div class="lead-count text-danger" data-lead-status="Lead_Lost">
-														<?= $lead_status_counts['Lead_Lost']; ?>
-													</div>
+                                                    <div class="lead-count" data-lead-status="Lead_Lost">
+                                                        <?= $lead_status_counts['Lead_Lost']; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-													<div class="revenue-box" style="background:#fef2f2;color:#dc2626;" data-lead-revenue="Lead_Lost">
-														₹ <?= number_format($lead_revenue['Lead_Lost']); ?>
-													</div>
-												</div>
+                                            <div class="revenue-box" data-lead-revenue="Lead_Lost">
+                                                ₹ <?= number_format($lead_revenue['Lead_Lost']); ?>
+                                            </div>
 
-												<div class="icon-box bg-red">
-													<i class="fa fa-times-circle"></i>
-												</div>
-
-											</div>
-										</div>
+                                            <div class="sparkline">
+                                                <span></span><span></span><span></span><span></span>
+                                                <span></span><span></span><span></span><span></span>
+                                            </div>
+                                        </div>
 									</a>
 								</div>
 
-
 								<!-- Total Revenue -->
-								<div class="col-xl-3 col-md-6 col-12">
-									<div class="stage-card border-purple">
-										<div class="stage-flex">
+								<div class="col-sm-2 col-12">
+									<div class="premium-card">
+                                        <div class="card-top">
+                                            <div class="icon-box bg-purple">
+                                                <i class="fa fa-inr"></i>
+                                            </div>
 
-											<div class="left-content">
-												<div class="stage-title">Total Revenue</div>
+                                            <div>
+                                                <div class="stage-title">Total Revenue</div>
 
-												<div class="lead-count text-purple" data-lead-status="total_revenue">
-													₹ <?= number_format($total_revenue, 2); ?>
-												</div>
+                                                <div class="lead-count" data-lead-status="total_revenue">
+                                                    ₹ <?= number_format($total_revenue, 2); ?>
+                                                </div>
+                                            </div>
+                                        </div>
 
-												<div class="revenue-box">
-													Overall Collection
-												</div>
-											</div>
+                                        <div class="revenue-box">
+                                            Overall Collection
+                                        </div>
 
-											<div class="icon-box bg-purple">
-												<i class="fa fa-inr"></i>
-											</div>
-
-										</div>
-									</div>
+                                        <div class="sparkline">
+                                            <span></span><span></span><span></span><span></span>
+                                            <span></span><span></span><span></span><span></span>
+                                        </div>
+                                    </div>
 								</div>
-
 							</div>
-
-
-
-
-
 						</div>
 					</div>
 				</div>
 
 
 
-
-				<style>
-					/* ===== Quick Filters Modern UI ===== */
-
-					.quick-filter-box {
-						background: #ffffff;
-						border: 1px solid #e9eef5;
-						border-radius: 18px;
-						box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
-						overflow: hidden;
-					}
-
-					.quick-filter-box .box-header {
-						/* padding: 18px 20px 10px;
-						border-bottom: 1px solid #eef2f7;
-						background: linear-gradient(135deg, #f8fafc, #ffffff); */
-					}
-
-					.quick-filter-box .box-title {
-						margin: 0;
-						font-size: 18px;
-						font-weight: 700;
-						color: #1e293b;
-					}
-
-					.quick-filter-box .box-body {
-						padding: 18px 20px;
-					}
-
-					.quick-filter-box .form-label {
-						font-size: 13px;
-						font-weight: 700;
-						color: #000;
-						margin-bottom: 6px;
-					}
-
-					
-				</style>
-
-
-
-
 				<div class="col-xxl-12 col-12">
-					<div class="box quick-filter-box">
-						<div class="box-header no-border pb-0">
-							<h4 class="box-title">Quick Filters for Charts </h4>
-						</div>
-						<div class="box-body">
-							<div class="row">
-									<form>
+					<div class="box quick-filter-box box-body">
+					<form>
 										<div class="">
 											<form method="GET" action="<?= base_url('view-agents-leads'); ?>" class="mb-4 px-3">
 												<div class="row align-items-end">
@@ -717,11 +586,34 @@
 
 										</div>
 									</form>
-							</div>
-						</div>
 					</div>
 				</div>
-				<div class="row">
+
+				<div class="chart_box_main box-body">
+                    <div class="chart_box_main_list row">
+                        <div class="col-sm-6 chart_box_main_items">
+                            <canvas id="chart_department_line"></canvas>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <canvas id="chart_status_new"></canvas>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <canvas id="chart_stage_bar"></canvas>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <canvas id="chart_guest_type"></canvas>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <div class="sales-funnel-box">
+                                <div id="sales_funnel_chart"></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 chart_box_main_items">
+                            <canvas id="chart_revenue_vs_leads"></canvas>
+                        </div>
+                    </div>
+                </div>
+				<!-- <div class="row">
 					<div class="col-md-6">
 						<div class="box chart-container" id="container_department">
 
@@ -764,34 +656,12 @@
 						</div>
 					</div>
 
-				</div>
-
-
-
-
-
+				</div> -->
 			</div>
 		</section>
 
-		<style>
-			.chart-container {
-				border: 1px solid #ccc;
-				padding: 10px;
-				margin-bottom: 25px;
-				background: #fff;
-				position: relative;
-			}
-
-			.filter-row {
-				display: none;
-				justify-content: space-between;
-				align-items: center;
-				margin-bottom: 10px;
-				gap: 10px;
-				flex-wrap: wrap;
-			}
-		</style>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://code.highcharts.com/modules/funnel.js"></script>
 
 		<script>
 			var agentDashboardCharts = {};
@@ -1162,3 +1032,38 @@
 				return '₹ ' + amount.toLocaleString('en-IN');
 			}
 		</script>
+
+
+<script>
+    
+$("#toggleFilterBtn").click(function () {
+
+    var filters = $(".more-filter");
+
+    if ($(this).hasClass("open")) {
+
+        $(this)
+            .removeClass("open")
+            .html('<i class="fa fa-filter"></i> More Filters');
+
+        filters.removeClass("show-filter");
+
+        setTimeout(function () {
+            filters.addClass("d-none");
+        }, 350);
+
+    } else {
+
+        $(this)
+            .addClass("open")
+            .html('<i class="fa fa-times"></i> Hide Filters');
+
+        filters.removeClass("d-none");
+
+        setTimeout(function () {
+            filters.addClass("show-filter");
+        }, 20);
+    }
+
+});
+</script>

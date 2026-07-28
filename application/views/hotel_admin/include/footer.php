@@ -442,6 +442,7 @@ $(document).on(
 <!-- ✅ Tresto Template Scripts -->
 <script src="<?php echo base_url('assets/') ?>/js/template.js"></script>
 <script src="<?php echo base_url('assets/') ?>/js/demo.js"></script>
+<script src="<?php echo base_url('assets/') ?>/js/index.js"></script>
 
 <!-- ✅ DataTables CSS & Buttons CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
