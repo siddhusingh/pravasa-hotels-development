@@ -166,7 +166,7 @@
 
 <script>
 // Change only this value when the API is hosted on another domain or folder.
-const BASE_URL = 'https://thexoombox.com/pravasahotels';
+const BASE_URL = 'http://localhost/pravasahotels/';
 
 function apiUrl(path) {
     return `${BASE_URL.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`;
@@ -207,6 +207,48 @@ async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, err
         select.disabled = false;
     } catch (error) {
         select.replaceChildren(new Option(errorText, ''));
+        console.error(error);
+    }
+}
+
+async function loadVenueOptions({ path, select, placeholder, idKey, nameKey, emptyText }) {
+    const propertySelect = document.getElementById('property');
+    const propertyId = propertySelect.selectedOptions[0]?.dataset.id || '';
+
+    select.disabled = true;
+    select.replaceChildren(new Option(propertyId ? 'Loading...' : 'Select a property first', ''));
+
+    if (!propertyId) return;
+
+    try {
+        const response = await fetch(apiUrl(path), {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hotel_id: propertyId })
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.status || !Array.isArray(result.data)) {
+            throw new Error(result.message || emptyText);
+        }
+
+        const options = document.createDocumentFragment();
+        options.appendChild(new Option(placeholder, ''));
+
+        result.data.forEach(function (item) {
+            const id = item[idKey];
+            const name = String(item[nameKey] || '').trim();
+            if (!id || !name) return;
+            options.appendChild(new Option(name, id));
+        });
+
+        select.replaceChildren(options);
+        select.disabled = false;
+    } catch (error) {
+        select.replaceChildren(new Option(error.message || emptyText, ''));
         console.error(error);
     }
 }
@@ -264,6 +306,12 @@ function renderDepartmentFields(departmentName) {
 
     if (department === 'restaurants' || department === 'restaurant') {
         container.innerHTML = `
+            <div class="col-12">
+                <label for="restaurant_id" class="form-label">Restaurant <span class="required-marker">*</span></label>
+                <select class="form-select" name="restaurant_id" id="restaurant_id" required disabled>
+                    <option value="">Select a property first</option>
+                </select>
+            </div>
             <div class="col-md-6">
                 <label for="booking_date" class="form-label">Booking Date <span class="required-marker">*</span></label>
                 <div class="date-input-wrap">
@@ -276,11 +324,46 @@ function renderDepartmentFields(departmentName) {
                 <input type="number" class="form-control" name="pax" id="pax" min="1" step="1" placeholder="No. of Pax" required>
             </div>
             ${purposeField()}`;
+
+        loadVenueOptions({
+            path: 'api/restaurant-list',
+            select: document.getElementById('restaurant_id'),
+            placeholder: 'Select Restaurant',
+            idKey: 'restaurant_id',
+            nameKey: 'restaurant_name',
+            emptyText: 'No restaurants found'
+        });
         return;
     }
 
     if (department === 'banquets' || department === 'banquet') {
         container.innerHTML = `
+            <div class="col-12">
+                <label for="banquet_id" class="form-label">Banquet <span class="required-marker">*</span></label>
+                <select class="form-select" name="banquet_id" id="banquet_id" required disabled>
+                    <option value="">Select a property first</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_room_required" id="is_room_required" value="1">
+                    <label class="form-check-label" for="is_room_required">Is Room Required?</label>
+                </div>
+            </div>
+            <div class="col-md-6 banquet-room-dates" hidden>
+                <label for="checkin_date" class="form-label">Check-in Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="checkin_date" id="checkin_date" data-placeholder="Select check-in date" min="${todayAsIsoDate()}">
+                    <span class="date-input-placeholder">Select check-in date</span>
+                </div>
+            </div>
+            <div class="col-md-6 banquet-room-dates" hidden>
+                <label for="checkout_date" class="form-label">Check-out Date <span class="required-marker">*</span></label>
+                <div class="date-input-wrap">
+                    <input type="date" class="form-control" name="checkout_date" id="checkout_date" data-placeholder="Select check-out date" min="${todayAsIsoDate()}">
+                    <span class="date-input-placeholder">Select check-out date</span>
+                </div>
+            </div>
             <div class="col-md-6">
                 <label for="booking_date" class="form-label">Booking Date <span class="required-marker">*</span></label>
                 <div class="date-input-wrap">
@@ -293,6 +376,15 @@ function renderDepartmentFields(departmentName) {
                 <input type="number" class="form-control" name="pax" id="pax" min="1" step="1" placeholder="No. of Pax" required>
             </div>
             ${purposeField()}`;
+
+        loadVenueOptions({
+            path: 'api/banquet-list',
+            select: document.getElementById('banquet_id'),
+            placeholder: 'Select Banquet',
+            idKey: 'banquet_id',
+            nameKey: 'banquet_name',
+            emptyText: 'No banquets found'
+        });
     }
 }
 
@@ -436,6 +528,36 @@ function validateLeadForm(form, errorMsg) {
         if (!value('purpose')) addError('purpose', 'Please select a purpose.');
     }
 
+    if (department === 'restaurants' || department === 'restaurant') {
+        if (!value('restaurant_id')) {
+            addError('restaurant_id', 'Please select a restaurant.');
+        }
+    }
+
+    if (department === 'banquets' || department === 'banquet') {
+        if (!value('banquet_id')) {
+            addError('banquet_id', 'Please select a banquet.');
+        }
+
+        const roomRequired = field('is_room_required')?.checked;
+        if (roomRequired) {
+            const checkinDate = value('checkin_date');
+            const checkoutDate = value('checkout_date');
+
+            if (!checkinDate) {
+                addError('checkin_date', 'Please select a check-in date.');
+            } else if (checkinDate < today) {
+                addError('checkin_date', 'Check-in date cannot be in the past.');
+            }
+
+            if (!checkoutDate) {
+                addError('checkout_date', 'Please select a check-out date.');
+            } else if (checkinDate && checkoutDate < checkinDate) {
+                addError('checkout_date', 'Check-out date must be the same as or after check-in date.');
+            }
+        }
+    }
+
     errors.forEach(function (error) {
         showFieldError(error.input, error.message);
     });
@@ -473,6 +595,10 @@ document.addEventListener('DOMContentLoaded', function () {
         renderDepartmentFields(this.value);
     });
 
+    document.getElementById('property').addEventListener('change', function () {
+        renderDepartmentFields(document.getElementById('department').value);
+    });
+
     document.getElementById('leadForm').addEventListener('input', function (event) {
         clearFieldError(event.target);
 
@@ -483,6 +609,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('leadForm').addEventListener('change', function (event) {
         clearFieldError(event.target);
+
+        if (event.target.id === 'is_room_required') {
+            const roomRequired = event.target.checked;
+            const dateFields = document.querySelectorAll('.banquet-room-dates');
+            const checkinDate = document.getElementById('checkin_date');
+            const checkoutDate = document.getElementById('checkout_date');
+
+            dateFields.forEach(function (field) {
+                field.hidden = !roomRequired;
+            });
+            [checkinDate, checkoutDate].forEach(function (input) {
+                if (!input) return;
+                input.required = roomRequired;
+                if (!roomRequired) {
+                    input.value = '';
+                    syncDateDisplay(input);
+                    clearFieldError(input);
+                }
+            });
+        }
+
+        if (event.target.id === 'checkin_date') {
+            const checkoutDate = document.getElementById('checkout_date');
+            if (checkoutDate) {
+                checkoutDate.min = event.target.value || todayAsIsoDate();
+            }
+        }
 
         if (event.target.matches('input[type="date"]')) {
             syncDateDisplay(event.target);
@@ -531,7 +684,9 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
         'number_of_rooms',
         'booking_date',
         'pax',
-        'purpose'
+        'purpose',
+        'restaurant_id',
+        'banquet_id'
     ].forEach(function (fieldName) {
         const input = form.querySelector(`[name="${fieldName}"]`);
 
@@ -539,6 +694,11 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
             payload[fieldName] = input.value.trim();
         }
     });
+
+    const roomRequired = form.querySelector('[name="is_room_required"]');
+    if (roomRequired) {
+        payload.is_room_required = roomRequired.checked ? '1' : '0';
+    }
 
     try {
         const response = await fetch(apiUrl('api/save-lead'), {

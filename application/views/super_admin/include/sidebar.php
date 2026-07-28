@@ -381,6 +381,13 @@
                </li>
 
                <li>
+                  <a href="<?= base_url('download-lead-form') ?>">
+                     <i class="fa fa-download"></i>
+                     <span>Download Lead Form</span>
+                  </a>
+               </li>
+
+               <li>
                   <a href="<?= base_url('super-admin-sign-out') ?>">
                      <i class="fa fa-sign-out"></i>
                      <span>Sign Out</span>

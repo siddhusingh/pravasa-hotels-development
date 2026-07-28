@@ -62,6 +62,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['super-admin-login'] = 'superAdmin/login/index';
 $route['super-admin-dashbaord'] = 'superAdmin/main/index';
 $route['super-admin-profile'] = 'superAdmin/main/profile';
+$route['download-lead-form'] = 'superAdmin/main/download_lead_form';
 $route['super-admin-sign-out'] = 'superAdmin/login/logout';
 $route['forget-password-super-admin'] = 'superAdmin/login/forget_password';
 $route['check-email-super-admin'] = 'superAdmin/login/check_email';
@@ -558,6 +559,9 @@ $route['api/department-list'] = 'API/department_list';
 
 // Restaurant APIs
 $route['api/restaurant-list'] = 'API/restaurant_list_by_hotel';
+
+// Banquet APIs
+$route['api/banquet-list'] = 'API/banquet_list_by_hotel';
 
 // Time Slot APIs
 $route['api/time-slots'] = 'API/time_slots';
