@@ -437,6 +437,30 @@ class Leads extends CI_Controller
         }
 
         if ($disposition === 'Quotation Sent') {
+            if ($value('is_room_required') === '1') {
+                $checkinDate = $value('checkin_date');
+                $checkoutDate = $value('checkout_date');
+                $isValidDate = function ($date) {
+                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                    return $parsed && $parsed->format('Y-m-d') === $date;
+                };
+
+                if ($checkinDate === '') {
+                    $errors['checkin_date'] = 'Check-in date is required.';
+                } elseif (!$isValidDate($checkinDate)) {
+                    $errors['checkin_date'] = 'Please enter a valid check-in date.';
+                } elseif ($checkinDate < date('Y-m-d')) {
+                    $errors['checkin_date'] = 'Check-in date cannot be in the past.';
+                }
+
+                if ($checkoutDate === '') {
+                    $errors['checkout_date'] = 'Check-out date is required.';
+                } elseif (!$isValidDate($checkoutDate)) {
+                    $errors['checkout_date'] = 'Please enter a valid check-out date.';
+                } elseif ($isValidDate($checkinDate) && $checkoutDate < $checkinDate) {
+                    $errors['checkout_date'] = 'Check-out date must be the same as or after check-in date.';
+                }
+            }
             if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
                 $errors['meal_plan'] = 'Please select a meal plan.';
             }
@@ -585,12 +609,23 @@ class Leads extends CI_Controller
             $leadData['responded_time'] = $now;
         }
 
-        $existingLead = $this->db
+        $checkinDate = trim((string) ($leadData['checkin_date'] ?? ''));
+        $checkoutDate = trim((string) ($leadData['checkout_date'] ?? ''));
+
+        $this->db
             ->where("RIGHT(phone_number, 10) =", $phone, false)
             ->where('property', $property)
             ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-2 hours')))
             ->where('status !=', 'Closed')
-            ->where('is_deleted', 0)
+            ->where('is_deleted', 0);
+
+        if ($checkinDate !== '' && $checkoutDate !== '') {
+            $this->db
+                ->where('checkin_date', $checkinDate)
+                ->where('checkout_date', $checkoutDate);
+        }
+
+        $existingLead = $this->db
             ->order_by('id', 'DESC')
             ->get('leads')
             ->row();
@@ -620,7 +655,7 @@ class Leads extends CI_Controller
                 ->set_output(json_encode([
                     'status' => (bool) $saved,
                     'message' => $saved
-                        ? 'Duplicate detected: Existing lead updated successfully.'
+                        ? 'Existing lead updated successfully.'
                         : 'Failed to update the existing lead.',
                     'duplicate' => true,
                     'csrfHash' => $this->security->get_csrf_hash()
@@ -891,9 +926,17 @@ class Leads extends CI_Controller
         ];
         foreach ($optionalFields as $field) {
             $fieldValue = $this->input->post($field, true);
-            if ($fieldValue !== null) {
+            if ($fieldValue !== null && $fieldValue !== '') {
                 $leadData[$field] = $fieldValue;
             }
+        }
+
+        if (
+            $this->input->post('room_requirement_controlled') === '1'
+            && $this->input->post('is_room_required') !== '1'
+        ) {
+            $leadData['checkin_date'] = null;
+            $leadData['checkout_date'] = null;
         }
 
         if ($assignedUser) {

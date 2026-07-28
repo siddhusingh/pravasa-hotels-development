@@ -6,7 +6,7 @@
             <!-- sidebar menu-->
             <ul class="sidebar-menu" data-widget="tree">
                <li class="<?php if ($this->uri->segment('1') == 'agent-dashboard') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('agent-dashboard') ?>">
                      <i class="fa fa-home" aria-hidden="true"></i>
@@ -17,7 +17,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'view-agents-leads' || $this->uri->segment('1') == 'add-lead-agents') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('view-agents-leads') ?>">
                      <i class="fa fa-users" aria-hidden="true"></i>
@@ -27,7 +27,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'view-followups-agent') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('view-followups-agent') ?>">
                      <i class="fa fa-bell" aria-hidden="true"></i>
@@ -37,7 +37,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'agent-profile') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('agent-profile') ?>">
                      <i class="fa fa-user" aria-hidden="true"></i>
@@ -71,7 +71,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'agent-sign-out') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('agent-sign-out') ?>">
                      <i class="fa fa-sign-out" aria-hidden="true"></i>
