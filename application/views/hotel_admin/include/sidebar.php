@@ -6,7 +6,7 @@
             <!-- sidebar menu-->
             <ul class="sidebar-menu" data-widget="tree">
                <li class="<?php if ($this->uri->segment('1') == 'hotel-admin-dashbaord') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('hotel-admin-dashbaord') ?>">
                      <i class="fa fa-home" aria-hidden="true"></i>
@@ -15,7 +15,7 @@
                </li>
 
                <li class="<?php if ($this->uri->segment('1') == 'view-leads' || $this->uri->segment('1') == 'add-lead-admin') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('view-leads') ?>">
                      <i class="fa fa-phone" aria-hidden="true"></i>
@@ -25,7 +25,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'view-followups-admin') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('view-followups-admin') ?>">
                      <i class="fa fa-bell" aria-hidden="true"></i>
@@ -37,7 +37,7 @@
 
 
                <li class="<?php if ($this->uri->segment('1') == 'hotel-admin-profile') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('hotel-admin-profile') ?>">
                      <i class="fa fa-user" aria-hidden="true"></i>
@@ -46,7 +46,7 @@
                </li>
 
                <li class="<?php if ($this->uri->segment('1') == 'guest-contact-book-admin') {
-                              echo "treeview active menu-open";
+                              echo "active";
                            } ?>">
                   <a href="<?php echo base_url('guest-contact-book-admin') ?>">
                      <i class="fa fa-address-book" aria-hidden="true"></i>

@@ -561,6 +561,30 @@ class Leads extends CI_Controller
         }
 
         if ($disposition === 'Quotation Sent') {
+            if ($value('is_room_required') === '1') {
+                $checkinDate = $value('checkin_date');
+                $checkoutDate = $value('checkout_date');
+                $isValidDate = function ($date) {
+                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                    return $parsed && $parsed->format('Y-m-d') === $date;
+                };
+
+                if ($checkinDate === '') {
+                    $errors['checkin_date'] = 'Check-in date is required.';
+                } elseif (!$isValidDate($checkinDate)) {
+                    $errors['checkin_date'] = 'Please enter a valid check-in date.';
+                } elseif ($checkinDate < date('Y-m-d')) {
+                    $errors['checkin_date'] = 'Check-in date cannot be in the past.';
+                }
+
+                if ($checkoutDate === '') {
+                    $errors['checkout_date'] = 'Check-out date is required.';
+                } elseif (!$isValidDate($checkoutDate)) {
+                    $errors['checkout_date'] = 'Please enter a valid check-out date.';
+                } elseif ($isValidDate($checkinDate) && $checkoutDate < $checkinDate) {
+                    $errors['checkout_date'] = 'Check-out date must be the same as or after check-in date.';
+                }
+            }
             if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
                 $errors['meal_plan'] = 'Please select a meal plan.';
             }
@@ -807,13 +831,24 @@ class Leads extends CI_Controller
             $last_10_digits = substr(preg_replace('/\D+/', '', (string) $phone), -10);
             $twoHoursAgo = date('Y-m-d H:i:s', strtotime('-2 hours'));
 
-            // find last lead created in last 2 hours with same phone number
-            $existingLead = $this->db
+            $checkinDate = trim((string) ($leadData['checkin_date'] ?? ''));
+            $checkoutDate = trim((string) ($leadData['checkout_date'] ?? ''));
+
+            // Treat the same guest as a duplicate only when the stay dates also match.
+            $this->db
                 ->where("RIGHT(phone_number, 10) =", $last_10_digits, false)
                 ->where('property', $property)
                 ->where('created_at >=', $twoHoursAgo)
                 ->where('status !=', 'Closed')
-                ->where('is_deleted', 0)
+                ->where('is_deleted', 0);
+
+            if ($checkinDate !== '' && $checkoutDate !== '') {
+                $this->db
+                    ->where('checkin_date', $checkinDate)
+                    ->where('checkout_date', $checkoutDate);
+            }
+
+            $existingLead = $this->db
                 ->order_by('id', 'DESC')
                 ->get('leads')
                 ->row();
@@ -842,7 +877,7 @@ class Leads extends CI_Controller
 
                 echo json_encode([
                     'status' => true,
-                    'message' => 'Duplicate detected: Existing lead updated successfully.',
+                    'message' => 'Existing lead updated successfully.',
                     'duplicate' => true,
                     'csrfHash' => $this->security->get_csrf_hash()
                 ]);
@@ -1131,6 +1166,14 @@ class Leads extends CI_Controller
             if ($field_value !== null) {
                 $leadData[$field] = $field_value;
             }
+        }
+
+        if (
+            $this->input->post('room_requirement_controlled') === '1'
+            && $this->input->post('is_room_required') !== '1'
+        ) {
+            $leadData['checkin_date'] = null;
+            $leadData['checkout_date'] = null;
         }
 
         $table_ids = $this->input->post('table_id');

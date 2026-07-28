@@ -269,6 +269,7 @@
                                             <div class="form-group">
                                                 <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status <span class="required-marker">*</span></label>
                                                 <input type="hidden" id="leadDepartment" name="leadDepartment">
+                                                <input type="hidden" id="preserved_number_of_rooms" value="">
                                                 <select name="lead_status" id="lead_status" class="form-control" disabled>
                                                     <option value="Open" selected>Open</option>
 
@@ -606,6 +607,10 @@
         console.log(existingLeadData);
 
         const container = $("#dynamicFields");
+        const numberOfRoomsField = container.find('[name="number_of_rooms"]');
+        if (numberOfRoomsField.length) {
+            $('#preserved_number_of_rooms').val(numberOfRoomsField.val());
+        }
         container.empty();
 
 
@@ -688,6 +693,29 @@
 
             $("#lead_status").val('In Progress');
 
+            if (department_id) {
+                container.append(`
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="is_room_required"
+                                id="is_room_required" value="1">
+                            <label class="form-check-label" for="is_room_required">Is Room Required?</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                        <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
+                        <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
+                        <span class="error-text text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                        <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
+                        <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                `);
+            }
 
             container.append(`
 
@@ -730,20 +758,9 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                    <label>Check-in Date</label>
-                    <input type="date" id="checkin_date" name="checkin_date" class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label>Check-out Date</label>
-                    <input type="date" id="checkout_date" name="checkout_date"     class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
                     <label>Number of Rooms</label>
-                    <input type="number" name="number_of_rooms" class="form-control" min="1">
+                    <input type="number" name="number_of_rooms" class="form-control" min="1"
+                        value="${$('#preserved_number_of_rooms').val() || ''}">
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -1016,20 +1033,9 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                    <label>Check-in Date</label>
-                    <input type="date" id="checkin_date" name="checkin_date" class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label>Check-out Date</label>
-                    <input type="date" id="checkout_date" name="checkout_date"     class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
                     <label>Number of Rooms</label>
-                    <input type="number" name="number_of_rooms" class="form-control" min="1">
+                    <input type="number" name="number_of_rooms" class="form-control" min="1"
+                        value="${$('#preserved_number_of_rooms').val() || ''}">
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -1578,6 +1584,22 @@
         }
 
         if (disposition === 'Quotation Sent') {
+            if ($('#is_room_required').is(':checked')) {
+                var checkinDate = $.trim(leadField('checkin_date').val() || '');
+                var checkoutDate = $.trim(leadField('checkout_date').val() || '');
+                var today = new Date().toISOString().split('T')[0];
+
+                if (!checkinDate) {
+                    errors.checkin_date = 'Check-in date is required.';
+                } else if (checkinDate < today) {
+                    errors.checkin_date = 'Check-in date cannot be in the past.';
+                }
+                if (!checkoutDate) {
+                    errors.checkout_date = 'Check-out date is required.';
+                } else if (checkinDate && checkoutDate < checkinDate) {
+                    errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+                }
+            }
             if ($.inArray(department, ['rooms', 'wedding']) !== -1 && !leadField('meal_plan').val()) {
                 errors.meal_plan = 'Please select a meal plan.';
             }
@@ -1610,6 +1632,24 @@
         $('#guestNameRequiredMarker').toggle($(this).val() !== 'Not Contacted');
     });
 
+    $(document).on('change', '#is_room_required', function() {
+        var roomRequired = this.checked;
+        var dateFields = $('.room-required-date-fields');
+        var dateInputs = dateFields.find('input[type="date"]');
+
+        dateFields.toggle(roomRequired);
+        dateInputs.prop('required', roomRequired);
+        if (!roomRequired) {
+            dateInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
+            dateFields.find('.error-text, .lead-validation-error').text('');
+        }
+    });
+
+    $(document).on('change', '#checkin_date', function() {
+        var today = new Date().toISOString().split('T')[0];
+        $('#checkout_date').attr('min', $(this).val() || today);
+    });
+
     $('#leadForm').on('submit', function(e) {
         e.preventDefault();
         clearLeadValidation();
@@ -1630,6 +1670,10 @@
         formData.set('phone_number', phone);
         formData.set('status', leadStatus.val() || 'Open');
         formData.set('leadDepartment', normalizeDepartmentName($('#type option:selected').data('name')));
+        if (!formData.has('number_of_rooms') && $('#preserved_number_of_rooms').val() !== '') {
+            formData.set('number_of_rooms', $('#preserved_number_of_rooms').val());
+            formData.set('cross_department_room_count_controlled', '1');
+        }
         csrfFormData(formData);
 
         csrfAjax({
@@ -1644,6 +1688,18 @@
             },
             success: function(response) {
                 refreshCsrf(response);
+                if (response.duplicate) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Duplicate Lead Detected',
+                        text: response.message,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#8f73df'
+                    }).then(function() {
+                        window.location.href = '<?php echo base_url("view-agents-leads"); ?>';
+                    });
+                    return;
+                }
                 if (response.status) {
                     window.location.href = '<?php echo base_url("view-agents-leads"); ?>';
                     return;
