@@ -96,7 +96,7 @@ $profile_data = $this->Comman_model->get_single_record('staff_members', ['id' =>
                               <span class="text-fade">Account settings and more</span>
                            </div>
                         </div>
-                        <div class="profile-menu-item">
+                        <div class="d-none profile-menu-item">
                            <div class="me-15 bg-success-light h-50 w-50 l-h-60 rounded text-center">
                               <span class="icon-Group-chat fs-24"><span class="path1"></span><span class="path2"></span></span>
                            </div>
