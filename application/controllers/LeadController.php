@@ -1041,6 +1041,30 @@ class LeadController extends CI_Controller
         }
 
         if ($disposition === 'Quotation Sent') {
+            if ($value('is_room_required') === '1') {
+                $checkinDate = $value('checkin_date');
+                $checkoutDate = $value('checkout_date');
+                $isValidDate = function ($date) {
+                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                    return $parsed && $parsed->format('Y-m-d') === $date;
+                };
+
+                if ($checkinDate === '') {
+                    $errors['checkin_date'] = 'Check-in date is required.';
+                } elseif (!$isValidDate($checkinDate)) {
+                    $errors['checkin_date'] = 'Please enter a valid check-in date.';
+                } elseif ($checkinDate < date('Y-m-d')) {
+                    $errors['checkin_date'] = 'Check-in date cannot be in the past.';
+                }
+
+                if ($checkoutDate === '') {
+                    $errors['checkout_date'] = 'Check-out date is required.';
+                } elseif (!$isValidDate($checkoutDate)) {
+                    $errors['checkout_date'] = 'Please enter a valid check-out date.';
+                } elseif ($isValidDate($checkinDate) && $checkoutDate < $checkinDate) {
+                    $errors['checkout_date'] = 'Check-out date must be the same as or after check-in date.';
+                }
+            }
             if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
                 $errors['meal_plan'] = 'Please select a meal plan.';
             }
@@ -1200,6 +1224,12 @@ class LeadController extends CI_Controller
             $leadData['reason'] =  $this->input->post('reason');
 
             $leadData['purpose'] =  $this->input->post('purpose');
+            if (
+                $this->input->post('cross_department_room_count_controlled') === '1'
+                && trim((string) $this->input->post('number_of_rooms')) !== ''
+            ) {
+                $leadData['number_of_rooms'] = $this->input->post('number_of_rooms');
+            }
             $myCloudBookingResponse = null;
 
 
@@ -1513,16 +1543,27 @@ class LeadController extends CI_Controller
 
 
 
-            // find last lead created in last 2 hours with same phone number
+            // Find the latest active lead created in the last 2 hours with the
+            // same phone number. When stay dates are supplied, both dates must
+            // also match; a repeat guest with different dates is a new lead.
             $phone = $leadData['phone_number'];
             $last10Digits = substr($phone, -10); // always extract last 10 digits
             $twoHoursAgo = date('Y-m-d H:i:s', strtotime('-2 hours'));
+            $checkinDate = trim((string) ($leadData['checkin_date'] ?? ''));
+            $checkoutDate = trim((string) ($leadData['checkout_date'] ?? ''));
 
-            $existingLead = $this->db
+            $this->db
                 ->where("RIGHT(phone_number, 10) =", $last10Digits, false)
                 ->where('created_at >=', $twoHoursAgo)
-                ->where('is_deleted', 0)
+                ->where('is_deleted', 0);
 
+            if ($checkinDate !== '' && $checkoutDate !== '') {
+                $this->db
+                    ->where('checkin_date', $checkinDate)
+                    ->where('checkout_date', $checkoutDate);
+            }
+
+            $existingLead = $this->db
                 ->order_by('id', 'DESC')
                 ->get('leads')
                 ->row();
@@ -1538,7 +1579,7 @@ class LeadController extends CI_Controller
 
                 $response = [
                     'status'    => true,
-                    'message'   => 'Duplicate detected: Existing lead updated successfully.',
+                    'message'   => 'Existing lead updated successfully.',
                     'duplicate' => true,
                     'csrfHash'  => $this->security->get_csrf_hash()
                 ];
@@ -2978,6 +3019,58 @@ class LeadController extends CI_Controller
             ];
         }
 
+        if ($this->input->post('edit_modal_source_controlled') === '1') {
+            $leadData['user_channel'] = $this->input->post('user_channel', true);
+        }
+
+        // The Manage Leads edit modal controls room dates only for Quotation Sent.
+        // The marker keeps this behavior isolated from other update forms.
+        if (
+            $disposition === 'Quotation Sent'
+            && $this->input->post('room_requirement_controlled') === '1'
+        ) {
+            $isRoomRequired = $this->input->post('is_room_required') === '1';
+            $checkinDate = trim((string) $this->input->post('checkin_date'));
+            $checkoutDate = trim((string) $this->input->post('checkout_date'));
+
+            if ($isRoomRequired) {
+                $isValidDate = function ($date) {
+                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                    return $parsed && $parsed->format('Y-m-d') === $date;
+                };
+                $dateError = '';
+
+                if ($checkinDate === '') {
+                    $dateError = 'Check-in date is required.';
+                } elseif (!$isValidDate($checkinDate)) {
+                    $dateError = 'Please enter a valid check-in date.';
+                } elseif ($checkinDate < date('Y-m-d')) {
+                    $dateError = 'Check-in date cannot be in the past.';
+                } elseif ($checkoutDate === '') {
+                    $dateError = 'Check-out date is required.';
+                } elseif (!$isValidDate($checkoutDate)) {
+                    $dateError = 'Please enter a valid check-out date.';
+                } elseif ($checkoutDate < $checkinDate) {
+                    $dateError = 'Check-out date must be the same as or after check-in date.';
+                }
+
+                if ($dateError !== '') {
+                    echo json_encode([
+                        'status' => false,
+                        'error_message' => $dateError,
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ]);
+                    return;
+                }
+
+                $leadData['checkin_date'] = $checkinDate;
+                $leadData['checkout_date'] = $checkoutDate;
+            } else {
+                $leadData['checkin_date'] = null;
+                $leadData['checkout_date'] = null;
+            }
+        }
+
 
         // /** Get logged-in user ID based on role */
         // $assigned_role = $this->session->userdata('role_as');
@@ -3015,6 +3108,13 @@ class LeadController extends CI_Controller
         $leadData['reason'] =  $this->input->post('reason');
 
         $leadData['purpose'] =  $this->input->post('purpose');
+
+        if (
+            $this->input->post('cross_department_room_count_controlled') === '1'
+            && trim((string) $this->input->post('number_of_rooms')) !== ''
+        ) {
+            $leadData['number_of_rooms'] = $this->input->post('number_of_rooms');
+        }
 
 
 
@@ -3313,6 +3413,15 @@ class LeadController extends CI_Controller
             if ($value !== null && trim($value) !== '') {
                 $leadData[$field] = $value;
             }
+        }
+
+        if (
+            $disposition === 'Quotation Sent'
+            && $this->input->post('room_requirement_controlled') === '1'
+            && $this->input->post('is_room_required') !== '1'
+        ) {
+            $leadData['checkin_date'] = null;
+            $leadData['checkout_date'] = null;
         }
 
 

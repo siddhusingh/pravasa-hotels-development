@@ -260,6 +260,7 @@
                                             <div class="form-group">
                                                 <label for="lead_status"><i class="fa fa-info-circle me-1 text-secondary"></i>Lead Status <span class="required-marker">*</span></label>
                                                 <input type="hidden" id="leadDepartment" name="leadDepartment">
+                                                <input type="hidden" id="preserved_number_of_rooms" value="">
                                                 <select name="lead_status" id="lead_status" class="form-control" disabled>
                                                     <option value="Open" selected>Open</option>
 
@@ -764,6 +765,11 @@
     }
 
     function resetDynamicFields() {
+        const numberOfRoomsField = $('#dynamicFields [name="number_of_rooms"]');
+        if (numberOfRoomsField.length) {
+            $('#preserved_number_of_rooms').val(numberOfRoomsField.val());
+        }
+
         $('#dynamicFields select.select2-hidden-accessible:not([multiple])').each(function() {
             $(this).select2('destroy');
         });
@@ -870,19 +876,40 @@
             $("#lead_status").val('In Progress');
 
 
+            if (department_id) {
+                container.append(`
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="is_room_required" id="is_room_required" value="1">
+                            <label class="form-check-label" for="is_room_required">Is Room Required?</label>
+                        </div>
+                    </div>
+                `);
+            }
+
+            if (department_id) {
+                container.append(`
+                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                        <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
+                        <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
+                        <span class="error-text text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                        <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
+                        <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                `);
+            }
+
             container.append(`
-
-
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Promotional Offer</label>
                     <select name="promotional_offers" class="form-select filter-input" id="promotional_offers">
-                        
                     </select>
                 </div>
-                `
-
-
-            )
+            `);
 
 
             loadpromotional_offers(department_id, existingLeadData);
@@ -911,20 +938,9 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                    <label>Check-in Date</label>
-                    <input type="date" id="checkin_date" name="checkin_date" class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label>Check-out Date</label>
-                    <input type="date" id="checkout_date" name="checkout_date"     class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
                     <label>Number of Rooms</label>
-                    <input type="number" name="number_of_rooms" class="form-control" min="1">
+                    <input type="number" name="number_of_rooms" class="form-control" min="1"
+                        value="${$('#preserved_number_of_rooms').val() || ''}">
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -1219,18 +1235,6 @@
                         <option value="">Select Meal Plan</option>
                     </select>
                     <div class="text-danger error-label" id="meal_plan_error"></div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label>Check-in Date</label>
-                    <input type="date" id="checkin_date" name="checkin_date" class="form-control">
-                    <span class="error-text text-danger"></span>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label>Check-out Date</label>
-                    <input type="date" id="checkout_date" name="checkout_date"     class="form-control">
-                    <span class="error-text text-danger"></span>
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -1903,6 +1907,20 @@
 
     });
 
+    $(document).on('change', '#is_room_required', function() {
+        const roomRequired = this.checked;
+        const $dateFields = $('.room-required-date-fields');
+        const $dateInputs = $dateFields.find('input[type="date"]');
+
+        $dateFields.toggle(roomRequired);
+        $dateInputs.prop('required', roomRequired);
+
+        if (!roomRequired) {
+            $dateInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
+            $dateFields.find('.error-text, .lead-validation-error').text('');
+        }
+    });
+
     function leadField(field) {
         return field === 'table_id' ? $('#table_id') : $('[name="' + field + '"]').first();
     }
@@ -1978,6 +1996,23 @@
         }
 
         if (disposition === 'Quotation Sent') {
+            if ($('#is_room_required').is(':checked')) {
+                const checkinDate = value('checkin_date');
+                const checkoutDate = value('checkout_date');
+                const today = new Date().toISOString().split('T')[0];
+
+                if (!checkinDate) {
+                    errors.checkin_date = 'Check-in date is required.';
+                } else if (checkinDate < today) {
+                    errors.checkin_date = 'Check-in date cannot be in the past.';
+                }
+
+                if (!checkoutDate) {
+                    errors.checkout_date = 'Check-out date is required.';
+                } else if (checkinDate && checkoutDate < checkinDate) {
+                    errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+                }
+            }
             if ((department === 'rooms' || department === 'wedding') && !value('meal_plan')) {
                 errors.meal_plan = 'Please select a meal plan.';
             }
@@ -2063,6 +2098,10 @@
                         if (this.files.length > 0) {
                             formData.append(name, this.files[0]);
                         }
+                    } else if ($(this).attr('type') === 'checkbox') {
+                        if (this.checked) {
+                            formData.append(name, $(this).val());
+                        }
                     } else if (name === 'table_id[]') {
                         // Skip table_id[] - we'll handle it separately below
                     } else {
@@ -2102,6 +2141,10 @@
             formData.append('remark', remark);
             formData.append('lead_type', lead_type);
             formData.append('leadDepartment', leadDepartment);
+            if (!formData.has('number_of_rooms') && $('#preserved_number_of_rooms').val() !== '') {
+                formData.append('number_of_rooms', $('#preserved_number_of_rooms').val());
+                formData.append('cross_department_room_count_controlled', '1');
+            }
             // here also want to add table reservation status for restaurant department 
             if (leadDepartment === 'restaurant') {
                 let tableReservationStatus = $('#table_reservation_status').val();
@@ -2122,7 +2165,16 @@
                 success: function(response) {
 
                     if (response.duplicate) {
-                        alert('Failed to create lead: ' + response.message);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Duplicate Lead Detected',
+                            text: response.message,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#8f73df'
+                        }).then(function() {
+                            window.location.href = '<?php echo base_url("manage-leads") ?>';
+                        });
+                        return;
                     }
 
                     if (response.status) {
@@ -2337,6 +2389,7 @@
             showError($(this), "Check-in date cannot be in the past");
         } else {
             hideError($(this));
+            $("#checkout_date").attr("min", checkin || today);
         }
     });
 
