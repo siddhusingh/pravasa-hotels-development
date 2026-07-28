@@ -162,6 +162,7 @@ $profile_data = $this->Comman_model->get_single_record('super_admin', ['id' => $
 
 <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/themes/dataviz.js"></script>
+<script src="<?php echo base_url('assets') ?>/js/index.js"></script>
 
 
 <!-- ✅ SweetAlert -->

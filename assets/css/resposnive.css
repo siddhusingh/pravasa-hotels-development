@@ -335,7 +335,7 @@
     -o-border-radius: 8px !important;
   }
   .box-body {
-    padding: 0;
+    padding: 8px;
   }
   .box.lead_report_container .row .col-md-6 {
     margin-bottom: 10px;
@@ -566,5 +566,93 @@ div#chart_department ,div#chart_status,div#chart_disposition, div#chart_source, 
   width: 50% !important;
   margin-bottom: 15px;
 }
+/* ============= new deshbord ============= */
+
+.admin_left h2 {
+  font-size: 16px;
 }
 
+.admin_left p {
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.admin_name_details {
+  display: block;
+  margin-bottom: 1px;
+  padding-bottom: 14px;
+  padding-top: 15px;
+}
+
+form#filter_lead_stats_count .col-sm-3,
+.row.main_row_data_desh .col-sm-2.col-12 {
+  width: 50% !important;
+}
+
+.premium-card {
+  height: 120px;
+  padding: 10px;
+}
+
+.sparkline {
+  bottom: 3px;
+  height: 56px;
+  width: 204px;
+}
+
+.chart_box_main_items canvas {
+  border-radius: 3px;
+  padding: 10px;
+  height: auto !important;
+  margin-bottom: 19px;
+  object-fit: contain;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+}
+
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .card-top {
+    display: block;
+    height: auto;
+  }
+
+  .stage-title {
+    white-space: normal;
+    margin-top: 8px;
+  }
+
+  .sparkline {
+    /* position: absolute; */
+    /* z-index: 1; */
+    /* right: 0px; */
+    bottom: -8px;
+    left: -22px;
+    height: 25px;
+    width: 156px;
+  }
+
+  form#filter_lead_stats_count .col-sm-3 {
+    width: 33%;
+  }
+
+  .stage-title {
+    font-size: 14px;
+    white-space: nowrap;
+    margin-top: 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .row.main_row_data_desh .col-sm-2.col-12 .lead-count {
+    font-size: 13px;
+  }
+
+  .row.main_row_data_desh .col-sm-2.col-12 .stage-title {
+    font-size: 12px;
+    white-space: normal;
+    margin-top: 4px;
+    height: 28px;
+  }
+}
