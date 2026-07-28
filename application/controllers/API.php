@@ -152,6 +152,14 @@ class API extends CI_Controller
      */
     public function restaurant_list_by_hotel()
     {
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Methods: POST, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type');
+            exit(0);
+        }
+
+        header('Access-Control-Allow-Origin: *');
         $input = json_decode(file_get_contents('php://input'), true);
 
         // Get hotel_id
@@ -182,6 +190,35 @@ class API extends CI_Controller
         } else {
             $this->response(false, 'No restaurants found', []);
         }
+    }
+
+    /**
+     * Get Banquet List by Hotel ID
+     */
+    public function banquet_list_by_hotel()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Methods: POST, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type');
+            exit(0);
+        }
+
+        header('Access-Control-Allow-Origin: *');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $hotel_id = (int) ($input['hotel_id'] ?? 0);
+
+        if ($hotel_id <= 0) {
+            $this->response(false, 'hotel_id is required');
+        }
+
+        $data = $this->API_Model->get_banquets_by_hotel($hotel_id);
+
+        if (!empty($data)) {
+            $this->response(true, 'Banquet list fetched successfully', $data);
+        }
+
+        $this->response(false, 'No banquets found', []);
     }
 
 
@@ -233,8 +270,9 @@ class API extends CI_Controller
         $acceptedFields = [
             'name', 'email', 'phone', 'query', 'property', 'department',
             'user_channel', 'pax', 'booking_date', 'restaurant_id',
-            'time_slot_id', 'checkin_date', 'checkout_date',
-            'special_request', 'special_occasion', 'arrival_time', 'purpose'
+            'banquet_id', 'time_slot_id', 'checkin_date', 'checkout_date',
+            'number_of_rooms', 'is_room_required', 'special_request',
+            'special_occasion', 'arrival_time', 'purpose'
         ];
 
         foreach ($acceptedFields as $field) {
@@ -274,6 +312,85 @@ class API extends CI_Controller
             }
         }
 
+        $property_id = (int) $input['property'];
+        $department_id = (int) $input['department'];
+        $property = $this->db
+            ->where('hotel_id', $property_id)
+            ->where('status', 'active')
+            ->where('is_deleted', 0)
+            ->get('hotel_admin')
+            ->row();
+        $department = $this->db
+            ->where('department_id', $department_id)
+            ->where('is_deleted', 0)
+            ->get('departments')
+            ->row();
+
+        if (!$property) {
+            return $this->response(false, 'Selected property is unavailable', [], 422);
+        }
+        if (!$department) {
+            return $this->response(false, 'Selected department is unavailable', [], 422);
+        }
+
+        $department_name = strtolower(trim((string) $department->department_name));
+        if ($department_name === 'restaurants') {
+            $department_name = 'restaurant';
+        } elseif ($department_name === 'banquets') {
+            $department_name = 'banquet';
+        }
+
+        $restaurant_id = null;
+        $banquet_id = null;
+
+        if ($department_name === 'restaurant') {
+            $restaurant_id = (int) ($input['restaurant_id'] ?? 0);
+            $restaurant = $restaurant_id > 0 ? $this->db
+                ->where('id', $restaurant_id)
+                ->where('hotel_id', $property_id)
+                ->where('status', 1)
+                ->where('is_deleted', 0)
+                ->get('hotel_restaurants')
+                ->row() : null;
+
+            if (!$restaurant) {
+                return $this->response(false, 'Please select a restaurant for the selected property', [], 422);
+            }
+        }
+
+        if ($department_name === 'banquet') {
+            $banquet_id = (int) ($input['banquet_id'] ?? 0);
+            $banquet = $banquet_id > 0 ? $this->db
+                ->where('banquet_id', $banquet_id)
+                ->where('hotel_id', $property_id)
+                ->where('is_deleted', 0)
+                ->get('banquet')
+                ->row() : null;
+
+            if (!$banquet) {
+                return $this->response(false, 'Please select a banquet for the selected property', [], 422);
+            }
+
+            if ((string) ($input['is_room_required'] ?? '') === '1') {
+                $checkin_date = trim((string) ($input['checkin_date'] ?? ''));
+                $checkout_date = trim((string) ($input['checkout_date'] ?? ''));
+                $is_valid_date = static function ($date) {
+                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                    return $parsed && $parsed->format('Y-m-d') === $date;
+                };
+
+                if (!$is_valid_date($checkin_date) || $checkin_date < date('Y-m-d')) {
+                    return $this->response(false, 'Please enter a valid future check-in date', [], 422);
+                }
+                if (!$is_valid_date($checkout_date) || $checkout_date < $checkin_date) {
+                    return $this->response(false, 'Check-out date must be the same as or after check-in date', [], 422);
+                }
+            } else {
+                $input['checkin_date'] = null;
+                $input['checkout_date'] = null;
+            }
+        }
+
         /* -------------------------------
      *  PREPARE DATA
      * ----------------------------- */
@@ -282,15 +399,17 @@ class API extends CI_Controller
             'email'        => trim($input['email'] ?? ''),
             'phone_number' => trim($input['phone']),
             'query'        => trim($input['query'] ?? ''),
-            'property'     => trim($input['property']),
-            'type'         => trim($input['department']),
+            'property'     => $property_id,
+            'type'         => $department_id,
             'user_channel' => trim($input['user_channel'] ?? 'Website'),
             'pax'          => (int) ($input['pax'] ?? 0),
             'booking_date' => $input['booking_date'] ?? null,
-            'restaurant_id' => $input['restaurant_id'] ?? null,
+            'restaurant_id' => $restaurant_id,
+            'banquet_id' => $banquet_id,
             'time_slot_id' => $input['time_slot_id'] ?? null,
             'checkin_date' => $input['checkin_date'] ?? null,
             'checkout_date' => $input['checkout_date'] ?? null,
+            'number_of_rooms' => isset($input['number_of_rooms']) ? (int) $input['number_of_rooms'] : null,
             'special_request' => $input['special_request'] ?? null,
             'special_occasion' => $input['special_occasion'] ?? null,
             'arrival_time' => $input['arrival_time'] ?? null,
@@ -316,10 +435,22 @@ class API extends CI_Controller
         $last10 = substr($lead_data['phone_number'], -10);
         $twoHoursAgo = date('Y-m-d H:i:s', strtotime('-2 hours'));
 
-        $existing = $this->db
+        $checkin_date = trim((string) ($lead_data['checkin_date'] ?? ''));
+        $checkout_date = trim((string) ($lead_data['checkout_date'] ?? ''));
+
+        $this->db
             ->where("RIGHT(phone_number,10) =", $last10, false)
+            ->where('property', $property_id)
             ->where('created_at >=', $twoHoursAgo)
-            ->where('status !=', 'Closed')
+            ->where('status !=', 'Closed');
+
+        if ($checkin_date !== '' && $checkout_date !== '') {
+            $this->db
+                ->where('checkin_date', $checkin_date)
+                ->where('checkout_date', $checkout_date);
+        }
+
+        $existing = $this->db
             ->get('leads')
             ->row();
 

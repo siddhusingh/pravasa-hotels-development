@@ -187,7 +187,21 @@ class API_Model extends CI_Model
     ');
         $this->db->from('hotel_restaurants');
         $this->db->where('hotel_id', $hotel_id);
-        $this->db->where('status', 1); // optional if exists
+        $this->db->where('status', 1);
+        $this->db->where('is_deleted', 0);
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Get Banquets by Hotel ID
+     */
+    public function get_banquets_by_hotel($hotel_id)
+    {
+        $this->db->select('banquet_id, banquet_name, capacity');
+        $this->db->from('banquet');
+        $this->db->where('hotel_id', $hotel_id);
+        $this->db->where('is_deleted', 0);
 
         return $this->db->get()->result_array();
     }

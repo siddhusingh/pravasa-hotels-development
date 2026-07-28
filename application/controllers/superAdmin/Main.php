@@ -149,6 +149,42 @@ class Main extends CI_Controller
         }
     }
 
+    public function download_lead_form()
+    {
+        $source_path = FCPATH . 'leadform.html';
+
+        if (!is_file($source_path) || !is_readable($source_path)) {
+            show_error('Lead form file is unavailable.', 404);
+            return;
+        }
+
+        $content = file_get_contents($source_path);
+        if ($content === false) {
+            show_error('Unable to read the lead form file.', 500);
+            return;
+        }
+
+        $current_base_url = rtrim(base_url(), '/') . '/';
+        $replacement_count = 0;
+        $content = preg_replace_callback(
+            '/const\s+BASE_URL\s*=\s*([\'\"])(.*?)\1\s*;/',
+            static function () use ($current_base_url) {
+                return 'const BASE_URL = ' . json_encode($current_base_url, JSON_UNESCAPED_SLASHES) . ';';
+            },
+            $content,
+            1,
+            $replacement_count
+        );
+
+        if ($content === null || $replacement_count !== 1) {
+            show_error('Unable to prepare the lead form download.', 500);
+            return;
+        }
+
+        $this->load->helper('download');
+        force_download('leadform.html', $content);
+    }
+
 
 
 
