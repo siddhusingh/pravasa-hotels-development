@@ -206,6 +206,12 @@ $route['hotel-admin/insert-staff'] = 'hotelAdmin/Staff/insert';
 $route['hotel-admin/get-staff-details'] = 'hotelAdmin/Staff/get_staff_details';
 $route['hotel-admin/update-staff'] = 'hotelAdmin/Staff/update';
 $route['hotel-admin/delete-staff'] = 'hotelAdmin/Staff/delete';
+$route['hotel-admin/manage-sales-users'] = 'hotelAdmin/SalesUsers/index';
+$route['hotel-admin/get-sales-users-table'] = 'hotelAdmin/SalesUsers/get_sales_users_table';
+$route['hotel-admin/insert-sales-user'] = 'hotelAdmin/SalesUsers/insert';
+$route['hotel-admin/edit-sales-user'] = 'hotelAdmin/SalesUsers/edit';
+$route['hotel-admin/update-sales-user'] = 'hotelAdmin/SalesUsers/update';
+$route['hotel-admin/delete-sales-user'] = 'hotelAdmin/SalesUsers/delete';
 $route['hotel-admin/view-staff'] = 'hotelAdmin/Staff/get_mapping_details';
 
 // Hotel admin room type management

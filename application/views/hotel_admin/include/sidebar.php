@@ -183,7 +183,7 @@
                   </ul>
                </li>
 
-               <li class="treeview <?php if (($this->uri->segment('1') == 'hotel-admin' && $this->uri->segment('2') == 'manage-staff') || $this->uri->segment('1') == 'view-staff-admin') {
+               <li class="treeview <?php if (($this->uri->segment('1') == 'hotel-admin' && in_array($this->uri->segment('2'), ['manage-sales-users', 'manage-staff'], true)) || $this->uri->segment('1') == 'view-staff-admin') {
                                        echo "active menu-open";
                                     } ?>">
                   <a href="#">
@@ -192,6 +192,13 @@
                      <span class="pull-right-container"><i class="fa fa-angle-right pull-right"></i></span>
                   </a>
                   <ul class="treeview-menu">
+                     <li class="<?php if ($this->uri->segment('1') == 'hotel-admin' && $this->uri->segment('2') == 'manage-sales-users') {
+                                    echo "active";
+                                 } ?>">
+                        <a href="<?php echo base_url('hotel-admin/manage-sales-users') ?>">
+                           <i class="fa fa-male" aria-hidden="true"></i> Sales Executives
+                        </a>
+                     </li>
                      <li class="<?php if (($this->uri->segment('1') == 'hotel-admin' && $this->uri->segment('2') == 'manage-staff') || $this->uri->segment('1') == 'view-staff-admin') {
                                     echo "active";
                                  } ?>">
