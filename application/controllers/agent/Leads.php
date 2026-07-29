@@ -472,13 +472,17 @@ class Leads extends CI_Controller
                     'restaurant_id' => 'Please select a restaurant.',
                     'slot_type_id' => 'Please select a slot type.',
                     'time_slot_id' => 'Please select a time slot.',
-                    'table_category_id' => 'Please select a table category.',
-                    'table_id' => 'Please select a table.'
+                    'table_category_id' => 'Please select a table category.'
                 ];
                 foreach ($restaurantRequired as $field => $message) {
                     if ($value($field) === '') {
                         $errors[$field] = $message;
                     }
+                }
+
+                $tableIds = $this->input->post('table_id', true);
+                if (empty($tableIds) || (is_array($tableIds) && count(array_filter($tableIds)) === 0)) {
+                    $errors['table_id'] = 'Please select at least one table.';
                 }
             }
         }
@@ -586,7 +590,7 @@ class Leads extends CI_Controller
             'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
             'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
             'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
-            'time_slot_id', 'table_category_id', 'table_id', 'special_occasion',
+            'time_slot_id', 'table_category_id', 'special_occasion',
             'special_request'
         ];
         foreach ($optionalFields as $field) {
@@ -594,6 +598,18 @@ class Leads extends CI_Controller
             if ($fieldValue !== null && $fieldValue !== '') {
                 $leadData[$field] = $fieldValue;
             }
+        }
+
+        $tableIds = $this->input->post('table_id', true);
+        if (is_array($tableIds)) {
+            $tableIds = array_values(array_filter($tableIds, static function ($tableId) {
+                return $tableId !== null && $tableId !== '';
+            }));
+            if (!empty($tableIds)) {
+                $leadData['table_id'] = implode(',', $tableIds);
+            }
+        } elseif ($tableIds !== null && $tableIds !== '') {
+            $leadData['table_id'] = $tableIds;
         }
 
         if ($assignedUser) {
@@ -921,7 +937,7 @@ class Leads extends CI_Controller
             'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
             'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
             'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
-            'time_slot_id', 'table_category_id', 'table_id', 'special_occasion',
+            'time_slot_id', 'table_category_id', 'special_occasion',
             'special_request'
         ];
         foreach ($optionalFields as $field) {
@@ -929,6 +945,15 @@ class Leads extends CI_Controller
             if ($fieldValue !== null && $fieldValue !== '') {
                 $leadData[$field] = $fieldValue;
             }
+        }
+
+        $tableIds = $this->input->post('table_id', true);
+        if (is_array($tableIds)) {
+            $leadData['table_id'] = implode(',', array_values(array_filter($tableIds, static function ($tableId) {
+                return $tableId !== null && $tableId !== '';
+            })));
+        } elseif ($tableIds !== null) {
+            $leadData['table_id'] = $tableIds;
         }
 
         if (

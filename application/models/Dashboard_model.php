@@ -181,4 +181,60 @@ class Dashboard_model extends CI_Model
 
         return ['normal' => $normal, 'repeat' => $repeat];
     }
+
+    private function apply_dashboard_graph_filters($filters)
+    {
+        $this->db->where('is_deleted', 0);
+
+        if (!empty($filters['property'])) {
+            $this->db->where('property', $filters['property']);
+        }
+
+        if (!empty($filters['type'])) {
+            $this->db->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $this->db->where('DATE(created_at) >=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $this->db->where('DATE(created_at) <=', $filters['end_date']);
+        }
+    }
+
+    public function get_dashboard_graph_data($filters)
+    {
+        $this->db->select('type, COUNT(*) AS total');
+        $this->apply_dashboard_graph_filters($filters);
+        $this->db->group_by('type');
+        $this->db->order_by('type', 'ASC');
+        $departments = $this->db->get('leads')->result();
+
+        $this->db->select('status, COUNT(*) AS total');
+        $this->apply_dashboard_graph_filters($filters);
+        $this->db->group_by('status');
+        $statuses = $this->db->get('leads')->result();
+
+        $this->db->select('disposition, COUNT(*) AS total');
+        $this->apply_dashboard_graph_filters($filters);
+        $this->db->group_by('disposition');
+        $dispositions = $this->db->get('leads')->result();
+
+        $this->db->select("DATE_FORMAT(created_at, '%Y-%m') AS month_key", false);
+        $this->db->select('COUNT(*) AS lead_count');
+        $this->db->select("COUNT(DISTINCT NULLIF(phone_number, '')) AS guest_count", false);
+        $this->db->select('COALESCE(SUM(amount), 0) AS revenue', false);
+        $this->apply_dashboard_graph_filters($filters);
+        $this->db->group_by("DATE_FORMAT(created_at, '%Y-%m')", false);
+        $this->db->order_by('month_key', 'ASC');
+        $monthly = $this->db->get('leads')->result();
+
+        return [
+            'departments' => $departments,
+            'statuses' => $statuses,
+            'dispositions' => $dispositions,
+            'monthly' => $monthly
+        ];
+    }
 }

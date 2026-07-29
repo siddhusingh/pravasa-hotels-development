@@ -527,6 +527,24 @@
                         scheduleDynamicFieldsRefresh
                     );
             }
+
+            if ($select.is('#restaurant_id')) {
+                $select
+                    .off('.leadTableCategories')
+                    .on(
+                        'change.leadTableCategories select2:select.leadTableCategories select2:clear.leadTableCategories',
+                        scheduleTableCategoriesRefresh
+                    );
+            }
+
+            if ($select.is('#table_category_id')) {
+                $select
+                    .off('.leadTables')
+                    .on(
+                        'change.leadTables select2:select.leadTables select2:clear.leadTables',
+                        scheduleTablesRefresh
+                    );
+            }
         });
     }
 
@@ -876,33 +894,6 @@
             $("#lead_status").val('In Progress');
 
 
-            if (department_id) {
-                container.append(`
-                    <div class="col-md-3 mb-3 d-flex align-items-end">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="is_room_required" id="is_room_required" value="1">
-                            <label class="form-check-label" for="is_room_required">Is Room Required?</label>
-                        </div>
-                    </div>
-                `);
-            }
-
-            if (department_id) {
-                container.append(`
-                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
-                        <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
-                        <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
-                        <span class="error-text text-danger"></span>
-                    </div>
-
-                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
-                        <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
-                        <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
-                        <span class="error-text text-danger"></span>
-                    </div>
-                `);
-            }
-
             container.append(`
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Promotional Offer</label>
@@ -1102,6 +1093,24 @@
 
                 container.append(`
 
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_room_required" id="is_room_required" value="1">
+                    <label class="form-check-label" for="is_room_required">Is Room Required?</label>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
+                <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
+                <span class="error-text text-danger"></span>
+            </div>
+
+            <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
+                <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
+                <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
+                <span class="error-text text-danger"></span>
+            </div>
 
             <div class="col-md-3 mb-3">
                 <label>Booking Date</label>
@@ -1410,6 +1419,7 @@
                     }
                 }
 
+                initializeSingleSelect2($restaurant);
                 $restaurant.trigger('change.select2');
 
                 // This field is rendered dynamically, so load its dependency
@@ -1629,15 +1639,24 @@
     }
 
 
-    $(document).on('change', '#restaurant_id', function() {
-        let restaurantId = $(this).val();
+    let restaurantDependencyTimer = null;
 
-        if (restaurantId) {
-            loadTableCategories(restaurantId);
-        } else {
-            $('#table_category_id').html('<option value="">Select Category</option>');
-        }
-    });
+    function scheduleTableCategoriesRefresh() {
+        const restaurantId = $(this).val();
+
+        clearTimeout(restaurantDependencyTimer);
+        restaurantDependencyTimer = setTimeout(function() {
+            if (restaurantId) {
+                loadTableCategories(restaurantId);
+            } else {
+                $('#table_category_id')
+                    .html('<option value="">Select Category</option>')
+                    .trigger('change.select2');
+                $('#table_id').html('<option value="">Select Table</option>');
+                initializeTableMultiSelect();
+            }
+        }, 0);
+    }
 
     function loadTableCategories(restaurantId, selectedCategoryId = null) {
 
@@ -1678,6 +1697,7 @@
                     }
                 }
 
+                initializeSingleSelect2($category);
                 $category.trigger('change.select2');
 
                 // Continue the dynamic dependency chain directly.
@@ -1693,17 +1713,22 @@
     }
 
 
-    $(document).on('change', '#table_category_id', function() {
-        let categoryId = $(this).val();
-        let restaurantId = $('#restaurant_id').val(); // 🔥 important
+    let tableCategoryDependencyTimer = null;
 
-        if (categoryId && restaurantId) {
-            loadTables(restaurantId, categoryId);
-        } else {
-            $('#table_id').html('<option value="">Select Table</option>');
-            initializeTableMultiSelect();
-        }
-    });
+    function scheduleTablesRefresh() {
+        const categoryId = $(this).val();
+        const restaurantId = $('#restaurant_id').val();
+
+        clearTimeout(tableCategoryDependencyTimer);
+        tableCategoryDependencyTimer = setTimeout(function() {
+            if (categoryId && restaurantId) {
+                loadTables(restaurantId, categoryId);
+            } else {
+                $('#table_id').html('<option value="">Select Table</option>');
+                initializeTableMultiSelect();
+            }
+        }, 0);
+    }
 
 
     function syncTableMultiSelect($select, $widget) {

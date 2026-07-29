@@ -12,8 +12,38 @@
     #dynamicFields .col-md-4,
     #dynamicFields .col-md-6 {
         margin-bottom: 10px;
-        margin-left: 5px;
-        margin-right: 5px;
+        padding-left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+        padding-right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+    }
+
+    @media (min-width: 768px) {
+        #leadForm > .row.g-3 {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        #leadForm > .row.g-3 > .col-md-3,
+        #dynamicFields > .col-md-3 {
+            grid-column: span 3;
+            width: auto;
+        }
+
+        #leadForm > .row.g-3 > .col-md-4,
+        #dynamicFields > .col-md-4 {
+            grid-column: span 4;
+            width: auto;
+        }
+
+        #leadForm > .row.g-3 > .col-md-6,
+        #dynamicFields > .col-md-6 {
+            grid-column: span 6;
+            width: auto;
+        }
+
+        #leadForm > .row.g-3 > .col-md-12 {
+            grid-column: span 12;
+            width: auto;
+        }
     }
 
     #leadForm .required-marker {
@@ -337,6 +367,117 @@
     </div>
 </div>
 <!-- /.content-wrapper -->
+<style>
+    #leadForm .table-multiselect-source {
+        display: none !important;
+    }
+
+    #leadForm .table-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #leadForm .table-multiselect-toggle {
+        align-items: center;
+        background: #fff !important;
+        border: 1px solid #b8c0cc !important;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057 !important;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #leadForm .table-multiselect-source.is-invalid + .table-multiselect .table-multiselect-toggle {
+        border-color: #dc3545 !important;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-toggle,
+    #leadForm .table-multiselect-toggle:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
+        outline: 0;
+    }
+
+    #leadForm .table-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #leadForm .table-multiselect-menu {
+        background: #fff;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1055;
+    }
+
+    #leadForm .table-multiselect.is-open .table-multiselect-menu {
+        display: block;
+    }
+
+    #leadForm .table-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    #leadForm .table-multiselect-option:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    #leadForm .table-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #leadForm .table-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #leadForm .table-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
+    }
+</style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Include jQuery Validation plugin -->
@@ -363,7 +504,66 @@
     }
 </script>
 <script>
+    function initializeSingleSelect2(scope) {
+        if (!$.fn || typeof $.fn.select2 !== 'function') {
+            return;
+        }
+
+        const $scope = scope ? $(scope) : $('#leadForm');
+        const $selects = $scope.is('select')
+            ? $scope.filter('select:not([multiple])')
+            : $scope.find('select:not([multiple])');
+
+        $selects.each(function() {
+            const $select = $(this);
+
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                $select.select2({
+                    width: '100%'
+                });
+            }
+
+            if ($select.is('#property, #type, #disposition')) {
+                $select
+                    .off('.leadDynamicFields')
+                    .on(
+                        'change.leadDynamicFields select2:select.leadDynamicFields select2:clear.leadDynamicFields',
+                        scheduleDynamicFieldsRefresh
+                    );
+            }
+
+            if ($select.is('#restaurant_id')) {
+                $select
+                    .off('.leadTableCategories')
+                    .on(
+                        'change.leadTableCategories select2:select.leadTableCategories select2:clear.leadTableCategories',
+                        scheduleTableCategoriesRefresh
+                    );
+            }
+
+            if ($select.is('#table_category_id')) {
+                $select
+                    .off('.leadTables')
+                    .on(
+                        'change.leadTables select2:select.leadTables select2:clear.leadTables',
+                        scheduleTablesRefresh
+                    );
+            }
+
+            if ($select.is('#slot_type_id')) {
+                $select
+                    .off('.leadTimeSlots')
+                    .on(
+                        'change.leadTimeSlots select2:select.leadTimeSlots select2:clear.leadTimeSlots',
+                        scheduleTimeSlotsRefresh
+                    );
+            }
+        });
+    }
+
     $(document).ready(function() {
+
+        initializeSingleSelect2('#leadForm');
 
         // Username
         $('#username').focusout(function() {
@@ -478,26 +678,14 @@
     });
 
 
-    $("#disposition").change(function() {
+    let dynamicFieldsRefreshTimer = null;
 
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
-
-    $("#type").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
-
-    $("#property").change(function() {
-
-        let property = $("#property").val();
-        updateDynamicFields("", property);
-
-    })
+    function scheduleDynamicFieldsRefresh() {
+        clearTimeout(dynamicFieldsRefreshTimer);
+        dynamicFieldsRefreshTimer = setTimeout(function() {
+            updateDynamicFields("");
+        }, 0);
+    }
 
 
     $(document).on('change', '#assigned_to', function() {
@@ -611,6 +799,11 @@
         if (numberOfRoomsField.length) {
             $('#preserved_number_of_rooms').val(numberOfRoomsField.val());
         }
+
+        $('#dynamicFields select.select2-hidden-accessible:not([multiple])').each(function() {
+            $(this).select2('destroy');
+        });
+
         container.empty();
 
 
@@ -692,30 +885,6 @@
 
 
             $("#lead_status").val('In Progress');
-
-            if (department_id) {
-                container.append(`
-                    <div class="col-md-3 mb-3 d-flex align-items-end">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="is_room_required"
-                                id="is_room_required" value="1">
-                            <label class="form-check-label" for="is_room_required">Is Room Required?</label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
-                        <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
-                        <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
-                        <span class="error-text text-danger"></span>
-                    </div>
-
-                    <div class="col-md-3 mb-3 room-required-date-fields" style="display:none;">
-                        <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
-                        <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
-                        <span class="error-text text-danger"></span>
-                    </div>
-                `);
-            }
 
             container.append(`
 
@@ -842,7 +1011,7 @@
 
                 <div class="col-md-4 mb-3">
                     <label>Tables <span class="text-danger">*</span></label>
-                    <select name="table_id" id="table_id" class="form-select">
+                    <select name="table_id[]" id="table_id" class="form-control ca-select-tag" multiple>
                         <option value="">Select Table</option>
                     </select>
                     <div class="text-danger error-label" id="table_id_error"></div>
@@ -900,23 +1069,42 @@
 
                 container.append(`
 
+            <div class="col-md-3 mb-3 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_room_required"
+                        id="is_room_required" value="1">
+                    <label class="form-check-label" for="is_room_required">Is Room Required?</label>
+                </div>
+            </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label>Booking Date</label>
                 <input type="date" name="booking_date" class="form-control" value="${today}">
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label>No. of Pax</label>
                 <input type="number" name="pax" class="form-control" min="1">
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label>Banquet <span class="text-danger">*</span></label>
                 <select name="banquet_id" id="banquet_id" class="form-select">
                     <option value="">Select Banquet</option>
                 </select>
                 <div class="text-danger error-label" id="banquet_id_error"></div>
+            </div>
+
+            <div class="col-md-6 mb-3 room-required-date-fields" style="display:none;">
+                <label for="checkin_date">Check-in Date <span class="required-marker">*</span></label>
+                <input type="date" id="checkin_date" name="checkin_date" class="form-control" min="${today}">
+                <span class="error-text text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3 room-required-date-fields" style="display:none;">
+                <label for="checkout_date">Check-out Date <span class="required-marker">*</span></label>
+                <input type="date" id="checkout_date" name="checkout_date" class="form-control" min="${today}">
+                <span class="error-text text-danger"></span>
             </div>
 
            
@@ -1159,7 +1347,20 @@
             }
         }
 
+        initializeSingleSelect2(container);
+        if ($('#table_id').length) {
+            initializeTableMultiSelect();
+        }
+        container.find('select:not([multiple])').trigger('change.select2');
+        $('#lead_status').trigger('change.select2');
+
     }
+
+    $(document).ajaxComplete(function() {
+        const $singleDynamicSelects = $('#dynamicFields select:not([multiple])');
+        initializeSingleSelect2($singleDynamicSelects);
+        $singleDynamicSelects.trigger('change.select2');
+    });
 
 
     function loadRestaurants(hotel_id, existingLeadData) {
@@ -1183,9 +1384,22 @@
                     });
                 }
 
-                $('#restaurant_id').html(html);
+                const $restaurant = $('#restaurant_id').html(html);
                 if (typeof existingLeadData !== "undefined" && existingLeadData.restaurant_id) {
-                    $('#restaurant_id').val(existingLeadData.restaurant_id);
+                    $restaurant.val(existingLeadData.restaurant_id);
+                }
+
+                $restaurant.trigger('change.select2');
+
+                if ($restaurant.val()) {
+                    loadTableCategories($restaurant.val());
+                } else {
+                    $('#table_category_id')
+                        .html('<option value="">Select Category</option>')
+                        .trigger('change.select2');
+                    $('#table_id')
+                        .html('<option value="">Select Table</option>');
+                    initializeTableMultiSelect();
                 }
             }
         });
@@ -1333,23 +1547,36 @@
                     });
                 }
 
-                $('#slot_type_id').html(html);
+                const $slotType = $('#slot_type_id').html(html);
                 if (typeof existingLeadData !== "undefined" && existingLeadData.slot_type_id) {
-                    $('#slot_type_id').val(existingLeadData.slot_type_id);
+                    $slotType.val(existingLeadData.slot_type_id);
+                }
+
+                $slotType.trigger('change.select2');
+
+                if ($slotType.val()) {
+                    loadTimeSlots($slotType.val(), existingLeadData ? existingLeadData.time_slot_id : null);
                 }
             }
         });
     }
 
-    $(document).on('change', '#slot_type_id', function() {
-        let slotTypeId = $(this).val();
+    let slotTypeDependencyTimer = null;
 
-        if (slotTypeId) {
-            loadTimeSlots(slotTypeId);
-        } else {
-            $('#time_slot_id').html('<option value="">Select Time Slot</option>');
-        }
-    });
+    function scheduleTimeSlotsRefresh() {
+        const slotTypeId = $(this).val();
+
+        clearTimeout(slotTypeDependencyTimer);
+        slotTypeDependencyTimer = setTimeout(function() {
+            if (slotTypeId) {
+                loadTimeSlots(slotTypeId);
+            } else {
+                $('#time_slot_id')
+                    .html('<option value="">Select Time Slot</option>')
+                    .trigger('change.select2');
+            }
+        }, 0);
+    }
 
 
     function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
@@ -1376,28 +1603,39 @@
                     });
                 }
 
-                $('#time_slot_id').html(html);
+                const $timeSlot = $('#time_slot_id').html(html);
 
 
                 if (selectedTimeSlotId !== null && selectedTimeSlotId !== '') {
-                    $('#time_slot_id').val(selectedTimeSlotId);
+                    $timeSlot.val(selectedTimeSlotId);
                 }
 
+                $timeSlot.trigger('change.select2');
 
             }
         });
     }
 
 
-    $(document).on('change', '#restaurant_id', function() {
-        let restaurantId = $(this).val();
+    let restaurantDependencyTimer = null;
 
-        if (restaurantId) {
-            loadTableCategories(restaurantId);
-        } else {
-            $('#table_category_id').html('<option value="">Select Category</option>');
-        }
-    });
+    function scheduleTableCategoriesRefresh() {
+        const restaurantId = $(this).val();
+
+        clearTimeout(restaurantDependencyTimer);
+        restaurantDependencyTimer = setTimeout(function() {
+            if (restaurantId) {
+                loadTableCategories(restaurantId);
+            } else {
+                $('#table_category_id')
+                    .html('<option value="">Select Category</option>')
+                    .trigger('change.select2');
+                $('#table_id')
+                    .html('<option value="">Select Table</option>');
+                initializeTableMultiSelect();
+            }
+        }, 0);
+    }
 
     function loadTableCategories(restaurantId, selectedCategoryId = null) {
 
@@ -1423,32 +1661,166 @@
                     });
                 }
 
-                $('#table_category_id').html(html);
+                const $category = $('#table_category_id').html(html);
 
                 // ✅ For edit case
                 if (selectedCategoryId !== null && selectedCategoryId !== "") {
-                    $('#table_category_id').val(selectedCategoryId);
+                    $category.val(selectedCategoryId);
+                }
+
+                $category.trigger('change.select2');
+
+                const currentRestaurantId = $('#restaurant_id').val();
+                if ($category.val() && currentRestaurantId) {
+                    loadTables(currentRestaurantId, $category.val());
+                } else {
+                    $('#table_id')
+                        .html('<option value="">Select Table</option>');
+                    initializeTableMultiSelect();
                 }
             }
         });
     }
 
 
-    $(document).on('change', '#table_category_id', function() {
-        let categoryId = $(this).val();
-        let restaurantId = $('#restaurant_id').val(); // 🔥 important
+    let tableCategoryDependencyTimer = null;
 
-        if (categoryId && restaurantId) {
-            loadTables(restaurantId, categoryId);
+    function scheduleTablesRefresh() {
+        const categoryId = $(this).val();
+        const restaurantId = $('#restaurant_id').val();
+
+        clearTimeout(tableCategoryDependencyTimer);
+        tableCategoryDependencyTimer = setTimeout(function() {
+            if (categoryId && restaurantId) {
+                loadTables(restaurantId, categoryId);
+            } else {
+                $('#table_id')
+                    .html('<option value="">Select Table</option>');
+                initializeTableMultiSelect();
+            }
+        }, 0);
+    }
+
+
+    function syncTableMultiSelect($select, $widget) {
+        const selectedValues = ($select.val() || []).map(String);
+        const total = $widget.find('.table-multiselect-item').length;
+        const selectedCount = selectedValues.length;
+
+        $widget.find('.table-multiselect-item').each(function() {
+            $(this).prop('checked', selectedValues.includes(String($(this).val())));
+        });
+
+        const $selectAll = $widget.find('.table-multiselect-all');
+        $selectAll.prop('checked', total > 0 && selectedCount === total);
+        $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+        let summary = 'Select Table';
+        if (selectedCount > 0 && selectedCount === total) {
+            summary = `All selected (${selectedCount})`;
+        } else if (selectedCount > 0) {
+            summary = `${selectedCount} selected`;
+        }
+
+        $widget.find('.table-multiselect-summary').text(summary);
+    }
+
+    function initializeTableMultiSelect() {
+        const $select = $('#table_id');
+        if (!$select.length) return;
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.next('.table-multiselect').remove();
+        $select.addClass('table-multiselect-source');
+
+        const $widget = $('<div>', { class: 'table-multiselect' });
+        const $toggle = $('<button>', {
+            type: 'button',
+            class: 'table-multiselect-toggle',
+            'aria-expanded': 'false'
+        }).append($('<span>', { class: 'table-multiselect-summary', text: 'Select Table' }));
+        const $menu = $('<div>', { class: 'table-multiselect-menu' });
+        const availableOptions = $select.find('option').filter(function() {
+            return String(this.value).trim() !== '';
+        });
+
+        if (availableOptions.length) {
+            const $selectAll = $('<input>', {
+                type: 'checkbox',
+                class: 'table-multiselect-all'
+            });
+            $menu.append(
+                $('<label>', { class: 'table-multiselect-option table-multiselect-select-all' })
+                    .append($selectAll, $('<span>', { text: 'Select all' }))
+            );
+
+            availableOptions.each(function() {
+                const $checkbox = $('<input>', {
+                    type: 'checkbox',
+                    class: 'table-multiselect-item',
+                    value: this.value
+                });
+                $menu.append(
+                    $('<label>', { class: 'table-multiselect-option' })
+                        .append($checkbox, $('<span>').text($(this).text().trim()))
+                );
+            });
         } else {
-            $('#table_id').html('<option value="">Select Table</option>');
+            $menu.append($('<div>', {
+                class: 'table-multiselect-empty',
+                text: 'No tables available'
+            }));
+        }
+
+        $widget.append($toggle, $menu);
+        $select.after($widget);
+
+        $toggle.on('click', function() {
+            const isOpen = !$widget.hasClass('is-open');
+            $('.table-multiselect').not($widget).removeClass('is-open')
+                .find('.table-multiselect-toggle').attr('aria-expanded', 'false');
+            $widget.toggleClass('is-open', isOpen);
+            $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        $widget.on('change', '.table-multiselect-all', function() {
+            const values = this.checked
+                ? $widget.find('.table-multiselect-item').map(function() { return this.value; }).get()
+                : [];
+            $select.val(values).trigger('change');
+        });
+
+        $widget.on('change', '.table-multiselect-item', function() {
+            const values = $widget.find('.table-multiselect-item:checked')
+                .map(function() { return this.value; }).get();
+            $select.val(values).trigger('change');
+        });
+
+        $select.off('change.tableMultiSelect').on('change.tableMultiSelect', function() {
+            syncTableMultiSelect($select, $widget);
+        });
+
+        syncTableMultiSelect($select, $widget);
+    }
+
+    $(document).off('click.tableMultiSelect').on('click.tableMultiSelect', function(e) {
+        if (!$(e.target).closest('.table-multiselect').length) {
+            $('.table-multiselect').removeClass('is-open')
+                .find('.table-multiselect-toggle').attr('aria-expanded', 'false');
         }
     });
 
 
     function loadTables(restaurantId, categoryId, selectedTableId = null) {
 
-        $('#table_id').html('<option value="">Loading...</option>');
+        if ($('#table_id').hasClass('select2-hidden-accessible')) {
+            $('#table_id').select2('destroy');
+        }
+
+        $('#table_id').html('');
 
         csrfAjax({
             url: "<?= base_url('lead/get-tables') ?>",
@@ -1460,7 +1832,7 @@
             dataType: "json",
             success: function(res) {
 
-                let html = '<option value="">Select Table</option>';
+                let html = '';
 
                 if (res.status === 'success') {
                     $.each(res.data, function(i, row) {
@@ -1471,11 +1843,16 @@
                     });
                 }
 
-                $('#table_id').html(html);
+                const $table = $('#table_id').html(html);
 
-                // ✅ Edit case
+                initializeTableMultiSelect();
+
                 if (selectedTableId !== null && selectedTableId !== "") {
-                    $('#table_id').val(selectedTableId);
+                    const tableIds = Array.isArray(selectedTableId)
+                        ? selectedTableId
+                        : String(selectedTableId).split(',').map(function(id) { return id.trim(); });
+
+                    $table.val(tableIds).trigger('change');
                 }
             }
         });

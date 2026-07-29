@@ -1,3 +1,24 @@
+<?php
+$sales_user_context = $sales_user_context ?? 'super_admin';
+$sales_user_role_label = $sales_user_role_label ?? 'Super Admin';
+$sales_user_page_title = $sales_user_page_title ?? 'Manage Sales Users';
+$sales_user_fixed_hotel = $sales_user_fixed_hotel ?? '';
+$sales_user_routes = $sales_user_routes ?? [
+    'table' => 'get-sales-users-table',
+    'insert' => 'insert-sales-users',
+    'edit' => 'edit-sales-users',
+    'update' => 'update-sales-users',
+    'delete' => 'delete-sales-users'
+];
+?>
+<?php if ($sales_user_context === 'hotel_admin') { ?>
+<script>
+window.CSRF = {
+    name: <?= json_encode($this->security->get_csrf_token_name()) ?>,
+    hash: <?= json_encode($this->security->get_csrf_hash()) ?>
+};
+</script>
+<?php } ?>
 <style>
     #add-modal .select2-container--default .select2-selection--multiple,
     #edit-modal .select2-container--default .select2-selection--multiple {
@@ -72,14 +93,14 @@
                     <i class="fa fa-male"></i>
                 </div>
                 <div class="header-content">
-                    <h2 class="header-title">Manage Sales Users</h2>
+                    <h2 class="header-title"><?= html_escape($sales_user_page_title) ?></h2>
                     <ol class="custom-breadcrumb">
                         <li><i class="fa fa-home"></i></li>
-                        <li>Super Admin</li>
+                        <li><?= html_escape($sales_user_role_label) ?></li>
                         <li><i class="fa fa-angle-right"></i></li>
                         <li>User Management</li>
                         <li><i class="fa fa-angle-right"></i></li>
-                        <li class="active">Sales User Management</li>
+                        <li class="active"><?= html_escape($sales_user_page_title) ?></li>
                     </ol>
                 </div>
             </div>
@@ -93,7 +114,7 @@
                 <div class="col-12">
                     <div class="box new_table_box">
                         <div class="box-header">
-                            <h4 class="box-title">Manage Sales Users</h4>
+                            <h4 class="box-title"><?= html_escape($sales_user_page_title) ?></h4>
                             <div class="float-right" style="float:right;">
                                 <button type="button" class="btn btn-primary-light btn-sm " id="open-modal">
                                     Add +
@@ -586,6 +607,7 @@
     </div>
 </div>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+<?php if ($sales_user_context !== 'hotel_admin') { ?>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 <script>
     // validation rules for comments
@@ -617,7 +639,11 @@
     <?php $this->session->set_flashdata('regional_managers_success_msg', '');
     } ?>
 </script>
+<?php } ?>
 <script type="text/javascript">
+    <?php if ($sales_user_context === 'hotel_admin') { ?>
+    window.initializeHotelSalesUsers = function() {
+    <?php } ?>
     function initializeSalesMultiSelects() {
         if (!$.fn.select2) {
             return;
@@ -654,6 +680,12 @@
             allowClear: true,
             dropdownParent: $('#edit-modal')
         });
+
+        <?php if ($sales_user_fixed_hotel !== '') { ?>
+        $('#hotel_id, #hotel_id_edit').on('select2:unselecting', function(event) {
+            event.preventDefault();
+        });
+        <?php } ?>
 
         $('#city').select2({
             width: '100%',
@@ -742,7 +774,7 @@
         ordering: true,
         searching: true,
         ajax: {
-            url: '<?php echo base_url('get-sales-users-table'); ?>',
+            url: '<?php echo base_url($sales_user_routes['table']); ?>',
             type: 'POST',
             data: function(d) {
                 d[window.CSRF.name] = window.CSRF.hash;
@@ -803,7 +835,13 @@
         clearSalesErrors();
         $('#add-modal input, #add-modal textarea').val('');
         $('#user_role').val('');
-        $('#team_group, #hotel_id').val(null).trigger('change');
+        $('#team_group').val(null).trigger('change');
+        <?php if ($sales_user_fixed_hotel !== '') { ?>
+        $('#hotel_id option').prop('selected', true);
+        $('#hotel_id').trigger('change');
+        <?php } else { ?>
+        $('#hotel_id').val(null).trigger('change');
+        <?php } ?>
         $('#city, #state_id').val(null).trigger('change');
         $('#status').val('1');
         $('#add-modal').modal('show');
@@ -814,7 +852,7 @@
         clearSalesErrors();
 
         $.ajax({
-            url: '<?php echo base_url("insert-sales-users"); ?>',
+            url: '<?php echo base_url($sales_user_routes['insert']); ?>',
             type: 'POST',
             data: salesFormData(false),
             processData: false,
@@ -848,7 +886,7 @@
         clearSalesErrors();
 
         $.ajax({
-            url: '<?php echo base_url("edit-sales-users"); ?>',
+            url: '<?php echo base_url($sales_user_routes['edit']); ?>',
             type: 'POST',
             dataType: 'JSON',
             data: {
@@ -895,7 +933,7 @@
         clearSalesErrors();
 
         $.ajax({
-            url: '<?php echo base_url("update-sales-users"); ?>',
+            url: '<?php echo base_url($sales_user_routes['update']); ?>',
             type: 'POST',
             data: salesFormData(true),
             processData: false,
@@ -930,7 +968,7 @@
 
         Swal.fire({
             title: "Are you sure?",
-            text: 'This sales user will be removed from the active sales user list.',
+            text: <?= json_encode($sales_user_context === 'hotel_admin' ? 'This sales user will be removed from this hotel only.' : 'This sales user will be removed from the active sales user list.') ?>,
             icon: "question",
             showCancelButton: true,
             showCloseButton: true,
@@ -941,7 +979,7 @@
             }
 
             $.ajax({
-                url: '<?php echo base_url('delete-sales-users') ?>',
+                url: '<?php echo base_url($sales_user_routes['delete']) ?>',
                 method: "POST",
                 dataType: 'JSON',
                 data: {
@@ -960,4 +998,7 @@
             });
         });
     });
+    <?php if ($sales_user_context === 'hotel_admin') { ?>
+    };
+    <?php } ?>
 </script>

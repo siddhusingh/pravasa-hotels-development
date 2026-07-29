@@ -390,7 +390,7 @@ $profile_data = $this->Comman_model->get_single_record('hotel_admins', ['hotel_i
 <!-- ✅ jQuery - Use FULL version instead of slim for Flot -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<?php if (($this->uri->segment(1) === 'hotel-admin' && in_array($this->uri->segment(2), ['manage-staff', 'manage-roomtypes', 'manage-restaurants', 'manage-banquet', 'manage-departments', 'manage-table-categories', 'manage-time-slots'], true)) || in_array($this->uri->segment(1), ['restaurants', 'view-departments', 'view-staff-admin'], true)): ?>
+<?php if (($this->uri->segment(1) === 'hotel-admin' && in_array($this->uri->segment(2), ['manage-sales-users', 'manage-staff', 'manage-roomtypes', 'manage-restaurants', 'manage-banquet', 'manage-departments', 'manage-table-categories', 'manage-time-slots'], true)) || in_array($this->uri->segment(1), ['restaurants', 'view-departments', 'view-staff-admin'], true)): ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 <script>
 $(document).on(
@@ -459,6 +459,16 @@ $(document).on(
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<?php if ($this->uri->segment(1) === 'hotel-admin' && $this->uri->segment(2) === 'manage-sales-users'): ?>
+<script>
+$(document).ready(function () {
+   if (typeof window.initializeHotelSalesUsers === 'function') {
+      window.initializeHotelSalesUsers();
+   }
+});
+</script>
+<?php endif; ?>
 
 
 <script>

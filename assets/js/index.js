@@ -1,6 +1,7 @@
 // ========= chart_department_line =======
 
-const data = {
+if (typeof Chart !== "undefined") {
+const departmentChartData = {
   labels: ["🏨 Rooms", "🍽 Restaurant", "🎉 Banquets"],
   datasets: [
     {
@@ -50,7 +51,7 @@ const data = {
 
 const config = {
   type: "line",
-  data: data,
+  data: departmentChartData,
   options: {
     responsive: true,
 
@@ -227,7 +228,10 @@ new Chart(document.getElementById("chart_department_line"), config);
 
                 ctx.font = '700 34px Poppins';
 
-                ctx.fillText('120', x, y - 6);
+                const total = chart.data.datasets[0].data.reduce(function(sum, value) {
+                    return sum + (Number(value) || 0);
+                }, 0);
+                ctx.fillText(total.toLocaleString('en-IN'), x, y - 6);
 
                 ctx.font = '500 15px Poppins';
 
@@ -937,6 +941,7 @@ new Chart(ctxRevenue, {
     }
 
 });
+}
 
 
 

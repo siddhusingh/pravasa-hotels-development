@@ -23,9 +23,13 @@
 
     <div class="admin_left">
 
+        <?php
+            $superAdminSession = $this->session->userdata('super_admin_session');
+            $superAdminName = $superAdminSession['user_name'] ?? 'User';
+        ?>
         <h2>
-            Good Morning, Umesh <?php echo $profile_data->name; ?>
-             👋
+            <?= htmlspecialchars(get_time_based_greeting(), ENT_QUOTES, 'UTF-8'); ?>,
+            <?= htmlspecialchars($superAdminName, ENT_QUOTES, 'UTF-8'); ?> 👋
         </h2>
 
         <p>
@@ -36,7 +40,7 @@
 
     <div class="admin_right">
 
-        <a href="<?= base_url('manage-leads/add') ?>" class="btn btn-primary-light btn-sm ">
+        <a href="<?= base_url('add-lead') ?>" class="btn btn-primary-light btn-sm ">
             <i class="fa fa-plus"></i>
             Add Lead
         </a>
@@ -1077,6 +1081,162 @@
 
             return '₹ ' + amount.toLocaleString('en-IN');
         }
+        </script>
+
+        <script>
+        $(document).ready(function() {
+            const $graphFilterButton = $('#filter_bottom_button');
+
+            function graphFilters() {
+                return {
+                    property: $('select[name="property_bottom"]').val(),
+                    type: $('select[name="department_bottom"]').val(),
+                    start_date: $('input[name="start_date_bottom"]').val(),
+                    end_date: $('input[name="end_date_bottom"]').val()
+                };
+            }
+
+            function dashboardChart(id) {
+                if (typeof Chart === 'undefined' || typeof Chart.getChart !== 'function') {
+                    return null;
+                }
+
+                const canvas = document.getElementById(id);
+                return canvas ? Chart.getChart(canvas) : null;
+            }
+
+            function replaceSingleDataset(chartId, rows) {
+                const chart = dashboardChart(chartId);
+                if (!chart) return;
+
+                chart.data.labels = rows.map(row => row.label);
+                chart.data.datasets[0].data = rows.map(row => Number(row.count) || 0);
+                chart.canvas.setAttribute('role', 'img');
+                chart.canvas.setAttribute('aria-label', rows.map(function(row) {
+                    return row.label + ': ' + (Number(row.count) || 0);
+                }).join(', '));
+                chart.update();
+            }
+
+            function renderSalesFunnel(totalLeads, stages) {
+                const $target = $('#sales_funnel_chart');
+                if (!$target.length) return;
+
+                const colors = ['#3b82f6', '#38bdf8', '#34d399', '#62c76b', '#f7ad20',
+                    '#f57c2d', '#e83d87', '#8b5cf6', '#ef4444'
+                ];
+                const rows = [{
+                    label: 'Total Leads',
+                    count: Number(totalLeads) || 0
+                }].concat(stages.filter(stage => Number(stage.count) > 0));
+                const base = Math.max(Number(totalLeads) || 0, 1);
+
+                const steps = rows.map(function(row, index) {
+                    const percentage = (Number(row.count) / base) * 100;
+                    const width = Math.max(percentage, Number(row.count) > 0 ? 18 : 8);
+                    return '<div class="sales-funnel-step" style="width:' + width + '%;background:' +
+                        colors[index % colors.length] + '"></div>';
+                }).join('');
+
+                const legend = rows.map(function(row, index) {
+                    const percentage = ((Number(row.count) / base) * 100).toFixed(1).replace('.0', '');
+                    return '<div class="sales-funnel-legend__item">' +
+                        '<span class="sales-funnel-legend__dot" style="background:' +
+                        colors[index % colors.length] + '"></span>' +
+                        '<span>' + row.label + '</span>' +
+                        '<strong class="sales-funnel-legend__value">' +
+                        Number(row.count).toLocaleString('en-IN') + ' (' + percentage + '%)</strong>' +
+                        '</div>';
+                }).join('');
+
+                $target.html('<section class="sales-funnel-card" aria-label="Sales Funnel">' +
+                    '<h3 class="sales-funnel-card__title">Sales Funnel</h3>' +
+                    '<div class="sales-funnel-card__content">' +
+                    '<div class="sales-funnel-visual" aria-hidden="true">' + steps + '</div>' +
+                    '<div class="sales-funnel-legend">' + legend + '</div>' +
+                    '</div></section>');
+            }
+
+            function updateDashboardGraphs(response) {
+                replaceSingleDataset('chart_department_line', response.departments || []);
+                replaceSingleDataset('chart_status_new', response.statuses || []);
+                replaceSingleDataset('chart_stage_bar', response.stages || []);
+
+                const monthly = response.monthly || [];
+                const guestChart = dashboardChart('chart_guest_type');
+                if (guestChart) {
+                    guestChart.data.labels = monthly.map(row => row.label);
+                    guestChart.data.datasets[0].data = monthly.map(row => Number(row.guests) || 0);
+                    guestChart.canvas.setAttribute('role', 'img');
+                    guestChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+                        return row.label + ' guests: ' + (Number(row.guests) || 0);
+                    }).join(', '));
+                    guestChart.update();
+                }
+
+                const revenueChart = dashboardChart('chart_revenue_vs_leads');
+                if (revenueChart) {
+                    revenueChart.data.labels = monthly.map(row => row.label);
+                    revenueChart.data.datasets[0].data = monthly.map(row => Number(row.leads) || 0);
+                    revenueChart.data.datasets[0].yAxisID = 'y';
+                    revenueChart.data.datasets[1].data = monthly.map(row => Number(row.revenue) || 0);
+                    revenueChart.data.datasets[1].yAxisID = 'y1';
+                    revenueChart.canvas.setAttribute('role', 'img');
+                    revenueChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+                        return row.label + ' leads: ' + (Number(row.leads) || 0) +
+                            ', revenue: ₹' + Number(row.revenue || 0).toLocaleString('en-IN');
+                    }).join('; '));
+                    revenueChart.options.scales.y1 = {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + Number(value).toLocaleString('en-IN');
+                            }
+                        }
+                    };
+                    revenueChart.update();
+                }
+
+                renderSalesFunnel(response.total_leads, response.stages || []);
+            }
+
+            function loadDashboardGraphs() {
+                const filters = graphFilters();
+
+                if (filters.start_date && filters.end_date && filters.start_date > filters.end_date) {
+                    toastr.error('Start date cannot be after end date.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '<?= base_url("superAdmin/Main/dashboard_graph_data") ?>',
+                    type: 'GET',
+                    data: filters,
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $graphFilterButton.prop('disabled', true).text('Loading...');
+                    },
+                    success: function(response) {
+                        updateDashboardGraphs(response);
+                    },
+                    error: function() {
+                        toastr.error('Unable to load dashboard graphs.');
+                    },
+                    complete: function() {
+                        $graphFilterButton.prop('disabled', false).text('Filter');
+                    }
+                });
+            }
+
+            $graphFilterButton.on('click', function(event) {
+                event.preventDefault();
+                loadDashboardGraphs();
+            });
+
+            loadDashboardGraphs();
+        });
         </script>
 
 

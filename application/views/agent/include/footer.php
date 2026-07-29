@@ -590,6 +590,7 @@ $properties = $CI->Common_model->getAllData('hotel_admin', ['hotel_code!=' => ''
 
 
 
+<script src="<?php echo base_url('assets/') ?>/js/index.js"></script>
 
 <script>
    $(document).on("click", "#openAvailabilityPopup", function() {

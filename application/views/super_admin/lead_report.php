@@ -2108,13 +2108,9 @@ font-size:14px;
          let department = $('#edit_type').find(':selected').data('name')?.toLowerCase();
          let department_id = $('#edit_type').val();
 
-         console.log(department);
-
          $('#edit_leadDepartment').val(department);
 
          let existingLeadData = data;
-
-         console.log(existingLeadData);
 
          const container = $("#Edit_dynamicFields");
          const currentNumberOfRooms = container.find('[name="number_of_rooms"]');
@@ -2184,7 +2180,7 @@ font-size:14px;
 
             $("#edit_lead_status").val('In Progress');
 
-            if (disposition === "Quotation Sent" && department_id) {
+            if (disposition === "Quotation Sent" && department === "banquets") {
                const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
                const roomDateDisplay = roomRequired ? '' : 'display:none;';
                const roomDateRequired = roomRequired ? 'required' : '';
