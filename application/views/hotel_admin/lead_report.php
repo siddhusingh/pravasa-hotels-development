@@ -2206,7 +2206,7 @@ font-size:14px;
 
             $("#edit_lead_status").val('In Progress');
 
-            if (disposition === "Quotation Sent" && department_id) {
+            if (disposition === "Quotation Sent" && department === "banquets") {
                const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
                const roomDateDisplay = roomRequired ? '' : 'display:none;';
                const roomDateRequired = roomRequired ? 'required' : '';

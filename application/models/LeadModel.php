@@ -781,7 +781,7 @@ class LeadModel extends CI_Model
         }
 
         if (!empty($end_date)) {
-            $this->db->where('created_at <=', $end_date);
+            $this->db->where('created_at <=', $end_date . ' 23:59:59');
         }
 
         return $this->db->count_all_results();

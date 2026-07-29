@@ -91,6 +91,113 @@
     #leadEditForm .edit-select2-dropdown-parent > .select2-container--open .select2-dropdown {
         z-index: 1070;
     }
+
+    #leadEditForm .edit-table-multiselect-source {
+        display: none !important;
+    }
+
+    #leadEditForm .edit-table-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #leadEditForm .edit-table-multiselect-toggle {
+        align-items: center;
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #leadEditForm .edit-table-multiselect-source.is-invalid + .edit-table-multiselect .edit-table-multiselect-toggle {
+        border-color: #dc3545;
+    }
+
+    #leadEditForm .edit-table-multiselect.is-open .edit-table-multiselect-toggle,
+    #leadEditForm .edit-table-multiselect-toggle:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        outline: 0;
+    }
+
+    #leadEditForm .edit-table-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        margin-left: 10px;
+    }
+
+    #leadEditForm .edit-table-multiselect.is-open .edit-table-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #leadEditForm .edit-table-multiselect-menu {
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1080;
+    }
+
+    #leadEditForm .edit-table-multiselect.is-open .edit-table-multiselect-menu {
+        display: block;
+    }
+
+    #leadEditForm .edit-table-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    #leadEditForm .edit-table-multiselect-option:hover {
+        background: #f5f3ff;
+    }
+
+    #leadEditForm .edit-table-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #8f73df;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #leadEditForm .edit-table-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    #leadEditForm .edit-table-multiselect-empty {
+        color: #6c757d;
+        padding: 9px 12px;
+    }
 </style>
 <style>
     #filter-section .lead-filter-multiselect-source {
@@ -1491,6 +1598,119 @@ font-size:14px;
             field.trigger('change.select2');
         }
 
+        function syncEditTableMultiSelect(select, widget) {
+            var selectedValues = (select.val() || []).map(String);
+            var items = widget.find('.edit-table-multiselect-item');
+            var selectedCount = selectedValues.length;
+
+            items.each(function() {
+                $(this).prop('checked', selectedValues.includes(String($(this).val())));
+            });
+
+            var selectAll = widget.find('.edit-table-multiselect-all');
+            selectAll.prop('checked', items.length > 0 && selectedCount === items.length);
+            selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < items.length);
+
+            var summary = 'Select Table';
+            if (selectedCount > 0 && selectedCount === items.length) {
+                summary = 'All selected (' + selectedCount + ')';
+            } else if (selectedCount > 0) {
+                summary = selectedCount + ' selected';
+            }
+            widget.find('.edit-table-multiselect-summary').text(summary);
+        }
+
+        function initializeEditTableMultiSelect() {
+            var select = $('#table_id');
+            if (!select.length) return;
+
+            if (select.hasClass('select2-hidden-accessible')) {
+                select.select2('destroy');
+            }
+
+            select.next('.edit-table-multiselect').remove();
+            select.addClass('edit-table-multiselect-source');
+
+            var widget = $('<div>', { class: 'edit-table-multiselect' });
+            var toggle = $('<button>', {
+                type: 'button',
+                class: 'edit-table-multiselect-toggle',
+                'aria-expanded': 'false'
+            }).append($('<span>', {
+                class: 'edit-table-multiselect-summary',
+                text: 'Select Table'
+            }));
+            var menu = $('<div>', { class: 'edit-table-multiselect-menu' });
+            var options = select.find('option').filter(function() {
+                return String(this.value).trim() !== '';
+            });
+
+            if (options.length) {
+                var selectAll = $('<input>', {
+                    type: 'checkbox',
+                    class: 'edit-table-multiselect-all'
+                });
+                menu.append(
+                    $('<label>', { class: 'edit-table-multiselect-option edit-table-multiselect-select-all' })
+                        .append(selectAll, $('<span>', { text: 'Select all' }))
+                );
+
+                options.each(function() {
+                    var checkbox = $('<input>', {
+                        type: 'checkbox',
+                        class: 'edit-table-multiselect-item',
+                        value: this.value
+                    });
+                    menu.append(
+                        $('<label>', { class: 'edit-table-multiselect-option' })
+                            .append(checkbox, $('<span>').text($(this).text().trim()))
+                    );
+                });
+            } else {
+                menu.append($('<div>', {
+                    class: 'edit-table-multiselect-empty',
+                    text: 'No tables available'
+                }));
+            }
+
+            widget.append(toggle, menu);
+            select.after(widget);
+
+            toggle.on('click', function() {
+                var isOpen = !widget.hasClass('is-open');
+                $('.edit-table-multiselect').not(widget).removeClass('is-open')
+                    .find('.edit-table-multiselect-toggle').attr('aria-expanded', 'false');
+                widget.toggleClass('is-open', isOpen);
+                toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            widget.on('change', '.edit-table-multiselect-all', function() {
+                var values = this.checked
+                    ? widget.find('.edit-table-multiselect-item').map(function() { return this.value; }).get()
+                    : [];
+                select.val(values).trigger('change');
+            });
+
+            widget.on('change', '.edit-table-multiselect-item', function() {
+                var values = widget.find('.edit-table-multiselect-item:checked')
+                    .map(function() { return this.value; }).get();
+                select.val(values).trigger('change');
+            });
+
+            select.off('change.editTableMultiSelect').on('change.editTableMultiSelect', function() {
+                syncEditTableMultiSelect(select, widget);
+            });
+
+            syncEditTableMultiSelect(select, widget);
+        }
+
+        $(document).off('click.editTableMultiSelect').on('click.editTableMultiSelect', function(e) {
+            if (!$(e.target).closest('.edit-table-multiselect').length) {
+                $('.edit-table-multiselect').removeClass('is-open')
+                    .find('.edit-table-multiselect-toggle').attr('aria-expanded', 'false');
+            }
+        });
+
 
         function normalizeEditDepartmentName(name) {
             var department = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -1502,7 +1722,8 @@ font-size:14px;
         function editLeadField(field) {
             var names = {
                 username: 'user_name',
-                lead_status: 'status'
+                lead_status: 'status',
+                table_id: 'table_id[]'
             };
             return $('#leadEditForm [name="' + (names[field] || field) + '"]').first();
         }
@@ -1549,7 +1770,8 @@ font-size:14px;
         function validateEditLeadForm() {
             var errors = {};
             var value = function(name) {
-                return $.trim(String($('#leadEditForm [name="' + name + '"]').first().val() || ''));
+                var fieldValue = editLeadField(name).val() || '';
+                return $.trim(String(Array.isArray(fieldValue) ? fieldValue.join(',') : fieldValue));
             };
             var phone = value('phone_number').replace(/\D/g, '').slice(-10);
             var email = value('email');
@@ -1982,39 +2204,6 @@ font-size:14px;
 
                 $("#edit_lead_status").val('In Progress');
 
-                if (disposition === "Quotation Sent" && department_id) {
-                    const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
-                    const roomDateDisplay = roomRequired ? '' : 'display:none;';
-                    const roomDateRequired = roomRequired ? 'required' : '';
-                    const roomRequiredChecked = roomRequired ? 'checked' : '';
-                    const checkoutMinDate = existingLeadData?.checkin_date > today
-                        ? existingLeadData.checkin_date
-                        : today;
-
-                    container.append(`
-                        <div class="col-md-3 mb-3 d-flex align-items-end">
-                            <input type="hidden" name="room_requirement_controlled" value="1">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="is_room_required"
-                                    id="edit_is_room_required" value="1" ${roomRequiredChecked}>
-                                <label class="form-check-label" for="edit_is_room_required">Is Room Required?</label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3 mb-3 edit-room-required-date-fields" style="${roomDateDisplay}">
-                            <label for="edit_checkin_date">Check-in Date <span class="required-marker">*</span></label>
-                            <input type="date" id="edit_checkin_date" name="checkin_date" class="form-control"
-                                min="${today}" value="${existingLeadData?.checkin_date ?? ''}" ${roomDateRequired}>
-                        </div>
-
-                        <div class="col-md-3 mb-3 edit-room-required-date-fields" style="${roomDateDisplay}">
-                            <label for="edit_checkout_date">Check-out Date <span class="required-marker">*</span></label>
-                            <input type="date" id="edit_checkout_date" name="checkout_date" class="form-control"
-                                min="${checkoutMinDate}" value="${existingLeadData?.checkout_date ?? ''}" ${roomDateRequired}>
-                        </div>
-                    `);
-                }
-
                 container.append(`
 
         <div class="col-md-3 mb-3">
@@ -2143,9 +2332,7 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
 
                 <div class="col-md-4 mb-3">
                     <label>Tables <span class="required-marker">*</span></label>
-                    <select name="table_id" id="table_id" class="form-select">
-                        <option value="">Select Table</option>
-                    </select>
+                    <select name="table_id[]" id="table_id" class="form-control edit-table-multiselect-source" multiple></select>
                     <div class="text-danger error-label" id="table_id_error"></div>
                 </div>
 
@@ -2198,7 +2385,24 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                 /* BANQUETS */
                 else if (department === "banquets") {
 
+                    const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
+                    const roomDateDisplay = roomRequired ? '' : 'display:none;';
+                    const roomDateRequired = roomRequired ? 'required' : '';
+                    const roomRequiredChecked = roomRequired ? 'checked' : '';
+                    const checkoutMinDate = existingLeadData?.checkin_date > today
+                        ? existingLeadData.checkin_date
+                        : today;
+
                     container.append(`
+
+            <div class="col-md-4 mb-3 d-flex align-items-end">
+                <input type="hidden" name="room_requirement_controlled" value="1">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_room_required"
+                        id="edit_is_room_required" value="1" ${roomRequiredChecked}>
+                    <label class="form-check-label" for="edit_is_room_required">Is Room Required?</label>
+                </div>
+            </div>
 
             <div class="col-md-4 mb-3">
                 <label>Booking Date</label>
@@ -2213,6 +2417,18 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
             <div class="col-md-4 mb-3">
                 <label>Banquet <span class="required-marker">*</span></label>
                 <select name="banquet_id" id="edit_banquet_id" class="form-select"></select>
+            </div>
+
+            <div class="col-md-6 mb-3 edit-room-required-date-fields" style="${roomDateDisplay}">
+                <label for="edit_checkin_date">Check-in Date <span class="required-marker">*</span></label>
+                <input type="date" id="edit_checkin_date" name="checkin_date" class="form-control"
+                    min="${today}" value="${existingLeadData?.checkin_date ?? ''}" ${roomDateRequired}>
+            </div>
+
+            <div class="col-md-6 mb-3 edit-room-required-date-fields" style="${roomDateDisplay}">
+                <label for="edit_checkout_date">Check-out Date <span class="required-marker">*</span></label>
+                <input type="date" id="edit_checkout_date" name="checkout_date" class="form-control"
+                    min="${checkoutMinDate}" value="${existingLeadData?.checkout_date ?? ''}" ${roomDateRequired}>
             </div>
 
            
@@ -2500,6 +2716,14 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                         $('#edit_restaurant_id').val(existingLeadData.restaurant_id);
                     }
                     refreshEditSingleSelect2('#edit_restaurant_id');
+
+                    if ($('#edit_restaurant_id').val()) {
+                        loadTableCategories(
+                            $('#edit_restaurant_id').val(),
+                            existingLeadData?.table_category_id ?? null,
+                            existingLeadData?.table_id ?? null
+                        );
+                    }
                 }
             });
         }
@@ -2658,6 +2882,13 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                         $('#slot_type_id').val(existingLeadData.slot_type_id);
                     }
                     refreshEditSingleSelect2('#slot_type_id');
+
+                    if ($('#slot_type_id').val()) {
+                        loadTimeSlots(
+                            $('#slot_type_id').val(),
+                            existingLeadData?.time_slot_id ?? null
+                        );
+                    }
                 }
             });
         }
@@ -2718,10 +2949,12 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                 loadTableCategories(restaurantId);
             } else {
                 $('#table_category_id').html('<option value="">Select Category</option>');
+                $('#table_id').html('');
+                initializeEditTableMultiSelect();
             }
         });
 
-        function loadTableCategories(restaurantId, selectedCategoryId = null) {
+        function loadTableCategories(restaurantId, selectedCategoryId = null, selectedTableId = null) {
 
             $('#table_category_id').html('<option value="">Loading...</option>');
 
@@ -2752,6 +2985,13 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                         $('#table_category_id').val(selectedCategoryId);
                     }
                     refreshEditSingleSelect2('#table_category_id');
+
+                    if ($('#table_category_id').val()) {
+                        loadTables(restaurantId, $('#table_category_id').val(), selectedTableId);
+                    } else {
+                        $('#table_id').html('');
+                        initializeEditTableMultiSelect();
+                    }
                 }
             });
         }
@@ -2764,14 +3004,18 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
             if (categoryId && restaurantId) {
                 loadTables(restaurantId, categoryId);
             } else {
-                $('#table_id').html('<option value="">Select Table</option>');
+                $('#table_id').html('');
+                initializeEditTableMultiSelect();
             }
         });
 
 
         function loadTables(restaurantId, categoryId, selectedTableId = null) {
 
-            $('#table_id').html('<option value="">Loading...</option>');
+            if ($('#table_id').hasClass('select2-hidden-accessible')) {
+                $('#table_id').select2('destroy');
+            }
+            $('#table_id').html('');
 
             csrfAjax({
                 url: "<?= base_url('lead/get-tables') ?>",
@@ -2783,7 +3027,7 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                 dataType: "json",
                 success: function(res) {
 
-                    let html = '<option value="">Select Table</option>';
+                    let html = '';
 
                     if (res.status === 'success') {
                         $.each(res.data, function(i, row) {
@@ -2794,13 +3038,17 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                         });
                     }
 
-                    $('#table_id').html(html);
+                    const table = $('#table_id').html(html);
+
+                    initializeEditTableMultiSelect();
 
                     // ✅ Edit case
                     if (selectedTableId !== null && selectedTableId !== "") {
-                        $('#table_id').val(selectedTableId);
+                        const tableIds = Array.isArray(selectedTableId)
+                            ? selectedTableId
+                            : String(selectedTableId).split(',').map(function(id) { return id.trim(); });
+                        table.val(tableIds).trigger('change');
                     }
-                    refreshEditSingleSelect2('#table_id');
                 }
             });
         }
@@ -2889,6 +3137,10 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                     if (this.checked) {
                         formData.append(name, $(this).val());
                     }
+                } else if ($(this).is('select[multiple]')) {
+                    ($(this).val() || []).forEach(function(value) {
+                        formData.append(name, value);
+                    });
                 } else {
                     formData.append(name, $(this).val());
                 }

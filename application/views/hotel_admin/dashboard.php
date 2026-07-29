@@ -21,9 +21,13 @@
 
 										<div class="admin_left">
 
+											<?php
+											$hotelAdminSession = $this->session->userdata('hotel_admin_session');
+											$hotelAdminName = $hotelAdminSession['user_name'] ?? 'User';
+											?>
 											<h2>
-												Good Morning, Umesh <?php echo $profile_data->name; ?>
-												👋
+												<?= htmlspecialchars(get_time_based_greeting(), ENT_QUOTES, 'UTF-8'); ?>,
+												<?= htmlspecialchars($hotelAdminName, ENT_QUOTES, 'UTF-8'); ?> 👋
 											</h2>
 
 											<p>
@@ -34,7 +38,7 @@
 
 										<div class="admin_right">
 
-											<a href="<?= base_url('manage-leads	') ?>" class="btn btn-primary-light btn-sm ">
+											<a href="<?= base_url('add-lead-admin') ?>" class="btn btn-primary-light btn-sm ">
 												<i class="fa fa-plus"></i>
 												Add Lead
 											</a>
@@ -54,13 +58,21 @@
 											<!-- Property -->
 											<div class="col-sm-3  ">
 												<label for="top_filter_property" class="form-label">Property</label>
-												<select name="property" id="top_filter_property" class="form-select">
-													<option value="">All Properties</option>
-													<?php foreach ($properties as $property) { ?>
-														<option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
-															<?= $property->hotel_name; ?>
-														</option>
-													<?php } ?>
+												<?php
+													$hotelAdminSession = $this->session->userdata('hotel_admin_session');
+													$assignedPropertyId = $hotelAdminSession['id'] ?? '';
+													$assignedPropertyName = 'Assigned Property';
+													foreach ($properties as $property) {
+														if ((string) $property->hotel_id === (string) $assignedPropertyId) {
+															$assignedPropertyName = $property->hotel_name;
+															break;
+														}
+													}
+												?>
+												<select name="property" id="top_filter_property" class="form-select" disabled aria-disabled="true">
+													<option value="<?= htmlspecialchars($assignedPropertyId); ?>" selected>
+														<?= htmlspecialchars($assignedPropertyName); ?>
+													</option>
 												</select>
 											</div>
 
@@ -271,21 +283,21 @@
 									<a href="<?= base_url('view-leads?status=Not-assigned') ?>">
 										<div class="premium-card">
                                             <div class="card-top">
-                                                <div class="icon-box bg-blue">
-                                                    <i class="fa fa-phone"></i>
+                                                <div class="icon-box bg-orange">
+                                                    <i class="fa fa-user-times"></i>
                                                 </div>
 
                                                 <div>
-                                                    <div class="stage-title">Not Contacted</div>
+                                                    <div class="stage-title">Not Assigned</div>
 
-                                                    <div class="lead-count" data-lead-status="Not_Contacted">
-                                                        <?= $lead_status_counts['Not_Contacted']; ?>
+                                                    <div class="lead-count" data-lead-status="Not Assigned">
+                                                        <?= $lead_status_counts['Not_Assigned']; ?>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="revenue-box" data-lead-revenue="Not_Contacted">
-                                                ₹ <?= number_format($lead_revenue['Not_Contacted']); ?>
+                                            <div class="revenue-box">
+                                                ₹ 0
                                             </div>
 
                                             <div class="sparkline">
@@ -571,6 +583,9 @@
 									</div>
 									<div class="col-md-1 d-grid">
 										<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
+									</div>
+									<div class="col-md-12">
+										<div id="graph_filter_error" class="text-danger mt-2" role="alert" style="display:none;"></div>
 									</div>
 								</div>
 							</form>
@@ -865,8 +880,207 @@
 			});
 		</script> -->
 
+		<script>
+			window.addEventListener('load', function() {
+				var $ = window.jQuery;
+
+				if (!$ || typeof Chart === 'undefined' || typeof Chart.getChart !== 'function') {
+					return;
+				}
+
+				var $graphFilterButton = $('#filter_bottom_button');
+				var $graphFilterError = $('#graph_filter_error');
+
+				function graphFilters() {
+					return {
+						type: $('#department_bottom').val(),
+						start_date: $('#start_date_bottom').val(),
+						end_date: $('#end_date_bottom').val()
+					};
+				}
+
+				function dashboardChart(id) {
+					var canvas = document.getElementById(id);
+					return canvas ? Chart.getChart(canvas) : null;
+				}
+
+				function replaceSingleDataset(chartId, rows) {
+					var chart = dashboardChart(chartId);
+					if (!chart) return;
+
+					chart.data.labels = rows.map(function(row) { return row.label; });
+					chart.data.datasets[0].data = rows.map(function(row) {
+						return Number(row.count) || 0;
+					});
+					chart.canvas.setAttribute('role', 'img');
+					chart.canvas.setAttribute('aria-label', rows.map(function(row) {
+						return row.label + ': ' + (Number(row.count) || 0);
+					}).join(', '));
+					chart.update();
+				}
+
+				function renderSalesFunnel(totalLeads, stages) {
+					var $target = $('#sales_funnel_chart');
+					if (!$target.length) return;
+
+					var colors = ['#3b82f6', '#38bdf8', '#34d399', '#62c76b', '#f7ad20',
+						'#f57c2d', '#e83d87', '#8b5cf6', '#ef4444'
+					];
+					var sortedStages = stages.filter(function(stage) {
+						return Number(stage.count) > 0;
+					}).sort(function(firstStage, secondStage) {
+						return Number(secondStage.count) - Number(firstStage.count);
+					});
+					var rows = [{
+						label: 'Total Leads',
+						count: Number(totalLeads) || 0
+					}].concat(sortedStages);
+					var base = Math.max(Number(totalLeads) || 0, 1);
+
+					var steps = rows.map(function(row, index) {
+						var percentage = (Number(row.count) / base) * 100;
+						var width = Math.max(percentage, Number(row.count) > 0 ? 18 : 8);
+						return '<div class="sales-funnel-step" style="width:' + width + '%;background:' +
+							colors[index % colors.length] + '"></div>';
+					}).join('');
+
+					var legend = rows.map(function(row, index) {
+						var percentage = ((Number(row.count) / base) * 100).toFixed(1).replace('.0', '');
+						return '<div class="sales-funnel-legend__item">' +
+							'<span class="sales-funnel-legend__dot" style="background:' +
+							colors[index % colors.length] + '"></span>' +
+							'<span>' + row.label + '</span>' +
+							'<strong class="sales-funnel-legend__value">' +
+							Number(row.count).toLocaleString('en-IN') + ' (' + percentage + '%)</strong>' +
+							'</div>';
+					}).join('');
+
+					$target.html('<section class="sales-funnel-card" aria-label="Sales Funnel">' +
+						'<h3 class="sales-funnel-card__title">Sales Funnel</h3>' +
+						'<div class="sales-funnel-card__content">' +
+						'<div class="sales-funnel-visual" aria-hidden="true">' + steps + '</div>' +
+						'<div class="sales-funnel-legend">' + legend + '</div>' +
+						'</div></section>');
+				}
+
+				function updateDashboardGraphs(response) {
+					replaceSingleDataset('chart_department_line', response.departments || []);
+					replaceSingleDataset('chart_status_new', response.statuses || []);
+					replaceSingleDataset('chart_stage_bar', response.stages || []);
+
+					var monthly = response.monthly || [];
+					var guestChart = dashboardChart('chart_guest_type');
+					if (guestChart) {
+						guestChart.data.labels = monthly.map(function(row) { return row.label; });
+						guestChart.data.datasets[0].data = monthly.map(function(row) {
+							return Number(row.guests) || 0;
+						});
+						guestChart.canvas.setAttribute('role', 'img');
+						guestChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+							return row.label + ' guests: ' + (Number(row.guests) || 0);
+						}).join(', '));
+						guestChart.update();
+					}
+
+					var revenueChart = dashboardChart('chart_revenue_vs_leads');
+					if (revenueChart) {
+						revenueChart.data.labels = monthly.map(function(row) { return row.label; });
+						revenueChart.data.datasets[0].data = monthly.map(function(row) {
+							return Number(row.leads) || 0;
+						});
+						revenueChart.data.datasets[0].yAxisID = 'y';
+						revenueChart.data.datasets[1].data = monthly.map(function(row) {
+							return Number(row.revenue) || 0;
+						});
+						revenueChart.data.datasets[1].yAxisID = 'y1';
+						revenueChart.canvas.setAttribute('role', 'img');
+						revenueChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+							return row.label + ' leads: ' + (Number(row.leads) || 0) +
+								', revenue: ₹' + Number(row.revenue || 0).toLocaleString('en-IN');
+						}).join('; '));
+						revenueChart.options.scales.y1 = {
+							beginAtZero: true,
+							position: 'right',
+							grid: { drawOnChartArea: false },
+							ticks: {
+								callback: function(value) {
+									return '₹' + Number(value).toLocaleString('en-IN');
+								}
+							}
+						};
+						revenueChart.update();
+					}
+
+					renderSalesFunnel(response.total_leads, response.stages || []);
+				}
+
+				function loadDashboardGraphs() {
+					var filters = graphFilters();
+
+					if (filters.start_date && filters.end_date && filters.start_date > filters.end_date) {
+						$graphFilterError.text('Start date cannot be after end date.').show();
+						return;
+					}
+
+					$graphFilterError.hide().text('');
+
+					$.ajax({
+						url: '<?= base_url("hotelAdmin/Main/dashboard_graph_data") ?>',
+						type: 'GET',
+						data: filters,
+						dataType: 'json',
+						beforeSend: function() {
+							$graphFilterButton.prop('disabled', true).text('Loading...');
+						},
+						success: function(response) {
+							if (response.csrfHash && window.CSRF) {
+								window.CSRF.hash = response.csrfHash;
+							}
+							updateDashboardGraphs(response);
+						},
+						error: function() {
+							$graphFilterError.text('Unable to load dashboard graphs. Please try again.').show();
+						},
+						complete: function() {
+							$graphFilterButton.prop('disabled', false).text('Filter');
+						}
+					});
+				}
+
+				$graphFilterButton.off('click.hotelDashboardGraphs').on('click.hotelDashboardGraphs', function(event) {
+					event.preventDefault();
+					loadDashboardGraphs();
+				});
+
+				loadDashboardGraphs();
+			});
+		</script>
+
 
 		<script>
+			window.CSRF = {
+				name: "<?= $this->security->get_csrf_token_name(); ?>",
+				hash: "<?= $this->security->get_csrf_hash(); ?>"
+			};
+
+			function validateDateRange(startSelector, endSelector) {
+				const startInput = $(startSelector)[0];
+				const endInput = $(endSelector)[0];
+
+				if (!startInput || !endInput) {
+					return true;
+				}
+
+				const isValid = !startInput.value || !endInput.value || startInput.value <= endInput.value;
+				endInput.setCustomValidity(isValid ? '' : 'End date must be on or after the start date.');
+
+				if (!isValid) {
+					endInput.reportValidity();
+				}
+
+				return isValid;
+			}
+
 			let topFilterRequest = null;
 			let topFilterQueued = false;
 			let topFilterTimer = null;
@@ -905,14 +1119,14 @@
 					}
 
 					if ($rendered.length) {
-						$rendered[0].style.setProperty();
-						$rendered[0].style.setProperty();
-						$rendered[0].style.setProperty();
-						$rendered[0].style.setProperty();
+						$rendered[0].style.setProperty('line-height', '54px', 'important');
+						$rendered[0].style.setProperty('padding-left', '14px', 'important');
+						$rendered[0].style.setProperty('padding-right', '36px', 'important');
+						$rendered[0].style.setProperty('color', 'inherit', 'important');
 					}
 
 					if ($arrow.length) {
-						$arrow[0].style.setProperty();
+						$arrow[0].style.setProperty('height', '54px', 'important');
 						$arrow[0].style.setProperty('top', '0', 'important');
 					}
 				});

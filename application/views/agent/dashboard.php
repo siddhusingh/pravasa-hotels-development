@@ -20,9 +20,13 @@
 
 										<div class="admin_left">
 
+											<?php
+												$agentSession = $this->session->userdata('agent_session');
+												$agentName = $agentSession['user_name'] ?? 'User';
+											?>
 											<h2>
-												Good Morning, Umesh <?php echo $profile_data->name; ?>
-												👋
+												<?= htmlspecialchars(get_time_based_greeting(), ENT_QUOTES, 'UTF-8'); ?>,
+												<?= htmlspecialchars($agentName, ENT_QUOTES, 'UTF-8'); ?> 👋
 											</h2>
 
 											<p>
@@ -33,7 +37,7 @@
 
 										<div class="admin_right">
 
-											<a href="<?= base_url('manage-leads	') ?>" class="btn btn-primary-light btn-sm ">
+											<a href="<?= base_url('add-lead-agents') ?>" class="btn btn-primary-light btn-sm ">
 												<i class="fa fa-plus"></i>
 												Add Lead
 											</a>
@@ -53,13 +57,20 @@
 											<!-- Property -->
 											<div class="col-sm-3 ">
 												<label for="top_filter_property" class="form-label">Property</label>
-								<select name="property" id="top_filter_property" class="form-select dashboard-filter-select">
-													<option value="">All Properties</option>
-													<?php foreach ($properties as $property) { ?>
-														<option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
-															<?= $property->hotel_name; ?>
-														</option>
-													<?php } ?>
+								<?php
+									$selectedPropertyId = $this->session->userdata('selected_hotel_id');
+									$selectedPropertyName = 'Selected Property';
+									foreach ($properties as $property) {
+										if ((string) $property->hotel_id === (string) $selectedPropertyId) {
+											$selectedPropertyName = $property->hotel_name;
+											break;
+										}
+									}
+								?>
+								<select name="property" id="top_filter_property" class="form-select" disabled aria-disabled="true">
+													<option value="<?= htmlspecialchars($selectedPropertyId); ?>" selected>
+														<?= htmlspecialchars($selectedPropertyName); ?>
+													</option>
 												</select>
 											</div>
 
@@ -67,7 +78,7 @@
 											<div class="col-sm-3 ">
 												<label for="top_filter_department" class="form-label">Department</label>
 								<select name="department" id="top_filter_department" class="form-select dashboard-filter-select">
-													<!-- <option value="">All Departments</option> -->
+													<option value="">All Departments</option>
 													<?php foreach ($departments as $dept) { ?>
 														<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
 															<?= $dept->department_name; ?>
@@ -125,7 +136,7 @@
 											<div class="col-sm-3 more-filter d-none">
 												<label for="top_filter_channel" class="form-label">Lead Source</label>
 								<select name="channel" id="top_filter_channel" class="form-select filter-input dashboard-filter-select">
-													<!-- <option value="">All Sources</option> -->
+													<option value="">All Sources</option>
 													<?php foreach ($user_channel as $channelObj): ?>
 														<?php $channel = $channelObj->user_channel; ?>
 														<option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
@@ -575,9 +586,12 @@
 														<label for="end_date" class="form-label">End Date</label>
 														<input type="date" name="end_date_bottom" class="form-control" value="<?= $this->input->get('end_date'); ?>">
 													</div>
-													<div class="col-md-2 d-grid">
-														<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
-													</div>
+											<div class="col-md-2 d-grid">
+												<button type="button" id="filter_bottom_button" class="btn btn-primary">Filter</button>
+											</div>
+											<div class="col-md-6">
+												<div id="graph_filter_error" class="text-danger mt-2" role="alert" style="display:none;"></div>
+											</div>
 
 												</div>
 											</form>
@@ -661,174 +675,176 @@
 		</section>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://code.highcharts.com/modules/funnel.js"></script>
 
 		<script>
-			var agentDashboardCharts = {};
-
-			function renderDashboardChart(containerId, title, categories, series, type = 'column') {
-				const isPie = type === 'pie';
-				const isHorizontal = type === 'bar';
-				const container = document.getElementById(containerId);
-
-				if (!container || typeof ApexCharts === 'undefined') {
-					return;
-				}
-
-				if (agentDashboardCharts[containerId]) {
-					agentDashboardCharts[containerId].destroy();
-				}
-
-				var chartOptions = {
-					chart: {
-						type: isPie ? 'pie' : 'bar',
-						height: 380,
-						toolbar: {
-							show: true
-						}
-					},
-					title: {
-						text: title,
-						align: 'center'
-					},
-					plotOptions: {
-						bar: {
-							horizontal: isHorizontal,
-							columnWidth: '55%'
-						}
-					},
-					noData: {
-						text: 'No data available'
-					}
-				};
-
-				if (isPie) {
-					chartOptions.series = series;
-					chartOptions.labels = categories;
-				} else {
-					chartOptions.series = [{
-						name: title,
-						data: series
-					}];
-					chartOptions.xaxis = {
-						categories: categories
-					};
-					chartOptions.yaxis = {
-						title: {
-							text: 'Count'
-						}
-					};
-				}
-
-				agentDashboardCharts[containerId] = new ApexCharts(container, chartOptions);
-
-				agentDashboardCharts[containerId].render();
-			}
-
-			function fetchAndRenderChart(endpoint, containerId, title, type) {
-				const filters = {
-					property: $('input[name="property_bottom"]').val(),
-					type: $('input[name="department_bottom"]').val(),
-					start_date: $('input[name="start_date_bottom"]').val(),
-					end_date: $('input[name="end_date_bottom"]').val()
-				};
-
-				$.ajax({
-					url: endpoint,
-					type: 'GET',
-					data: filters,
-					dataType: 'json',
-					success: function(data) {
-						const categories = data.map(d => d.label);
-						const counts = data.map(d => parseInt(d.count));
-						renderDashboardChart(containerId, title, categories, counts, type);
-					},
-					error: function() {
-						$('#' + containerId).html('<p>Error loading data.</p>');
-					}
-				});
-			}
-
 			window.addEventListener('load', function() {
 				var $ = window.jQuery;
 
-				if (!$ || typeof ApexCharts === 'undefined') {
+				if (!$ || typeof Chart === 'undefined' || typeof Chart.getChart !== 'function') {
 					return;
 				}
 
-				const chartConfigs = [{
-						id: 'chart_department',
-						endpoint: '<?= base_url("agent/Main/department_chart_data") ?>',
-						title: 'Leads by Department',
-						type: 'column',
-						startId: 'start_department',
-						endId: 'end_department'
-					},
-					{
-						id: 'chart_status',
-						endpoint: '<?= base_url("agent/Main/status_chart_data") ?>',
-						title: 'Leads by Status',
-						type: 'pie',
-						startId: 'start_status',
-						endId: 'end_status'
-					},
-					{
-						id: 'chart_disposition',
-						endpoint: '<?= base_url("agent/Main/disposition_chart_data") ?>',
-						title: 'Leads by Stage',
-						type: 'bar',
-						startId: 'start_disposition',
-						endId: 'end_disposition'
-					},
-					{
-						id: 'chart_source',
-						endpoint: '<?= base_url("agent/Main/source_chart_data") ?>',
-						title: 'Leads by Source',
-						type: 'pie',
-						startId: 'start_source',
-						endId: 'end_source'
-					},
-					{
-						id: 'chart_guest_type',
-						endpoint: '<?= base_url("agent/Main/guest_type_chart_data") ?>',
-						title: 'Leads by Guest Type',
-						type: 'pie',
-						startId: 'start_source',
-						endId: 'end_source'
-					},
-					{
-						id: 'chart_template_name',
-						endpoint: '<?= base_url("agent/Main/template_chart_data") ?>',
-						title: 'Leads by Templates',
-						type: 'column',
-						startId: 'start_source',
-						endId: 'end_source'
-					}
-				];
+				var $graphFilterButton = $('#filter_bottom_button');
 
-				chartConfigs.forEach(config => {
-					$('#' + config.startId + ', #' + config.endId).on('change', function() {
-						const start = $('#' + config.startId).val();
-						const end = $('#' + config.endId).val();
-						fetchAndRenderChart(config.endpoint, config.id, config.title, config.type, start, end);
+				function graphFilters() {
+					return {
+						start_date: $('input[name="start_date_bottom"]').val(),
+						end_date: $('input[name="end_date_bottom"]').val()
+					};
+				}
+
+				function dashboardChart(id) {
+					var canvas = document.getElementById(id);
+					return canvas ? Chart.getChart(canvas) : null;
+				}
+
+				function replaceSingleDataset(chartId, rows) {
+					var chart = dashboardChart(chartId);
+					if (!chart) return;
+
+					chart.data.labels = rows.map(function(row) { return row.label; });
+					chart.data.datasets[0].data = rows.map(function(row) {
+						return Number(row.count) || 0;
 					});
-				});
+					chart.canvas.setAttribute('role', 'img');
+					chart.canvas.setAttribute('aria-label', rows.map(function(row) {
+						return row.label + ': ' + (Number(row.count) || 0);
+					}).join(', '));
+					chart.update();
+				}
 
+				function renderSalesFunnel(totalLeads, stages) {
+					var $target = $('#sales_funnel_chart');
+					if (!$target.length) return;
 
-				function reloadAllCharts() {
-					chartConfigs.forEach(config => {
-						fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
+					var colors = ['#3b82f6', '#38bdf8', '#34d399', '#62c76b', '#f7ad20',
+						'#f57c2d', '#e83d87', '#8b5cf6', '#ef4444'
+					];
+					var sortedStages = stages.filter(function(stage) {
+						return Number(stage.count) > 0;
+					}).sort(function(firstStage, secondStage) {
+						return Number(secondStage.count) - Number(firstStage.count);
+					});
+					var rows = [{
+						label: 'Total Leads',
+						count: Number(totalLeads) || 0
+					}].concat(sortedStages);
+					var base = Math.max(Number(totalLeads) || 0, 1);
+
+					var steps = rows.map(function(row, index) {
+						var percentage = (Number(row.count) / base) * 100;
+						var width = Math.max(percentage, Number(row.count) > 0 ? 18 : 8);
+						return '<div class="sales-funnel-step" style="width:' + width + '%;background:' +
+							colors[index % colors.length] + '"></div>';
+					}).join('');
+
+					var legend = rows.map(function(row, index) {
+						var percentage = ((Number(row.count) / base) * 100).toFixed(1).replace('.0', '');
+						return '<div class="sales-funnel-legend__item">' +
+							'<span class="sales-funnel-legend__dot" style="background:' +
+							colors[index % colors.length] + '"></span>' +
+							'<span>' + row.label + '</span>' +
+							'<strong class="sales-funnel-legend__value">' +
+							Number(row.count).toLocaleString('en-IN') + ' (' + percentage + '%)</strong>' +
+							'</div>';
+					}).join('');
+
+					$target.html('<section class="sales-funnel-card" aria-label="Sales Funnel">' +
+						'<h3 class="sales-funnel-card__title">Sales Funnel</h3>' +
+						'<div class="sales-funnel-card__content">' +
+						'<div class="sales-funnel-visual" aria-hidden="true">' + steps + '</div>' +
+						'<div class="sales-funnel-legend">' + legend + '</div>' +
+						'</div></section>');
+				}
+
+				function updateDashboardGraphs(response) {
+					replaceSingleDataset('chart_department_line', response.departments || []);
+					replaceSingleDataset('chart_status_new', response.statuses || []);
+					replaceSingleDataset('chart_stage_bar', response.stages || []);
+
+					var monthly = response.monthly || [];
+					var guestChart = dashboardChart('chart_guest_type');
+					if (guestChart) {
+						guestChart.data.labels = monthly.map(function(row) { return row.label; });
+						guestChart.data.datasets[0].data = monthly.map(function(row) {
+							return Number(row.guests) || 0;
+						});
+						guestChart.canvas.setAttribute('role', 'img');
+						guestChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+							return row.label + ' guests: ' + (Number(row.guests) || 0);
+						}).join(', '));
+						guestChart.update();
+					}
+
+					var revenueChart = dashboardChart('chart_revenue_vs_leads');
+					if (revenueChart) {
+						revenueChart.data.labels = monthly.map(function(row) { return row.label; });
+						revenueChart.data.datasets[0].data = monthly.map(function(row) {
+							return Number(row.leads) || 0;
+						});
+						revenueChart.data.datasets[0].yAxisID = 'y';
+						revenueChart.data.datasets[1].data = monthly.map(function(row) {
+							return Number(row.revenue) || 0;
+						});
+						revenueChart.data.datasets[1].yAxisID = 'y1';
+						revenueChart.canvas.setAttribute('role', 'img');
+						revenueChart.canvas.setAttribute('aria-label', monthly.map(function(row) {
+							return row.label + ' leads: ' + (Number(row.leads) || 0) +
+								', revenue: ₹' + Number(row.revenue || 0).toLocaleString('en-IN');
+						}).join('; '));
+						revenueChart.options.scales.y1 = {
+							beginAtZero: true,
+							position: 'right',
+							grid: { drawOnChartArea: false },
+							ticks: {
+								callback: function(value) {
+									return '₹' + Number(value).toLocaleString('en-IN');
+								}
+							}
+						};
+						revenueChart.update();
+					}
+
+					renderSalesFunnel(response.total_leads, response.stages || []);
+				}
+
+				function loadDashboardGraphs() {
+					var filters = graphFilters();
+					var $graphFilterError = $('#graph_filter_error');
+
+					if (filters.start_date && filters.end_date && filters.start_date > filters.end_date) {
+						$graphFilterError.text('Start date cannot be after end date.').show();
+						return;
+					}
+
+					$graphFilterError.hide().text('');
+
+					$.ajax({
+						url: '<?= base_url("agent/Main/dashboard_graph_data") ?>',
+						type: 'GET',
+						data: filters,
+						dataType: 'json',
+						beforeSend: function() {
+							$graphFilterButton.prop('disabled', true).text('Loading...');
+						},
+						success: function(response) {
+							updateDashboardGraphs(response);
+						},
+						error: function() {
+							$graphFilterError.text('Unable to load dashboard graphs. Please try again.').show();
+						},
+						complete: function() {
+							$graphFilterButton.prop('disabled', false).text('Filter');
+						}
 					});
 				}
 
-				// Initial load
-				reloadAllCharts();
-
-				// Global filter button
-				$('#filter_bottom_button').on('click', function(e) {
-					e.preventDefault();
-					reloadAllCharts();
+				$graphFilterButton.off('click.agentDashboardGraphs').on('click.agentDashboardGraphs', function(event) {
+					event.preventDefault();
+					loadDashboardGraphs();
 				});
+
+				loadDashboardGraphs();
 			});
 		</script>
 
@@ -1035,35 +1051,47 @@
 
 
 <script>
-    
-$("#toggleFilterBtn").click(function () {
+(function () {
+    var toggleButton = document.getElementById('toggleFilterBtn');
 
-    var filters = $(".more-filter");
-
-    if ($(this).hasClass("open")) {
-
-        $(this)
-            .removeClass("open")
-            .html('<i class="fa fa-filter"></i> More Filters');
-
-        filters.removeClass("show-filter");
-
-        setTimeout(function () {
-            filters.addClass("d-none");
-        }, 350);
-
-    } else {
-
-        $(this)
-            .addClass("open")
-            .html('<i class="fa fa-times"></i> Hide Filters');
-
-        filters.removeClass("d-none");
-
-        setTimeout(function () {
-            filters.addClass("show-filter");
-        }, 20);
+    if (!toggleButton) {
+        return;
     }
 
-});
+    toggleButton.addEventListener('click', function (event) {
+        event.preventDefault();
+
+        var filters = document.querySelectorAll('.more-filter');
+        var isOpen = toggleButton.classList.contains('open');
+
+        if (isOpen) {
+            toggleButton.classList.remove('open');
+            toggleButton.innerHTML = '<i class="fa fa-filter"></i> More Filters';
+
+            filters.forEach(function (filter) {
+                filter.classList.remove('show-filter');
+            });
+
+            setTimeout(function () {
+                filters.forEach(function (filter) {
+                    filter.classList.add('d-none');
+                });
+            }, 350);
+            return;
+        }
+
+        toggleButton.classList.add('open');
+        toggleButton.innerHTML = '<i class="fa fa-times"></i> Hide Filters';
+
+        filters.forEach(function (filter) {
+            filter.classList.remove('d-none');
+        });
+
+        setTimeout(function () {
+            filters.forEach(function (filter) {
+                filter.classList.add('show-filter');
+            });
+        }, 20);
+    });
+})();
 </script>

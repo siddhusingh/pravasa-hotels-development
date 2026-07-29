@@ -129,7 +129,7 @@ class Main extends CI_Controller
         $end_date = $this->input->post('end_date');
 
         $property = $this->session->userdata('selected_hotel_id');
-        $department = '';
+        $department = $this->input->post('department');
 
         $created_id    = $this->input->post('created_id');
         $created_role  = $this->input->post('created_role');
@@ -537,6 +537,93 @@ class Main extends CI_Controller
         ];
 
         echo json_encode($response);
+    }
+
+    public function dashboard_graph_data()
+    {
+        $filters = [
+            'property' => $this->session->userdata('selected_hotel_id'),
+            'type' => '',
+            'start_date' => $this->input->get('start_date'),
+            'end_date' => $this->input->get('end_date')
+        ];
+
+        $graph_data = $this->Dashboard_model->get_dashboard_graph_data($filters);
+
+        $departments = [];
+        foreach ($graph_data['departments'] as $row) {
+            $departments[] = [
+                'label' => $this->Common_model->get_field_value(
+                    'departments',
+                    'department_id',
+                    $row->type,
+                    'department_name'
+                ) ?: 'NA',
+                'count' => (int) $row->total
+            ];
+        }
+
+        $status_counts = [];
+        foreach ($graph_data['statuses'] as $row) {
+            $status_counts[(string) $row->status] = (int) $row->total;
+        }
+
+        $statuses = [];
+        foreach (['Open', 'In Progress', 'Closed', 'Lost'] as $label) {
+            $statuses[] = [
+                'label' => $label,
+                'count' => $status_counts[$label] ?? 0
+            ];
+        }
+
+        $disposition_counts = [];
+        foreach ($graph_data['dispositions'] as $row) {
+            $disposition_counts[(string) $row->disposition] = (int) $row->total;
+        }
+
+        $stages = [];
+        foreach ([
+            'Not Contacted',
+            'Contacted',
+            'Quotation Sent',
+            'Negotiations',
+            'Contract Done',
+            'Advance Received',
+            'Lead Won',
+            'Lead Lost'
+        ] as $label) {
+            $stages[] = [
+                'label' => $label,
+                'count' => $disposition_counts[$label] ?? 0
+            ];
+        }
+
+        $monthly = [];
+        foreach ($graph_data['monthly'] as $row) {
+            $monthly[] = [
+                'label' => date('M Y', strtotime($row->month_key . '-01')),
+                'leads' => (int) $row->lead_count,
+                'guests' => (int) $row->guest_count,
+                'revenue' => (float) $row->revenue
+            ];
+        }
+
+        $total_leads = array_sum(array_column($departments, 'count'));
+        $classified_leads = array_sum(array_column($stages, 'count'));
+        if ($classified_leads < $total_leads) {
+            $stages[] = [
+                'label' => 'Unclassified',
+                'count' => $total_leads - $classified_leads
+            ];
+        }
+
+        echo json_encode([
+            'departments' => $departments,
+            'statuses' => $statuses,
+            'stages' => $stages,
+            'monthly' => $monthly,
+            'total_leads' => $total_leads
+        ]);
     }
 
     private function get_agent_chart_filters()
