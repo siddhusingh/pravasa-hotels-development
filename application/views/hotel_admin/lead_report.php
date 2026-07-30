@@ -9,384 +9,6 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
 $scoped_staff_id = $is_hotel_lead_view ? (int) ($scoped_staff_id ?? 0) : 0;
 $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') : '';
 ?>
-<style>
-   .review-card {
-      border-radius: 15px;
-      border: 1px solid #e1e1e1;
-      padding: 20px;
-      margin: 20px;
-   }
-
-   .status-btn {
-      border-radius: 30px;
-      font-weight: 500;
-   }
-
-   .rating-stars {
-      background-color: #dfffdc;
-      border-radius: 20px;
-      padding: 5px 10px;
-      font-weight: bold;
-      color: #28a745;
-   }
-
- 
-
-   .reply-box {
-      background-color: #fde7ed;
-      border-radius: 15px;
-      padding: 15px;
-      font-size: 15px;
-   }
-
-   .dropdown-menu {
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-   }
-
-   .dropdown-item {
-      padding: 10px 15px;
-   }
-
-   .icon-btn {
-      font-size: 18px;
-      color: #777;
-   }
-
-   .reply-btn {
-      border-radius: 25px;
-      padding: 6px 20px;
-      font-weight: 500;
-   }
-
-   #editLeadDetails .edit-table-multiselect-source {
-      display: none !important;
-   }
-
-   #editLeadDetails .edit-table-multiselect {
-      position: relative;
-      width: 100%;
-   }
-
-   #editLeadDetails .edit-table-multiselect-toggle {
-      align-items: center;
-      background: #fff !important;
-      border: 1px solid #b8c0cc !important;
-      border-radius: 8px;
-      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-      color: #495057 !important;
-      display: flex;
-      height: 46px;
-      justify-content: space-between;
-      padding: 0 14px;
-      text-align: left;
-      width: 100%;
-   }
-
-   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-toggle,
-   #editLeadDetails .edit-table-multiselect-toggle:focus {
-      border-color: #80bdff !important;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
-      outline: 0;
-   }
-
-   #editLeadDetails .edit-table-multiselect-toggle::after {
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      border-top: 6px solid #6c757d;
-      content: '';
-      margin-left: 10px;
-   }
-
-   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-toggle::after {
-      border-bottom: 6px solid #6c757d;
-      border-top: 0;
-   }
-
-   #editLeadDetails .edit-table-multiselect-menu {
-      background: #d2d2d2;
-      border: 1px solid #c5c5c5;
-      border-radius: 6px;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-      display: none;
-      left: 0;
-      max-height: 260px;
-      overflow-y: auto;
-      padding: 6px 0;
-      position: absolute;
-      right: 0;
-      top: calc(100% + 4px);
-      z-index: 1065;
-   }
-
-   #editLeadDetails .edit-table-multiselect.is-open .edit-table-multiselect-menu {
-      display: block;
-   }
-
-   #editLeadDetails .edit-table-multiselect-option {
-      align-items: center;
-      cursor: pointer;
-      display: flex;
-      gap: 9px;
-      margin: 0;
-      padding: 8px 12px;
-   }
-
-   #editLeadDetails .edit-table-multiselect-option:hover {
-      background: rgba(255, 255, 255, 0.35);
-   }
-
-   #editLeadDetails .edit-table-multiselect-option input[type="checkbox"] {
-      -webkit-appearance: checkbox !important;
-      appearance: checkbox !important;
-      accent-color: #1473d2;
-      clip: auto !important;
-      cursor: pointer;
-      display: inline-block !important;
-      flex: 0 0 18px;
-      height: 18px !important;
-      left: auto !important;
-      margin: 0 !important;
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      position: static !important;
-      visibility: visible !important;
-      width: 18px !important;
-   }
-
-   #editLeadDetails .edit-table-multiselect-select-all {
-      border-bottom: 1px solid #e9ecef;
-      font-weight: 600;
-   }
-
-   #editLeadDetails .edit-table-multiselect-empty {
-      color: #6c757d;
-      padding: 9px 12px;
-   }
-
-   #leadEditForm .required-marker {
-      color: #dc3545;
-      font-weight: 700;
-      margin-left: 2px;
-   }
-
-   #editLeadDetails #Edit_dynamicFields {
-      display: contents;
-   }
-
-   #Edit_dynamicFields .form-control,
-   #Edit_dynamicFields .form-select,
-   #Edit_dynamicFields .select2-container {
-      width: 100% !important;
-   }
-
-   #leadEditForm .select2-container--default .select2-selection--single {
-      background-color: #fff !important;
-      border: 1px solid transparent !important;
-      border-radius: 8px !important;
-      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-         rgba(0, 0, 0, 0.3) 0 1px 3px -1px !important;
-      height: 46px !important;
-      padding: 11px 14px;
-   }
-
-   #leadEditForm .select2-container--default .select2-selection--single .select2-selection__rendered {
-      line-height: 22px;
-      margin-top: 0;
-      padding-left: 0;
-   }
-
-   #leadEditForm .select2-container--default .select2-selection--single .select2-selection__arrow {
-      height: 44px;
-   }
-
-   #leadEditForm select.is-invalid + .select2-container .select2-selection--single {
-      border-color: #dc3545 !important;
-   }
-
-   #leadEditForm .select2-container--focus .select2-selection--single,
-   #leadEditForm .select2-container--open .select2-selection--single {
-      border-color: #80bdff !important;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
-   }
-
-   #leadEditForm .edit-select2-dropdown-parent {
-      position: relative;
-   }
-
-   #leadEditForm .edit-select2-dropdown-parent > .select2-container--open .select2-dropdown {
-      z-index: 1070;
-   }
-
-   #assigned_to_filter + .select2-container,
-   #created_by + .select2-container {
-      height: 46px;
-      width: 100% !important;
-   }
-
-   #assigned_to_filter + .select2-container .select2-selection--single,
-   #created_by + .select2-container .select2-selection--single {
-      align-items: center;
-      background-color: #fff;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-      box-sizing: border-box;
-      display: flex;
-      height: 46px !important;
-      min-height: 0;
-      padding: 0 14px !important;
-   }
-
-   #assigned_to_filter + .select2-container .select2-selection__rendered,
-   #created_by + .select2-container .select2-selection__rendered {
-      line-height: normal;
-      margin-top: 0;
-      padding-left: 0;
-   }
-
-   #assigned_to_filter + .select2-container .select2-selection__arrow,
-   #created_by + .select2-container .select2-selection__arrow {
-      height: 100%;
-      right: 8px;
-      top: 0;
-   }
-
-   #filter-section .lead-filter-multiselect-source {
-      display: none !important;
-   }
-
-   #filter-section .lead-filter-multiselect {
-      position: relative;
-      width: 100%;
-   }
-
-   #filter-section .lead-filter-multiselect-toggle {
-      align-items: center;
-      background: #fff;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-      color: #495057;
-      display: flex;
-      height: 46px;
-      justify-content: space-between;
-      padding: 0 14px;
-      text-align: left;
-      width: 100%;
-   }
-
-   #filter-section .lead-filter-multiselect-toggle::after {
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      border-top: 6px solid #6c757d;
-      content: '';
-      flex: 0 0 auto;
-      margin-left: 10px;
-   }
-
-   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle,
-   #filter-section .lead-filter-multiselect-toggle:focus {
-      border-color: #80bdff;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-      outline: 0;
-   }
-
-   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle::after {
-      border-bottom: 6px solid #6c757d;
-      border-top: 0;
-   }
-
-   #filter-section .lead-filter-multiselect-menu {
-      background: #d2d2d2;
-      border: 1px solid #c5c5c5;
-      border-radius: 6px;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-      display: none;
-      left: 0;
-      max-height: 260px;
-      overflow-y: auto;
-      padding: 6px 0;
-      position: absolute;
-      right: 0;
-      top: calc(100% + 4px);
-      z-index: 1080;
-   }
-
-   #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-menu {
-      display: block;
-   }
-
-   #filter-section .lead-filter-multiselect-option {
-      align-items: center;
-      cursor: pointer;
-      display: flex;
-      gap: 9px;
-      margin: 0;
-      padding: 8px 12px;
-   }
-
-   #filter-section .lead-filter-multiselect-option:hover {
-      background: rgba(255, 255, 255, 0.35);
-   }
-
-   #filter-section .lead-filter-multiselect-option input[type="checkbox"] {
-      -webkit-appearance: checkbox !important;
-      appearance: checkbox !important;
-      accent-color: #1473d2;
-      clip: auto !important;
-      cursor: pointer;
-      display: inline-block !important;
-      flex: 0 0 18px;
-      height: 18px !important;
-      left: auto !important;
-      margin: 0 !important;
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      position: static !important;
-      visibility: visible !important;
-      width: 18px !important;
-   }
-
-   #filter-section .lead-filter-multiselect-select-all {
-      border-bottom: 1px solid #e9ecef;
-      font-weight: 600;
-   }
-
-   #business_type + .select2-container {
-      height: 46px;
-      width: 100% !important;
-   }
-
-   #business_type + .select2-container .select2-selection--single {
-      align-items: center;
-      background: #fff;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-         rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-      box-sizing: border-box;
-      display: flex;
-      height: 46px !important;
-      padding: 0 14px !important;
-   }
-
-   #business_type + .select2-container .select2-selection__rendered {
-      line-height: normal;
-      margin-top: 0;
-      padding-left: 0;
-   }
-
-   #business_type + .select2-container .select2-selection__arrow {
-      height: 100%;
-      right: 8px;
-      top: 0;
-   }
-</style>
-
 
 
 
@@ -400,7 +22,10 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
             <div class="col-12">
                <div class="box">
                   <div class="box-header">
-                     <h4 class="box-title">Lead Reports </h4>
+                     <h4 class="box-title">Lead Reports </h4> 
+                      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reserveTableModal">
+                                 <i class="fa fa-calendar-check-o"></i> Reserve Table
+                              </button>
                      <div class="row mt-2">
                         <div class="col-md-3">
                            <input type="text" id="lead-search" class="form-control" placeholder="Search by name or phone...">
@@ -457,6 +82,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                                     Add +
                                  </button>
                               </a>
+                             
                            </div>
                         </div>
                      </div>
@@ -626,6 +252,49 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
    <!-- /.content -->
 </div>
 </div>
+
+<div class="modal fade" id="reserveTableModal" tabindex="-1" aria-labelledby="reserveTableModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <div class="d-flex">
+               <span class="reserve-modal-icon"><i class="fa fa-cutlery"></i></span>
+               <div><h5 class="modal-title" id="reserveTableModalLabel">Reserve Table</h5><p class="reserve-modal-subtitle">Select an available table for this reservation</p></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="row reservation-filters">
+               <div class="col-lg-3 col-md-6"><label class="reserve-field-label"><i class="fa fa-cutlery"></i>1. Restaurant</label><select class="reserve-control"><option>The Grand Bistro</option></select></div>
+               <div class="col-lg-3 col-md-6"><label class="reserve-field-label"><i class="fa fa-calendar"></i>2. Booking Date</label><input class="reserve-control" type="date" value="2026-07-25"></div>
+               <div class="col-lg-3 col-md-6"><label class="reserve-field-label"><i class="fa fa-clock-o"></i>3. Time Slot</label><select class="reserve-control"><option>08:00 PM</option></select></div>
+               <div class="col-lg-3 col-md-6"><label class="reserve-field-label"><i class="fa fa-th-large"></i>4. Table Category</label><select class="reserve-control"><option>Indoor</option></select></div>
+            </div>
+            <div class="reservation-summary">
+               <div class="reservation-stat"><i class="fa fa-check-circle"></i><div><strong>18</strong><span>Available</span></div></div><div class="reservation-stat stat-occupied"><i class="fa fa-times-circle"></i><div><strong>12</strong><span>Occupied</span></div></div><div class="reservation-stat stat-reserved"><i class="fa fa-calendar-check-o"></i><div><strong>6</strong><span>Reserved</span></div></div><div class="reservation-stat stat-blocked"><i class="fa fa-ban"></i><div><strong>2</strong><span>Blocked</span></div></div><div class="reservation-stat stat-checkout"><i class="fa fa-clock-o"></i><div><strong>5</strong><span>Expected Check-outs</span></div></div>
+            </div>
+            <div class="row g-3">
+               <div class="col-12"><div class="reservation-panel"><div class="reservation-table-grid">
+                  <div class="reservation-table-card" data-table="T01" data-capacity="2 Guests" data-location="Window Side"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T01</div><div class="table-details">2 Guests<br>Window Side</div><span class="table-status available">Available</span></div>
+                  <div class="reservation-table-card" data-table="T02" data-capacity="4 Guests" data-location="Indoor"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T02</div><div class="table-details">4 Guests<br>Indoor</div><span class="table-status available">Available</span></div>
+                  <div class="reservation-table-card unavailable"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T03</div><div class="table-details">4 Guests<br>Sofa Side</div><span class="table-status occupied">Occupied</span></div>
+                  <div class="reservation-table-card" data-table="T04" data-capacity="6 Guests" data-location="Sofa"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T04</div><div class="table-details">6 Guests<br>Sofa</div><span class="table-status available">Available</span></div>
+                  <div class="reservation-table-card" data-table="T05" data-capacity="6 Guests" data-location="Garden View"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T05</div><div class="table-details">6 Guests<br>Garden View</div><span class="table-status available">Available</span></div>
+                  <div class="reservation-table-card unavailable"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T06</div><div class="table-details">4 Guests<br>Indoor</div><span class="table-status reserved">Reserved</span></div>
+                  <div class="reservation-table-card selected" data-table="T07" data-capacity="8 Guests" data-location="Garden View"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T07</div><div class="table-details">8 Guests<br>Garden View</div><span class="table-status available">Available</span></div>
+                  <div class="reservation-table-card unavailable"><span class="table-icon"><i class="fa fa-cutlery"></i></span><div class="table-number">T08</div><div class="table-details">10 Guests<br>Private Area</div><span class="table-status blocked">Blocked</span></div>
+               </div></div></div>
+            </div>
+            <div class="row g-3 mt-1"><div class="col-lg-7"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-file-text-o"></i>Special Instructions <span class="text-muted fw-normal">(Optional)</span></label><textarea class="reserve-control reserve-instructions" maxlength="250" placeholder="Add any special request or notes for this reservation..."></textarea></div></div><div class="col-lg-5"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-check-circle"></i>Reservation Status</label><div class="reservation-status-options"><label><input type="radio" name="reserve_status" checked> Confirmed</label><label><input type="radio" name="reserve_status"> Tentative</label><label><input type="radio" name="reserve_status"> Waiting List</label></div></div></div></div>
+         </div>
+         <div class="modal-footer  d-flex justify-content-between">
+            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+         <button type="button" class="btn btn-primary reserve-submit-btn" id="confirmTableReservation"><i class="fa fa-calendar-check-o me-2"></i>Reserve Table</button>
+      </div>
+      </div>
+</div>
+</div>
+</div>
 <div class="modal modal-lg" id="statusHistoryModal" tabindex="-1" aria-labelledby="statusHistoryLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-scrollable">
       <div class="modal-content">
@@ -642,342 +311,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
    </div>
 </div>
 
-<style>
-   /*==================================================
-        LEAD STATUS HISTORY MODAL
-==================================================*/
 
-#statusHistoryModal .modal-content{
-    border:0;
-    border-radius:18px;
-    overflow:hidden;
-    background:#f8faff;
-    box-shadow:0 25px 60px rgba(0,0,0,.15);
-}
-
-#statusHistoryModal .modal-header{
-    background:#fff;
-    border-bottom:1px solid #edf2f7;
-    padding:20px 28px;
-}
-
-#statusHistoryModal .modal-title{
-    font-size:28px;
-    font-weight:700;
-    color:#1e293b;
-}
-
-#statusHistoryModal .btn-close{
-    width:42px;
-    height:42px;
-    border-radius:12px;
-    transition:.3s;
-}
-
-#statusHistoryModal .btn-close:hover{
-    background:#eef4ff;
-    transform:rotate(90deg);
-}
-
-#statusHistoryModal .modal-body{
-    background:#f8faff;
-    padding:30px;
-}
-
-
-/*==========================
-TIMELINE
-===========================*/
-
-.timeline{
-
-    list-style:none;
-
-    margin:0;
-
-    padding:0 0 0 45px;
-
-    position:relative;
-
-}
-
-.timeline::before{
-
-    content:"";
-
-    position:absolute;
-
-    left:10px;
-
-    top:0;
-
-    bottom:0;
-
-    width:3px;
-
-    border-radius:50px;
-
-    background:linear-gradient(#4f7cff,#9db7ff);
-
-}
-
-
-/*==========================
-ITEM
-===========================*/
-
-.timeline-item{
-
-    position:relative;
-
-    margin-bottom:22px;
-
-    padding:20px;
-
-    background:#fff;
-
-    border-radius:16px;
-
-    border:1px solid #edf2f7;
-
-    box-shadow:0 6px 18px rgba(0,0,0,.05);
-
-    transition:.3s;
-
-}
-
-.timeline-item:last-child{
-
-    margin-bottom:0;
-
-}
-
-.timeline-item:hover{
-
-    transform:translateX(8px);
-
-    box-shadow:0 18px 35px rgba(79,124,255,.12);
-
-    border-color:#4f7cff;
-
-}
-
-
-/*==========================
-DOT
-===========================*/
-
-.timeline-item::before{
-
-    content:"";
-
-    position:absolute;
-
-    left:-44px;
-
-    top:26px;
-
-    width:18px;
-
-    height:18px;
-
-    border-radius:50%;
-
-    background:#4f7cff;
-
-    border:4px solid #fff;
-
-    box-shadow:0 0 0 6px rgba(79,124,255,.18);
-
-}
-
-
-/*==========================
-STATUS
-===========================*/
-
-.timeline-item h6{
-
-    margin:0;
-
-    color:#2563eb;
-
-    font-size:18px;
-
-    font-weight:700;
-
-}
-
-
-/*==========================
-DATE
-===========================*/
-
-.timeline-item small{
-
-    display:inline-block;
-
-    margin:14px 0;
-
-    background:#eef4ff;
-
-    color:#64748b;
-
-    padding:8px 16px;
-
-    border-radius:50px;
-
-    font-size:13px;
-
-    font-weight:600;
-
-}
-
-
-/*==========================
-REMARK
-===========================*/
-
-.timeline-item p{
-
-    margin:0;
-
-    background:#f8fafc;
-
-    border-left:4px solid #4f7cff;
-
-    border-radius:10px;
-
-    padding:14px 18px;
-
-    color:#000;
-
-    line-height:1.7;
-
-}
-
-
-/*==========================
-SCROLLBAR
-===========================*/
-
-#statusHistoryModal .modal-body::-webkit-scrollbar{
-
-    width:8px;
-
-}
-
-#statusHistoryModal .modal-body::-webkit-scrollbar-thumb{
-
-    background:#c4d2ff;
-
-    border-radius:30px;
-
-}
-
-
-/*==========================
-RESPONSIVE
-===========================*/
-
-@media(max-width:768px){
-
-#statusHistoryModal .modal-body{
-
-padding:18px;
-
-}
-
-#statusHistoryModal .modal-title{
-
-font-size:22px;
-
-}
-
-.timeline{
-
-padding-left:30px;
-
-}
-
-.timeline::before{
-
-left:8px;
-
-}
-
-.timeline-item{
-
-padding:16px;
-
-}
-
-.timeline-item::before{
-
-left:-30px;
-
-width:14px;
-
-height:14px;
-
-}
-
-.timeline-item h6{
-
-font-size:16px;
-
-}
-
-.timeline-item small{
-
-font-size:12px;
-
-padding:6px 12px;
-
-}
-
-.timeline-item p{
-
-font-size:14px;
-
-}
-
-}
-#statusHistoryModal .modal-dialog{
-    max-width:1000px;
-}
-/* Timeline Items Gap */
-
-.timeline-item{
-    margin-bottom:30px !important;
-}
-
-/* Agar cards inline/block ban rahe hain */
-.timeline-item{
-    display:block !important;
-    width:calc(100% - 20px) !important;
-}
-
-/* Right side se gap */
-.timeline-item{
-    margin-right:25px !important;
-}
-
-/* Timeline container */
-.timeline{
-    padding-left:60px !important;
-}
-.timeline{
-    display:block !important;
-}
-
-.timeline-item{
-    display:block !important;
-    float:none !important;
-    width:100% !important;
-    clear:both !important;
-}
-</style>
 
 <!-- Call Confirmation Modal -->
 <div class="modal modal-lg" id="confirmCallModal" tabindex="-1" aria-labelledby="confirmCallModalLabel" aria-hidden="true">
@@ -4685,3 +4019,24 @@ ${data.bill_attachment ? `
       });
    });
 </script>
+
+<!-- <script>
+   $(document).on('click', '#reserveTableModal .reservation-table-card', function() {
+      const $card = $(this);
+
+      if ($card.hasClass('unavailable')) {
+         return;
+      }
+
+      $('#reserveTableModal .reservation-table-card').removeClass('selected');
+      $card.addClass('selected');
+   });
+
+   $(document).on('click', '#confirmTableReservation', function() {
+      const tableName = $('#reserveTableModal .reservation-table-card.selected').data('table');
+
+      if (typeof toastr !== 'undefined') {
+         toastr.success('Table ' + tableName + ' selected for reservation.');
+      }
+   });
+</script> -->
