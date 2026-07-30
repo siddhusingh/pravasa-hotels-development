@@ -553,6 +553,7 @@ $route['time-slots-update'] = 'superAdmin/Time_slots/update';
 $route['time-slots-delete'] = 'superAdmin/Time_slots/delete';
 $route['time-slots-details'] = 'superAdmin/Time_slots/getDetails';
 $route['lead/get-time-slots'] = 'LeadController/getTimeSlots';
+$route['lead/check-restaurant-availability'] = 'LeadController/checkRestaurantAvailability';
 $route['lead/get-table-categories'] = 'LeadController/getTableCategories';
 
 $route['lead/get-tables'] = 'LeadController/getTables';

@@ -535,6 +535,14 @@
                         'change.leadTableCategories select2:select.leadTableCategories select2:clear.leadTableCategories',
                         scheduleTableCategoriesRefresh
                     );
+                $select
+                    .off('.restaurantAvailability')
+                    .on(
+                        'change.restaurantAvailability select2:select.restaurantAvailability select2:clear.restaurantAvailability',
+                        function() {
+                            resetTimeSlotAvailability('Select table category and tables first');
+                        }
+                    );
             }
 
             if ($select.is('#table_category_id')) {
@@ -543,6 +551,23 @@
                     .on(
                         'change.leadTables select2:select.leadTables select2:clear.leadTables',
                         scheduleTablesRefresh
+                    );
+                $select
+                    .off('.restaurantAvailability')
+                    .on(
+                        'change.restaurantAvailability select2:select.restaurantAvailability select2:clear.restaurantAvailability',
+                        function() {
+                            resetTimeSlotAvailability('Select tables first');
+                        }
+                    );
+            }
+
+            if ($select.is('#slot_type_id')) {
+                $select
+                    .off('.restaurantAvailability')
+                    .on(
+                        'change.restaurantAvailability select2:select.restaurantAvailability select2:clear.restaurantAvailability',
+                        scheduleTimeSlotsRefresh
                     );
             }
         });
@@ -663,6 +688,10 @@
         // Submit Form via AJAX
 
     });
+
+    $(document)
+        .off('change.restaurantAvailability', '#restaurant_booking_date')
+        .on('change.restaurantAvailability', '#restaurant_booking_date', scheduleTimeSlotsRefresh);
 
 
     let dynamicFieldsRefreshTimer = null;
@@ -983,14 +1012,10 @@
                 container.append(`
 
 
-                <div class="col-md-3 mb-3">
-    <label>Booking Date</label>
-    <input type="date" name="booking_date" class="form-control" value="${today}">
-</div>
-
 <div class="col-md-3 mb-3">
-    <label>No. of Pax</label>
-    <input type="number" name="pax" class="form-control" min="1">
+    <label>Booking Date <span class="text-danger">*</span></label>
+    <input type="date" name="booking_date" id="restaurant_booking_date" class="form-control" value="${today}" min="${today}">
+    <div class="text-danger error-label" id="booking_date_error"></div>
 </div>
 
 <div class="col-md-3 mb-3">
@@ -999,27 +1024,6 @@
         <option value="">Select Restaurant</option>
     </select>
     <div class="text-danger error-label" id="restaurant_id_error"></div>
-</div>
-
-<div class="col-md-3 mb-3">
-    <label>Slot Type <span class="text-danger">*</span></label>
-    <select name="slot_type_id" id="slot_type_id" class="form-select">
-        <option value="">Select Slot</option>
-    </select>
-    <div class="text-danger error-label" id="slot_type_id_error"></div>
-</div>
-
-<div class="col-md-3 mb-3">
-    <label>Time Slot <span class="text-danger">*</span></label>
-    <select name="time_slot_id" id="time_slot_id" class="form-select">
-        <option value="">Select Time Slot</option>
-    </select>
-    <div class="text-danger error-label" id="time_slot_id_error"></div>
-</div>
-
-<div class="col-md-3 mb-3">
-    <label>Arrival Time</label>
-    <input type="time" name="arrival_time" class="form-control">
 </div>
 
 <div class="col-md-3 mb-3">
@@ -1036,6 +1040,28 @@
         <option value="">Select Table</option>
     </select>
     <div class="text-danger error-label" id="table_id_error"></div>
+</div>
+
+<div class="col-md-3 mb-3">
+    <label>Slot Type <span class="text-danger">*</span></label>
+    <select name="slot_type_id" id="slot_type_id" class="form-select">
+        <option value="">Select Slot</option>
+    </select>
+    <div class="text-danger error-label" id="slot_type_id_error"></div>
+</div>
+
+<div class="col-md-3 mb-3">
+    <label>Time Slot <span class="text-danger">*</span></label>
+    <select name="time_slot_id" id="time_slot_id" class="form-select" disabled>
+        <option value="">Select date, restaurant and tables first</option>
+    </select>
+    <small id="time_slot_availability_help" class="form-text text-muted">Availability is checked for every selected table.</small>
+    <div class="text-danger error-label" id="time_slot_id_error"></div>
+</div>
+
+<div class="col-md-3 mb-3">
+    <label>Arrival Time</label>
+    <input type="time" name="arrival_time" class="form-control">
 </div>
 
 <div class="col-lg-3 col-md-6 col-sm-12">
@@ -1056,6 +1082,11 @@
 
     <div class="text-danger error-label"
         id="table_reservation_status_error"></div>
+</div>
+
+<div class="col-md-3 mb-3">
+    <label>No. of Pax</label>
+    <input type="number" name="pax" class="form-control" min="1">
 </div>
 
 <div class="col-md-4 mb-3">
@@ -1580,60 +1611,112 @@
                     $slotType.val(existingLeadData.slot_type_id);
                 }
 
-                // The Slot Type field is created dynamically. Bind directly so a
-                // user selection always loads its dependent time slots.
-                $slotType
-                    .off('change.leadTimeSlots')
-                    .on('change.leadTimeSlots', function() {
-                        const slotTypeId = $(this).val();
-
-                        if (slotTypeId) {
-                            loadTimeSlots(slotTypeId);
-                        } else {
-                            $('#time_slot_id').html('<option value="">Select Time Slot</option>');
-                        }
-                    });
-
                 if ($slotType.val()) {
-                    loadTimeSlots($slotType.val());
+                    loadTimeSlots(
+                        $slotType.val(),
+                        existingLeadData && existingLeadData.time_slot_id
+                            ? existingLeadData.time_slot_id
+                            : null
+                    );
                 }
             }
         });
     }
 
 
-    function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
+    let restaurantAvailabilityTimer = null;
+    let restaurantAvailabilityRequest = 0;
 
-        $('#time_slot_id').html('<option value="">Loading...</option>');
+    function scheduleTimeSlotsRefresh() {
+        clearTimeout(restaurantAvailabilityTimer);
+        restaurantAvailabilityTimer = setTimeout(function() {
+            loadTimeSlots($('#slot_type_id').val());
+        }, 0);
+    }
+
+    function resetTimeSlotAvailability(message) {
+        const $timeSlot = $('#time_slot_id');
+        if (!$timeSlot.length) return;
+
+        restaurantAvailabilityRequest++;
+        $timeSlot
+            .html(`<option value="">${message || 'Select booking details first'}</option>`)
+            .prop('disabled', true);
+        initializeSingleSelect2($timeSlot);
+        $timeSlot.trigger('change.select2');
+        $('#time_slot_availability_help')
+            .removeClass('text-danger text-success')
+            .addClass('text-muted')
+            .text('Availability is checked for every selected table.');
+    }
+
+    function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
+        const bookingDate = $('#restaurant_booking_date').val();
+        const restaurantId = $('#restaurant_id').val();
+        const categoryId = $('#table_category_id').val();
+        const tableIds = $('#table_id').val() || [];
+
+        if (!bookingDate || !restaurantId || !categoryId || !tableIds.length || !slotTypeId) {
+            resetTimeSlotAvailability('Select date, restaurant, tables and slot type first');
+            return;
+        }
+
+        const requestId = ++restaurantAvailabilityRequest;
+        const $timeSlot = $('#time_slot_id');
+        $timeSlot.html('<option value="">Checking availability...</option>').prop('disabled', true);
+        $timeSlot.trigger('change.select2');
 
         csrfAjax({
-            url: "<?= base_url('lead/get-time-slots') ?>",
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
             type: "POST",
             data: csrfData({
+                booking_date: bookingDate,
+                restaurant_id: restaurantId,
+                table_category_id: categoryId,
+                table_ids: tableIds,
                 slot_type_id: slotTypeId
             }),
             dataType: "json",
             success: function(res) {
+                if (requestId !== restaurantAvailabilityRequest) return;
 
                 let html = '<option value="">Select Time Slot</option>';
-
                 if (res.status === 'success') {
                     $.each(res.data, function(i, row) {
-                        html += `
-                        <option value="${row.id}">
-                            ${row.start_time} - ${row.end_time}
-                        </option>`;
+                        const suffix = row.available ? '' : ` — ${row.reason}`;
+                        const disabled = row.available ? '' : ' disabled';
+                        html += `<option value="${row.id}"${disabled}>${row.start_time} - ${row.end_time}${suffix}</option>`;
                     });
                 }
 
-                $('#time_slot_id').html(html);
-
-
-                if (typeof existingLeadData !== "undefined" && existingLeadData.time_slot_id) {
-                    $('#time_slot_id').val(existingLeadData.time_slot_id);
+                $timeSlot.html(html).prop('disabled', false);
+                if (
+                    selectedTimeSlotId
+                    && !$timeSlot.find(`option[value="${selectedTimeSlotId}"]`).prop('disabled')
+                ) {
+                    $timeSlot.val(selectedTimeSlotId);
                 }
+                initializeSingleSelect2($timeSlot);
+                $timeSlot.trigger('change.select2');
 
-
+                const unavailableCount = (res.data || []).filter(function(row) {
+                    return !row.available;
+                }).length;
+                $('#time_slot_availability_help')
+                    .removeClass('text-muted text-danger text-success')
+                    .addClass(unavailableCount ? 'text-danger' : 'text-success')
+                    .text(unavailableCount
+                        ? `${unavailableCount} time slot(s) unavailable for the selected tables.`
+                        : 'All listed time slots are available for the selected tables.');
+            },
+            error: function(xhr) {
+                if (requestId !== restaurantAvailabilityRequest) return;
+                const response = xhr.responseJSON || {};
+                resetTimeSlotAvailability(response.message || 'Unable to check availability');
+                $('#time_slot_availability_help')
+                    .removeClass('text-muted text-success')
+                    .addClass('text-danger')
+                    .text(response.message || 'Unable to check time-slot availability.');
             }
         });
     }
@@ -1832,6 +1915,9 @@
 
         $select.off('change.tableMultiSelect').on('change.tableMultiSelect', function() {
             syncTableMultiSelect($select, $widget);
+        });
+        $select.off('change.restaurantAvailability').on('change.restaurantAvailability', function() {
+            scheduleTimeSlotsRefresh();
         });
 
         syncTableMultiSelect($select, $widget);
@@ -2045,6 +2131,7 @@
                 errors.banquet_id = 'Please select a banquet.';
             }
             if (department === 'restaurant') {
+                if (!value('booking_date')) errors.booking_date = 'Please select a booking date.';
                 if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
                 if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
                 if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';

@@ -1789,6 +1789,7 @@ font-size:14px;
                errors.banquet_id = 'Please select a banquet.';
             }
             if (department === 'restaurant') {
+               if (!value('booking_date')) errors.booking_date = 'Please select a booking date.';
                if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
                if (!value('slot_type_id')) errors.slot_type_id = 'Please select a slot type.';
                if (!value('time_slot_id')) errors.time_slot_id = 'Please select a time slot.';
@@ -1872,6 +1873,7 @@ font-size:14px;
       // form validation rules
 
       let existingLeadData = {};
+      const superAdminRestaurantEditAvailability = <?= $is_hotel_lead_view ? 'false' : 'true' ?>;
 
       // Username
       $('#edit_user_name').focusout(function() {
@@ -2337,9 +2339,10 @@ font-size:14px;
 
                container.append(`
 
-               <div class="col-lg-4 col-md-6 col-sm-12">
-    <label class="form-label">Booking Date</label>
-    <input type="date" name="booking_date" class="form-control">
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <label class="form-label">Booking Date <span class="required-marker">*</span></label>
+    <input type="date" name="booking_date" id="edit_restaurant_booking_date" class="form-control">
+    <div class="text-danger error-label" id="booking_date_error"></div>
 </div>
 
 <div class="col-lg-4 col-md-6 col-sm-12">
@@ -2366,9 +2369,10 @@ font-size:14px;
     <label class="form-label">
         Time Slot <span class="text-danger">*</span>
     </label>
-    <select name="time_slot_id" id="time_slot_id" class="form-select">
-        <option value="">Select Time Slot</option>
+    <select name="time_slot_id" id="time_slot_id" class="form-select" ${superAdminRestaurantEditAvailability ? 'disabled' : ''}>
+        <option value="">${superAdminRestaurantEditAvailability ? 'Select date, restaurant and tables first' : 'Select Time Slot'}</option>
     </select>
+    ${superAdminRestaurantEditAvailability ? '<small id="edit_time_slot_availability_help" class="form-text text-muted">Availability is checked for every selected table.</small>' : ''}
     <div class="text-danger error-label" id="time_slot_id_error"></div>
 </div>
 
@@ -2435,6 +2439,30 @@ font-size:14px;
     <textarea name="special_request" class="form-control"></textarea>
 </div>
             `);
+
+
+               if (superAdminRestaurantEditAvailability) {
+                  const $availabilityAnchor = container.find('[name="amount"]').first().closest('[class*="col-lg-"]');
+                  [
+                     'booking_date',
+                     'restaurant_id',
+                     'table_category_id',
+                     'table_id[]',
+                     'slot_type_id',
+                     'time_slot_id',
+                     'arrival_time',
+                     'table_reservation_status',
+                     'pax'
+                  ].forEach(function(fieldName) {
+                     const $field = container
+                        .find(`[name="${fieldName}"]`)
+                        .first()
+                        .closest('[class*="col-lg-"]');
+                     if ($field.length && $availabilityAnchor.length) {
+                        $field.insertBefore($availabilityAnchor);
+                     }
+                  });
+               }
 
 
                loadRestaurants(property, existingLeadData);
@@ -2780,7 +2808,10 @@ font-size:14px;
 
                   // Auto-load table categories and tables if they exist in existing data
                   if (existingLeadData.table_category_id || existingLeadData.table_id) {
-                     loadTableCategories(existingLeadData.restaurant_id, existingLeadData.table_category_id, existingLeadData.table_id);
+                     const selectedTables = existingLeadData.table_ids && existingLeadData.table_ids.length
+                        ? existingLeadData.table_ids
+                        : existingLeadData.table_id;
+                     loadTableCategories(existingLeadData.restaurant_id, existingLeadData.table_category_id, selectedTables);
                   }
                }
 
@@ -2970,7 +3001,39 @@ font-size:14px;
       }
 
 
+      let editRestaurantAvailabilityRequest = 0;
+      let editRestaurantAvailabilityTimer = null;
+
+      function scheduleEditTimeSlotAvailability(selectedTimeSlotId = null) {
+         if (!superAdminRestaurantEditAvailability) return;
+         clearTimeout(editRestaurantAvailabilityTimer);
+         editRestaurantAvailabilityTimer = setTimeout(function() {
+            loadTimeSlots($('#slot_type_id').val(), selectedTimeSlotId);
+         }, 0);
+      }
+
+      function resetEditTimeSlotAvailability(message) {
+         if (!superAdminRestaurantEditAvailability) return;
+         const $timeSlot = $('#time_slot_id');
+         if (!$timeSlot.length) return;
+
+         editRestaurantAvailabilityRequest++;
+         $timeSlot
+            .html(`<option value="">${message || 'Select booking details first'}</option>`)
+            .prop('disabled', true);
+         refreshEditSingleSelect2($timeSlot);
+         $('#edit_time_slot_availability_help')
+            .removeClass('text-danger text-success')
+            .addClass('text-muted')
+            .text('Availability is checked for every selected table.');
+      }
+
       function loadTimeSlots(slotTypeId, selectedTimeSlotId = null) {
+
+         if (superAdminRestaurantEditAvailability) {
+            loadEditTimeSlotAvailability(slotTypeId, selectedTimeSlotId);
+            return;
+         }
 
          $('#time_slot_id').html(
             '<option value="">Loading...</option>'
@@ -3018,9 +3081,84 @@ font-size:14px;
          });
       }
 
+      function loadEditTimeSlotAvailability(slotTypeId, selectedTimeSlotId = null) {
+         const bookingDate = $('#edit_restaurant_booking_date').val();
+         const restaurantId = $('#edit_restaurant_id').val();
+         const categoryId = $('#table_category_id').val();
+         const tableIds = $('#Edit_dynamicFields #table_id').val() || [];
+
+         if (!bookingDate || !restaurantId || !categoryId || !tableIds.length || !slotTypeId) {
+            resetEditTimeSlotAvailability('Select date, restaurant, tables and slot type first');
+            return;
+         }
+
+         const requestId = ++editRestaurantAvailabilityRequest;
+         const $timeSlot = $('#time_slot_id');
+         $timeSlot.html('<option value="">Checking availability...</option>').prop('disabled', true);
+         refreshEditSingleSelect2($timeSlot);
+
+         csrfAjax({
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
+            type: 'POST',
+            data: {
+               booking_date: bookingDate,
+               restaurant_id: restaurantId,
+               table_category_id: categoryId,
+               table_ids: tableIds,
+               slot_type_id: slotTypeId,
+               exclude_lead_id: $('#edit_lead_id').val()
+            },
+            dataType: 'json',
+            success: function(res) {
+               if (requestId !== editRestaurantAvailabilityRequest) return;
+
+               let html = '<option value="">Select Time Slot</option>';
+               if (res.status === 'success') {
+                  $.each(res.data, function(i, row) {
+                     const suffix = row.available ? '' : ` — ${row.reason}`;
+                     const disabled = row.available ? '' : ' disabled';
+                     html += `<option value="${row.id}"${disabled}>${row.start_time} - ${row.end_time}${suffix}</option>`;
+                  });
+               }
+
+               $timeSlot.html(html).prop('disabled', false);
+               if (
+                  selectedTimeSlotId
+                  && !$timeSlot.find(`option[value="${selectedTimeSlotId}"]`).prop('disabled')
+               ) {
+                  $timeSlot.val(selectedTimeSlotId);
+               }
+               refreshEditSingleSelect2($timeSlot);
+
+               const unavailableCount = (res.data || []).filter(function(row) {
+                  return !row.available;
+               }).length;
+               $('#edit_time_slot_availability_help')
+                  .removeClass('text-muted text-danger text-success')
+                  .addClass(unavailableCount ? 'text-danger' : 'text-success')
+                  .text(unavailableCount
+                     ? `${unavailableCount} time slot(s) unavailable for the selected tables.`
+                     : 'All listed time slots are available for the selected tables.');
+            },
+            error: function(xhr) {
+               if (requestId !== editRestaurantAvailabilityRequest) return;
+               const response = xhr.responseJSON || {};
+               resetEditTimeSlotAvailability(response.message || 'Unable to check availability');
+               $('#edit_time_slot_availability_help')
+                  .removeClass('text-muted text-success')
+                  .addClass('text-danger')
+                  .text(response.message || 'Unable to check time-slot availability.');
+            }
+         });
+      }
+
 
       $(document).on('change', '#edit_restaurant_id', function() {
          let restaurantId = $(this).val();
+
+         if (superAdminRestaurantEditAvailability) {
+            resetEditTimeSlotAvailability('Select table category and tables first');
+         }
 
          if (restaurantId) {
             loadTableCategories(restaurantId);
@@ -3075,6 +3213,10 @@ font-size:14px;
       $(document).on('change', '#table_category_id', function() {
          let categoryId = $(this).val();
          let restaurantId = $('#edit_restaurant_id').val(); // 🔥 important
+
+         if (superAdminRestaurantEditAvailability) {
+            resetEditTimeSlotAvailability('Select tables first');
+         }
 
          if (categoryId && restaurantId) {
             loadTables(restaurantId, categoryId);
@@ -3197,6 +3339,14 @@ font-size:14px;
                syncEditTableMultiSelect($select, $widget);
             });
 
+         if (superAdminRestaurantEditAvailability) {
+            $select
+               .off('change.editRestaurantAvailability')
+               .on('change.editRestaurantAvailability', function() {
+                  scheduleEditTimeSlotAvailability();
+               });
+         }
+
          syncEditTableMultiSelect($select, $widget);
       }
 
@@ -3250,9 +3400,22 @@ font-size:14px;
                }
 
                initializeEditTableMultiSelect();
+               if (superAdminRestaurantEditAvailability) {
+                  scheduleEditTimeSlotAvailability(
+                     existingLeadData && existingLeadData.time_slot_id
+                        ? existingLeadData.time_slot_id
+                        : null
+                  );
+               }
             }
          });
       }
+
+      $(document)
+         .off('change.editRestaurantAvailability', '#edit_restaurant_booking_date')
+         .on('change.editRestaurantAvailability', '#edit_restaurant_booking_date', function() {
+            scheduleEditTimeSlotAvailability();
+         });
 
 
 
@@ -3407,8 +3570,20 @@ font-size:14px;
 
 
             },
-            error: function() {
-               alert("An unexpected error occurred. Please try again.");
+            error: function(xhr) {
+               const response = xhr.responseJSON || {};
+               if (response.errors) {
+                  clearEditLeadValidation();
+                  $.each(response.errors, function(field, message) {
+                     showEditLeadFieldError(field, message);
+                  });
+               }
+               Swal.fire({
+                  icon: 'error',
+                  title: 'Unable to update lead',
+                  text: response.error_message || response.message || 'An unexpected error occurred. Please try again.',
+                  confirmButtonColor: '#d33'
+               });
             },
 
          });
