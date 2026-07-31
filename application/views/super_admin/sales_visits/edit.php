@@ -142,6 +142,41 @@
         color: #6c757d;
         padding: 9px 12px;
     }
+
+    #openSalesReserveTableModal { height: 46px; }
+    #salesReserveTableModal .modal-dialog { max-width: min(92vw, 1500px); }
+    #salesReserveTableModal .reservation-status-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #salesReserveTableModal .reservation-status-options input[type="radio"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: #fff;
+        border: 2px solid #cbd3df;
+        border-radius: 50%;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px;
+        left: auto !important;
+        margin: 0;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px;
+    }
+    #salesReserveTableModal .reservation-status-options input[type="radio"]:checked {
+        background-color: #6b4ce6;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.4' d='M4 8.2 6.7 11 12 5.5'/%3E%3C/svg%3E");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 12px 12px;
+        border-color: #6b4ce6;
+    }
+    #salesReserveTableModal .reservation-status-options input[type="radio"]:focus-visible {
+        box-shadow: 0 0 0 3px rgba(107, 76, 230, 0.2);
+        outline: 0;
+    }
 </style>
 
 <!-- Content Wrapper -->
@@ -545,6 +580,39 @@
                 </div>
             </div>
         </section>
+    </div>
+</div>
+
+<div class="modal fade" id="salesReserveTableModal" tabindex="-1" aria-labelledby="salesReserveTableModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex"><span class="reserve-modal-icon"><i class="fa fa-cutlery"></i></span><div><h5 class="modal-title" id="salesReserveTableModalLabel">Reserve Table</h5><p class="reserve-modal-subtitle">Select an available table for this reservation</p></div></div>
+                <button type="button" class="btn-close" id="closeSalesReserveTableModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row reservation-filters">
+                    <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-cutlery"></i>1. Restaurant</label><select class="reserve-control" id="sales_reserve_restaurant_id"><option value="">Select Restaurant</option></select><div class="text-danger small mt-1" id="sales_reserve_restaurant_error"></div></div>
+                    <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-calendar"></i>2. Booking Date</label><input class="reserve-control" id="sales_reserve_booking_date" type="date"><div class="text-danger small mt-1" id="sales_reserve_booking_date_error"></div></div>
+                    <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-clock-o"></i>3. Slot Type</label><select class="reserve-control" id="sales_reserve_slot_type_id"><option value="">Select Slot Type</option></select><div class="text-danger small mt-1" id="sales_reserve_slot_type_error"></div></div>
+                    <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-clock-o"></i>4. Time Slot</label><select class="reserve-control" id="sales_reserve_time_slot_id" disabled><option value="">Select Slot Type first</option></select><div class="text-danger small mt-1" id="sales_reserve_time_slot_error"></div></div>
+                    <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-th-large"></i>5. Table Category</label><select class="reserve-control" id="sales_reserve_table_category_id"><option value="">Select Table Category</option></select><div class="text-danger small mt-1" id="sales_reserve_table_category_error"></div></div>
+                </div>
+                <div class="reservation-summary">
+                    <div class="reservation-stat"><i class="fa fa-check-circle"></i><div><strong id="sales_reserve_available_count">0</strong><span>Available</span></div></div>
+                    <div class="reservation-stat stat-occupied"><i class="fa fa-times-circle"></i><div><strong id="sales_reserve_occupied_count">0</strong><span>Occupied</span></div></div>
+                    <div class="reservation-stat stat-reserved"><i class="fa fa-calendar-check-o"></i><div><strong id="sales_reserve_reserved_count">0</strong><span>Reserved</span></div></div>
+                    <div class="reservation-stat stat-blocked"><i class="fa fa-ban"></i><div><strong id="sales_reserve_blocked_count">0</strong><span>Blocked</span></div></div>
+                    <div class="reservation-stat stat-checkout"><i class="fa fa-clock-o"></i><div><strong id="sales_reserve_checkout_count">0</strong><span>Expected Check-outs</span></div></div>
+                </div>
+                <div class="reservation-panel"><div class="reservation-table-grid" id="sales_reserve_table_grid"><div class="text-muted">Select restaurant, booking date, time slot and table category to view tables.</div></div><div class="text-danger small mt-2" id="sales_reserve_table_error"></div></div>
+                <div class="row g-3 mt-1">
+                    <div class="col-lg-7"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-file-text-o"></i>Special Instructions <span class="text-muted fw-normal">(Optional)</span></label><textarea class="reserve-control reserve-instructions" id="sales_reserve_special_request" maxlength="250" placeholder="Add any special request or notes for this reservation..."></textarea></div></div>
+                    <div class="col-lg-5"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-check-circle"></i>Reservation Status</label><div class="reservation-status-options"><label><input type="radio" name="sales_reserve_status" value="Reserved"> Reserved</label><label><input type="radio" name="sales_reserve_status" value="Seated"> Seated</label><label><input type="radio" name="sales_reserve_status" value="Completed"> Completed</label><label><input type="radio" name="sales_reserve_status" value="Cancelled"> Cancelled</label></div><div class="text-danger small mt-1" id="sales_reserve_status_error"></div></div></div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between"><button type="button" class="btn btn-light border" id="cancelSalesReserveTableModal">Cancel</button><button type="button" class="btn btn-primary reserve-submit-btn" id="confirmSalesTableReservation"><i class="fa fa-calendar-check-o me-2"></i>Reserve Table</button></div>
+        </div>
     </div>
 </div>
 
@@ -1473,6 +1541,7 @@
         };
 
         editSalesDynamicAjaxQueue = editSalesDynamicAjaxQueue.then(runRequest, runRequest);
+        editSalesDynamicAjaxQueue.done(refreshCsrf);
         return editSalesDynamicAjaxQueue;
     }
 
@@ -1880,42 +1949,37 @@
                 loadEditSalesMealPlans(editSalesDynamicValue(editSalesDynamicData, 'meal_plan'));
             } else if (department === 'restaurant') {
                 $container.append(`
-                    <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
                     <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
-                    <div class="col-md-3 mb-3"><label>Restaurant <span class="text-danger">*</span></label><select name="restaurant_id" id="restaurant_id" class="form-select"><option value="">Select Restaurant</option></select><div class="text-danger error-label" id="restaurant_id_error"></div></div>
-                    <div class="col-md-3 mb-3"><label>Slot Type <span class="text-danger">*</span></label><select name="slot_type_id" id="slot_type_id" class="form-select"><option value="">Select Slot</option></select><div class="text-danger error-label" id="slot_type_id_error"></div></div>
-                    <div class="col-md-3 mb-3"><label>Time Slot <span class="text-danger">*</span></label><select name="time_slot_id" id="time_slot_id" class="form-select"><option value="">Select Time Slot</option></select><div class="text-danger error-label" id="time_slot_id_error"></div></div>
                     <div class="col-md-3 mb-3"><label>Arrival Time</label><input type="time" name="arrival_time" class="form-control"></div>
-                    <div class="col-md-3 mb-3"><label>Table Category <span class="text-danger">*</span></label><select name="table_category_id" id="table_category_id" class="form-select"><option value="">Select Category</option></select><div class="text-danger error-label" id="table_category_id_error"></div></div>
-                    <div class="col-md-3 mb-3"><label>Tables <span class="text-danger">*</span></label><select name="table_id[]" id="table_id" class="form-control" multiple></select><div class="text-danger error-label" id="table_id_error"></div></div>
-                    <div class="col-md-3 mb-3"><label>Table Reservation Status <span class="text-danger">*</span></label><select name="table_reservation_status" id="table_reservation_status" class="form-select"><option value="">Select Status</option><option value="Reserved">Reserved</option><option value="Seated">Seated</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select><div class="text-danger error-label" id="table_reservation_status_error"></div></div>
                     <div class="col-md-3 mb-3"><label>Expected Revenue</label><input type="number" name="amount" class="form-control" step="0.01"></div>
                     <div class="col-md-6 mb-3"><label>Special Occasion (if any)</label><input type="text" name="special_occasion" class="form-control"></div>
-                    <div class="col-md-6 mb-3"><label>Special Request</label><textarea name="special_request" class="form-control"></textarea></div>`);
+                    <div class="col-md-4 mb-3"><label>Table Reservation <span class="text-danger">*</span></label><button type="button" class="btn btn-primary w-100" id="openSalesReserveTableModal"><i class="fa fa-calendar-check-o me-2"></i>Edit Reservation</button><div class="small text-success mt-2" id="sales_restaurant_reservation_summary">Existing reservation loaded.</div><div class="text-danger error-label" id="sales_restaurant_reservation_error"></div></div>
+                    <input type="hidden" name="booking_date" id="restaurant_booking_date">
+                    <input type="hidden" name="restaurant_id" id="restaurant_id">
+                    <input type="hidden" name="slot_type_id" id="slot_type_id">
+                    <input type="hidden" name="time_slot_id" id="time_slot_id">
+                    <input type="hidden" name="table_category_id" id="table_category_id">
+                    <select name="table_id[]" id="table_id" multiple hidden></select>
+                    <input type="hidden" name="table_reservation_status" id="table_reservation_status">
+                    <input type="hidden" name="special_request" id="restaurant_special_request">`);
 
-                const restaurantId = editSalesDynamicValue(editSalesDynamicData, 'restaurant_id');
-                const slotTypeId = editSalesDynamicValue(editSalesDynamicData, 'slot_type_id');
-                const categoryId = editSalesDynamicValue(editSalesDynamicData, 'table_category_id');
-
-                loadEditSalesRestaurants(hotelId, restaurantId, function($restaurantSelect) {
-                    const activeRestaurantId = $restaurantSelect.val() || restaurantId;
-                    if (activeRestaurantId) {
-                        loadEditSalesTableCategories(activeRestaurantId, categoryId, function($categorySelect) {
-                            const activeCategoryId = $categorySelect.val() || categoryId;
-                            if (activeCategoryId) {
-                                loadEditSalesTables(activeRestaurantId, activeCategoryId, editSalesDynamicValues(editSalesDynamicData, 'table_id'));
-                            }
-                        });
-                    }
+                const existingTableIds = editSalesDynamicValues(editSalesDynamicData, 'reserved_table_ids').length
+                    ? editSalesDynamicValues(editSalesDynamicData, 'reserved_table_ids')
+                    : editSalesDynamicValues(editSalesDynamicData, 'table_id');
+                existingTableIds.forEach(function(tableId) {
+                    $('#table_id').append($('<option>', {value: tableId, text: tableId, selected: true}));
                 });
-                loadEditSalesSlotTypes(slotTypeId, function($slotTypeSelect) {
-                    const activeSlotTypeId = $slotTypeSelect.val() || slotTypeId;
-                    if (activeSlotTypeId) {
-                        loadEditSalesTimeSlots(activeSlotTypeId, editSalesDynamicValue(editSalesDynamicData, 'time_slot_id'));
-                    }
-                });
+                $('#sales_restaurant_reservation_summary').text(
+                    existingTableIds.length ? `${existingTableIds.length} existing table(s) selected. Open the reservation to review.` : 'No table reserved yet.'
+                ).toggleClass('text-success', existingTableIds.length > 0).toggleClass('text-muted', existingTableIds.length === 0);
             } else if (department === 'banquet') {
+                const roomRequired = Boolean(editSalesDynamicValue(editSalesDynamicData, 'checkin_date') || editSalesDynamicValue(editSalesDynamicData, 'checkout_date'));
                 $container.append(`
+                    <input type="hidden" name="room_requirement_controlled" value="1">
+                    <div class="col-md-3 mb-3 d-flex align-items-end"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="is_room_required" id="sales_is_room_required" value="1" ${roomRequired ? 'checked' : ''}><label class="form-check-label" for="sales_is_room_required">Is Room Required?</label></div></div>
+                    <div class="col-md-3 mb-3 sales-room-required-fields" style="${roomRequired ? '' : 'display:none;'}"><label>Check-in Date <span class="text-danger">*</span></label><input type="date" name="checkin_date" id="checkin_date" class="form-control"><div class="text-danger error-label" id="checkin_date_error"></div></div>
+                    <div class="col-md-3 mb-3 sales-room-required-fields" style="${roomRequired ? '' : 'display:none;'}"><label>Check-out Date <span class="text-danger">*</span></label><input type="date" name="checkout_date" id="checkout_date" class="form-control"><div class="text-danger error-label" id="checkout_date_error"></div></div>
+                    <div class="col-md-3 mb-3 sales-room-required-fields" style="${roomRequired ? '' : 'display:none;'}"><label>Number of Rooms</label><input type="number" name="number_of_rooms" id="number_of_rooms" class="form-control" min="1"></div>
                     <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
                     <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
                     <div class="col-md-3 mb-3"><label>Banquet <span class="text-danger">*</span></label><select name="banquet_id" id="banquet_id" class="form-select"><option value="">Select Banquet</option></select><div class="text-danger error-label" id="banquet_id_error"></div></div>
@@ -1936,6 +2000,11 @@
                 <div class="col-md-3 mb-3"><label>2nd Follow-up Date</label><input type="date" name="second_followup_date" class="form-control"></div>`);
         }
 
+        if ($('#table_id').length) {
+            editSalesDynamicData.table_id = editSalesDynamicValues(editSalesDynamicData, 'reserved_table_ids').length
+                ? editSalesDynamicValues(editSalesDynamicData, 'reserved_table_ids')
+                : editSalesDynamicValues(editSalesDynamicData, 'table_id');
+        }
         applyEditSalesDynamicValues(editSalesDynamicData);
         initializeEditSalesDynamicSelects();
         bindEditSalesDynamicDependencies();
@@ -2023,13 +2092,372 @@
 
 
 
+    $(document).on('change.editSalesRoomRequired', '#sales_is_room_required', function() {
+        const required = this.checked;
+        $('.sales-room-required-fields').toggle(required);
+        $('.sales-room-required-fields input').prop('required', required);
+        if (!required) {
+            $('.sales-room-required-fields input').val('').removeClass('is-invalid').removeAttr('aria-invalid');
+            $('#checkin_date_error, #checkout_date_error').text('');
+        }
+    });
+
+    $(document).on('change.editSalesRoomDates', '#checkin_date', function() {
+        $('#checkout_date').attr('min', $(this).val() || '');
+        if ($('#checkout_date').val() && $('#checkout_date').val() < $(this).val()) {
+            $('#checkout_date').val('');
+        }
+    });
+
+    let salesReservationModalCanClose = false;
+    let salesReservationTables = [];
+    let salesReservationAvailabilityRequest = 0;
+
+    function salesReservationToday() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    function formatSalesReservationTime(time) {
+        if (!time) return '';
+        const parts = String(time).split(':');
+        let hour = parseInt(parts[0], 10);
+        if (Number.isNaN(hour)) return time;
+        const minutes = parts[1] || '00';
+        const suffix = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        return `${String(hour).padStart(2, '0')}:${minutes} ${suffix}`;
+    }
+
+    function resetSalesReservationMessages() {
+        $('#salesReserveTableModal .is-invalid').removeClass('is-invalid');
+        $('#sales_reserve_restaurant_error, #sales_reserve_booking_date_error, #sales_reserve_slot_type_error, #sales_reserve_time_slot_error, #sales_reserve_table_category_error, #sales_reserve_table_error, #sales_reserve_status_error').text('');
+    }
+
+    function resetSalesReservationStats() {
+        $('#sales_reserve_available_count, #sales_reserve_occupied_count, #sales_reserve_reserved_count, #sales_reserve_blocked_count, #sales_reserve_checkout_count').text('0');
+    }
+
+    function salesReservationTableLabels(table) {
+        return [table.table_name, table.table_number, table.table_number ? `Table ${table.table_number}` : '']
+            .filter(Boolean)
+            .map(label => String(label).trim().toLowerCase());
+    }
+
+    function selectedSalesReservationTableIds() {
+        return $('#sales_reserve_table_grid .reservation-table-card.selected').map(function() {
+            return String($(this).data('table-id'));
+        }).get();
+    }
+
+    function renderSalesReservationTables(conflictingTables = [], selectedTableIds = []) {
+        const $grid = $('#sales_reserve_table_grid').empty();
+        const conflicts = conflictingTables.map(label => String(label).trim().toLowerCase());
+        const selectedIds = selectedTableIds.map(String);
+        let availableCount = 0;
+        let reservedCount = 0;
+
+        if (!salesReservationTables.length) {
+            $grid.append($('<div>', {class: 'text-muted', text: 'No tables are available for the selected restaurant and category.'}));
+            resetSalesReservationStats();
+            return;
+        }
+
+        salesReservationTables.forEach(function(table) {
+            const tableId = String(table.id);
+            const unavailable = salesReservationTableLabels(table).some(label => conflicts.includes(label));
+            const selected = !unavailable && selectedIds.includes(tableId);
+            const tableNumber = table.table_number || table.table_name || `T${table.id}`;
+            const capacity = table.capacity ? `${table.capacity} Guests` : 'Guests not specified';
+            const category = $('#sales_reserve_table_category_id option:selected').text() || 'Table';
+            unavailable ? reservedCount++ : availableCount++;
+
+            const $card = $('<div>', {
+                class: `reservation-table-card${unavailable ? ' unavailable' : ''}${selected ? ' selected' : ''}`,
+                'data-table-id': tableId,
+                'data-available': unavailable ? '0' : '1'
+            });
+            $card.append(
+                $('<span>', {class: 'table-icon'}).append($('<i>', {class: 'fa fa-cutlery'})),
+                $('<div>', {class: 'table-number', text: tableNumber}),
+                $('<div>', {class: 'table-details'}).append(document.createTextNode(capacity), $('<br>'), document.createTextNode(category)),
+                $('<span>', {class: `table-status ${unavailable ? 'reserved' : 'available'}`, text: unavailable ? 'Reserved' : 'Available'})
+            );
+            $grid.append($card);
+        });
+
+        $('#sales_reserve_available_count').text(availableCount);
+        $('#sales_reserve_reserved_count').text(reservedCount);
+        $('#sales_reserve_occupied_count, #sales_reserve_blocked_count, #sales_reserve_checkout_count').text('0');
+    }
+
+    function refreshSalesReservationAvailability(selectedTableIds = null) {
+        const bookingDate = $('#sales_reserve_booking_date').val();
+        const restaurantId = $('#sales_reserve_restaurant_id').val();
+        const categoryId = $('#sales_reserve_table_category_id').val();
+        const timeSlotId = $('#sales_reserve_time_slot_id').val();
+        const slotTypeId = $('#sales_reserve_slot_type_id').val();
+        const tableIds = salesReservationTables.map(table => table.id);
+        const preserved = selectedTableIds === null ? selectedSalesReservationTableIds() : selectedTableIds.map(String);
+
+        if (!bookingDate || !restaurantId || !categoryId || !timeSlotId || !slotTypeId || !tableIds.length) {
+            renderSalesReservationTables([], preserved);
+            return;
+        }
+
+        const requestId = ++salesReservationAvailabilityRequest;
+        $('#sales_reserve_table_grid').addClass('opacity-50');
+        editSalesDynamicRequest({
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
+            type: 'POST',
+            data: {booking_date: bookingDate, restaurant_id: restaurantId, table_category_id: categoryId, table_ids: tableIds, slot_type_id: slotTypeId, exclude_lead_id: <?= (int) $sales_visit->lead_id_againts_visit ?>},
+            dataType: 'json'
+        }).done(function(res) {
+            refreshCsrf(res);
+            if (requestId !== salesReservationAvailabilityRequest) return;
+            const selectedSlot = (res.data || []).find(slot => String(slot.id) === String(timeSlotId));
+            renderSalesReservationTables(selectedSlot ? (selectedSlot.conflicting_tables || []) : [], preserved);
+        }).fail(function(xhr) {
+            if (requestId !== salesReservationAvailabilityRequest) return;
+            renderSalesReservationTables([], preserved);
+            $('#sales_reserve_table_error').text((xhr.responseJSON || {}).message || 'Unable to check table availability.');
+        }).always(function() {
+            if (requestId === salesReservationAvailabilityRequest) $('#sales_reserve_table_grid').removeClass('opacity-50');
+        });
+    }
+
+    function loadSalesReservationTables(restaurantId, categoryId, selectedTableIds = []) {
+        salesReservationTables = [];
+        resetSalesReservationStats();
+        $('#sales_reserve_table_grid').html('<div class="text-muted">Loading tables...</div>');
+        if (!restaurantId || !categoryId) {
+            $('#sales_reserve_table_grid').html('<div class="text-muted">Select a restaurant and table category to view tables.</div>');
+            return;
+        }
+        $.ajax({
+            url: "<?= base_url('lead/get-tables') ?>",
+            type: 'GET',
+            data: {restaurant_id: restaurantId, category_id: categoryId},
+            dataType: 'json'
+        }).done(function(res) {
+            refreshCsrf(res);
+            salesReservationTables = res.status === 'success' ? (res.data || []) : [];
+            renderSalesReservationTables([], selectedTableIds);
+            refreshSalesReservationAvailability(selectedTableIds);
+        }).fail(function() {
+            salesReservationTables = [];
+            renderSalesReservationTables();
+            $('#sales_reserve_table_error').text('Unable to load restaurant tables.');
+        });
+    }
+
+    function loadSalesReservationCategories(restaurantId, selectedCategoryId = '', selectedTableIds = []) {
+        const $category = $('#sales_reserve_table_category_id').html('<option value="">Loading...</option>').prop('disabled', true);
+        salesReservationTables = [];
+        resetSalesReservationStats();
+        $('#sales_reserve_table_grid').html('<div class="text-muted">Select a table category to view tables.</div>');
+        if (!restaurantId) {
+            $category.html('<option value="">Select Table Category</option>').prop('disabled', false);
+            return;
+        }
+        $.ajax({url: "<?= base_url('lead/get-table-categories') ?>", type: 'GET', data: {restaurant_id: restaurantId}, dataType: 'json'})
+            .done(function(res) {
+                refreshCsrf(res);
+                $category.empty().append($('<option>', {value: '', text: 'Select Table Category'}));
+                if (res.status === 'success') (res.data || []).forEach(row => $category.append($('<option>', {value: row.id, text: row.category_name})));
+                if (selectedCategoryId) $category.val(String(selectedCategoryId));
+                else if ($category.find('option[value!=""]').length === 1) $category.val($category.find('option[value!=""]').val());
+                $category.prop('disabled', false);
+                if ($category.val()) loadSalesReservationTables(restaurantId, $category.val(), selectedTableIds);
+            })
+            .fail(function() {
+                $category.html('<option value="">Select Table Category</option>').prop('disabled', false);
+                $('#sales_reserve_table_category_error').text('Unable to load table categories.');
+            });
+    }
+
+    function loadSalesReservationRestaurants(selectedRestaurantId = '', selectedCategoryId = '', selectedTableIds = []) {
+        const hotelId = $('#property option:selected').data('raw-id') || '';
+        const $restaurant = $('#sales_reserve_restaurant_id').html('<option value="">Loading...</option>').prop('disabled', true);
+        $.ajax({url: "<?= base_url('lead/get-restaurants') ?>", type: 'GET', data: {hotel_id: hotelId}, dataType: 'json'})
+            .done(function(res) {
+                refreshCsrf(res);
+                $restaurant.empty().append($('<option>', {value: '', text: 'Select Restaurant'}));
+                if (res.status === 'success') (res.data || []).forEach(row => $restaurant.append($('<option>', {value: row.id, text: row.restaurant_name})));
+                if (selectedRestaurantId) $restaurant.val(String(selectedRestaurantId));
+                else if ($restaurant.find('option[value!=""]').length === 1) $restaurant.val($restaurant.find('option[value!=""]').val());
+                $restaurant.prop('disabled', false);
+                loadSalesReservationCategories($restaurant.val(), selectedCategoryId, selectedTableIds);
+            })
+            .fail(function() {
+                $restaurant.html('<option value="">Select Restaurant</option>').prop('disabled', false);
+                $('#sales_reserve_restaurant_error').text('Unable to load restaurants.');
+            });
+    }
+
+    function loadSalesReservationTimeSlots(slotTypeId, selectedTimeSlotId = '') {
+        const $timeSlot = $('#sales_reserve_time_slot_id').html(`<option value="">${slotTypeId ? 'Loading...' : 'Select Slot Type first'}</option>`).prop('disabled', true);
+        if (!slotTypeId) {
+            refreshSalesReservationAvailability();
+            return;
+        }
+        $.ajax({url: "<?= base_url('lead/get-time-slots') ?>", type: 'GET', data: {slot_type_id: slotTypeId}, dataType: 'json'})
+            .done(function(res) {
+                $timeSlot.empty().append($('<option>', {value: '', text: 'Select Time Slot'}));
+                if (res.status === 'success') (res.data || []).forEach(function(slot) {
+                    const label = slot.start_time && slot.end_time ? `${formatSalesReservationTime(slot.start_time)} - ${formatSalesReservationTime(slot.end_time)}` : (slot.slot_name || 'Time Slot');
+                    $timeSlot.append($('<option>', {value: slot.id, text: label}));
+                });
+                if (selectedTimeSlotId) $timeSlot.val(String(selectedTimeSlotId));
+                $timeSlot.prop('disabled', false);
+                refreshSalesReservationAvailability();
+            })
+            .fail(function() {
+                $timeSlot.html('<option value="">Select Time Slot</option>').prop('disabled', false);
+                $('#sales_reserve_time_slot_error').text('Unable to load time slots.');
+            });
+    }
+
+    function loadSalesReservationSlotTypes(selectedSlotTypeId = '', selectedTimeSlotId = '') {
+        const $slotType = $('#sales_reserve_slot_type_id').html('<option value="">Loading...</option>').prop('disabled', true);
+        $('#sales_reserve_time_slot_id').html('<option value="">Select Slot Type first</option>').prop('disabled', true);
+        $.ajax({url: "<?= base_url('lead/get-slot-types') ?>", type: 'GET', dataType: 'json'})
+            .done(function(res) {
+                $slotType.empty().append($('<option>', {value: '', text: 'Select Slot Type'}));
+                if (res.status === 'success') (res.data || []).forEach(row => $slotType.append($('<option>', {value: row.id, text: row.slot_name || row.name || 'Slot Type'})));
+                if (selectedSlotTypeId) $slotType.val(String(selectedSlotTypeId));
+                $slotType.prop('disabled', false);
+                if ($slotType.val()) loadSalesReservationTimeSlots($slotType.val(), selectedTimeSlotId);
+            })
+            .fail(function() {
+                $slotType.html('<option value="">Select Slot Type</option>').prop('disabled', false);
+                $('#sales_reserve_slot_type_error').text('Unable to load slot types.');
+            });
+    }
+
+    function openSalesReservationModal() {
+        resetSalesReservationMessages();
+        salesReservationModalCanClose = false;
+        const selectedTableIds = ($('#table_id').val() || []).map(String);
+        const status = $('#table_reservation_status').val() || 'Reserved';
+        const savedBookingDate = $('#restaurant_booking_date').val() || salesReservationToday();
+        $('#sales_reserve_booking_date').attr('min', savedBookingDate < salesReservationToday() ? savedBookingDate : salesReservationToday()).val(savedBookingDate);
+        $('#sales_reserve_special_request').val($('#restaurant_special_request').val() || '');
+        $(`input[name="sales_reserve_status"][value="${status}"]`).prop('checked', true);
+        loadSalesReservationRestaurants($('#restaurant_id').val() || '', $('#table_category_id').val() || '', selectedTableIds);
+        loadSalesReservationSlotTypes($('#slot_type_id').val() || '', $('#time_slot_id').val() || '');
+        $('#salesReserveTableModal').modal({backdrop: 'static', keyboard: false}).modal('show');
+    }
+
+    function closeSalesReservationModal() {
+        salesReservationModalCanClose = true;
+        $('#salesReserveTableModal').modal('hide');
+    }
+
+    function commitSalesReservation() {
+        const restaurantId = $('#sales_reserve_restaurant_id').val();
+        const bookingDate = $('#sales_reserve_booking_date').val();
+        const slotTypeId = $('#sales_reserve_slot_type_id').val();
+        const timeSlotId = $('#sales_reserve_time_slot_id').val();
+        const categoryId = $('#sales_reserve_table_category_id').val();
+        const tableIds = selectedSalesReservationTableIds();
+        const status = $('input[name="sales_reserve_status"]:checked').val();
+        const errors = {};
+        resetSalesReservationMessages();
+        if (!restaurantId) errors.restaurant = 'Please select a restaurant.';
+        if (!bookingDate) errors.bookingDate = 'Please select a booking date.';
+        if (!slotTypeId) errors.slotType = 'Please select a slot type.';
+        if (!timeSlotId) errors.timeSlot = 'Please select a time slot.';
+        if (!categoryId) errors.category = 'Please select a table category.';
+        if (!tableIds.length) errors.tables = 'Please select at least one available table.';
+        if (!status) errors.status = 'Please select a reservation status.';
+        if (errors.restaurant) $('#sales_reserve_restaurant_id').addClass('is-invalid');
+        if (errors.bookingDate) $('#sales_reserve_booking_date').addClass('is-invalid');
+        if (errors.slotType) $('#sales_reserve_slot_type_id').addClass('is-invalid');
+        if (errors.timeSlot) $('#sales_reserve_time_slot_id').addClass('is-invalid');
+        if (errors.category) $('#sales_reserve_table_category_id').addClass('is-invalid');
+        $('#sales_reserve_restaurant_error').text(errors.restaurant || '');
+        $('#sales_reserve_booking_date_error').text(errors.bookingDate || '');
+        $('#sales_reserve_slot_type_error').text(errors.slotType || '');
+        $('#sales_reserve_time_slot_error').text(errors.timeSlot || '');
+        $('#sales_reserve_table_category_error').text(errors.category || '');
+        $('#sales_reserve_table_error').text(errors.tables || '');
+        $('#sales_reserve_status_error').text(errors.status || '');
+        if (Object.keys(errors).length) return;
+
+        const $button = $('#confirmSalesTableReservation').prop('disabled', true);
+        const originalHtml = $button.html();
+        $button.text('Checking availability...');
+        editSalesDynamicRequest({
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
+            type: 'POST',
+            data: {booking_date: bookingDate, restaurant_id: restaurantId, table_category_id: categoryId, table_ids: tableIds, slot_type_id: slotTypeId, exclude_lead_id: <?= (int) $sales_visit->lead_id_againts_visit ?>},
+            dataType: 'json'
+        }).done(function(res) {
+            refreshCsrf(res);
+            const selectedSlot = (res.data || []).find(slot => String(slot.id) === String(timeSlotId));
+            if (!selectedSlot || !selectedSlot.available) {
+                $('#sales_reserve_table_error').text(selectedSlot ? selectedSlot.reason : 'The selected time slot is unavailable.');
+                refreshSalesReservationAvailability(tableIds);
+                return;
+            }
+            $('#restaurant_booking_date').val(bookingDate);
+            $('#restaurant_id').val(restaurantId);
+            $('#slot_type_id').val(slotTypeId);
+            $('#time_slot_id').val(timeSlotId);
+            $('#table_category_id').val(categoryId);
+            $('#table_reservation_status').val(status);
+            $('#restaurant_special_request').val($('#sales_reserve_special_request').val());
+            const $tableField = $('#table_id').empty();
+            tableIds.forEach(tableId => $tableField.append($('<option>', {value: tableId, text: tableId, selected: true})));
+            const summary = [
+                $('#sales_reserve_restaurant_id option:selected').text(), bookingDate,
+                $('#sales_reserve_slot_type_id option:selected').text(), $('#sales_reserve_time_slot_id option:selected').text(),
+                $('#sales_reserve_table_category_id option:selected').text(), `${tableIds.length} table(s)`, status
+            ].join(' • ');
+            $('#sales_restaurant_reservation_summary').removeClass('text-muted').addClass('text-success').text(summary);
+            $('#openSalesReserveTableModal').html('<i class="fa fa-pencil me-2"></i>Edit Reservation').removeClass('is-invalid');
+            $('#sales_restaurant_reservation_error').text('');
+            closeSalesReservationModal();
+        }).fail(function(xhr) {
+            $('#sales_reserve_table_error').text((xhr.responseJSON || {}).message || 'Unable to verify table availability.');
+            refreshSalesReservationAvailability(tableIds);
+        }).always(function() {
+            $button.prop('disabled', false).html(originalHtml);
+        });
+    }
+
+    $(document).on('click', '#openSalesReserveTableModal', openSalesReservationModal);
+    $(document).on('click', '#closeSalesReserveTableModal, #cancelSalesReserveTableModal', closeSalesReservationModal);
+    $(document).on('click', '#confirmSalesTableReservation', commitSalesReservation);
+    $(document).on('change', '#sales_reserve_restaurant_id', function() { resetSalesReservationMessages(); loadSalesReservationCategories($(this).val()); });
+    $(document).on('change', '#sales_reserve_table_category_id', function() { resetSalesReservationMessages(); loadSalesReservationTables($('#sales_reserve_restaurant_id').val(), $(this).val()); });
+    $(document).on('change', '#sales_reserve_slot_type_id', function() { resetSalesReservationMessages(); loadSalesReservationTimeSlots($(this).val()); });
+    $(document).on('change', '#sales_reserve_booking_date, #sales_reserve_time_slot_id', function() { resetSalesReservationMessages(); refreshSalesReservationAvailability(); });
+    $(document).on('click', '#sales_reserve_table_grid .reservation-table-card', function() {
+        if (String($(this).data('available')) !== '1') return;
+        $(this).toggleClass('selected');
+        $('#sales_reserve_table_error').text('');
+    });
+    $('#salesReserveTableModal').on('hide.bs.modal', function(event) {
+        if (!salesReservationModalCanClose) event.preventDefault();
+    }).on('hidden.bs.modal', function() {
+        salesReservationModalCanClose = false;
+    });
+
+
     function salesVisitField(field) {
+        if (['booking_date', 'restaurant_id', 'slot_type_id', 'time_slot_id', 'table_category_id', 'table_id', 'table_reservation_status'].includes(field) && $('#openSalesReserveTableModal').length) {
+            return $('#openSalesReserveTableModal');
+        }
         return $('#' + field);
     }
 
     function showSalesVisitFieldError(field, message) {
         const $field = salesVisitField(field);
-        let $error = $('#' + field + '_error');
+        const isRestaurantReservationError = $field.is('#openSalesReserveTableModal');
+        let $error = isRestaurantReservationError
+            ? $('#sales_restaurant_reservation_error')
+            : $('#' + field + '_error');
 
         $field.addClass('is-invalid').attr('aria-invalid', 'true');
         $field.next('.select2-container').find('.select2-selection').addClass('is-invalid');
@@ -2048,6 +2476,7 @@
     function clearSalesVisitValidation() {
         $('#salesVisitForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
         $('#salesVisitForm [id$="_error"]').text('');
+        $('#sales_restaurant_reservation_error').text('');
     }
 
     function showSalesVisitValidationErrors(errors) {
@@ -2076,7 +2505,7 @@
     function validateSalesVisitForm() {
         const errors = {};
         const value = function(field) {
-            return $.trim(String(salesVisitField(field).val() || ''));
+            return $.trim(String($('#' + field).val() || ''));
         };
 
         if (!value('property')) errors.property = 'Please select a hotel.';
@@ -2110,6 +2539,13 @@
             }
             if (department === 'banquet' && !value('banquet_id')) {
                 errors.banquet_id = 'Please select a banquet.';
+            }
+            if (department === 'banquet' && $('#sales_is_room_required').is(':checked')) {
+                const checkinDate = value('checkin_date');
+                const checkoutDate = value('checkout_date');
+                if (!checkinDate) errors.checkin_date = 'Check-in date is required.';
+                if (!checkoutDate) errors.checkout_date = 'Check-out date is required.';
+                else if (checkinDate && checkoutDate < checkinDate) errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
             }
             if (department === 'restaurant') {
                 if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';
@@ -2202,6 +2638,8 @@
                         if (this.files.length > 0) {
                             formData.append(name, this.files[0]);
                         }
+                    } else if ($(this).attr('type') === 'checkbox' && !this.checked) {
+                        // Unchecked optional controls must not submit their value.
                     } else if (name === 'table_id[]') {
                         // Appended separately so each selected table is submitted.
                     } else {

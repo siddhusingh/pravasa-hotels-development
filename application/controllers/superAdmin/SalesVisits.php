@@ -11,6 +11,7 @@ class SalesVisits extends CI_Controller
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
         $this->load->model('Mycloud_config_model');
+        $this->load->model('RestaurantBookingModel');
         $this->load->helper('secure');
 
 
@@ -315,6 +316,7 @@ class SalesVisits extends CI_Controller
         };
 
         $dynamicValidationError = '';
+        $restaurantTableIds = [];
         if ($dynamicStage === 'Lead Lost' && $dynamicValue('reason') === '') {
             $dynamicValidationError = 'Please select a lead lost reason';
         } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'rooms' && $dynamicValue('meal_plan') === '') {
@@ -335,9 +337,56 @@ class SalesVisits extends CI_Controller
                 }
             }
 
-            $dynamicTableIds = $this->input->post('table_id');
-            if ($dynamicValidationError === '' && (empty($dynamicTableIds) || (is_array($dynamicTableIds) && count(array_filter($dynamicTableIds)) === 0))) {
+            $restaurantTableIds = $this->RestaurantBookingModel->normalizeTableIds($this->input->post('table_id'));
+            if ($dynamicValidationError === '' && empty($restaurantTableIds)) {
                 $dynamicValidationError = 'Please select at least one table';
+            }
+
+            if ($dynamicValidationError === '' && !in_array($dynamicValue('table_reservation_status'), ['Reserved', 'Seated', 'Completed', 'Cancelled'], true)) {
+                $dynamicValidationError = 'Please select a valid reservation status';
+            }
+
+            if ($dynamicValidationError === '') {
+                $selectionErrors = $this->RestaurantBookingModel->validateSelection(
+                    $dynamicValue('booking_date'),
+                    $dynamicValue('restaurant_id'),
+                    $dynamicValue('table_category_id'),
+                    $restaurantTableIds,
+                    $dynamicValue('slot_type_id'),
+                    $dynamicValue('time_slot_id')
+                );
+
+                if (!empty($selectionErrors)) {
+                    $dynamicValidationError = reset($selectionErrors);
+                }
+            }
+        }
+
+        if (
+            $dynamicValidationError === ''
+            && $dynamicStage === 'Quotation Sent'
+            && $dynamicDepartment === 'banquet'
+            && $dynamicValue('is_room_required') === '1'
+        ) {
+            $checkinDate = $dynamicValue('checkin_date');
+            $checkoutDate = $dynamicValue('checkout_date');
+            $isValidDate = function ($date) {
+                $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                return $parsed && $parsed->format('Y-m-d') === $date;
+            };
+
+            if ($checkinDate === '') {
+                $dynamicValidationError = 'Check-in date is required';
+            } elseif (!$isValidDate($checkinDate)) {
+                $dynamicValidationError = 'Please enter a valid check-in date';
+            } elseif ($checkinDate < date('Y-m-d')) {
+                $dynamicValidationError = 'Check-in date cannot be in the past';
+            } elseif ($checkoutDate === '') {
+                $dynamicValidationError = 'Check-out date is required';
+            } elseif (!$isValidDate($checkoutDate)) {
+                $dynamicValidationError = 'Please enter a valid check-out date';
+            } elseif ($checkoutDate < $checkinDate) {
+                $dynamicValidationError = 'Check-out date must be the same as or after check-in date';
             }
         }
 
@@ -443,6 +492,9 @@ class SalesVisits extends CI_Controller
                         'booking_date',
                         'pax',
                         'banquet_id',
+                        'checkin_date',
+                        'checkout_date',
+                        'number_of_rooms',
                         'amount'
                     ]);
                 }
@@ -451,21 +503,17 @@ class SalesVisits extends CI_Controller
             }
 
             foreach ($dynamicFields as $dynamicField) {
-                $dynamicValue = $this->input->post($dynamicField, true);
-                if ($dynamicValue !== null && $dynamicValue !== '') {
-                    $leadData[$dynamicField] = $dynamicValue;
+                $postedDynamicValue = $this->input->post($dynamicField, true);
+                if ($postedDynamicValue !== null && $postedDynamicValue !== '') {
+                    $leadData[$dynamicField] = $postedDynamicValue;
                 }
             }
 
             if ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
-                $tableIds = $this->input->post('table_id');
-                if (is_array($tableIds)) {
-                    $tableIds = array_values(array_filter(array_map('trim', $tableIds), 'strlen'));
-                    if (!empty($tableIds)) {
-                        $leadData['table_id'] = implode(',', $tableIds);
-                    }
-                } elseif ($tableIds !== null && $tableIds !== '') {
-                    $leadData['table_id'] = trim((string) $tableIds);
+                if (!empty($restaurantTableIds)) {
+                    // Keep the first table in the legacy column; all selected tables
+                    // are persisted in lead_reserved_tables below.
+                    $leadData['table_id'] = $restaurantTableIds[0];
                 }
             }
 
@@ -668,7 +716,7 @@ class SalesVisits extends CI_Controller
                     $leadData['amount']        = $this->input->post('amount');
                     $leadData['banquet_email'] = $this->input->post('banquet_email');
                 }
-            } else {
+            } elseif (!array_key_exists('amount', $leadData)) {
                 $leadData['amount']       = 0;
             }
 
@@ -696,7 +744,46 @@ class SalesVisits extends CI_Controller
             $attachmentPath = $attachmentUpload['path'];
 
             /* ===================== INSERT LEAD ===================== */
+            $usesRestaurantReservation = $dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant';
+            if ($usesRestaurantReservation) {
+                $this->db->trans_begin();
+                $this->RestaurantBookingModel->lockTables($restaurantTableIds);
+                $conflict = $this->RestaurantBookingModel->findConflict(
+                    $dynamicValue('booking_date'),
+                    $dynamicValue('restaurant_id'),
+                    $restaurantTableIds,
+                    $dynamicValue('slot_type_id'),
+                    $dynamicValue('time_slot_id')
+                );
+
+                if ($conflict !== null) {
+                    $this->db->trans_rollback();
+                    if ($attachmentPath !== '') {
+                        $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $attachmentPath);
+                        if (is_file($uploadedFile)) {
+                            unlink($uploadedFile);
+                        }
+                    }
+                    $this->jsonResponse([
+                        'status' => false,
+                        'message' => $conflict['reason'] ?? 'One or more selected tables are no longer available.'
+                    ]);
+                    return;
+                }
+            }
+
             $insert_id = $this->LeadModel->insert_lead($leadData);
+            if ($usesRestaurantReservation && (!$insert_id || !$this->RestaurantBookingModel->replaceLeadTables($insert_id, $restaurantTableIds))) {
+                $this->db->trans_rollback();
+                if ($attachmentPath !== '') {
+                    $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $attachmentPath);
+                    if (is_file($uploadedFile)) {
+                        unlink($uploadedFile);
+                    }
+                }
+                $this->jsonResponse(['status' => false, 'message' => 'Unable to save the restaurant reservation.']);
+                return;
+            }
 
 
 
@@ -741,6 +828,16 @@ class SalesVisits extends CI_Controller
 
             $insert = $this->db->insert('sales_visits', $data);
             $visitId = $insert ? $this->db->insert_id() : 0;
+
+            if ($usesRestaurantReservation) {
+                if (!$insert_id || !$visitId || $this->db->trans_status() === false) {
+                    $this->db->trans_rollback();
+                    $insert_id = 0;
+                    $visitId = 0;
+                } else {
+                    $this->db->trans_commit();
+                }
+            }
 
             if (!$visitId && $attachmentPath !== '') {
                 $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $attachmentPath);
@@ -840,6 +937,16 @@ class SalesVisits extends CI_Controller
             show_404();
             return;
         }
+
+        $reservedTableIds = $this->RestaurantBookingModel->getLeadTableIds(
+            $data['sales_visit']->lead_id_againts_visit
+        );
+        if (empty($reservedTableIds)) {
+            $reservedTableIds = $this->RestaurantBookingModel->normalizeTableIds(
+                $data['sales_visit']->table_id ?? null
+            );
+        }
+        $data['sales_visit']->reserved_table_ids = $reservedTableIds;
 
 
 
@@ -1311,6 +1418,7 @@ class SalesVisits extends CI_Controller
         };
 
         $dynamicValidationError = '';
+        $restaurantTableIds = [];
         if ($dynamicStage === 'Lead Lost' && $dynamicValue('reason') === '') {
             $dynamicValidationError = 'Please select a lead lost reason';
         } elseif ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'rooms' && $dynamicValue('meal_plan') === '') {
@@ -1331,9 +1439,55 @@ class SalesVisits extends CI_Controller
                 }
             }
 
-            $dynamicTableIds = $this->input->post('table_id');
-            if ($dynamicValidationError === '' && (empty($dynamicTableIds) || (is_array($dynamicTableIds) && count(array_filter($dynamicTableIds)) === 0))) {
+            $restaurantTableIds = $this->RestaurantBookingModel->normalizeTableIds($this->input->post('table_id'));
+            if ($dynamicValidationError === '' && empty($restaurantTableIds)) {
                 $dynamicValidationError = 'Please select at least one table';
+            }
+
+            if ($dynamicValidationError === '' && !in_array($dynamicValue('table_reservation_status'), ['Reserved', 'Seated', 'Completed', 'Cancelled'], true)) {
+                $dynamicValidationError = 'Please select a valid reservation status';
+            }
+
+            if ($dynamicValidationError === '') {
+                $selectionErrors = $this->RestaurantBookingModel->validateSelection(
+                    $dynamicValue('booking_date'),
+                    $dynamicValue('restaurant_id'),
+                    $dynamicValue('table_category_id'),
+                    $restaurantTableIds,
+                    $dynamicValue('slot_type_id'),
+                    $dynamicValue('time_slot_id'),
+                    true
+                );
+
+                if (!empty($selectionErrors)) {
+                    $dynamicValidationError = reset($selectionErrors);
+                }
+            }
+        }
+
+        if (
+            $dynamicValidationError === ''
+            && $dynamicStage === 'Quotation Sent'
+            && $dynamicDepartment === 'banquet'
+            && $dynamicValue('is_room_required') === '1'
+        ) {
+            $checkinDate = $dynamicValue('checkin_date');
+            $checkoutDate = $dynamicValue('checkout_date');
+            $isValidDate = function ($date) {
+                $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+                return $parsed && $parsed->format('Y-m-d') === $date;
+            };
+
+            if ($checkinDate === '') {
+                $dynamicValidationError = 'Check-in date is required';
+            } elseif (!$isValidDate($checkinDate)) {
+                $dynamicValidationError = 'Please enter a valid check-in date';
+            } elseif ($checkoutDate === '') {
+                $dynamicValidationError = 'Check-out date is required';
+            } elseif (!$isValidDate($checkoutDate)) {
+                $dynamicValidationError = 'Please enter a valid check-out date';
+            } elseif ($checkoutDate < $checkinDate) {
+                $dynamicValidationError = 'Check-out date must be the same as or after check-in date';
             }
         }
 
@@ -1546,6 +1700,9 @@ class SalesVisits extends CI_Controller
                     'booking_date',
                     'pax',
                     'banquet_id',
+                    'checkin_date',
+                    'checkout_date',
+                    'number_of_rooms',
                     'amount'
                 ]);
             }
@@ -1561,15 +1718,20 @@ class SalesVisits extends CI_Controller
         }
 
         if ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
-            $tableIds = $this->input->post('table_id');
-            if (is_array($tableIds)) {
-                $tableIds = array_values(array_filter(array_map('trim', $tableIds), 'strlen'));
-                if (!empty($tableIds)) {
-                    $leadData['table_id'] = implode(',', $tableIds);
-                }
-            } elseif ($tableIds !== null && $tableIds !== '') {
-                $leadData['table_id'] = trim((string) $tableIds);
+            if (!empty($restaurantTableIds)) {
+                $leadData['table_id'] = $restaurantTableIds[0];
             }
+        }
+
+        if (
+            $dynamicStage === 'Quotation Sent'
+            && $dynamicDepartment === 'banquet'
+            && $this->input->post('room_requirement_controlled') === '1'
+            && $this->input->post('is_room_required') !== '1'
+        ) {
+            $leadData['checkin_date'] = null;
+            $leadData['checkout_date'] = null;
+            $leadData['number_of_rooms'] = null;
         }
 
         $attachmentUpload = $this->uploadSalesVisitAttachment();
@@ -1579,7 +1741,44 @@ class SalesVisits extends CI_Controller
         }
         $replacementAttachmentPath = $attachmentUpload['path'];
 
-        $this->db->where('id', $lead_id)->update('leads', $leadData);
+        $usesRestaurantReservation = $dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant';
+        if ($usesRestaurantReservation) {
+            $this->db->trans_begin();
+            $this->RestaurantBookingModel->lockTables($restaurantTableIds);
+            $conflict = $this->RestaurantBookingModel->findConflict(
+                $dynamicValue('booking_date'),
+                $dynamicValue('restaurant_id'),
+                $restaurantTableIds,
+                $dynamicValue('slot_type_id'),
+                $dynamicValue('time_slot_id'),
+                $lead_id
+            );
+
+            if ($conflict !== null) {
+                $this->db->trans_rollback();
+                if ($replacementAttachmentPath !== '') {
+                    $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $replacementAttachmentPath);
+                    if (is_file($uploadedFile)) {
+                        unlink($uploadedFile);
+                    }
+                }
+                $this->jsonResponse(['status' => false, 'message' => $conflict['reason'] ?? 'One or more selected tables are no longer available.']);
+                return;
+            }
+        }
+
+        $leadUpdated = $this->db->where('id', $lead_id)->update('leads', $leadData);
+        if ($usesRestaurantReservation && (!$leadUpdated || !$this->RestaurantBookingModel->replaceLeadTables($lead_id, $restaurantTableIds))) {
+            $this->db->trans_rollback();
+            if ($replacementAttachmentPath !== '') {
+                $uploadedFile = FCPATH . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $replacementAttachmentPath);
+                if (is_file($uploadedFile)) {
+                    unlink($uploadedFile);
+                }
+            }
+            $this->jsonResponse(['status' => false, 'message' => 'Unable to update the restaurant reservation.']);
+            return;
+        }
 
         $visitData = [
             'user_id'            => $userId,
@@ -1619,6 +1818,15 @@ class SalesVisits extends CI_Controller
             ->where('status', 1)
             ->where('is_deleted', 0)
             ->update('sales_visits', $visitData);
+
+        if ($usesRestaurantReservation) {
+            if (!$visitUpdated || $this->db->trans_status() === false) {
+                $this->db->trans_rollback();
+                $visitUpdated = false;
+            } else {
+                $this->db->trans_commit();
+            }
+        }
 
         if (!$visitUpdated) {
             if ($replacementAttachmentPath !== '') {

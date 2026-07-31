@@ -503,6 +503,29 @@ When adding the same functionality to another role or lead screen:
 11. Test create and edit through the actual signed-in role.
 12. Update this document.
 
+## Sales Visit lead creation and edit
+
+Super Admin Sales Visits create a Lead and a `sales_visits` record together through:
+
+- View: `application/views/super_admin/sales_visits/add.php`
+- Controller: `application/controllers/superAdmin/SalesVisits.php`
+- Routes: `add-sales-visit` and `insert-sales-visit`
+
+For `Quotation Sent` Sales Visits:
+
+- Banquets expose `Is Room Required?`. When enabled, check-in and check-out dates are required, cannot be in the past, and check-out cannot precede check-in. An optional room count is stored with the generated Lead.
+- Restaurants expose the same reservation modal used by normal Lead creation. Modal confirmation only commits values into hidden Sales Visit form fields; the reservation is persisted when the complete Sales Visit form is submitted.
+- Restaurant lookup data is read from the shared Lead endpoints. Availability is checked before modal confirmation and rechecked after locking the selected tables during final save.
+- The generated Lead retains the first table in legacy `leads.table_id`, while every selected table is stored in `lead_reserved_tables`.
+- Restaurant Lead creation, table mappings, and Sales Visit creation share one database transaction so a partial reservation cannot be left behind.
+- The modal uses a static backdrop and disables Escape. It closes only through its Close/Cancel controls or successful reservation confirmation.
+- Super Admin Sales Visit edit preloads Banquet room details and every normalized Restaurant table mapping from the linked Lead.
+- Restaurant availability checks during edit exclude the linked Lead so its current tables remain selectable, while conflicts with other Leads are still rejected.
+- Updating a Restaurant Sales Visit locks the selected tables and updates the Lead, normalized table mappings, and Sales Visit inside one transaction.
+- Existing past reservation dates can be reviewed during edit; new selections are still validated by the server before update.
+- Sales Visit validation reads the committed hidden reservation values while displaying any combined reservation error beside the Reserve/Edit Reservation button.
+- Expected Revenue from Restaurant and Banquet Quotation Sent fields must persist on both create and edit; legacy status handling must not overwrite it with zero.
+
 ## Regression checklist
 
 ### Common create
