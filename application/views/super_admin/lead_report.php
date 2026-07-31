@@ -211,6 +211,95 @@ $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : 
       z-index: 1070;
    }
 
+   #editRestaurantReservationPlacement #openEditReserveTableModal {
+      height: 46px;
+      width: 100% !important;
+   }
+
+   #editReserveTableModal {
+      z-index: 1080;
+   }
+
+   #editReserveTableModal .modal-dialog {
+      max-width: 1280px;
+   }
+
+   #editReserveTableModal .modal-content {
+      border: 0;
+      border-radius: 18px;
+      box-shadow: 0 24px 65px rgba(20, 29, 53, .25);
+      overflow: hidden;
+   }
+
+   #editReserveTableModal .modal-header {
+      align-items: flex-start;
+      border: 0;
+      padding: 24px 30px 14px;
+   }
+
+   #editReserveTableModal .modal-title {
+      color: #182033;
+      font-size: 21px;
+      font-weight: 700;
+   }
+
+   #editReserveTableModal .modal-body {
+      background: #fff;
+      padding: 16px 30px 20px;
+   }
+
+   #editReserveTableModal .modal-footer {
+      border-top: 1px solid #edf0f4;
+      padding: 16px 30px;
+   }
+
+   #editReserveTableModal .reservation-status-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+   }
+
+   #editReserveTableModal .reservation-status-options input[type="radio"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: #fff;
+      border: 2px solid #cbd3df;
+      border-radius: 50%;
+      clip: auto !important;
+      cursor: pointer;
+      display: inline-block !important;
+      flex: 0 0 18px;
+      height: 18px;
+      left: auto !important;
+      margin: 0;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: static !important;
+      visibility: visible !important;
+      width: 18px;
+   }
+
+   #editReserveTableModal .reservation-status-options input[type="radio"]:checked {
+      background-color: #6b4ce6;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.4' d='M4 8.2 6.7 11 12 5.5'/%3E%3C/svg%3E");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 12px 12px;
+      border-color: #6b4ce6;
+   }
+
+   #editReserveTableModal .reservation-status-options input[type="radio"]:focus-visible {
+      box-shadow: 0 0 0 3px rgba(107, 76, 230, 0.2);
+      outline: 0;
+   }
+
+   @media (max-width: 575px) {
+      #editReserveTableModal .modal-header,
+      #editReserveTableModal .modal-body,
+      #editReserveTableModal .modal-footer {
+         padding-left: 16px;
+         padding-right: 16px;
+      }
+   }
+
    #assigned_to_filter + .select2-container,
    #created_by + .select2-container {
       height: 46px;
@@ -1627,6 +1716,11 @@ font-size:14px;
                      <label>Remark</label>
                      <textarea name="remark" class="form-control" id="edit_remark"><?= $lead->remark ?></textarea>
                   </div>
+                  <?php if (!$is_hotel_lead_view): ?>
+                     <div class="col-md-12 d-none" id="editRestaurantReservationPlacement">
+                        <div class="row"></div>
+                     </div>
+                  <?php endif; ?>
                   <!-- Submit -->
                   <div class="col-md-12 text-end mt-3">
                      <!-- Back Button -->
@@ -1641,6 +1735,42 @@ font-size:14px;
       </div>
    </div>
 </div>
+
+<?php if (!$is_hotel_lead_view): ?>
+<div class="modal fade" id="editReserveTableModal" tabindex="-1" aria-labelledby="editReserveTableModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false" data-bs-backdrop="static" data-bs-keyboard="false">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <div class="d-flex">
+               <span class="reserve-modal-icon"><i class="fa fa-cutlery"></i></span>
+               <div><h5 class="modal-title" id="editReserveTableModalLabel">Reserve Table</h5><p class="reserve-modal-subtitle">Select an available table for this reservation</p></div>
+            </div>
+            <button type="button" class="btn-close" id="closeEditReserveTableModal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="row reservation-filters">
+               <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-cutlery"></i>1. Restaurant</label><select class="reserve-control" id="edit_reserve_restaurant_id"><option value="">Select Restaurant</option></select><div class="text-danger small mt-1" id="edit_reserve_restaurant_error"></div></div>
+               <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-calendar"></i>2. Booking Date</label><input class="reserve-control" id="edit_reserve_booking_date" type="date"><div class="text-danger small mt-1" id="edit_reserve_booking_date_error"></div></div>
+               <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-clock-o"></i>3. Slot Type</label><select class="reserve-control" id="edit_reserve_slot_type_id"><option value="">Select Slot Type</option></select><div class="text-danger small mt-1" id="edit_reserve_slot_type_error"></div></div>
+               <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-clock-o"></i>4. Time Slot</label><select class="reserve-control" id="edit_reserve_time_slot_id" disabled><option value="">Select Slot Type first</option></select><div class="text-danger small mt-1" id="edit_reserve_time_slot_error"></div></div>
+               <div class="col-lg col-md-6"><label class="reserve-field-label"><i class="fa fa-th-large"></i>5. Table Category</label><select class="reserve-control" id="edit_reserve_table_category_id"><option value="">Select Table Category</option></select><div class="text-danger small mt-1" id="edit_reserve_table_category_error"></div></div>
+            </div>
+            <div class="reservation-summary">
+               <div class="reservation-stat"><i class="fa fa-check-circle"></i><div><strong id="edit_reserve_available_count">0</strong><span>Available</span></div></div><div class="reservation-stat stat-occupied"><i class="fa fa-times-circle"></i><div><strong id="edit_reserve_occupied_count">0</strong><span>Occupied</span></div></div><div class="reservation-stat stat-reserved"><i class="fa fa-calendar-check-o"></i><div><strong id="edit_reserve_reserved_count">0</strong><span>Reserved</span></div></div><div class="reservation-stat stat-blocked"><i class="fa fa-ban"></i><div><strong id="edit_reserve_blocked_count">0</strong><span>Blocked</span></div></div><div class="reservation-stat stat-checkout"><i class="fa fa-clock-o"></i><div><strong id="edit_reserve_checkout_count">0</strong><span>Expected Check-outs</span></div></div>
+            </div>
+            <div class="row g-3">
+               <div class="col-12"><div class="reservation-panel"><div class="reservation-table-grid" id="edit_reserve_table_grid"><div class="text-muted">Select restaurant, booking date, time slot and table category to view tables.</div></div><div class="text-danger small mt-2" id="edit_reserve_table_error"></div></div></div>
+            </div>
+            <div class="row g-3 mt-1"><div class="col-lg-7"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-file-text-o"></i>Special Instructions <span class="text-muted fw-normal">(Optional)</span></label><textarea class="reserve-control reserve-instructions" id="edit_reserve_special_request" maxlength="250" placeholder="Add any special request or notes for this reservation..."></textarea></div></div><div class="col-lg-5"><div class="reservation-panel"><label class="reserve-field-label"><i class="fa fa-check-circle"></i>Reservation Status</label><div class="reservation-status-options"><label><input type="radio" name="edit_reserve_status" value="Reserved" checked> Reserved</label><label><input type="radio" name="edit_reserve_status" value="Seated"> Seated</label><label><input type="radio" name="edit_reserve_status" value="Completed"> Completed</label><label><input type="radio" name="edit_reserve_status" value="Cancelled"> Cancelled</label></div><div class="text-danger small mt-1" id="edit_reserve_status_error"></div></div></div></div>
+         </div>
+         <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-light border" id="cancelEditReserveTableModal">Cancel</button>
+            <button type="button" class="btn btn-primary reserve-submit-btn" id="confirmEditTableReservation"><i class="fa fa-calendar-check-o me-2"></i>Reserve Table</button>
+         </div>
+      </div>
+   </div>
+</div>
+<?php endif; ?>
 <!-- Lead Details Modal -->
 <div class="modal modal-lg" id="viewLeadModal" tabindex="-1" aria-labelledby="viewLeadModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl modal-dialog-scrollable">
@@ -1708,6 +1838,14 @@ font-size:14px;
          };
          const name = fieldNames[field] || field;
 
+         if (
+            superAdminRestaurantEditAvailability
+            && ['booking_date', 'restaurant_id', 'table_category_id', 'table_id', 'slot_type_id', 'time_slot_id', 'table_reservation_status'].includes(field)
+            && $('#openEditReserveTableModal').length
+         ) {
+            return $('#openEditReserveTableModal');
+         }
+
          if (field === 'table_id') {
             return $('#Edit_dynamicFields #table_id');
          }
@@ -1718,11 +1856,18 @@ font-size:14px;
       function clearEditLeadValidation() {
          $('#leadEditForm .is-invalid').removeClass('is-invalid').removeAttr('aria-invalid');
          $('#leadEditForm .edit-lead-validation-error').remove();
+         $('#edit_restaurant_reservation_error').text('');
       }
 
       function showEditLeadFieldError(field, message) {
          const $input = editLeadField(field);
          if (!$input.length) return;
+
+         if ($input.is('#openEditReserveTableModal')) {
+            $input.addClass('is-invalid').attr('aria-invalid', 'true');
+            $('#edit_restaurant_reservation_error').text('Please complete the table reservation.');
+            return;
+         }
 
          $input.addClass('is-invalid').attr('aria-invalid', 'true');
          const $wrapper = $input.closest('.form-group, [class*="col-"]').first();
@@ -2115,6 +2260,9 @@ font-size:14px;
          let existingLeadData = data;
 
          const container = $("#Edit_dynamicFields");
+         if (superAdminRestaurantEditAvailability) {
+            $('#editRestaurantReservationPlacement').addClass('d-none').find('.row').empty();
+         }
          const currentNumberOfRooms = container.find('[name="number_of_rooms"]');
          if (currentNumberOfRooms.length) {
             $('#edit_preserved_number_of_rooms').val(currentNumberOfRooms.val());
@@ -2337,6 +2485,73 @@ font-size:14px;
             /* RESTAURANTS */
             else if (department === "restaurants") {
 
+               if (superAdminRestaurantEditAvailability) {
+                  container.append(`
+<input type="hidden" name="booking_date" id="edit_restaurant_booking_date" value="">
+<input type="hidden" name="restaurant_id" id="edit_restaurant_id" value="">
+<input type="hidden" name="table_category_id" id="table_category_id" value="">
+<select name="table_id[]" id="table_id" multiple style="display:none"></select>
+<input type="hidden" name="slot_type_id" id="slot_type_id" value="">
+<input type="hidden" name="time_slot_id" id="time_slot_id" value="">
+<input type="hidden" name="table_reservation_status" id="table_reservation_status" value="">
+<input type="hidden" name="special_request" id="edit_restaurant_special_request" value="">
+
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <label class="form-label">Arrival Time</label>
+    <input type="time" name="arrival_time" class="form-control">
+</div>
+
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <label class="form-label">No. of Pax</label>
+    <input type="number" name="pax" class="form-control" min="1">
+</div>
+
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <label class="form-label">Expected Revenue</label>
+    <input type="number" name="amount" class="form-control">
+</div>
+
+<div class="col-lg-4 col-md-6 col-sm-12">
+    <label class="form-label">Special Occasion</label>
+    <input type="text" name="special_occasion" class="form-control">
+</div>
+                  `);
+
+                  const reservationMatchesProperty = existingLeadData
+                     && String(existingLeadData.property || '') === String(property || '');
+                  const savedTableIds = reservationMatchesProperty && existingLeadData.table_ids && existingLeadData.table_ids.length
+                     ? existingLeadData.table_ids
+                     : (reservationMatchesProperty && existingLeadData.table_id ? [existingLeadData.table_id] : []);
+                  const $savedTables = container.find('#table_id').empty();
+                  savedTableIds.forEach(function(tableId) {
+                     $savedTables.append($('<option>', {
+                        value: tableId,
+                        text: tableId,
+                        selected: true
+                     }));
+                  });
+
+                  const hasSavedReservation = reservationMatchesProperty
+                     && existingLeadData.restaurant_id
+                     && existingLeadData.booking_date
+                     && savedTableIds.length;
+                  $('#editRestaurantReservationPlacement')
+                     .removeClass('d-none')
+                     .find('.row')
+                     .html(`
+                        <div class="col-lg-4 col-md-6 col-sm-12">
+                           <label>Table Reservation <span class="text-danger">*</span></label>
+                           <button type="button" class="btn btn-primary w-100" id="openEditReserveTableModal">
+                              <i class="fa ${hasSavedReservation ? 'fa-pencil' : 'fa-calendar-check-o'} me-2"></i>${hasSavedReservation ? 'Edit Reservation' : 'Reserve Table'}
+                           </button>
+                           <div class="small ${hasSavedReservation ? 'text-success' : 'text-muted'} mt-2" id="edit_restaurant_reservation_summary">${hasSavedReservation
+                              ? `${existingLeadData.booking_date} • ${savedTableIds.length} table(s) • ${existingLeadData.table_reservation_status || 'Reserved'}`
+                              : 'No table reserved yet.'}</div>
+                           <div class="text-danger error-label" id="edit_restaurant_reservation_error"></div>
+                        </div>
+                     `);
+               } else {
+
                container.append(`
 
 <div class="col-lg-4 col-md-6 col-sm-12">
@@ -2439,35 +2654,10 @@ font-size:14px;
     <textarea name="special_request" class="form-control"></textarea>
 </div>
             `);
-
-
-               if (superAdminRestaurantEditAvailability) {
-                  const $availabilityAnchor = container.find('[name="amount"]').first().closest('[class*="col-lg-"]');
-                  [
-                     'booking_date',
-                     'restaurant_id',
-                     'table_category_id',
-                     'table_id[]',
-                     'slot_type_id',
-                     'time_slot_id',
-                     'arrival_time',
-                     'table_reservation_status',
-                     'pax'
-                  ].forEach(function(fieldName) {
-                     const $field = container
-                        .find(`[name="${fieldName}"]`)
-                        .first()
-                        .closest('[class*="col-lg-"]');
-                     if ($field.length && $availabilityAnchor.length) {
-                        $field.insertBefore($availabilityAnchor);
-                     }
-                  });
+                  loadRestaurants(property, existingLeadData);
+                  loadSlotTypes(existingLeadData);
+                  initializeEditTableMultiSelect();
                }
-
-
-               loadRestaurants(property, existingLeadData);
-               loadSlotTypes(existingLeadData);
-               initializeEditTableMultiSelect();
             }
 
             /* BANQUETS */
@@ -2762,6 +2952,15 @@ font-size:14px;
          if (typeof existingLeadData !== "undefined") {
 
             for (let key in existingLeadData) {
+
+               if (
+                  superAdminRestaurantEditAvailability
+                  && department === 'restaurants'
+                  && String(existingLeadData.property || '') !== String(property || '')
+                  && ['booking_date', 'restaurant_id', 'table_category_id', 'table_id', 'table_ids', 'slot_type_id', 'time_slot_id', 'table_reservation_status', 'special_request'].includes(key)
+               ) {
+                  continue;
+               }
 
                const field = container.find(`[name="${key}"]`);
 
@@ -3415,6 +3614,524 @@ font-size:14px;
          .off('change.editRestaurantAvailability', '#edit_restaurant_booking_date')
          .on('change.editRestaurantAvailability', '#edit_restaurant_booking_date', function() {
             scheduleEditTimeSlotAvailability();
+         });
+
+      let editReservationModalCanClose = false;
+      let editReservationTables = [];
+      let editReservationAvailabilityRequest = 0;
+
+      function formatEditReservationTime(time) {
+         if (!time) return '';
+         const parts = String(time).split(':');
+         let hour = parseInt(parts[0], 10);
+         if (Number.isNaN(hour)) return time;
+         const minutes = parts[1] || '00';
+         const suffix = hour >= 12 ? 'PM' : 'AM';
+         hour = hour % 12 || 12;
+         return `${String(hour).padStart(2, '0')}:${minutes} ${suffix}`;
+      }
+
+      function resetEditReservationMessages() {
+         $('#editReserveTableModal .is-invalid').removeClass('is-invalid');
+         $('#edit_reserve_restaurant_error, #edit_reserve_booking_date_error, #edit_reserve_slot_type_error, #edit_reserve_time_slot_error, #edit_reserve_table_category_error, #edit_reserve_table_error, #edit_reserve_status_error').text('');
+      }
+
+      function resetEditReservationStats() {
+         $('#edit_reserve_available_count, #edit_reserve_occupied_count, #edit_reserve_reserved_count, #edit_reserve_blocked_count, #edit_reserve_checkout_count').text('0');
+      }
+
+      function editReservationTableLabels(table) {
+         return [
+            table.table_name,
+            table.table_number,
+            table.table_number ? `Table ${table.table_number}` : ''
+         ].filter(Boolean).map(function(label) {
+            return String(label).trim().toLowerCase();
+         });
+      }
+
+      function renderEditReservationTables(conflictingTables = [], selectedTableIds = []) {
+         const $grid = $('#edit_reserve_table_grid').empty();
+         const conflictLabels = conflictingTables.map(function(label) {
+            return String(label).trim().toLowerCase();
+         });
+         const selectedIds = selectedTableIds.map(String);
+         let availableCount = 0;
+         let reservedCount = 0;
+
+         if (!editReservationTables.length) {
+            $grid.append($('<div>', {
+               class: 'text-muted',
+               text: 'No tables are available for the selected restaurant and category.'
+            }));
+            resetEditReservationStats();
+            return;
+         }
+
+         editReservationTables.forEach(function(table) {
+            const tableId = String(table.id);
+            const unavailable = editReservationTableLabels(table).some(function(label) {
+               return conflictLabels.includes(label);
+            });
+            const selected = !unavailable && selectedIds.includes(tableId);
+            const tableNumber = table.table_number || table.table_name || `T${table.id}`;
+            const capacity = table.capacity ? `${table.capacity} Guests` : 'Guests not specified';
+            const category = $('#edit_reserve_table_category_id option:selected').text() || 'Table';
+
+            if (unavailable) {
+               reservedCount++;
+            } else {
+               availableCount++;
+            }
+
+            const $card = $('<div>', {
+               class: `reservation-table-card${unavailable ? ' unavailable' : ''}${selected ? ' selected' : ''}`,
+               'data-table-id': tableId,
+               'data-available': unavailable ? '0' : '1'
+            });
+            $card.append(
+               $('<span>', { class: 'table-icon' }).append($('<i>', { class: 'fa fa-cutlery' })),
+               $('<div>', { class: 'table-number', text: tableNumber }),
+               $('<div>', { class: 'table-details' }).append(
+                  document.createTextNode(capacity),
+                  $('<br>'),
+                  document.createTextNode(category)
+               ),
+               $('<span>', {
+                  class: `table-status ${unavailable ? 'reserved' : 'available'}`,
+                  text: unavailable ? 'Reserved' : 'Available'
+               })
+            );
+            $grid.append($card);
+         });
+
+         $('#edit_reserve_available_count').text(availableCount);
+         $('#edit_reserve_reserved_count').text(reservedCount);
+         $('#edit_reserve_occupied_count, #edit_reserve_blocked_count, #edit_reserve_checkout_count').text('0');
+      }
+
+      function selectedEditReservationTableIds() {
+         return $('#edit_reserve_table_grid .reservation-table-card.selected').map(function() {
+            return String($(this).data('table-id'));
+         }).get();
+      }
+
+      function refreshEditReservationAvailability(selectedTableIds = null) {
+         const bookingDate = $('#edit_reserve_booking_date').val();
+         const restaurantId = $('#edit_reserve_restaurant_id').val();
+         const categoryId = $('#edit_reserve_table_category_id').val();
+         const timeSlotId = $('#edit_reserve_time_slot_id').val();
+         const slotTypeId = $('#edit_reserve_slot_type_id').val();
+         const allTableIds = editReservationTables.map(function(table) { return table.id; });
+         const preservedSelection = selectedTableIds === null
+            ? selectedEditReservationTableIds()
+            : selectedTableIds.map(String);
+
+         if (!bookingDate || !restaurantId || !categoryId || !timeSlotId || !slotTypeId || !allTableIds.length) {
+            renderEditReservationTables([], preservedSelection);
+            return;
+         }
+
+         const requestId = ++editReservationAvailabilityRequest;
+         $('#edit_reserve_table_grid').addClass('opacity-50');
+
+         csrfAjax({
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
+            type: 'POST',
+            data: {
+               booking_date: bookingDate,
+               restaurant_id: restaurantId,
+               table_category_id: categoryId,
+               table_ids: allTableIds,
+               slot_type_id: slotTypeId,
+               exclude_lead_id: $('#edit_lead_id').val()
+            },
+            dataType: 'json',
+            success: function(res) {
+               if (requestId !== editReservationAvailabilityRequest) return;
+               const selectedSlot = (res.data || []).find(function(slot) {
+                  return String(slot.id) === String(timeSlotId);
+               });
+               renderEditReservationTables(selectedSlot ? (selectedSlot.conflicting_tables || []) : [], preservedSelection);
+            },
+            error: function(xhr) {
+               if (requestId !== editReservationAvailabilityRequest) return;
+               const response = xhr.responseJSON || {};
+               renderEditReservationTables([], preservedSelection);
+               $('#edit_reserve_table_error').text(response.message || 'Unable to check table availability.');
+            },
+            complete: function() {
+               if (requestId === editReservationAvailabilityRequest) {
+                  $('#edit_reserve_table_grid').removeClass('opacity-50');
+               }
+            }
+         });
+      }
+
+      function loadEditReservationTables(restaurantId, categoryId, selectedTableIds = []) {
+         editReservationTables = [];
+         resetEditReservationStats();
+         $('#edit_reserve_table_grid').html('<div class="text-muted">Loading tables...</div>');
+
+         if (!restaurantId || !categoryId) {
+            $('#edit_reserve_table_grid').html('<div class="text-muted">Select a restaurant and table category to view tables.</div>');
+            return;
+         }
+
+         csrfAjax({
+            url: "<?= base_url('lead/get-tables') ?>",
+            type: 'POST',
+            data: {
+               restaurant_id: restaurantId,
+               category_id: categoryId
+            },
+            dataType: 'json',
+            success: function(res) {
+               editReservationTables = res.status === 'success' ? (res.data || []) : [];
+               renderEditReservationTables([], selectedTableIds);
+               refreshEditReservationAvailability(selectedTableIds);
+            },
+            error: function() {
+               editReservationTables = [];
+               renderEditReservationTables();
+               $('#edit_reserve_table_error').text('Unable to load restaurant tables.');
+            }
+         });
+      }
+
+      function loadEditReservationCategories(restaurantId, selectedCategoryId = '', selectedTableIds = []) {
+         const $category = $('#edit_reserve_table_category_id')
+            .html('<option value="">Loading...</option>')
+            .prop('disabled', true);
+         editReservationTables = [];
+         resetEditReservationStats();
+         $('#edit_reserve_table_grid').html('<div class="text-muted">Select a table category to view tables.</div>');
+
+         if (!restaurantId) {
+            $category.html('<option value="">Select Table Category</option>').prop('disabled', false);
+            return;
+         }
+
+         csrfAjax({
+            url: "<?= base_url('lead/get-table-categories') ?>",
+            type: 'POST',
+            data: { restaurant_id: restaurantId },
+            dataType: 'json',
+            success: function(res) {
+               $category.empty().append($('<option>', { value: '', text: 'Select Table Category' }));
+               if (res.status === 'success') {
+                  (res.data || []).forEach(function(row) {
+                     $category.append($('<option>', { value: row.id, text: row.category_name }));
+                  });
+               }
+               if (selectedCategoryId) {
+                  $category.val(String(selectedCategoryId));
+               } else if ($category.find('option[value!=""]').length === 1) {
+                  $category.val($category.find('option[value!=""]').val());
+               }
+               $category.prop('disabled', false);
+               if ($category.val()) {
+                  loadEditReservationTables(restaurantId, $category.val(), selectedTableIds);
+               }
+            },
+            error: function() {
+               $category.html('<option value="">Select Table Category</option>').prop('disabled', false);
+               $('#edit_reserve_table_category_error').text('Unable to load table categories.');
+            }
+         });
+      }
+
+      function loadEditReservationRestaurants(selectedRestaurantId = '', selectedCategoryId = '', selectedTableIds = []) {
+         const hotelId = $('#edit_property').val();
+         const $restaurant = $('#edit_reserve_restaurant_id')
+            .html('<option value="">Loading...</option>')
+            .prop('disabled', true);
+
+         csrfAjax({
+            url: "<?= base_url('lead/get-restaurants') ?>",
+            type: 'POST',
+            data: { hotel_id: hotelId },
+            dataType: 'json',
+            success: function(res) {
+               $restaurant.empty().append($('<option>', { value: '', text: 'Select Restaurant' }));
+               if (res.status === 'success') {
+                  (res.data || []).forEach(function(row) {
+                     $restaurant.append($('<option>', { value: row.id, text: row.restaurant_name }));
+                  });
+               }
+               if (selectedRestaurantId) {
+                  $restaurant.val(String(selectedRestaurantId));
+               } else if ($restaurant.find('option[value!=""]').length === 1) {
+                  $restaurant.val($restaurant.find('option[value!=""]').val());
+               }
+               $restaurant.prop('disabled', false);
+               loadEditReservationCategories($restaurant.val(), selectedCategoryId, selectedTableIds);
+            },
+            error: function() {
+               $restaurant.html('<option value="">Select Restaurant</option>').prop('disabled', false);
+               $('#edit_reserve_restaurant_error').text('Unable to load restaurants.');
+            }
+         });
+      }
+
+      function loadEditReservationSlotTypes(selectedSlotTypeId = '', selectedTimeSlotId = '') {
+         const $slotType = $('#edit_reserve_slot_type_id')
+            .html('<option value="">Loading...</option>')
+            .prop('disabled', true);
+         const $timeSlot = $('#edit_reserve_time_slot_id')
+            .html('<option value="">Select Slot Type first</option>')
+            .prop('disabled', true);
+
+         $.ajax({
+            url: "<?= base_url('lead/get-slot-types') ?>",
+            type: 'GET',
+            dataType: 'json'
+         }).done(function(slotTypeResponse) {
+            const slotTypes = slotTypeResponse.status === 'success' ? (slotTypeResponse.data || []) : [];
+            $slotType.empty().append($('<option>', { value: '', text: 'Select Slot Type' }));
+            slotTypes.forEach(function(row) {
+               $slotType.append($('<option>', {
+                  value: row.id,
+                  text: row.slot_name || row.name || 'Slot Type'
+               }));
+            });
+            if (selectedSlotTypeId) {
+               $slotType.val(String(selectedSlotTypeId));
+            }
+            $slotType.prop('disabled', false);
+
+            if ($slotType.val()) {
+               loadEditReservationTimeSlots($slotType.val(), selectedTimeSlotId);
+            }
+         }).fail(function() {
+            $slotType.html('<option value="">Select Slot Type</option>').prop('disabled', false);
+            $('#edit_reserve_slot_type_error').text('Unable to load slot types.');
+         });
+      }
+
+      function loadEditReservationTimeSlots(slotTypeId, selectedTimeSlotId = '') {
+         const $timeSlot = $('#edit_reserve_time_slot_id')
+            .html(`<option value="">${slotTypeId ? 'Loading...' : 'Select Slot Type first'}</option>`)
+            .prop('disabled', true);
+
+         if (!slotTypeId) {
+            refreshEditReservationAvailability();
+            return;
+         }
+
+         $.ajax({
+            url: "<?= base_url('lead/get-time-slots') ?>",
+            type: 'GET',
+            data: { slot_type_id: slotTypeId },
+            dataType: 'json'
+         }).done(function(response) {
+            $timeSlot.empty().append($('<option>', { value: '', text: 'Select Time Slot' }));
+            if (response.status === 'success') {
+               (response.data || []).forEach(function(slot) {
+                  const label = slot.start_time && slot.end_time
+                     ? `${formatEditReservationTime(slot.start_time)} - ${formatEditReservationTime(slot.end_time)}`
+                     : (slot.slot_name || 'Time Slot');
+                  $timeSlot.append($('<option>', { value: slot.id, text: label }));
+               });
+            }
+            if (selectedTimeSlotId) {
+               $timeSlot.val(String(selectedTimeSlotId));
+            }
+            $timeSlot.prop('disabled', false);
+            refreshEditReservationAvailability();
+         }).fail(function() {
+            $timeSlot.html('<option value="">Select Time Slot</option>').prop('disabled', false);
+            $('#edit_reserve_time_slot_error').text('Unable to load time slots.');
+         });
+      }
+
+      function openEditReservationModal() {
+         resetEditReservationMessages();
+         editReservationModalCanClose = false;
+
+         const bookingDate = $('#edit_restaurant_booking_date').val() || '';
+         const selectedRestaurantId = $('#edit_restaurant_id').val() || '';
+         const selectedCategoryId = $('#table_category_id').val() || '';
+         const selectedSlotTypeId = $('#slot_type_id').val() || '';
+         const selectedTimeSlotId = $('#time_slot_id').val() || '';
+         const selectedTableIds = ($('#table_id').val() || []).map(String);
+         const status = $('#table_reservation_status').val() || 'Reserved';
+
+         $('#edit_reserve_booking_date').removeAttr('min').val(bookingDate);
+         $('#edit_reserve_special_request').val($('#edit_restaurant_special_request').val() || '');
+         $(`input[name="edit_reserve_status"][value="${status}"]`).prop('checked', true);
+
+         loadEditReservationRestaurants(selectedRestaurantId, selectedCategoryId, selectedTableIds);
+         loadEditReservationSlotTypes(selectedSlotTypeId, selectedTimeSlotId);
+         $('#editReserveTableModal').modal({ backdrop: 'static', keyboard: false });
+         $('#editReserveTableModal').modal('show');
+      }
+
+      function closeEditReservationModal() {
+         editReservationModalCanClose = true;
+         $('#editReserveTableModal').modal('hide');
+      }
+
+      function commitEditReservation() {
+         const restaurantId = $('#edit_reserve_restaurant_id').val();
+         const bookingDate = $('#edit_reserve_booking_date').val();
+         const $timeSlotOption = $('#edit_reserve_time_slot_id option:selected');
+         const timeSlotId = $('#edit_reserve_time_slot_id').val();
+         const slotTypeId = $('#edit_reserve_slot_type_id').val();
+         const categoryId = $('#edit_reserve_table_category_id').val();
+         const tableIds = selectedEditReservationTableIds();
+         const status = $('input[name="edit_reserve_status"]:checked').val();
+         const errors = {};
+
+         resetEditReservationMessages();
+         if (!restaurantId) errors.restaurant = 'Please select a restaurant.';
+         if (!bookingDate) errors.bookingDate = 'Please select a booking date.';
+         if (!slotTypeId) errors.slotType = 'Please select a slot type.';
+         if (!timeSlotId) errors.timeSlot = 'Please select a time slot.';
+         if (!categoryId) errors.category = 'Please select a table category.';
+         if (!tableIds.length) errors.tables = 'Please select at least one available table.';
+         if (!status) errors.status = 'Please select a reservation status.';
+
+         if (errors.restaurant) $('#edit_reserve_restaurant_id').addClass('is-invalid');
+         if (errors.bookingDate) $('#edit_reserve_booking_date').addClass('is-invalid');
+         if (errors.slotType) $('#edit_reserve_slot_type_id').addClass('is-invalid');
+         if (errors.timeSlot) $('#edit_reserve_time_slot_id').addClass('is-invalid');
+         if (errors.category) $('#edit_reserve_table_category_id').addClass('is-invalid');
+         $('#edit_reserve_restaurant_error').text(errors.restaurant || '');
+         $('#edit_reserve_booking_date_error').text(errors.bookingDate || '');
+         $('#edit_reserve_slot_type_error').text(errors.slotType || '');
+         $('#edit_reserve_time_slot_error').text(errors.timeSlot || '');
+         $('#edit_reserve_table_category_error').text(errors.category || '');
+         $('#edit_reserve_table_error').text(errors.tables || '');
+         $('#edit_reserve_status_error').text(errors.status || '');
+         if (Object.keys(errors).length) return;
+
+         const $confirmButton = $('#confirmEditTableReservation').prop('disabled', true);
+         const originalButtonHtml = $confirmButton.html();
+         $confirmButton.text('Checking availability...');
+
+         csrfAjax({
+            url: "<?= base_url('lead/check-restaurant-availability') ?>",
+            type: 'POST',
+            data: {
+               booking_date: bookingDate,
+               restaurant_id: restaurantId,
+               table_category_id: categoryId,
+               table_ids: tableIds,
+               slot_type_id: slotTypeId,
+               exclude_lead_id: $('#edit_lead_id').val()
+            },
+            dataType: 'json',
+            success: function(res) {
+               const selectedSlot = (res.data || []).find(function(slot) {
+                  return String(slot.id) === String(timeSlotId);
+               });
+               if (!selectedSlot || !selectedSlot.available) {
+                  $('#edit_reserve_table_error').text(selectedSlot
+                     ? selectedSlot.reason
+                     : 'The selected time slot is unavailable.');
+                  refreshEditReservationAvailability(tableIds);
+                  return;
+               }
+
+               $('#edit_restaurant_booking_date').val(bookingDate);
+               $('#edit_restaurant_id').val(restaurantId);
+               $('#table_category_id').val(categoryId);
+               $('#slot_type_id').val(slotTypeId);
+               $('#time_slot_id').val(timeSlotId);
+               $('#table_reservation_status').val(status);
+               $('#edit_restaurant_special_request').val($('#edit_reserve_special_request').val());
+
+               const $tableField = $('#table_id').empty();
+               tableIds.forEach(function(tableId) {
+                  $tableField.append($('<option>', {
+                     value: tableId,
+                     text: tableId,
+                     selected: true
+                  }));
+               });
+
+               existingLeadData.property = $('#edit_property').val();
+               existingLeadData.booking_date = bookingDate;
+               existingLeadData.restaurant_id = restaurantId;
+               existingLeadData.table_category_id = categoryId;
+               existingLeadData.table_ids = tableIds.slice();
+               existingLeadData.table_id = tableIds[0] || '';
+               existingLeadData.slot_type_id = slotTypeId;
+               existingLeadData.time_slot_id = timeSlotId;
+               existingLeadData.table_reservation_status = status;
+               existingLeadData.special_request = $('#edit_reserve_special_request').val();
+
+               const restaurantName = $('#edit_reserve_restaurant_id option:selected').text();
+               const categoryName = $('#edit_reserve_table_category_id option:selected').text();
+               const slotTypeName = $('#edit_reserve_slot_type_id option:selected').text();
+               const timeSlotName = $timeSlotOption.text();
+               $('#edit_restaurant_reservation_summary')
+                  .removeClass('text-muted')
+                  .addClass('text-success')
+                  .text(`${restaurantName} • ${bookingDate} • ${slotTypeName} • ${timeSlotName} • ${categoryName} • ${tableIds.length} table(s) • ${status}`);
+               $('#openEditReserveTableModal')
+                  .removeClass('is-invalid')
+                  .removeAttr('aria-invalid')
+                  .html('<i class="fa fa-pencil me-2"></i>Edit Reservation');
+               $('#edit_restaurant_reservation_error').text('');
+               closeEditReservationModal();
+            },
+            error: function(xhr) {
+               const response = xhr.responseJSON || {};
+               $('#edit_reserve_table_error').text(response.message || 'Unable to verify table availability.');
+               refreshEditReservationAvailability(tableIds);
+            },
+            complete: function() {
+               $confirmButton.prop('disabled', false).html(originalButtonHtml);
+            }
+         });
+      }
+
+      $(document).on('click', '#openEditReserveTableModal', openEditReservationModal);
+      $(document).on('click', '#closeEditReserveTableModal, #cancelEditReserveTableModal', closeEditReservationModal);
+      $(document).on('click', '#confirmEditTableReservation', commitEditReservation);
+
+      $(document).on('change', '#edit_reserve_restaurant_id', function() {
+         resetEditReservationMessages();
+         loadEditReservationCategories($(this).val());
+      });
+
+      $(document).on('change', '#edit_reserve_table_category_id', function() {
+         resetEditReservationMessages();
+         loadEditReservationTables($('#edit_reserve_restaurant_id').val(), $(this).val());
+      });
+
+      $(document).on('change', '#edit_reserve_slot_type_id', function() {
+         resetEditReservationMessages();
+         loadEditReservationTimeSlots($(this).val());
+      });
+
+      $(document).on('change', '#edit_reserve_booking_date, #edit_reserve_time_slot_id', function() {
+         resetEditReservationMessages();
+         refreshEditReservationAvailability();
+      });
+
+      $(document).on('click', '#edit_reserve_table_grid .reservation-table-card', function() {
+         if ($(this).data('available') !== 1 && String($(this).data('available')) !== '1') return;
+         $(this).toggleClass('selected');
+         $('#edit_reserve_table_error').text('');
+      });
+
+      $('#editReserveTableModal')
+         .on('shown.bs.modal', function() {
+            $('.modal-backdrop').last().css('z-index', 1075);
+         })
+         .on('hide.bs.modal', function(event) {
+            if (!editReservationModalCanClose) {
+               event.preventDefault();
+            }
+         })
+         .on('hidden.bs.modal', function() {
+            editReservationModalCanClose = false;
+            if ($('#editLeadDetails').hasClass('show')) {
+               $('body').addClass('modal-open');
+            }
          });
 
 
