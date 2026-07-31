@@ -11,6 +11,7 @@ class Leads extends CI_Controller
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
         $this->load->model('Airtel_config_model');
+        $this->load->model('RestaurantBookingModel');
         $this->load->helper('download');
 
 
@@ -338,6 +339,11 @@ class Leads extends CI_Controller
             ->where('hotel_id', $property)
             ->get('hotel_admin')
             ->result();
+        $data['selected_property'] = $property;
+        $data['selected_department'] = $this->input->get('department_id');
+        $data['lead_form_role_label'] = 'Agent';
+        $data['lead_form_submit_url'] = base_url('insert-lead-agents');
+        $data['lead_form_redirect_url'] = base_url('view-agents-leads');
 
         $data['roomtype'] = $this->Common_model->getAllData('roomtype', '');
 
@@ -352,7 +358,7 @@ class Leads extends CI_Controller
 
         $this->load->view('agent/include/header');
         $this->load->view('agent/include/sidebar');
-        $this->load->view('agent/add_lead', $data);
+        $this->load->view('hotel_admin/add_lead', $data);
         $this->load->view('agent/include/footer');
     }
 
@@ -391,7 +397,7 @@ class Leads extends CI_Controller
         return null;
     }
 
-    private function validateLeadInput($departmentName)
+    private function validateLeadInput($departmentName, $excludeLeadId = null)
     {
         $errors = [];
         $value = function ($field) {
@@ -472,7 +478,8 @@ class Leads extends CI_Controller
                     'restaurant_id' => 'Please select a restaurant.',
                     'slot_type_id' => 'Please select a slot type.',
                     'time_slot_id' => 'Please select a time slot.',
-                    'table_category_id' => 'Please select a table category.'
+                    'table_category_id' => 'Please select a table category.',
+                    'table_reservation_status' => 'Please select a reservation status.'
                 ];
                 foreach ($restaurantRequired as $field => $message) {
                     if ($value($field) === '') {
@@ -480,9 +487,33 @@ class Leads extends CI_Controller
                     }
                 }
 
-                $tableIds = $this->input->post('table_id', true);
+                $tableIds = $this->input->post('table_id');
                 if (empty($tableIds) || (is_array($tableIds) && count(array_filter($tableIds)) === 0)) {
                     $errors['table_id'] = 'Please select at least one table.';
+                }
+
+                $selectionErrors = $this->RestaurantBookingModel->validateSelection(
+                    $value('booking_date'),
+                    $value('restaurant_id'),
+                    $value('table_category_id'),
+                    $tableIds,
+                    $value('slot_type_id'),
+                    $value('time_slot_id')
+                );
+                $errors = array_merge($errors, $selectionErrors);
+
+                if (empty($selectionErrors) && $value('time_slot_id') !== '') {
+                    $conflict = $this->RestaurantBookingModel->findConflict(
+                        $value('booking_date'),
+                        $value('restaurant_id'),
+                        $tableIds,
+                        $value('slot_type_id'),
+                        $value('time_slot_id'),
+                        $excludeLeadId ?: null
+                    );
+                    if ($conflict) {
+                        $errors['time_slot_id'] = $conflict['reason'];
+                    }
                 }
             }
         }
@@ -516,7 +547,24 @@ class Leads extends CI_Controller
         $type = (int) $this->input->post('type', true);
         $hotel = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
         $department = $this->Common_model->getdata('departments', ['department_id' => $type]);
-        $errors = $this->validateLeadInput($department->department_name ?? '');
+        $candidatePhone = substr(preg_replace('/\D+/', '', (string) $this->input->post('phone_number', true)), -10);
+        $candidateCheckin = trim((string) $this->input->post('checkin_date', true));
+        $candidateCheckout = trim((string) $this->input->post('checkout_date', true));
+        $this->db
+            ->where("RIGHT(phone_number, 10) =", $candidatePhone, false)
+            ->where('property', $property)
+            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-2 hours')))
+            ->where('status !=', 'Closed')
+            ->where('is_deleted', 0);
+        if ($candidateCheckin !== '' && $candidateCheckout !== '') {
+            $this->db->where('checkin_date', $candidateCheckin)->where('checkout_date', $candidateCheckout);
+        }
+        $existingLeadCandidate = $this->db->order_by('id', 'DESC')->get('leads')->row();
+
+        $errors = $this->validateLeadInput(
+            $department->department_name ?? '',
+            $existingLeadCandidate->id ?? null
+        );
 
         if (!$hotel) {
             $errors['property'] = 'The selected hotel is unavailable.';
@@ -590,7 +638,7 @@ class Leads extends CI_Controller
             'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
             'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
             'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
-            'time_slot_id', 'table_category_id', 'special_occasion',
+            'time_slot_id', 'table_category_id', 'table_reservation_status', 'special_occasion',
             'special_request'
         ];
         foreach ($optionalFields as $field) {
@@ -600,8 +648,20 @@ class Leads extends CI_Controller
             }
         }
 
-        $tableIds = $this->input->post('table_id', true);
-        if (is_array($tableIds)) {
+        $tableIds = $this->input->post('table_id');
+        $normalizedDepartment = strtolower(trim((string) ($department->department_name ?? '')));
+        if ($normalizedDepartment === 'restaurants') {
+            $normalizedDepartment = 'restaurant';
+        }
+        $isRestaurantLead = $normalizedDepartment === 'restaurant';
+        $normalizedTableIds = $isRestaurantLead
+            ? $this->RestaurantBookingModel->normalizeTableIds($tableIds)
+            : [];
+
+        if ($isRestaurantLead) {
+            // Preserve the legacy single-table column while keeping the normalized mapping authoritative.
+            $leadData['table_id'] = $normalizedTableIds[0] ?? null;
+        } elseif (is_array($tableIds)) {
             $tableIds = array_values(array_filter($tableIds, static function ($tableId) {
                 return $tableId !== null && $tableId !== '';
             }));
@@ -625,26 +685,7 @@ class Leads extends CI_Controller
             $leadData['responded_time'] = $now;
         }
 
-        $checkinDate = trim((string) ($leadData['checkin_date'] ?? ''));
-        $checkoutDate = trim((string) ($leadData['checkout_date'] ?? ''));
-
-        $this->db
-            ->where("RIGHT(phone_number, 10) =", $phone, false)
-            ->where('property', $property)
-            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-2 hours')))
-            ->where('status !=', 'Closed')
-            ->where('is_deleted', 0);
-
-        if ($checkinDate !== '' && $checkoutDate !== '') {
-            $this->db
-                ->where('checkin_date', $checkinDate)
-                ->where('checkout_date', $checkoutDate);
-        }
-
-        $existingLead = $this->db
-            ->order_by('id', 'DESC')
-            ->get('leads')
-            ->row();
+        $existingLead = $existingLeadCandidate;
 
         if ($existingLead) {
             $wasReassigned = $assignedUser && (
@@ -653,10 +694,53 @@ class Leads extends CI_Controller
             );
 
             unset($leadData['created_at']);
+            $duplicateTransactionStarted = false;
+            if ($isRestaurantLead) {
+                $this->db->trans_begin();
+                $duplicateTransactionStarted = true;
+                $this->RestaurantBookingModel->lockTables($normalizedTableIds);
+                $conflict = $this->RestaurantBookingModel->findConflict(
+                    $leadData['booking_date'],
+                    $leadData['restaurant_id'],
+                    $normalizedTableIds,
+                    $leadData['slot_type_id'],
+                    $leadData['time_slot_id'],
+                    (int) $existingLead->id
+                );
+                if ($conflict) {
+                    $this->db->trans_rollback();
+                    return $this->output
+                        ->set_content_type('application/json')
+                        ->set_status_header(409)
+                        ->set_output(json_encode([
+                            'status' => false,
+                            'message' => $conflict['reason'],
+                            'errors' => ['time_slot_id' => $conflict['reason']],
+                            'csrfHash' => $this->security->get_csrf_hash()
+                        ], JSON_UNESCAPED_UNICODE));
+                }
+            }
+
             $saved = $this->db
                 ->where('id', (int) $existingLead->id)
                 ->where('property', $property)
                 ->update('leads', $leadData);
+
+            if ($saved && $isRestaurantLead) {
+                $saved = $this->RestaurantBookingModel->replaceLeadTables(
+                    (int) $existingLead->id,
+                    $normalizedTableIds
+                );
+            }
+
+            if ($duplicateTransactionStarted) {
+                if ($saved && $this->db->trans_status()) {
+                    $this->db->trans_commit();
+                } else {
+                    $this->db->trans_rollback();
+                    $saved = false;
+                }
+            }
 
             if ($saved) {
                 $this->triggerAssignedLeadEmail(
@@ -678,7 +762,50 @@ class Leads extends CI_Controller
                 ]));
         }
 
+        $restaurantTransactionStarted = false;
+        if ($isRestaurantLead) {
+            $this->db->trans_begin();
+            $restaurantTransactionStarted = true;
+            $this->RestaurantBookingModel->lockTables($normalizedTableIds);
+
+            $conflict = $this->RestaurantBookingModel->findConflict(
+                $leadData['booking_date'],
+                $leadData['restaurant_id'],
+                $normalizedTableIds,
+                $leadData['slot_type_id'],
+                $leadData['time_slot_id']
+            );
+
+            if ($conflict) {
+                $this->db->trans_rollback();
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(409)
+                    ->set_output(json_encode([
+                        'status' => false,
+                        'message' => $conflict['reason'],
+                        'errors' => ['time_slot_id' => $conflict['reason']],
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ], JSON_UNESCAPED_UNICODE));
+            }
+        }
+
         $insertId = $this->LeadModel->insert_lead($leadData);
+
+        if ($insertId && $isRestaurantLead) {
+            if (!$this->RestaurantBookingModel->replaceLeadTables($insertId, $normalizedTableIds)) {
+                $insertId = false;
+            }
+        }
+
+        if ($restaurantTransactionStarted) {
+            if ($insertId && $this->db->trans_status()) {
+                $this->db->trans_commit();
+            } else {
+                $this->db->trans_rollback();
+                $insertId = false;
+            }
+        }
         if (!$insertId) {
             return $this->output
                 ->set_content_type('application/json')
@@ -808,6 +935,11 @@ class Leads extends CI_Controller
                 ]));
         }
 
+        $lead->table_ids = $this->RestaurantBookingModel->getLeadTableIds($leadId);
+        if (empty($lead->table_ids) && !empty($lead->table_id)) {
+            $lead->table_ids = array_values(array_filter(array_map('intval', explode(',', (string) $lead->table_id))));
+        }
+
         return $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode([
@@ -877,7 +1009,7 @@ class Leads extends CI_Controller
         $property = (int) $scope['hotel_id'];
         $type = (int) $this->input->post('type', true);
         $department = $this->Common_model->getdata('departments', ['department_id' => $type]);
-        $errors = $this->validateLeadInput($department->department_name ?? '');
+        $errors = $this->validateLeadInput($department->department_name ?? '', $leadId);
 
         $departmentMapping = $this->db
             ->where('staff_id', (int) $agent['id'])
@@ -937,7 +1069,7 @@ class Leads extends CI_Controller
             'checkin_date', 'checkout_date', 'roomtype', 'number_of_rooms', 'pax',
             'adults', 'kids', 'meal_plan', 'revenue_fnb', 'revenue_other',
             'revenue_room', 'amount', 'banquet_id', 'restaurant_id', 'slot_type_id',
-            'time_slot_id', 'table_category_id', 'special_occasion',
+            'time_slot_id', 'table_category_id', 'table_reservation_status', 'special_occasion',
             'special_request'
         ];
         foreach ($optionalFields as $field) {
@@ -948,7 +1080,20 @@ class Leads extends CI_Controller
         }
 
         $tableIds = $this->input->post('table_id', true);
-        if (is_array($tableIds)) {
+        $normalizedDepartment = strtolower(trim((string) ($department->department_name ?? '')));
+        if ($normalizedDepartment === 'restaurants') {
+            $normalizedDepartment = 'restaurant';
+        }
+        $isRestaurantUpdate = $normalizedDepartment === 'restaurant'
+            && $this->input->post('restaurant_id') !== null
+            && $this->input->post('time_slot_id') !== null;
+        $normalizedTableIds = $isRestaurantUpdate
+            ? $this->RestaurantBookingModel->normalizeTableIds($tableIds)
+            : [];
+
+        if ($isRestaurantUpdate) {
+            $leadData['table_id'] = $normalizedTableIds[0] ?? null;
+        } elseif (is_array($tableIds)) {
             $leadData['table_id'] = implode(',', array_values(array_filter($tableIds, static function ($tableId) {
                 return $tableId !== null && $tableId !== '';
             })));
@@ -977,10 +1122,52 @@ class Leads extends CI_Controller
             $leadData['responded_time'] = $now;
         }
 
+        $restaurantTransactionStarted = false;
+        if ($isRestaurantUpdate) {
+            $this->db->trans_begin();
+            $restaurantTransactionStarted = true;
+            $this->RestaurantBookingModel->lockTables($normalizedTableIds);
+
+            $conflict = $this->RestaurantBookingModel->findConflict(
+                $this->input->post('booking_date', true),
+                $this->input->post('restaurant_id'),
+                $normalizedTableIds,
+                $this->input->post('slot_type_id'),
+                $this->input->post('time_slot_id'),
+                $leadId
+            );
+
+            if ($conflict) {
+                $this->db->trans_rollback();
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(409)
+                    ->set_output(json_encode([
+                        'status' => false,
+                        'message' => $conflict['reason'],
+                        'errors' => ['time_slot_id' => $conflict['reason']],
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ], JSON_UNESCAPED_UNICODE));
+            }
+        }
+
         $updated = $this->db
             ->where('id', $leadId)
             ->where('property', $property)
             ->update('leads', $leadData);
+
+        if ($updated && $isRestaurantUpdate) {
+            $updated = $this->RestaurantBookingModel->replaceLeadTables($leadId, $normalizedTableIds);
+        }
+
+        if ($restaurantTransactionStarted) {
+            if ($updated && $this->db->trans_status()) {
+                $this->db->trans_commit();
+            } else {
+                $this->db->trans_rollback();
+                $updated = false;
+            }
+        }
 
         if (!$updated) {
             return $this->output

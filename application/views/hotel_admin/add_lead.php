@@ -1,6 +1,9 @@
 <?php
 // Hotel-admin standalone form. The assigned property is supplied by the
 // hotel session in hotelAdmin/Leads::add_lead and cannot be changed.
+$lead_form_role_label = $lead_form_role_label ?? 'Hotel Admin';
+$lead_form_submit_url = $lead_form_submit_url ?? base_url('insert-lead-admin');
+$lead_form_redirect_url = $lead_form_redirect_url ?? base_url('view-leads');
 ?>
 <script>
 window.CSRF = {
@@ -26,7 +29,7 @@ window.CSRF = {
                         <li>
                             <i class="fa fa-home"></i>
                         </li>
-                        <li>Hotel Admin</li>
+                        <li><?= html_escape($lead_form_role_label); ?></li>
                         <li>
                             <i class="fa fa-angle-right"></i>
                         </li>
@@ -2750,7 +2753,7 @@ window.CSRF = {
             csrfFormData(formData);
 
             csrfAjax({
-                url: '<?php echo base_url("insert-lead-admin"); ?>',
+                url: <?= json_encode($lead_form_submit_url); ?>,
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -2769,13 +2772,13 @@ window.CSRF = {
                             confirmButtonText: 'OK',
                             confirmButtonColor: '#8f73df'
                         }).then(function() {
-                            window.location.href = '<?php echo base_url("view-leads") ?>';
+                            window.location.href = <?= json_encode($lead_form_redirect_url); ?>;
                         });
                         return;
                     }
 
                     if (response.status) {
-                        window.location.href = '<?php echo base_url("view-leads") ?>'
+                        window.location.href = <?= json_encode($lead_form_redirect_url); ?>
                     } else {
                         alert('Failed to create lead: ' + response.message);
                     }
