@@ -2437,7 +2437,7 @@
                     <div class="col-md-3 mb-3 d-flex align-items-end"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="is_room_required" id="sales_is_room_required" value="1"><label class="form-check-label" for="sales_is_room_required">Is Room Required?</label></div></div>
                     <div class="col-md-3 mb-3 sales-room-required-fields" style="display:none;"><label>Check-in Date <span class="text-danger">*</span></label><input type="date" name="checkin_date" id="checkin_date" class="form-control" min="${today}"><div class="text-danger error-label" id="checkin_date_error"></div></div>
                     <div class="col-md-3 mb-3 sales-room-required-fields" style="display:none;"><label>Check-out Date <span class="text-danger">*</span></label><input type="date" name="checkout_date" id="checkout_date" class="form-control" min="${today}"><div class="text-danger error-label" id="checkout_date_error"></div></div>
-                    <div class="col-md-3 mb-3 sales-room-required-fields" style="display:none;"><label>Number of Rooms</label><input type="number" name="number_of_rooms" id="number_of_rooms" class="form-control" min="1"></div>
+                    <div class="col-md-3 mb-3 sales-room-required-fields" style="display:none;"><label>Number of Rooms <span class="text-danger">*</span></label><input type="number" name="number_of_rooms" id="number_of_rooms" class="form-control" min="1" step="1"><div class="text-danger error-label" id="number_of_rooms_error"></div></div>
                     <div class="col-md-3 mb-3"><label>Booking Date</label><input type="date" name="booking_date" class="form-control" value="${today}"></div>
                     <div class="col-md-3 mb-3"><label>No. of Pax</label><input type="number" name="pax" class="form-control" min="1"></div>
                     <div class="col-md-3 mb-3"><label>Banquet <span class="text-danger">*</span></label><select name="banquet_id" id="banquet_id" class="form-select"><option value="">Select Banquet</option></select><div class="text-danger error-label" id="banquet_id_error"></div></div>
@@ -2715,7 +2715,7 @@
         $('.sales-room-required-fields input').prop('required', required);
         if (!required) {
             $('.sales-room-required-fields input').val('').removeClass('is-invalid').removeAttr('aria-invalid');
-            $('#checkin_date_error, #checkout_date_error').text('');
+            $('#checkin_date_error, #checkout_date_error, #number_of_rooms_error').text('');
         }
     });
 
@@ -3158,11 +3158,17 @@
             if (department === 'banquet' && $('#sales_is_room_required').is(':checked')) {
                 const checkinDate = value('checkin_date');
                 const checkoutDate = value('checkout_date');
+                const numberOfRooms = value('number_of_rooms');
                 const today = new Date().toISOString().split('T')[0];
                 if (!checkinDate) errors.checkin_date = 'Check-in date is required.';
                 else if (checkinDate < today) errors.checkin_date = 'Check-in date cannot be in the past.';
                 if (!checkoutDate) errors.checkout_date = 'Check-out date is required.';
                 else if (checkinDate && checkoutDate < checkinDate) errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+                if (!/^[1-9][0-9]*$/.test(numberOfRooms)) {
+                    errors.number_of_rooms = numberOfRooms
+                        ? 'Number of rooms must be a positive whole number.'
+                        : 'Number of rooms is required.';
+                }
             }
             if (department === 'restaurant') {
                 if (!value('restaurant_id')) errors.restaurant_id = 'Please select a restaurant.';

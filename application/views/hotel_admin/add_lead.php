@@ -1162,6 +1162,13 @@ window.CSRF = {
                 <span class="error-text text-danger"></span>
             </div>
 
+            <div class="col-md-3 mb-3 room-required-count-field" style="display:none;">
+                <label for="number_of_rooms">Number of Rooms <span class="required-marker">*</span></label>
+                <input type="number" id="number_of_rooms" name="number_of_rooms" class="form-control" min="1" step="1"
+                    value="${$('#preserved_number_of_rooms').val() || ''}">
+                <span class="error-text text-danger"></span>
+            </div>
+
             <div class="col-md-3 mb-3">
                 <label>Booking Date</label>
                 <input type="date" name="booking_date" class="form-control" value="${today}">
@@ -2582,6 +2589,7 @@ window.CSRF = {
             if ($('#is_room_required').is(':checked')) {
                 const checkinDate = value('checkin_date');
                 const checkoutDate = value('checkout_date');
+                const numberOfRooms = value('number_of_rooms');
                 const today = new Date().toISOString().split('T')[0];
 
                 if (!checkinDate) {
@@ -2593,6 +2601,11 @@ window.CSRF = {
                     errors.checkout_date = 'Check-out date is required.';
                 } else if (checkinDate && checkoutDate < checkinDate) {
                     errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+                }
+                if ($('.room-required-count-field').length && !/^[1-9][0-9]*$/.test(numberOfRooms)) {
+                    errors.number_of_rooms = numberOfRooms
+                        ? 'Number of rooms must be a positive whole number.'
+                        : 'Number of rooms is required.';
                 }
             }
             if ((department === 'rooms' || department === 'wedding') && !value('meal_plan')) {
@@ -2623,14 +2636,15 @@ window.CSRF = {
 
     $(document).on('change', '#is_room_required', function() {
         const roomRequired = this.checked;
-        const dateFields = $('.room-required-date-fields');
-        const dateInputs = dateFields.find('input[type="date"]');
+        const roomFields = $('.room-required-date-fields, .room-required-count-field');
+        const roomInputs = roomFields.find('input');
 
-        dateFields.toggle(roomRequired);
-        dateInputs.prop('required', roomRequired);
+        roomFields.toggle(roomRequired);
+        roomInputs.prop('required', roomRequired);
         if (!roomRequired) {
-            dateInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
-            dateFields.find('.error-text, .lead-validation-error').text('');
+            roomInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
+            $('#preserved_number_of_rooms').val('');
+            roomFields.find('.error-text, .lead-validation-error').text('');
         }
     });
 

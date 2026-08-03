@@ -567,6 +567,7 @@ class Leads extends CI_Controller
             if ($value('is_room_required') === '1') {
                 $checkinDate = $value('checkin_date');
                 $checkoutDate = $value('checkout_date');
+                $numberOfRooms = $value('number_of_rooms');
                 $isValidDate = function ($date) {
                     $parsed = DateTime::createFromFormat('!Y-m-d', $date);
                     return $parsed && $parsed->format('Y-m-d') === $date;
@@ -586,6 +587,12 @@ class Leads extends CI_Controller
                     $errors['checkout_date'] = 'Please enter a valid check-out date.';
                 } elseif ($isValidDate($checkinDate) && $checkoutDate < $checkinDate) {
                     $errors['checkout_date'] = 'Check-out date must be the same as or after check-in date.';
+                }
+
+                if ($department === 'banquet' && !preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                    $errors['number_of_rooms'] = $numberOfRooms === ''
+                        ? 'Number of rooms is required.'
+                        : 'Number of rooms must be a positive whole number.';
                 }
             }
             if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
@@ -750,6 +757,22 @@ class Leads extends CI_Controller
             $normalized_department = strtolower(trim((string) ($department_data->department_name ?? '')));
             if ($normalized_department === 'restaurants') {
                 $normalized_department = 'restaurant';
+            }
+            if ($normalized_department === 'banquets') {
+                $normalized_department = 'banquet';
+            }
+
+            if (
+                $this->input->post('disposition', true) === 'Quotation Sent'
+                && $normalized_department === 'banquet'
+            ) {
+                if ($this->input->post('is_room_required') === '1') {
+                    $leadData['number_of_rooms'] = (int) $this->input->post('number_of_rooms');
+                } else {
+                    $leadData['checkin_date'] = null;
+                    $leadData['checkout_date'] = null;
+                    $leadData['number_of_rooms'] = null;
+                }
             }
             $isRestaurantLead = $normalized_department === 'restaurant';
             $normalizedTableIds = $isRestaurantLead
@@ -1265,12 +1288,24 @@ class Leads extends CI_Controller
         ) {
             $leadData['checkin_date'] = null;
             $leadData['checkout_date'] = null;
+            $leadData['number_of_rooms'] = null;
         }
 
         $table_ids = $this->input->post('table_id');
         $normalized_department = strtolower(trim((string) ($department_data->department_name ?? '')));
         if ($normalized_department === 'restaurants') {
             $normalized_department = 'restaurant';
+        }
+        if ($normalized_department === 'banquets') {
+            $normalized_department = 'banquet';
+        }
+
+        if (
+            $this->input->post('disposition', true) === 'Quotation Sent'
+            && $normalized_department === 'banquet'
+            && $this->input->post('is_room_required') === '1'
+        ) {
+            $leadData['number_of_rooms'] = (int) $this->input->post('number_of_rooms');
         }
         $isRestaurantUpdate = $normalized_department === 'restaurant'
             && $this->input->post('restaurant_id') !== null
