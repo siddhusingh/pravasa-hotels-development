@@ -1,6 +1,6 @@
 # Leads Module — Functional and Technical Guide
 
-Last reviewed: 31 July 2026
+Last reviewed: 3 August 2026
 
 ## Purpose
 
@@ -206,7 +206,7 @@ Typical fields include:
 - banquet selection
 - expected revenue
 - special request
-- optional room-required dates and room count
+- optional room requirement; when enabled, check-in date, check-out date, and a positive whole-number room count are mandatory
 - legacy banquet-specific reservation/manager fields
 
 For `Quotation Sent`, a banquet is required.
@@ -302,6 +302,10 @@ Assignment fields must be derived from a validated active user rather than trust
 6. The user edits and submits to the role-specific update endpoint.
 7. The controller revalidates every selection, performs a scoped update, and returns the refreshed joined lead.
 8. The report card/list refreshes without requiring a full-page reload where supported.
+
+For Super Admin Banquet edits at `Quotation Sent`, enabling `Is Room Required?` requires check-in, check-out, and a positive whole-number room count in both the Manage Leads modal and Sales Visit edit. Disabling it clears all three values. Existing stored values are preloaded before validation.
+
+Hotel Admin and Agent Banquet create/edit apply the same conditional rule. Both roles use the shared Hotel Admin create template with role-specific insert endpoints, while each role uses its own report edit modal and update endpoint.
 
 Important: restaurant edit detail responses append `table_ids` from `lead_reserved_tables`. If no normalized rows exist, legacy `leads.table_id` is split as a fallback.
 
@@ -513,7 +517,7 @@ Super Admin Sales Visits create a Lead and a `sales_visits` record together thro
 
 For `Quotation Sent` Sales Visits:
 
-- Banquets expose `Is Room Required?`. When enabled, check-in and check-out dates are required, cannot be in the past, and check-out cannot precede check-in. An optional room count is stored with the generated Lead.
+- Banquets expose `Is Room Required?`. When enabled, check-in date, check-out date, and a positive whole-number room count are required. Check-in cannot be in the past, and check-out cannot precede check-in. This rule applies to normal Super Admin Lead creation/edit and Super Admin Sales Visit creation/edit; Sales Visits store the values on their generated Lead.
 - Restaurants expose the same reservation modal used by normal Lead creation. Modal confirmation only commits values into hidden Sales Visit form fields; the reservation is persisted when the complete Sales Visit form is submitted.
 - Restaurant lookup data is read from the shared Lead endpoints. Availability is checked before modal confirmation and rechecked after locking the selected tables during final save.
 - The generated Lead retains the first table in legacy `leads.table_id`, while every selected table is stored in `lead_reserved_tables`.
@@ -543,6 +547,9 @@ For `Quotation Sent` Sales Visits:
 - Switching hotel, department, or stage rebuilds fields without duplicate controls.
 - Rooms retain/clear controlled dates correctly.
 - Banquet lookup and required validation work.
+- Super Admin Banquet creation and edit require check-in, check-out, and a positive whole-number room count only when `Is Room Required?` is enabled, through both normal Leads and Sales Visits.
+- Hotel Admin and Agent Banquet creation/edit require the same three values when `Is Room Required?` is enabled, with validation repeated in each role-specific controller.
+- Turning off `Is Room Required?` clears and does not persist the room dates or room count.
 - Restaurant modal appears only for Restaurants + Quotation Sent.
 - Wedding room/banquet requirements still work.
 - Spa and Water Park branches still render and submit.

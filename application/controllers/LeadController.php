@@ -1045,6 +1045,7 @@ class LeadController extends CI_Controller
             if ($value('is_room_required') === '1') {
                 $checkinDate = $value('checkin_date');
                 $checkoutDate = $value('checkout_date');
+                $numberOfRooms = $value('number_of_rooms');
                 $isValidDate = function ($date) {
                     $parsed = DateTime::createFromFormat('!Y-m-d', $date);
                     return $parsed && $parsed->format('Y-m-d') === $date;
@@ -1064,6 +1065,12 @@ class LeadController extends CI_Controller
                     $errors['checkout_date'] = 'Please enter a valid check-out date.';
                 } elseif ($isValidDate($checkinDate) && $checkoutDate < $checkinDate) {
                     $errors['checkout_date'] = 'Check-out date must be the same as or after check-in date.';
+                }
+
+                if ($department === 'banquet' && !preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                    $errors['number_of_rooms'] = $numberOfRooms === ''
+                        ? 'Number of rooms is required.'
+                        : 'Number of rooms must be a positive whole number.';
                 }
             }
             if (in_array($department, ['rooms', 'wedding'], true) && $value('meal_plan') === '') {
@@ -1253,7 +1260,16 @@ class LeadController extends CI_Controller
             $leadData['reason'] =  $this->input->post('reason');
 
             $leadData['purpose'] =  $this->input->post('purpose');
-            if (
+            $isBanquetRoomRequirement = $disposition === 'Quotation Sent'
+                && in_array($normalized_department, ['banquet', 'banquets'], true);
+
+            if ($isBanquetRoomRequirement && $this->input->post('is_room_required') === '1') {
+                $leadData['number_of_rooms'] = (int) $this->input->post('number_of_rooms');
+            } elseif ($isBanquetRoomRequirement) {
+                $leadData['checkin_date'] = null;
+                $leadData['checkout_date'] = null;
+                $leadData['number_of_rooms'] = null;
+            } elseif (
                 $this->input->post('cross_department_room_count_controlled') === '1'
                 && trim((string) $this->input->post('number_of_rooms')) !== ''
             ) {
@@ -1561,6 +1577,12 @@ class LeadController extends CI_Controller
                 if ($value !== null && $value !== '') {
                     $leadData[$field] = $value;
                 }
+            }
+
+            if ($isBanquetRoomRequirement && $this->input->post('is_room_required') !== '1') {
+                $leadData['checkin_date'] = null;
+                $leadData['checkout_date'] = null;
+                $leadData['number_of_rooms'] = null;
             }
 
 
@@ -3108,6 +3130,7 @@ class LeadController extends CI_Controller
             $isRoomRequired = $this->input->post('is_room_required') === '1';
             $checkinDate = trim((string) $this->input->post('checkin_date'));
             $checkoutDate = trim((string) $this->input->post('checkout_date'));
+            $numberOfRooms = trim((string) $this->input->post('number_of_rooms'));
 
             if ($isRoomRequired) {
                 $isValidDate = function ($date) {
@@ -3128,6 +3151,10 @@ class LeadController extends CI_Controller
                     $dateError = 'Please enter a valid check-out date.';
                 } elseif ($checkoutDate < $checkinDate) {
                     $dateError = 'Check-out date must be the same as or after check-in date.';
+                } elseif (!preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                    $dateError = $numberOfRooms === ''
+                        ? 'Number of rooms is required.'
+                        : 'Number of rooms must be a positive whole number.';
                 }
 
                 if ($dateError !== '') {
@@ -3141,9 +3168,11 @@ class LeadController extends CI_Controller
 
                 $leadData['checkin_date'] = $checkinDate;
                 $leadData['checkout_date'] = $checkoutDate;
+                $leadData['number_of_rooms'] = (int) $numberOfRooms;
             } else {
                 $leadData['checkin_date'] = null;
                 $leadData['checkout_date'] = null;
+                $leadData['number_of_rooms'] = null;
             }
         }
 
@@ -3500,6 +3529,7 @@ class LeadController extends CI_Controller
         ) {
             $leadData['checkin_date'] = null;
             $leadData['checkout_date'] = null;
+            $leadData['number_of_rooms'] = null;
         }
 
 

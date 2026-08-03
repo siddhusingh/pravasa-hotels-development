@@ -1881,6 +1881,7 @@ font-size:14px;
                 if ($('#edit_is_room_required').is(':checked')) {
                     var checkinDate = value('checkin_date');
                     var checkoutDate = value('checkout_date');
+                    var numberOfRooms = value('number_of_rooms');
                     var today = new Date().toISOString().split('T')[0];
 
                     if (!checkinDate) {
@@ -1892,6 +1893,11 @@ font-size:14px;
                         errors.checkout_date = 'Check-out date is required.';
                     } else if (checkinDate && checkoutDate < checkinDate) {
                         errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+                    }
+                    if (!/^[1-9][0-9]*$/.test(numberOfRooms)) {
+                        errors.number_of_rooms = numberOfRooms
+                            ? 'Number of rooms must be a positive whole number.'
+                            : 'Number of rooms is required.';
                     }
                 }
                 if ($.inArray(department, ['rooms', 'wedding']) !== -1 && !value('meal_plan')) {
@@ -1934,14 +1940,15 @@ font-size:14px;
 
         $(document).on('change', '#edit_is_room_required', function() {
             var roomRequired = this.checked;
-            var dateFields = $('#Edit_dynamicFields .edit-room-required-date-fields');
-            var dateInputs = dateFields.find('input[type="date"]');
+            var roomFields = $('#Edit_dynamicFields .edit-room-required-date-fields, #Edit_dynamicFields .edit-room-required-count-field');
+            var roomInputs = roomFields.find('input');
 
-            dateFields.toggle(roomRequired);
-            dateInputs.prop('required', roomRequired);
+            roomFields.toggle(roomRequired);
+            roomInputs.prop('required', roomRequired);
             if (!roomRequired) {
-                dateInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
-                dateFields.find('.edit-lead-validation-error').remove();
+                roomInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
+                $('#edit_preserved_number_of_rooms').val('');
+                roomFields.find('.edit-lead-validation-error').remove();
             }
         });
 
@@ -2448,7 +2455,7 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                 /* BANQUETS */
                 else if (department === "banquets") {
 
-                    const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
+                    const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date || existingLeadData?.number_of_rooms);
                     const roomDateDisplay = roomRequired ? '' : 'display:none;';
                     const roomDateRequired = roomRequired ? 'required' : '';
                     const roomRequiredChecked = roomRequired ? 'checked' : '';
@@ -2492,6 +2499,12 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                 <label for="edit_checkout_date">Check-out Date <span class="required-marker">*</span></label>
                 <input type="date" id="edit_checkout_date" name="checkout_date" class="form-control"
                     min="${checkoutMinDate}" value="${existingLeadData?.checkout_date ?? ''}" ${roomDateRequired}>
+            </div>
+
+            <div class="col-md-4 mb-3 edit-room-required-count-field" style="${roomDateDisplay}">
+                <label for="edit_number_of_rooms">Number of Rooms <span class="required-marker">*</span></label>
+                <input type="number" id="edit_number_of_rooms" name="number_of_rooms" class="form-control"
+                    min="1" step="1" value="${existingLeadData?.number_of_rooms ?? ''}" ${roomDateRequired}>
             </div>
 
            

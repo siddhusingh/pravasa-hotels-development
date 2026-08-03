@@ -370,6 +370,7 @@ class SalesVisits extends CI_Controller
         ) {
             $checkinDate = $dynamicValue('checkin_date');
             $checkoutDate = $dynamicValue('checkout_date');
+            $numberOfRooms = $dynamicValue('number_of_rooms');
             $isValidDate = function ($date) {
                 $parsed = DateTime::createFromFormat('!Y-m-d', $date);
                 return $parsed && $parsed->format('Y-m-d') === $date;
@@ -387,6 +388,10 @@ class SalesVisits extends CI_Controller
                 $dynamicValidationError = 'Please enter a valid check-out date';
             } elseif ($checkoutDate < $checkinDate) {
                 $dynamicValidationError = 'Check-out date must be the same as or after check-in date';
+            } elseif (!preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                $dynamicValidationError = $numberOfRooms === ''
+                    ? 'Number of rooms is required'
+                    : 'Number of rooms must be a positive whole number';
             }
         }
 
@@ -507,6 +512,16 @@ class SalesVisits extends CI_Controller
                 if ($postedDynamicValue !== null && $postedDynamicValue !== '') {
                     $leadData[$dynamicField] = $postedDynamicValue;
                 }
+            }
+
+            if (
+                $dynamicStage === 'Quotation Sent'
+                && $dynamicDepartment === 'banquet'
+                && $dynamicValue('is_room_required') !== '1'
+            ) {
+                $leadData['checkin_date'] = null;
+                $leadData['checkout_date'] = null;
+                $leadData['number_of_rooms'] = null;
             }
 
             if ($dynamicStage === 'Quotation Sent' && $dynamicDepartment === 'restaurant') {
@@ -1473,6 +1488,7 @@ class SalesVisits extends CI_Controller
         ) {
             $checkinDate = $dynamicValue('checkin_date');
             $checkoutDate = $dynamicValue('checkout_date');
+            $numberOfRooms = $dynamicValue('number_of_rooms');
             $isValidDate = function ($date) {
                 $parsed = DateTime::createFromFormat('!Y-m-d', $date);
                 return $parsed && $parsed->format('Y-m-d') === $date;
@@ -1488,6 +1504,10 @@ class SalesVisits extends CI_Controller
                 $dynamicValidationError = 'Please enter a valid check-out date';
             } elseif ($checkoutDate < $checkinDate) {
                 $dynamicValidationError = 'Check-out date must be the same as or after check-in date';
+            } elseif (!preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                $dynamicValidationError = $numberOfRooms === ''
+                    ? 'Number of rooms is required'
+                    : 'Number of rooms must be a positive whole number';
             }
         }
 

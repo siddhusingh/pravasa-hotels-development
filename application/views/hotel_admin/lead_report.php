@@ -1196,6 +1196,7 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
             if ($('#edit_is_room_required').is(':checked')) {
                const checkinDate = value('checkin_date');
                const checkoutDate = value('checkout_date');
+               const numberOfRooms = value('number_of_rooms');
                const today = new Date().toISOString().split('T')[0];
 
                if (!checkinDate) {
@@ -1207,6 +1208,11 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                   errors.checkout_date = 'Check-out date is required.';
                } else if (checkinDate && checkoutDate < checkinDate) {
                   errors.checkout_date = 'Check-out date must be the same as or after check-in date.';
+               }
+               if (!/^[1-9][0-9]*$/.test(numberOfRooms)) {
+                  errors.number_of_rooms = numberOfRooms
+                     ? 'Number of rooms must be a positive whole number.'
+                     : 'Number of rooms is required.';
                }
             }
             if ((department === 'rooms' || department === 'wedding') && !value('meal_plan')) {
@@ -1258,14 +1264,15 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
 
       $(document).on('change', '#edit_is_room_required', function() {
          const roomRequired = this.checked;
-         const dateFields = $('#Edit_dynamicFields .edit-room-required-date-fields');
-         const dateInputs = dateFields.find('input[type="date"]');
+         const roomFields = $('#Edit_dynamicFields .edit-room-required-date-fields, #Edit_dynamicFields .edit-room-required-count-field');
+         const roomInputs = roomFields.find('input');
 
-         dateFields.toggle(roomRequired);
-         dateInputs.prop('required', roomRequired);
+         roomFields.toggle(roomRequired);
+         roomInputs.prop('required', roomRequired);
          if (!roomRequired) {
-            dateInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
-            dateFields.find('.edit-lead-validation-error').remove();
+            roomInputs.val('').removeClass('is-invalid').removeAttr('aria-invalid');
+            $('#edit_preserved_number_of_rooms').val('');
+            roomFields.find('.edit-lead-validation-error').remove();
          }
       });
 
@@ -1606,7 +1613,7 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
             $("#edit_lead_status").val('In Progress');
 
             if (disposition === "Quotation Sent" && department === "banquets") {
-               const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date);
+               const roomRequired = Boolean(existingLeadData?.checkin_date || existingLeadData?.checkout_date || existingLeadData?.number_of_rooms);
                const roomDateDisplay = roomRequired ? '' : 'display:none;';
                const roomDateRequired = roomRequired ? 'required' : '';
                const roomRequiredChecked = roomRequired ? 'checked' : '';
@@ -1634,6 +1641,12 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                      <label for="edit_checkout_date">Check-out Date <span class="required-marker">*</span></label>
                      <input type="date" id="edit_checkout_date" name="checkout_date" class="form-control"
                         min="${checkoutMinDate}" value="${existingLeadData?.checkout_date ?? ''}" ${roomDateRequired}>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6 col-sm-12 edit-room-required-count-field" style="${roomDateDisplay}">
+                     <label for="edit_number_of_rooms">Number of Rooms <span class="required-marker">*</span></label>
+                     <input type="number" id="edit_number_of_rooms" name="number_of_rooms" class="form-control"
+                        min="1" step="1" value="${existingLeadData?.number_of_rooms ?? ''}" ${roomDateRequired}>
                   </div>
                `);
             }
