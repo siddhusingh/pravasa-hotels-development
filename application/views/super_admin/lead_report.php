@@ -1666,6 +1666,8 @@ font-size:14px;
                            <option value="TTF">TTF</option>
                            <option value="BLTM">BLTM</option>
                            <option value="Sales Call MICE">Sales Call MICE</option>
+                           <option value="Website">Website</option>
+                           <option value="Sales Visit">Sales Visit</option>
                            <option value="Wedmegood">Wedmegood</option>
 
                         </select>
@@ -2156,7 +2158,11 @@ font-size:14px;
                $("#edit_query").val(data.query)
                $("#edit_remark").val(data.remark)
                $("#edit_lead_id").val(data.id);
-               $('#leadEditForm select[name="user_channel"]').val(data.user_channel).trigger('change');
+               const $editLeadSource = $('#leadEditForm select[name="user_channel"]');
+               if (data.user_channel && !$editLeadSource.find('option').filter(function() { return this.value === data.user_channel; }).length) {
+                  $editLeadSource.append(new Option(data.user_channel, data.user_channel, false, false));
+               }
+               $editLeadSource.val(data.user_channel || '').trigger('change');
 
                $("#edit_purpose").val(data.purpose);
                $("#edit_preserved_number_of_rooms").val(data.number_of_rooms || '');
@@ -4599,7 +4605,8 @@ font-size:14px;
                $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
 
 
-               $('#total_leads_count').text(totalCounts.total || 0);
+               const filteredTotal = parseInt(response.filteredTotal ?? totalCounts.total ?? 0, 10) || 0;
+               $('#total_leads_count').text(filteredTotal);
 
 
                if (reset) {
@@ -4612,7 +4619,7 @@ font-size:14px;
                offset += response.count;
 
                // Show/Hide Load More button
-               if (response.count < limit) {
+               if (offset >= filteredTotal) {
                   $('#load_more_btn').hide();
                } else {
                   $('#load_more_btn').show().prop('disabled', false).text('Load More');
@@ -4727,6 +4734,12 @@ font-size:14px;
                   });
                }
 
+               function displayValue(value) {
+                  if (value === null || value === undefined) return 'NA';
+                  value = value.toString().trim();
+                  return value === '' || value.toLowerCase() === 'null' ? 'NA' : value;
+               }
+
                const disposition = (data.disposition ?? '').toString().toLowerCase();
                const status = (data.status ?? '').toString().toLowerCase();
 
@@ -4749,17 +4762,17 @@ font-size:14px;
 <!-- Section 1 : Guest / Lead Info -->
 <div class="row ticket-section">
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Property</strong></div><div class="ticket-value">${data.hotel_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>City</strong></div><div class="ticket-value">${data.city_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Department</strong></div><div class="ticket-value">${data.department_name}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Property</strong></div><div class="ticket-value">${displayValue(data.hotel_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>City</strong></div><div class="ticket-value">${displayValue(data.city_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Department</strong></div><div class="ticket-value">${displayValue(data.department_name)}</div></div>
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Name</strong></div><div class="ticket-value">${data.user_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Phone</strong></div><div class="ticket-value">${data.phone_number}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Email</strong></div><div class="ticket-value">${data.email}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Name</strong></div><div class="ticket-value">${displayValue(data.user_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Phone</strong></div><div class="ticket-value">${displayValue(data.phone_number)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Email</strong></div><div class="ticket-value">${displayValue(data.email)}</div></div>
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Source</strong></div><div class="ticket-value">${data.user_channel}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Status</strong></div><div class="ticket-value">${data.status}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Stage</strong></div><div class="ticket-value">${data.disposition}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Source</strong></div><div class="ticket-value">${displayValue(data.user_channel)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Status</strong></div><div class="ticket-value">${displayValue(data.status)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Stage</strong></div><div class="ticket-value">${displayValue(data.disposition)}</div></div>
 
 <div class="col-md-4 mb-3"><div class="ticket-label"><strong>Repeat Guest</strong></div><div class="ticket-value">${data.is_repeatative ? 'Yes' : 'No'}</div></div>
 <div class="col-md-4 mb-3"><div class="ticket-label"><strong>Created By</strong></div><div class="ticket-value">${data.created_by_name ?? 'NA'}</div></div>

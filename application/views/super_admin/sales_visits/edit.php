@@ -33,116 +33,6 @@
         margin-top: 4px;
     }
 
-    #salesVisitForm .table-multiselect-source {
-        display: none !important;
-    }
-
-    #salesVisitForm .table-multiselect {
-        position: relative;
-        width: 100%;
-    }
-
-    #salesVisitForm .table-multiselect-toggle {
-        align-items: center;
-        background: #fff !important;
-        border: 1px solid transparent !important;
-        border-radius: 8px;
-        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
-        color: #495057 !important;
-        display: flex;
-        height: 46px;
-        justify-content: space-between;
-        padding: 0 14px;
-        text-align: left;
-        width: 100%;
-    }
-
-    #salesVisitForm .table-multiselect-source.is-invalid + .table-multiselect .table-multiselect-toggle {
-        border-color: #dc3545 !important;
-    }
-
-    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle,
-    #salesVisitForm .table-multiselect-toggle:focus {
-        border-color: #80bdff !important;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2) !important;
-        outline: 0;
-    }
-
-    #salesVisitForm .table-multiselect-toggle::after {
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 6px solid #6c757d;
-        content: '';
-        margin-left: 10px;
-    }
-
-    #salesVisitForm .table-multiselect.is-open .table-multiselect-toggle::after {
-        border-bottom: 6px solid #6c757d;
-        border-top: 0;
-    }
-
-    #salesVisitForm .table-multiselect-menu {
-        background: #fff;
-        border: 1px solid #fff;
-        border-radius: 6px;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-        display: none;
-        left: 0;
-        max-height: 260px;
-        overflow-y: auto;
-        padding: 6px 0;
-        position: absolute;
-        right: 0;
-        top: calc(100% + 4px);
-        z-index: 1055;
-    }
-
-    #salesVisitForm .table-multiselect.is-open .table-multiselect-menu {
-        display: block;
-    }
-
-    #salesVisitForm .table-multiselect-option {
-        align-items: center;
-        cursor: pointer;
-        display: flex;
-        gap: 9px;
-        margin: 0;
-        padding: 8px 12px;
-    }
-
-    #salesVisitForm .table-multiselect-option:hover {
-        background: #f5f3ff;
-    }
-
-    #salesVisitForm .table-multiselect-option input[type="checkbox"] {
-        -webkit-appearance: checkbox !important;
-        appearance: checkbox !important;
-        accent-color: #8f72dc;
-        clip: auto !important;
-        cursor: pointer;
-        display: inline-block !important;
-        flex: 0 0 18px;
-        height: 18px !important;
-        left: auto !important;
-        margin: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        position: static !important;
-        visibility: visible !important;
-        width: 18px !important;
-    }
-
-    #salesVisitForm .table-multiselect-select-all {
-        border-bottom: 1px solid #e9ecef;
-        font-weight: 600;
-    }
-
-    #salesVisitForm .table-multiselect-empty {
-        color: #6c757d;
-        padding: 9px 12px;
-    }
-
     #openSalesReserveTableModal { height: 46px; }
     #salesReserveTableModal .modal-dialog { max-width: min(92vw, 1500px); }
     #salesReserveTableModal .reservation-status-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1595,7 +1485,6 @@
     function initializeEditSalesDynamicSelects() {
         initializeSalesVisitSelects($('#dynamicFields'));
         $('#dynamicFields select:not([multiple])').trigger('change.select2');
-        initializeEditSalesTableMultiSelect();
     }
 
     function loadEditSalesSelect(options) {
@@ -1632,20 +1521,6 @@
 
         requestOptions.data = options.data || {};
         editSalesDynamicRequest(requestOptions);
-    }
-
-    function loadEditSalesRestaurants(hotelId, selected, afterLoad) {
-        loadEditSalesSelect({
-            url: "<?= base_url('lead/get-restaurants') ?>",
-            type: 'GET',
-            data: {hotel_id: hotelId},
-            selector: '#restaurant_id',
-            placeholder: 'Select Restaurant',
-            valueKey: 'id',
-            label: function(row) { return row.restaurant_name; },
-            selected: selected,
-            afterLoad: afterLoad
-        });
     }
 
     function loadEditSalesBanquets(hotelId, selected) {
@@ -1698,178 +1573,6 @@
             label: function(row) { return row.offer_name; },
             selected: selected
         });
-    }
-
-    function loadEditSalesSlotTypes(selected, afterLoad) {
-        loadEditSalesSelect({
-            url: "<?= base_url('lead/get-slot-types') ?>",
-            type: 'GET',
-            selector: '#slot_type_id',
-            placeholder: 'Select Slot',
-            valueKey: 'id',
-            label: function(row) { return row.slot_name + ' (' + row.start_time + ' - ' + row.end_time + ')'; },
-            selected: selected,
-            afterLoad: afterLoad
-        });
-    }
-
-    function loadEditSalesTimeSlots(slotTypeId, selected) {
-        loadEditSalesSelect({
-            url: "<?= base_url('lead/get-time-slots') ?>",
-            type: 'GET',
-            data: {slot_type_id: slotTypeId},
-            selector: '#time_slot_id',
-            placeholder: 'Select Time Slot',
-            valueKey: 'id',
-            label: function(row) { return row.start_time + ' - ' + row.end_time; },
-            selected: selected
-        });
-    }
-
-    function loadEditSalesTableCategories(restaurantId, selected, afterLoad) {
-        loadEditSalesSelect({
-            url: "<?= base_url('lead/get-table-categories') ?>",
-            type: 'GET',
-            data: {restaurant_id: restaurantId},
-            selector: '#table_category_id',
-            placeholder: 'Select Category',
-            valueKey: 'id',
-            label: function(row) { return row.category_name; },
-            selected: selected,
-            afterLoad: afterLoad
-        });
-    }
-
-    function loadEditSalesTables(restaurantId, categoryId, selectedValues) {
-        const requestGeneration = editSalesDynamicGeneration;
-        editSalesDynamicRequest({
-            url: "<?= base_url('lead/get-tables') ?>",
-            type: 'GET',
-            data: {
-                restaurant_id: restaurantId,
-                category_id: categoryId
-            },
-            dataType: 'json',
-            success: function(response) {
-                refreshCsrf(response);
-                if (requestGeneration !== editSalesDynamicGeneration || !$('#table_id').length) {
-                    return;
-                }
-
-                let html = '';
-                $.each(response.data || [], function(_, row) {
-                    html += '<option value="' + row.id + '">Table ' + row.table_name + ' (' + row.capacity + ' Seats)</option>';
-                });
-                $('#table_id').html(html).val(selectedValues || []);
-                initializeEditSalesTableMultiSelect();
-            }
-        });
-    }
-
-    function syncEditSalesTableMultiSelect($select, $widget) {
-        const values = ($select.val() || []).map(String);
-        const total = $widget.find('.table-multiselect-item').length;
-        const selectedCount = values.length;
-
-        $widget.find('.table-multiselect-item').each(function() {
-            $(this).prop('checked', values.includes(String($(this).val())));
-        });
-        $widget.find('.table-multiselect-all')
-            .prop('checked', total > 0 && selectedCount === total)
-            .prop('indeterminate', selectedCount > 0 && selectedCount < total);
-
-        let summary = 'Select Table';
-        if (selectedCount > 0 && selectedCount === total) {
-            summary = 'All selected (' + selectedCount + ')';
-        } else if (selectedCount > 0) {
-            summary = selectedCount + ' selected';
-        }
-        $widget.find('.table-multiselect-summary').text(summary);
-    }
-
-    function initializeEditSalesTableMultiSelect() {
-        const $select = $('#table_id');
-        if (!$select.length) {
-            return;
-        }
-
-        if ($select.hasClass('select2-hidden-accessible')) {
-            $select.select2('destroy');
-        }
-
-        $select.next('.table-multiselect').remove();
-        $select.addClass('table-multiselect-source');
-
-        const $widget = $('<div>', {class: 'table-multiselect'});
-        const $toggle = $('<button>', {
-            type: 'button',
-            class: 'table-multiselect-toggle',
-            'aria-expanded': 'false'
-        }).append($('<span>', {class: 'table-multiselect-summary', text: 'Select Table'}));
-        const $menu = $('<div>', {class: 'table-multiselect-menu'});
-        const $options = $select.find('option').filter(function() {
-            return String(this.value).trim() !== '';
-        });
-
-        if ($options.length) {
-            $menu.append(
-                $('<label>', {class: 'table-multiselect-option table-multiselect-select-all'})
-                    .append(
-                        $('<input>', {type: 'checkbox', class: 'table-multiselect-all'}),
-                        $('<span>', {text: 'Select all'})
-                    )
-            );
-            $options.each(function() {
-                $menu.append(
-                    $('<label>', {class: 'table-multiselect-option'})
-                        .append(
-                            $('<input>', {
-                                type: 'checkbox',
-                                class: 'table-multiselect-item',
-                                value: this.value
-                            }),
-                            $('<span>').text($(this).text().trim())
-                        )
-                );
-            });
-        } else {
-            $menu.append($('<div>', {
-                class: 'table-multiselect-empty',
-                text: 'No tables available'
-            }));
-        }
-
-        $widget.append($toggle, $menu);
-        $select.after($widget);
-
-        $toggle.on('click', function() {
-            const open = !$widget.hasClass('is-open');
-            $('.table-multiselect').not($widget)
-                .removeClass('is-open')
-                .find('.table-multiselect-toggle')
-                .attr('aria-expanded', 'false');
-            $widget.toggleClass('is-open', open);
-            $toggle.attr('aria-expanded', open ? 'true' : 'false');
-        });
-
-        $widget.on('change', '.table-multiselect-all', function() {
-            const values = this.checked
-                ? $widget.find('.table-multiselect-item').map(function() { return this.value; }).get()
-                : [];
-            $select.val(values).trigger('change');
-        });
-
-        $widget.on('change', '.table-multiselect-item', function() {
-            const values = $widget.find('.table-multiselect-item:checked').map(function() {
-                return this.value;
-            }).get();
-            $select.val(values).trigger('change');
-        });
-
-        $select.off('change.editSalesTablesWidget').on('change.editSalesTablesWidget', function() {
-            syncEditSalesTableMultiSelect($select, $widget);
-        });
-        syncEditSalesTableMultiSelect($select, $widget);
     }
 
     function refreshEditSalesDynamicFields(existingData) {
@@ -2010,57 +1713,7 @@
         bindEditSalesDynamicDependencies();
     }
 
-    let editSalesTimeSlotDependencyTimer = null;
-    let editSalesCategoryDependencyTimer = null;
-    let editSalesTableDependencyTimer = null;
-
     function bindEditSalesDynamicDependencies() {
-        $('#slot_type_id')
-            .off('.editSalesTimeSlots')
-            .on('change.editSalesTimeSlots select2:select.editSalesTimeSlots select2:close.editSalesTimeSlots', function() {
-                window.clearTimeout(editSalesTimeSlotDependencyTimer);
-                editSalesTimeSlotDependencyTimer = window.setTimeout(function() {
-                    const value = $('#slot_type_id').val();
-                    if (value) {
-                        loadEditSalesTimeSlots(value, '');
-                    } else {
-                        $('#time_slot_id').html('<option value="">Select Time Slot</option>').trigger('change.select2');
-                    }
-                }, 0);
-        });
-
-        $('#restaurant_id')
-            .off('.editSalesTableCategories')
-            .on('change.editSalesTableCategories select2:select.editSalesTableCategories select2:close.editSalesTableCategories', function() {
-                window.clearTimeout(editSalesCategoryDependencyTimer);
-                editSalesCategoryDependencyTimer = window.setTimeout(function() {
-                    const value = $('#restaurant_id').val();
-                    if (value) {
-                        loadEditSalesTableCategories(value, '', null);
-                    } else {
-                        $('#table_category_id').html('<option value="">Select Category</option>').trigger('change.select2');
-                        $('#table_id').empty();
-                        initializeEditSalesTableMultiSelect();
-                    }
-                }, 0);
-        });
-
-        $('#table_category_id')
-            .off('.editSalesTables')
-            .on('change.editSalesTables select2:select.editSalesTables select2:close.editSalesTables', function() {
-                window.clearTimeout(editSalesTableDependencyTimer);
-                editSalesTableDependencyTimer = window.setTimeout(function() {
-                    const restaurantId = $('#restaurant_id').val();
-                    const categoryId = $('#table_category_id').val();
-                    if (restaurantId && categoryId) {
-                        loadEditSalesTables(restaurantId, categoryId, []);
-                    } else {
-                        $('#table_id').empty();
-                        initializeEditSalesTableMultiSelect();
-                    }
-                }, 0);
-        });
-
         $('#dynamicFields input[name="adults"], #dynamicFields input[name="kids"]')
             .off('.editSalesPax')
             .on('input.editSalesPax', function() {
@@ -2078,19 +1731,6 @@
             $('#amount').val(total.toFixed(2));
         });
     }
-
-    $(document)
-        .off('click.editSalesTablesMenu')
-        .on('click.editSalesTablesMenu', function(event) {
-            if (!$(event.target).closest('.table-multiselect').length) {
-                $('.table-multiselect')
-                    .removeClass('is-open')
-                    .find('.table-multiselect-toggle')
-                    .attr('aria-expanded', 'false');
-            }
-        });
-
-
 
     $(document).on('change.editSalesRoomRequired', '#sales_is_room_required', function() {
         const required = this.checked;

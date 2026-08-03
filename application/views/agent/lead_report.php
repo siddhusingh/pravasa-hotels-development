@@ -437,6 +437,15 @@
                             <?php
                             // Check if any GET filter is set
                             $filterOpen = !empty($this->input->get());
+                            $isAgentLeadIndex = $this->uri->segment(1) === 'view-agents-leads';
+                            $defaultStatusFilter = ($isAgentLeadIndex && !$filterOpen) ? 'Open' : '';
+                            $selectedStatusFilters = $this->input->get('status');
+                            $selectedStatusFilters = is_array($selectedStatusFilters)
+                                ? $selectedStatusFilters
+                                : ($selectedStatusFilters !== null && $selectedStatusFilters !== '' ? [$selectedStatusFilters] : []);
+                            if ($defaultStatusFilter !== '' && empty($selectedStatusFilters)) {
+                                $selectedStatusFilters = [$defaultStatusFilter];
+                            }
                             ?>
                             <div id="filter-section" style="<?= $filterOpen ? '' : 'display: none;'; ?>">
                                 <div class="mb-4 px-3">
@@ -446,10 +455,10 @@
                                         <div class="col-md-3">
                                             <label for="status" class="form-label">Status</label>
                                             <select name="status[]" class="form-select filter-input lead-filter-multiselect-source" multiple id="status">
-                                                <option value="Open">Open</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="Closed">Closed</option>
-                                                <option value="Not Assigned">Not-assigned</option>
+                                                <option value="Open" <?= in_array('Open', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Open</option>
+                                                <option value="In Progress" <?= in_array('In Progress', $selectedStatusFilters, true) ? 'selected' : ''; ?>>In Progress</option>
+                                                <option value="Closed" <?= in_array('Closed', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Closed</option>
+                                                <option value="Not Assigned" <?= in_array('Not Assigned', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Not-assigned</option>
                                             </select>
                                         </div>
                                         <!-- Lead Source -->
@@ -513,7 +522,7 @@
                                     'Not Assigned' => 'bg-secondary-subtle text-secondary'
                                 ];
 
-                                $current_status = $this->input->get('status'); // get current status from URL
+                                $current_status = $this->input->get('status') ?: $defaultStatusFilter; // get current status from URL or page default
                                 ?>
 
                                 <div class="container mb-3">
@@ -1791,7 +1800,7 @@ font-size:14px;
 
             if (input.is('#openEditReserveTableModal')) {
                 input.addClass('is-invalid').attr('aria-invalid', 'true');
-                $('#edit_restaurant_reservation_error').text('Please complete the table reservation.');
+                $('#edit_restaurant_reservation_error').text(message || 'Please complete the table reservation.');
                 return;
             }
 
@@ -1800,6 +1809,16 @@ font-size:14px;
                 class: 'text-danger small edit-lead-validation-error',
                 text: message
             }).appendTo(input.closest('.form-group, [class*="col-"]').first());
+        }
+
+        function firstEditLeadErrorMessage(errors, fallback) {
+            var firstMessage = '';
+            $.each(errors || {}, function(field, message) {
+                firstMessage = message;
+                return false;
+            });
+
+            return firstMessage || fallback;
         }
 
         function showEditLeadValidationErrors(errors) {
@@ -2080,6 +2099,16 @@ font-size:14px;
                     let matchedSource = sourceSelect.find('option').filter(function() {
                         return String(this.value || '').toLowerCase() === sourceValue;
                     }).first().val();
+
+                    if (!matchedSource && data.user_channel) {
+                        let savedSource = String(data.user_channel).trim();
+                        sourceSelect.append($('<option>', {
+                            value: savedSource,
+                            text: savedSource
+                        }));
+                        matchedSource = savedSource;
+                    }
+
                     sourceSelect.val(matchedSource || '');
 
 
@@ -3552,13 +3581,13 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                         $("#editLeadDetails").modal('hide')
                     } else {
                         showEditLeadValidationErrors(response.errors || {});
-                        toastr.error(response.message || 'Unable to update lead.');
+                        toastr.error(firstEditLeadErrorMessage(response.errors, response.message || 'Unable to update lead.'));
                     }
                 },
                 error: function(xhr) {
                     let response = xhr.responseJSON || {};
                     showEditLeadValidationErrors(response.errors || {});
-                    toastr.error(response.message || 'An unexpected error occurred. Please try again.');
+                    toastr.error(firstEditLeadErrorMessage(response.errors, response.message || 'An unexpected error occurred. Please try again.'));
                 },
                 complete: function() {
                     statusField.prop('disabled', true);

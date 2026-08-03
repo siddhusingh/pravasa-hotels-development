@@ -271,7 +271,7 @@
                                     </div>
 
                                     <div class="col-xl-3 col-md-6">
-                                        <label for="report_disposition" class="form-label">Stage array_diff_assoc</label>
+                                        <label for="report_disposition" class="form-label">Stage</label>
                                         <select id="report_disposition" name="disposition[]" class="form-select lead-filter-multiselect-source" data-placeholder="All Stages" multiple>
                                             <?php foreach ($dispositions as $disposition): ?>
                                                 <option value="<?= htmlspecialchars($disposition, ENT_QUOTES, 'UTF-8'); ?>">
@@ -678,17 +678,14 @@
             }
         });
 
+        $('#report_department, #report_status, #report_channel, #report_disposition')
+            .on('change.agentReportFilter', function () {
+                $('#report-filter-form').trigger('submit');
+            });
+
         $('#report_start_date, #report_end_date').on('change', function () {
             $('#report-filter-form').trigger('submit');
         });
 
-        $('#reset-report-filters').on('click', function () {
-            $('#report-filter-form')[0].reset();
-            $('.lead-filter-multiselect-source').val([]).trigger('change');
-            $error.hide().text('');
-            if (table) {
-                table.search('').ajax.reload();
-            }
-        });
     });
 </script>
