@@ -8,6 +8,7 @@ $lead_session = $this->session->userdata($is_hotel_lead_view ? 'hotel_admin_sess
 $lead_caller_phone = is_array($lead_session) ? ($lead_session['phone'] ?? '') : '';
 $scoped_staff_id = $is_hotel_lead_view ? (int) ($scoped_staff_id ?? 0) : 0;
 $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') : '';
+$hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-admin', 'view-leads'], true);
 ?>
 
 <style>
@@ -39,9 +40,11 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                <div class="box">
                   <div class="box-header">
                      <h4 class="box-title">Lead Reports </h4> 
+                     <?php if (!$hide_reserve_table_button): ?>
                       <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reserveTableModal">
                                  <i class="fa fa-calendar-check-o"></i> Reserve Table
                               </button>
+                     <?php endif; ?>
                      <div class="row mt-2">
                         <div class="col-md-3">
                            <input type="text" id="lead-search" class="form-control" placeholder="Search by name or phone...">
@@ -960,6 +963,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                            <option value="TTF">TTF</option>
                            <option value="BLTM">BLTM</option>
                            <option value="Sales Call MICE">Sales Call MICE</option>
+                           <option value="Sales Visit">Sales Visit</option>
                            <option value="Wedmegood">Wedmegood</option>
 
                         </select>
@@ -1412,6 +1416,9 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                $("#edit_type").val(data.type)
                $("#edit_property").val(data.property)
                $("#edit_lead_type").val(data.lead_type || 'Cold').trigger('change.select2')
+               if (data.user_channel && !$("#user_channel option").filter(function() { return this.value === data.user_channel; }).length) {
+                  $("#user_channel").append(new Option(data.user_channel, data.user_channel, false, false));
+               }
                $("#user_channel").val(data.user_channel || '').trigger('change.select2')
                $("#edit_disposition").val(data.disposition)
                $("#edit_lead_status").val(data.status)
@@ -3280,6 +3287,10 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
          });
 
          $widget.on('change', '.lead-filter-multiselect-all', function() {
+            if ($select.attr('id') === 'status') {
+               statusWasSetByUser = true;
+               usingDefaultOpenStatus = false;
+            }
             const values = this.checked
                ? $widget.find('.lead-filter-multiselect-item').map(function() {
                     return this.value;
@@ -3289,6 +3300,10 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
          });
 
          $widget.on('change', '.lead-filter-multiselect-item', function() {
+            if ($select.attr('id') === 'status') {
+               statusWasSetByUser = true;
+               usingDefaultOpenStatus = false;
+            }
             const values = $widget.find('.lead-filter-multiselect-item:checked')
                .map(function() {
                   return this.value;
@@ -3332,10 +3347,13 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
       var phoneFromGet = new URL(window.location.href).searchParams.get('phone') || '';
       var isFollowupView = "<?= isset($showfollowupleads) ? $showfollowupleads : 'no' ?>" === 'yes';
       var scopedStaffId = <?= $scoped_staff_id; ?>;
+      var statusWasSetByUser = statusFromGet.length > 0;
+      var usingDefaultOpenStatus = false;
 
       // Pre-select multi-select status dropdown if GET exists
       if (statusFromGet.length === 0 && departmentFromGet.length === 0 && !phoneFromGet && !isFollowupView && !scopedStaffId) {
          statusFromGet = ['Open'];
+         usingDefaultOpenStatus = true;
       }
 
       if (departmentFromGet.length > 0) {
@@ -3352,7 +3370,40 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
       }
 
 
+      function hasNonStatusFilters() {
+         return !!(
+            $('#lead-search').val() ||
+            $('#created_by').val() ||
+            $('#assigned_to_filter').val() ||
+            $('#department').val()?.length ||
+            $('#channel').val()?.length ||
+            $('#disposition').val()?.length ||
+            $('#start_date').val() ||
+            $('#end_date').val() ||
+            $('#business_type').val() ||
+            phoneFromGet ||
+            scopedStaffId
+         );
+      }
+
+      function syncDefaultStatusFilter() {
+         if (statusWasSetByUser) {
+            return;
+         }
+
+         if (hasNonStatusFilters()) {
+            if ($('#status').val()?.length) {
+               usingDefaultOpenStatus = false;
+               $('#status').val([]).trigger('change.leadFilterMultiSelect');
+            }
+         } else if (!isFollowupView && !$('#status').val()?.length) {
+            usingDefaultOpenStatus = true;
+            $('#status').val(['Open']).trigger('change.leadFilterMultiSelect');
+         }
+      }
+
       $('#created_by, #assigned_to_filter').on('change', function() {
+         syncDefaultStatusFilter();
          fetchLeads(true); // reset data
       });
 
@@ -3434,7 +3485,8 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
 
 
-               $('#total_leads_count').text(totalCounts.total || 0);
+               const filteredTotal = parseInt(response.filteredTotal ?? totalCounts.total ?? 0, 10) || 0;
+               $('#total_leads_count').text(filteredTotal);
 
 
                if (reset) {
@@ -3449,7 +3501,7 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                offset += response.count;
 
                // Show/Hide Load More button
-               if (response.count < limit) {
+               if (offset >= filteredTotal) {
                   $('#load_more_btn').hide();
                } else {
                   $('#load_more_btn').show().prop('disabled', false).text('Load More');
@@ -3470,16 +3522,24 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
 
       // Trigger fetch when any filter changes
       $('#property, #department, #status, #channel, #disposition, #start_date, #end_date').on('change', function() {
+         if (this.id === 'status') {
+            const selectedStatus = $('#status').val() || [];
+            statusWasSetByUser = selectedStatus.length > 0 && !usingDefaultOpenStatus;
+         } else {
+            syncDefaultStatusFilter();
+         }
          fetchLeads(true);
       });
 
       // Search input
       $('#lead-search').on('keyup', function() {
+         syncDefaultStatusFilter();
          fetchLeads(true);
       });
 
 
       $('#business_type').on('change', function() {
+         syncDefaultStatusFilter();
          fetchLeads(true); // existing function
       });
 
@@ -3508,6 +3568,8 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
 
          // ✅ Always set Select2 value as array (not string)
          var selectedArray = Array.isArray(status) ? status : [status];
+         statusWasSetByUser = true;
+         usingDefaultOpenStatus = false;
          select.val(selectedArray).trigger('change.leadFilterMultiSelect');
 
 
@@ -3564,6 +3626,12 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
                   });
                }
 
+               function displayValue(value) {
+                  if (value === null || value === undefined) return 'NA';
+                  value = value.toString().trim();
+                  return value === '' || value.toLowerCase() === 'null' ? 'NA' : value;
+               }
+
                const disposition = (data.disposition ?? '').toString().toLowerCase();
                const status = (data.status ?? '').toString().toLowerCase();
 
@@ -3586,17 +3654,17 @@ $scoped_staff_name = $scoped_staff_id > 0 ? (string) ($scoped_staff_name ?? '') 
 <!-- Section 1 : Guest / Lead Info -->
 <div class="row ticket-section">
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Property</strong></div><div class="ticket-value">${data.hotel_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>City</strong></div><div class="ticket-value">${data.city_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Department</strong></div><div class="ticket-value">${data.department_name}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Property</strong></div><div class="ticket-value">${displayValue(data.hotel_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>City</strong></div><div class="ticket-value">${displayValue(data.city_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Department</strong></div><div class="ticket-value">${displayValue(data.department_name)}</div></div>
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Name</strong></div><div class="ticket-value">${data.user_name}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Phone</strong></div><div class="ticket-value">${data.phone_number}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Email</strong></div><div class="ticket-value">${data.email}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Name</strong></div><div class="ticket-value">${displayValue(data.user_name)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Phone</strong></div><div class="ticket-value">${displayValue(data.phone_number)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Email</strong></div><div class="ticket-value">${displayValue(data.email)}</div></div>
 
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Source</strong></div><div class="ticket-value">${data.user_channel}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Status</strong></div><div class="ticket-value">${data.status}</div></div>
-<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Stage</strong></div><div class="ticket-value">${data.disposition}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Source</strong></div><div class="ticket-value">${displayValue(data.user_channel)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Lead Status</strong></div><div class="ticket-value">${displayValue(data.status)}</div></div>
+<div class="col-md-4 mb-3"><div class="ticket-label"><strong>Stage</strong></div><div class="ticket-value">${displayValue(data.disposition)}</div></div>
 
 <div class="col-md-4 mb-3"><div class="ticket-label"><strong>Repeat Guest</strong></div><div class="ticket-value">${data.is_repeatative ? 'Yes' : 'No'}</div></div>
 <div class="col-md-4 mb-3"><div class="ticket-label"><strong>Created By</strong></div><div class="ticket-value">${data.created_by_name ?? 'NA'}</div></div>

@@ -1,3 +1,52 @@
+<style>
+    .content-wrapper {
+        position: relative;
+    }
+
+    #report-filter-modal.report-filter-overlay {
+        align-items: flex-start;
+        box-sizing: border-box;
+        height: calc(100vh - 80px);
+        inset: 0;
+        min-height: 0;
+        padding: 36px 48px 58px;
+        position: absolute;
+        z-index: 1060;
+    }
+
+    #report-filter-modal .modal-dialog {
+        align-items: stretch;
+        height: auto;
+        margin: 0 !important;
+        max-width: none;
+        min-height: 0;
+        width: 100%;
+    }
+
+    #report-filter-modal .modal-content {
+        display: block;
+        height: auto;
+        max-height: none;
+        width: 100%;
+    }
+
+    #report-filter-modal #initial-report-filter-form {
+        display: block;
+        min-height: auto;
+    }
+
+    #report-filter-modal .modal-body {
+        min-height: auto;
+        overflow-y: visible;
+    }
+
+    @media (max-width: 991.98px) {
+        #report-filter-modal.report-filter-overlay {
+            padding: 20px;
+        }
+    }
+</style>
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">

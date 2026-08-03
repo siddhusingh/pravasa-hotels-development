@@ -443,7 +443,7 @@
                     </div>
 
                     <!-- Deals In -->
-                    <div class="col-md-6 mb-3">
+                    <div class="d-none col-md-6 mb-3">
                         <label>Deals In</label>
                         <input type="text" class="form-control" name="deals_in" id="edit_deals_in">
                     </div>

@@ -262,6 +262,7 @@ class Leads extends CI_Controller
         $offset = max((int) $this->input->post('offset'), 0);
         $leads = $this->LeadModel->get_filtered_leads($filters, $limit, $offset);
         $total_counts = $this->LeadModel->get_leads_status_counts($filters);
+        $filtered_total = $this->LeadModel->count_filtered_leads($filters);
 
         return $this->output
             ->set_content_type('application/json')
@@ -269,6 +270,7 @@ class Leads extends CI_Controller
             ->set_output(json_encode([
                 'html' => $this->load->view('ajax_leads_cards', ['leads' => $leads], true),
                 'count' => count($leads),
+                'filteredTotal' => $filtered_total,
                 'totalCounts' => $total_counts,
                 'csrfHash' => $this->security->get_csrf_hash()
             ]));

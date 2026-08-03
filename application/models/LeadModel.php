@@ -1267,6 +1267,14 @@ class LeadModel extends CI_Model
             (empty($filters['showfollowupleads']) || $filters['showfollowupleads'] !== 'yes')
             && empty($filters['phone'])
             && empty($filters['search'])
+            && empty($filters['department'])
+            && empty($filters['channel'])
+            && empty($filters['disposition'])
+            && empty($filters['start_date'])
+            && empty($filters['end_date'])
+            && empty($filters['created_id'])
+            && empty($filters['assigned_id'])
+            && empty($filters['business_type'])
         ) {
             $this->db->where('leads.status', 'open');
         }
@@ -1343,6 +1351,130 @@ class LeadModel extends CI_Model
         $this->db->limit($limit, $offset);
 
         return $this->db->get()->result_array();
+    }
+
+    public function count_filtered_leads($filters = [])
+    {
+        $this->db->from('leads');
+        $this->db->where('leads.is_deleted', 0);
+        $this->db->join('hotel_admin', 'leads.property = hotel_admin.hotel_id', 'left');
+        $this->db->join('departments', 'leads.type = departments.department_id', 'left');
+        $this->db->join('city', 'hotel_admin.city_id = city.city_id', 'left');
+
+        if (!empty($filters['city']) && is_array($filters['city'])) {
+            $this->db->where_in('leads.city', $filters['city']);
+        }
+
+        if (!empty($filters['property']) && is_array($filters['property'])) {
+            $this->db->where_in('leads.property', $filters['property']);
+        }
+
+        if (!empty($filters['department']) && is_array($filters['department'])) {
+            $this->db->where_in('leads.type', $filters['department']);
+        }
+
+        if (!empty($filters['status']) && is_array($filters['status'])) {
+            $statusArr = $filters['status'];
+            $hasNotAssigned = in_array('Not Assigned', $statusArr);
+            $statusArr = array_diff($statusArr, ['Not Assigned']);
+
+            $this->db->group_start();
+
+            if ($hasNotAssigned) {
+                $this->db->group_start();
+                $this->db->where('leads.is_assigned', 0);
+                $this->db->group_start();
+                $this->db->where('leads.assigned_to IS NULL', null, false);
+                $this->db->or_where('leads.assigned_to', '');
+                $this->db->group_end();
+                $this->db->group_end();
+            }
+
+            if (!empty($statusArr)) {
+                if ($hasNotAssigned) {
+                    $this->db->or_group_start();
+                }
+
+                $this->db->where_in('leads.status', $statusArr);
+
+                if ($hasNotAssigned) {
+                    $this->db->group_end();
+                }
+            }
+
+            $this->db->group_end();
+        } else if (
+            (empty($filters['showfollowupleads']) || $filters['showfollowupleads'] !== 'yes')
+            && empty($filters['phone'])
+            && empty($filters['search'])
+            && empty($filters['department'])
+            && empty($filters['channel'])
+            && empty($filters['disposition'])
+            && empty($filters['start_date'])
+            && empty($filters['end_date'])
+            && empty($filters['created_id'])
+            && empty($filters['assigned_id'])
+            && empty($filters['business_type'])
+        ) {
+            $this->db->where('leads.status', 'open');
+        }
+
+        if (!empty($filters['channel']) && is_array($filters['channel'])) {
+            $this->db->where_in('leads.user_channel', $filters['channel']);
+        }
+
+        if (!empty($filters['disposition']) && is_array($filters['disposition'])) {
+            $this->db->where_in('leads.disposition', $filters['disposition']);
+        }
+
+        if (!empty($filters['start_date'])) {
+            $this->db->where('DATE(leads.created_at) >=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $this->db->where('DATE(leads.created_at) <=', $filters['end_date']);
+        }
+
+        if (!empty($filters['created_id']) && !empty($filters['created_role'])) {
+            $this->db->where('leads.created_by', $filters['created_id']);
+            $this->db->where('leads.creator_user_role', $filters['created_role']);
+        }
+
+        if (!empty($filters['assigned_id']) && !empty($filters['assigned_role'])) {
+            $this->db->where('leads.assigned_to', $filters['assigned_id']);
+            $this->db->where('leads.assigned_person_user_role', $filters['assigned_role']);
+        }
+
+        if (!empty($filters['showfollowupleads']) && $filters['showfollowupleads'] === 'yes') {
+            $this->apply_due_followup_filter();
+        }
+
+        if (!empty($filters['business_type'])) {
+            if ($filters['business_type'] === 'business') {
+                $this->db->where_not_in('leads.disposition', ['Information/Enquiry', 'Trash', 'Denied']);
+            } elseif ($filters['business_type'] === 'non_business') {
+                $this->db->where_in('leads.disposition', ['Information/Enquiry', 'Trash', 'Denied']);
+            }
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $this->db->group_start();
+            $this->db->like('leads.user_name', $search);
+            $this->db->or_like('leads.phone_number', $search);
+            $this->db->group_end();
+        }
+
+        if (!empty($filters['phone'])) {
+            $phone = is_array($filters['phone']) ? reset($filters['phone']) : $filters['phone'];
+            $digits = preg_replace('/\D+/', '', (string) $phone);
+            $ten = substr($digits, -10);
+            if (strlen($ten) === 10) {
+                $this->db->where("RIGHT(leads.phone_number, 10) =", $ten, FALSE);
+            }
+        }
+
+        return (int) $this->db->count_all_results();
     }
 
 

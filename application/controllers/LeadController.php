@@ -3827,6 +3827,7 @@ class LeadController extends CI_Controller
 
 
         $totalCounts = $this->Leadmodel->get_leads_status_counts($filters);
+        $filteredTotal = $this->Leadmodel->count_filtered_leads($filters);
 
         $data['leads'] = $leads;
         $html = $this->load->view('ajax_leads_cards', $data, true);
@@ -3837,6 +3838,7 @@ class LeadController extends CI_Controller
             ->set_output(json_encode([
                 'html'        => $html,
                 'count'       => count($leads),
+                'filteredTotal' => $filteredTotal,
                 'totalCounts' => $totalCounts,
                 'csrfHash'    => $this->security->get_csrf_hash()
             ]));
