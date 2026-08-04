@@ -1889,8 +1889,6 @@
 
         let existingLeadData = data;
 
-        console.log(existingLeadData)
-
 
         const container = $("#dynamicFields");
 
@@ -3385,8 +3383,6 @@
                                 $('#phone_number').val(response.data.phone_number); // optional
                                 $('#email').val(response.data.email);
                                 $('#query').val(response.data.query);
-                            } else {
-                                console.log('No lead data found');
                             }
                         },
                         error: function(xhr) {

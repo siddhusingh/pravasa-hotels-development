@@ -1,6 +1,6 @@
 # Leads Module — Functional and Technical Guide
 
-Last reviewed: 3 August 2026
+Last reviewed: 4 August 2026
 
 ## Purpose
 
@@ -529,6 +529,32 @@ For `Quotation Sent` Sales Visits:
 - Existing past reservation dates can be reviewed during edit; new selections are still validated by the server before update.
 - Sales Visit validation reads the committed hidden reservation values while displaying any combined reservation error beside the Reserve/Edit Reservation button.
 - Expected Revenue from Restaurant and Banquet Quotation Sent fields must persist on both create and edit; legacy status handling must not overwrite it with zero.
+
+### Sales Executive Sales Visits
+
+Sales Executive Sales Visits use a separate role-scoped controller while
+reusing the established Super Admin Sales Visit forms:
+
+- Controller: `application/controllers/Sales/Visits.php`
+- Add wrapper: `application/views/sales/sales_visits/add.php`
+- Edit wrapper: `application/views/sales/sales_visits/edit.php`
+- Routes: `application/config/routes/Sales.php`
+
+The wrappers replace protected Super Admin URLs with Sales-only endpoints. Do
+not expose Super Admin save or lookup actions to make a shared form work.
+
+For Restaurants + Quotation Sent, the Sales controller must use
+`RestaurantBookingModel` for selection validation, transaction-time table
+locking, overlap checks, and normalized `lead_reserved_tables` persistence.
+Edit preloads every normalized table ID and falls back to the legacy
+`leads.table_id` value only when no normalized rows exist. Availability checks
+during update exclude the linked Lead ID.
+
+For Banquets + Quotation Sent, the inherited `Is Room Required?` control follows
+the same create/edit rules as Super Admin Sales Visits. When enabled, valid
+check-in and check-out dates and a positive whole-number room count are
+required and persisted on the generated Lead. When the controlled option is
+disabled, edit clears all three stored values.
 
 ## Regression checklist
 

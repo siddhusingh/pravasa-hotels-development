@@ -2,6 +2,11 @@
 
 This directory contains implementation and maintenance notes for the Pravas Hotels project.
 
+## Start here
+
+- [Project working instructions](PROJECT_INSTRUCTIONS.md) — mandatory scope,
+  naming, implementation, safety, and real-time testing rules.
+
 ## Modules
 
 - [Leads module](leads-module.md) — complete lead lifecycle, role-specific flows, dynamic department fields, restaurant reservations, persistence, endpoints, and testing checklist.

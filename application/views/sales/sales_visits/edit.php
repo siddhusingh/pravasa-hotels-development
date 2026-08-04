@@ -39,3 +39,13 @@ $salesVisitMarkup = str_replace(
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <?= $salesVisitMarkup ?>
+
+<script>
+(function () {
+    $(document).ready(function () {
+        $('#salesReserveTableModal select.select2-hidden-accessible').each(function () {
+            $(this).select2('destroy');
+        });
+    });
+})();
+</script>
