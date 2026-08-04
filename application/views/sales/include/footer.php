@@ -384,8 +384,13 @@
 
 
 
-<!-- ✅ jQuery - Use FULL version instead of slim for Flot -->
+<!-- The Sales Visit add/edit wrappers load jQuery before their inherited inline scripts. -->
+<?php if (!(
+   $this->uri->segment(2) === 'visits' &&
+   in_array($this->uri->segment(3), ['add', 'edit'], true)
+)): ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<?php endif; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 <script>
    toastr.options = {

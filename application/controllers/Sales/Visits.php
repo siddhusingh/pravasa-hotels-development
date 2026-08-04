@@ -11,6 +11,7 @@ class Visits extends Sales_Controller
         $this->requireSalesRole(['Sales Executive', 'Sales Manager']);
 
         $this->load->model('LeadModel');
+        $this->load->model('RestaurantBookingModel');
         $this->load->model('Comman_model');
         $this->load->model('Common_model');
         $this->load->helper('secure');
@@ -211,7 +212,7 @@ class Visits extends Sales_Controller
 
         if ($this->isManager()) {
             if ($executiveId !== null) {
-                $query->where('sv.user_id', $executiveId);
+                $query->where_in('sv.user_id', $executiveId);
             }
             if ($visitType !== null) {
                 $query->where('sv.visit_type', $visitType);
@@ -220,7 +221,7 @@ class Visits extends Sales_Controller
                 $query->where('sv.visit_mode', $visitMode);
             }
             if ($companyId !== null) {
-                $query->where('sv.company_id', $companyId);
+                $query->where_in('sv.company_id', $companyId);
             }
             if ($createdStartDate !== null) {
                 $query->where(
@@ -552,8 +553,62 @@ class Visits extends Sales_Controller
 
         $this->db->trans_begin();
 
+        $usesRestaurantReservation =
+            $stage === 'Quotation Sent' &&
+            $departmentName === 'restaurant';
+        $restaurantTableIds = [];
+
+        if ($usesRestaurantReservation) {
+            $restaurantTableIds = $this->RestaurantBookingModel
+                ->normalizeTableIds($this->input->post('table_id'));
+            $this->RestaurantBookingModel->lockTables($restaurantTableIds);
+            $conflict = $this->RestaurantBookingModel->findConflict(
+                trim((string)$this->input->post('booking_date', true)),
+                $this->decodeFlexibleId(
+                    $this->input->post('restaurant_id')
+                ),
+                $restaurantTableIds,
+                $this->decodeFlexibleId(
+                    $this->input->post('slot_type_id')
+                ),
+                $this->decodeFlexibleId(
+                    $this->input->post('time_slot_id')
+                )
+            );
+
+            if ($conflict !== null) {
+                $this->db->trans_rollback();
+                $this->deleteUploadedAttachment($attachmentPath);
+
+                return $this->jsonResponse([
+                    'status' => false,
+                    'message' => $conflict['reason'] ??
+                        'One or more selected tables are no longer available.'
+                ]);
+            }
+        }
+
         $leadId = $this->LeadModel->insert_lead($leadData);
         $visitId = 0;
+
+        if (
+            $usesRestaurantReservation &&
+            (
+                !$leadId ||
+                !$this->RestaurantBookingModel->replaceLeadTables(
+                    $leadId,
+                    $restaurantTableIds
+                )
+            )
+        ) {
+            $this->db->trans_rollback();
+            $this->deleteUploadedAttachment($attachmentPath);
+
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Unable to save the restaurant reservation.'
+            ]);
+        }
 
         if ($leadId) {
             $visitData = [
@@ -668,6 +723,16 @@ class Visits extends Sales_Controller
             show_404();
             return;
         }
+
+        $reservedTableIds = $this->RestaurantBookingModel->getLeadTableIds(
+            $data['sales_visit']->lead_id_againts_visit
+        );
+        if (empty($reservedTableIds)) {
+            $reservedTableIds = $this->RestaurantBookingModel->normalizeTableIds(
+                $data['sales_visit']->table_id ?? null
+            );
+        }
+        $data['sales_visit']->reserved_table_ids = $reservedTableIds;
 
         $data['departments'] = $this->Common_model->getAllData(
             'departments',
@@ -786,7 +851,8 @@ class Visits extends Sales_Controller
             $stage,
             $departmentName,
             $propertyId,
-            $departmentId
+            $departmentId,
+            true
         );
         if ($dynamicError !== '') {
             return $this->jsonResponse([
@@ -909,9 +975,66 @@ class Visits extends Sales_Controller
         }
 
         $this->db->trans_begin();
+
+        $usesRestaurantReservation =
+            $stage === 'Quotation Sent' &&
+            $departmentName === 'restaurant';
+        $restaurantTableIds = [];
+
+        if ($usesRestaurantReservation) {
+            $restaurantTableIds = $this->RestaurantBookingModel
+                ->normalizeTableIds($this->input->post('table_id'));
+            $this->RestaurantBookingModel->lockTables($restaurantTableIds);
+            $conflict = $this->RestaurantBookingModel->findConflict(
+                trim((string)$this->input->post('booking_date', true)),
+                $this->decodeFlexibleId(
+                    $this->input->post('restaurant_id')
+                ),
+                $restaurantTableIds,
+                $this->decodeFlexibleId(
+                    $this->input->post('slot_type_id')
+                ),
+                $this->decodeFlexibleId(
+                    $this->input->post('time_slot_id')
+                ),
+                $salesVisit->lead_id_againts_visit
+            );
+
+            if ($conflict !== null) {
+                $this->db->trans_rollback();
+                $this->deleteUploadedAttachment($attachment['path']);
+
+                return $this->jsonResponse([
+                    'status' => false,
+                    'message' => $conflict['reason'] ??
+                        'One or more selected tables are no longer available.'
+                ]);
+            }
+        }
+
         $leadUpdated = $this->db
             ->where('id', $salesVisit->lead_id_againts_visit)
             ->update('leads', $leadData);
+
+        if (
+            $usesRestaurantReservation &&
+            (
+                !$leadUpdated ||
+                !$this->RestaurantBookingModel->replaceLeadTables(
+                    $salesVisit->lead_id_againts_visit,
+                    $restaurantTableIds
+                )
+            )
+        ) {
+            $this->db->trans_rollback();
+            $this->deleteUploadedAttachment($attachment['path']);
+
+            return $this->jsonResponse([
+                'status' => false,
+                'message' => 'Unable to update the restaurant reservation.'
+            ]);
+        }
+
         $visitUpdated = $this->db
             ->where('visit_id', $visitId)
             ->where('user_id', $this->salesUserId)
@@ -1161,7 +1284,7 @@ class Visits extends Sales_Controller
 
         if ($this->isManager()) {
             if ($executiveId !== null) {
-                $this->db->where('sv.user_id', $executiveId);
+                $this->db->where_in('sv.user_id', $executiveId);
             }
             if ($visitType !== null) {
                 $this->db->where('sv.visit_type', $visitType);
@@ -1170,7 +1293,7 @@ class Visits extends Sales_Controller
                 $this->db->where('sv.visit_mode', $visitMode);
             }
             if ($companyId !== null) {
-                $this->db->where('sv.company_id', $companyId);
+                $this->db->where_in('sv.company_id', $companyId);
             }
             if ($createdStartDate !== null) {
                 $this->db->where(
@@ -1207,53 +1330,83 @@ class Visits extends Sales_Controller
         return $this->db;
     }
 
-    private function managerExecutiveFilter($encryptedId)
+    private function managerExecutiveFilter($encryptedIds)
     {
         if (!$this->isManager()) {
             return null;
         }
 
-        $encryptedId = trim((string)$encryptedId);
-        if ($encryptedId === '') {
+        $encryptedIds = is_array($encryptedIds)
+            ? $encryptedIds
+            : explode(',', (string)$encryptedIds);
+        $encryptedIds = array_slice($encryptedIds, 0, 100);
+        $executiveIds = [];
+
+        foreach ($encryptedIds as $encryptedId) {
+            $encryptedId = trim((string)$encryptedId);
+            if ($encryptedId === '') {
+                continue;
+            }
+
+            $executiveId = decrypt_id($encryptedId);
+            if (empty($executiveId)) {
+                return [0];
+            }
+
+            $executiveIds[] = (int)$executiveId;
+        }
+
+        $executiveIds = array_values(array_unique($executiveIds));
+        if (empty($executiveIds)) {
             return null;
         }
 
-        $executiveId = decrypt_id($encryptedId);
-        if (empty($executiveId)) {
-            return 0;
-        }
-
-        $exists = $this->db
-            ->where('id', (int)$executiveId)
+        $validCount = $this->db
+            ->where_in('id', $executiveIds)
             ->where('user_role', 'Sales Executive')
             ->where('is_deleted', 0)
             ->count_all_results('sales_users');
 
-        return $exists > 0 ? (int)$executiveId : 0;
+        return $validCount === count($executiveIds) ? $executiveIds : [0];
     }
 
-    private function managerCompanyFilter($encryptedId)
+    private function managerCompanyFilter($encryptedIds)
     {
         if (!$this->isManager()) {
             return null;
         }
 
-        $encryptedId = trim((string)$encryptedId);
-        if ($encryptedId === '') {
+        $encryptedIds = is_array($encryptedIds)
+            ? $encryptedIds
+            : explode(',', (string)$encryptedIds);
+        $encryptedIds = array_slice($encryptedIds, 0, 100);
+        $companyIds = [];
+
+        foreach ($encryptedIds as $encryptedId) {
+            $encryptedId = trim((string)$encryptedId);
+            if ($encryptedId === '') {
+                continue;
+            }
+
+            $companyId = decrypt_id($encryptedId);
+            if (empty($companyId)) {
+                return [0];
+            }
+
+            $companyIds[] = (int)$companyId;
+        }
+
+        $companyIds = array_values(array_unique($companyIds));
+        if (empty($companyIds)) {
             return null;
         }
 
-        $companyId = decrypt_id($encryptedId);
-        if (empty($companyId)) {
-            return 0;
-        }
-
-        $exists = $this->db
-            ->where('company_id', (int)$companyId)
+        $validCount = $this->db
+            ->where_in('company_id', $companyIds)
             ->where('is_deleted', 0)
             ->count_all_results('companies');
 
-        return $exists > 0 ? (int)$companyId : 0;
+        return $validCount === count($companyIds) ? $companyIds : [0];
     }
 
     private function managerTextFilter($value)
@@ -1516,7 +1669,8 @@ class Visits extends Sales_Controller
         $stage,
         $departmentName,
         $propertyId,
-        $departmentId
+        $departmentId,
+        $allowPastReservationDate = false
     ) {
         if (
             $stage === 'Lead Lost' &&
@@ -1562,6 +1716,48 @@ class Visits extends Sales_Controller
             ]))) {
                 return 'Selected banquet is unavailable';
             }
+
+            if ($this->input->post('is_room_required') === '1') {
+                $checkinDate = trim((string)$this->input->post(
+                    'checkin_date',
+                    true
+                ));
+                $checkoutDate = trim((string)$this->input->post(
+                    'checkout_date',
+                    true
+                ));
+                $numberOfRooms = trim((string)$this->input->post(
+                    'number_of_rooms',
+                    true
+                ));
+
+                if ($checkinDate === '') {
+                    return 'Check-in date is required';
+                }
+                if (!$this->isValidDate($checkinDate)) {
+                    return 'Please enter a valid check-in date';
+                }
+                if (
+                    !$allowPastReservationDate &&
+                    $checkinDate < date('Y-m-d')
+                ) {
+                    return 'Check-in date cannot be in the past';
+                }
+                if ($checkoutDate === '') {
+                    return 'Check-out date is required';
+                }
+                if (!$this->isValidDate($checkoutDate)) {
+                    return 'Please enter a valid check-out date';
+                }
+                if ($checkoutDate < $checkinDate) {
+                    return 'Check-out date must be the same as or after check-in date';
+                }
+                if (!preg_match('/^[1-9][0-9]*$/', $numberOfRooms)) {
+                    return $numberOfRooms === ''
+                        ? 'Number of rooms is required'
+                        : 'Number of rooms must be a positive whole number';
+                }
+            }
         }
 
         if ($departmentName === 'restaurant') {
@@ -1580,16 +1776,6 @@ class Visits extends Sales_Controller
             $restaurantId = $this->decodeFlexibleId(
                 $this->input->post('restaurant_id')
             );
-            $slotTypeId = $this->decodeFlexibleId(
-                $this->input->post('slot_type_id')
-            );
-            $timeSlotId = $this->decodeFlexibleId(
-                $this->input->post('time_slot_id')
-            );
-            $categoryId = $this->decodeFlexibleId(
-                $this->input->post('table_category_id')
-            );
-
             if (empty($this->Common_model->getdata('hotel_restaurants', [
                 'id' => $restaurantId,
                 'hotel_id' => $propertyId,
@@ -1597,44 +1783,35 @@ class Visits extends Sales_Controller
             ]))) {
                 return 'Selected restaurant is unavailable';
             }
-            if (empty($this->Common_model->getdata('slot_types', [
-                'id' => $slotTypeId,
-                'status' => 1
-            ]))) {
-                return 'Selected slot type is unavailable';
-            }
-            if (empty($this->Common_model->getdata('time_slots', [
-                'id' => $timeSlotId,
-                'slot_type_id' => $slotTypeId,
-                'status' => 'active'
-            ]))) {
-                return 'Selected time slot is unavailable';
-            }
-            if (empty($this->Common_model->getdata('table_categories', [
-                'id' => $categoryId,
-                'restaurant_id' => $restaurantId,
-                'status' => 'active'
-            ]))) {
-                return 'Selected table category is unavailable';
+
+            $reservationStatus = trim((string)$this->input->post(
+                'table_reservation_status',
+                true
+            ));
+            if (!in_array(
+                $reservationStatus,
+                ['Reserved', 'Seated', 'Completed', 'Cancelled'],
+                true
+            )) {
+                return 'Please select a valid reservation status';
             }
 
-            $tableIds = $this->input->post('table_id');
-            $tableIds = is_array($tableIds)
-                ? array_values(array_filter(array_map('intval', $tableIds)))
-                : [(int)$tableIds];
-            if (empty(array_filter($tableIds))) {
-                return 'Please select at least one table';
-            }
-
-            $validTableCount = $this->db
-                ->from('tables')
-                ->where_in('id', $tableIds)
-                ->where('restaurant_id', $restaurantId)
-                ->where('category_id', $categoryId)
-                ->where('status', 'active')
-                ->count_all_results();
-            if ($validTableCount !== count(array_unique($tableIds))) {
-                return 'One or more selected tables are unavailable';
+            $tableIds = $this->RestaurantBookingModel->normalizeTableIds(
+                $this->input->post('table_id')
+            );
+            $selectionErrors = $this->RestaurantBookingModel->validateSelection(
+                trim((string)$this->input->post('booking_date', true)),
+                $restaurantId,
+                $this->decodeFlexibleId(
+                    $this->input->post('table_category_id')
+                ),
+                $tableIds,
+                $this->decodeFlexibleId($this->input->post('slot_type_id')),
+                $this->decodeFlexibleId($this->input->post('time_slot_id')),
+                $allowPastReservationDate
+            );
+            if (!empty($selectionErrors)) {
+                return reset($selectionErrors);
             }
         }
 
@@ -1706,6 +1883,9 @@ class Visits extends Sales_Controller
                     'booking_date',
                     'pax',
                     'banquet_id',
+                    'checkin_date',
+                    'checkout_date',
+                    'number_of_rooms',
                     'amount'
                 ]);
             }
@@ -1734,16 +1914,30 @@ class Visits extends Sales_Controller
             $stage === 'Quotation Sent' &&
             $departmentName === 'restaurant'
         ) {
-            $tableIds = $this->input->post('table_id');
-            if (is_array($tableIds)) {
-                $tableIds = array_values(
-                    array_filter(array_map('intval', $tableIds))
-                );
-                if (!empty($tableIds)) {
-                    $leadData['table_id'] = $tableIds[0];
-                }
+            $tableIds = $this->RestaurantBookingModel->normalizeTableIds(
+                $this->input->post('table_id')
+            );
+            if (!empty($tableIds)) {
+                $leadData['table_id'] = $tableIds[0];
             }
         }
+
+        if (
+            $stage === 'Quotation Sent' &&
+            $departmentName === 'banquet' &&
+            $this->input->post('room_requirement_controlled') === '1' &&
+            $this->input->post('is_room_required') !== '1'
+        ) {
+            $leadData['checkin_date'] = null;
+            $leadData['checkout_date'] = null;
+            $leadData['number_of_rooms'] = null;
+        }
+    }
+
+    private function isValidDate($date)
+    {
+        $parsed = DateTime::createFromFormat('!Y-m-d', (string)$date);
+        return $parsed && $parsed->format('Y-m-d') === $date;
     }
 
     private function uploadAttachment()
