@@ -38,7 +38,7 @@
                            <a href="<?= base_url('manage-cities') ?>"><i class="fa fa-area-chart"></i> City Management</a>
                         </li>
 
-                        <li class="<?php if ($this->uri->segment(1) == 'manage-areas') echo 'active'; ?>">
+                        <li class="<?php if ($this->uri->segment(1) == 'manage-areas') echo 'active'; ?> d-none">
                            <a href="<?= base_url('manage-areas') ?>"><i class="fa fa-location-arrow"></i> Area Management</a>
                         </li>
                      </ul>

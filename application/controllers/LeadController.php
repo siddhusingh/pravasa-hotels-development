@@ -1011,6 +1011,10 @@ class LeadController extends CI_Controller
         } elseif ($department === 'banquets') {
             $department = 'banquet';
         }
+        $isValidDate = static function ($date) {
+            $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+            return $parsed && $parsed->format('Y-m-d') === $date;
+        };
 
         if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
             $errors['phone_number'] = 'Enter a valid 10-digit Indian mobile number.';
@@ -1041,16 +1045,39 @@ class LeadController extends CI_Controller
             $errors['reason'] = 'Please select a reason.';
         }
 
+        $bookingDate = $value('booking_date') ?: $value('booking_enquiry_date');
+        $followupDate = $value('followup_date');
+        $secondFollowupDate = $value('second_followup_date');
+        $validBookingDate = $bookingDate !== '' && $isValidDate($bookingDate);
+        $validFollowupDate = $followupDate !== '' && $isValidDate($followupDate);
+        $validSecondFollowupDate = $secondFollowupDate !== '' && $isValidDate($secondFollowupDate);
+
+        if ($followupDate !== '' && !$validFollowupDate) {
+            $errors['followup_date'] = 'Please enter a valid Follow-up Date.';
+        }
+        if ($secondFollowupDate !== '' && !$validSecondFollowupDate) {
+            $errors['second_followup_date'] = 'Please enter a valid 2nd Follow-up Date.';
+        }
+        if (($followupDate !== '' || $secondFollowupDate !== '') && $bookingDate !== '' && !$validBookingDate) {
+            $errors['booking_date'] = 'Please enter a valid Booking Date.';
+        }
+        if ($validBookingDate && $validFollowupDate && $followupDate >= $bookingDate) {
+            $errors['followup_date'] = 'Follow-up Date must be before Booking Date.';
+        }
+        if ($validBookingDate && $validSecondFollowupDate && $secondFollowupDate >= $bookingDate) {
+            $errors['second_followup_date'] = '2nd Follow-up Date must be before Booking Date.';
+        }
+        if ($secondFollowupDate !== '' && $followupDate === '') {
+            $errors['followup_date'] = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        } elseif ($validFollowupDate && $validSecondFollowupDate && $secondFollowupDate <= $followupDate) {
+            $errors['second_followup_date'] = '2nd Follow-up Date must be later than Follow-up Date.';
+        }
+
         if ($disposition === 'Quotation Sent') {
             if ($value('is_room_required') === '1') {
                 $checkinDate = $value('checkin_date');
                 $checkoutDate = $value('checkout_date');
                 $numberOfRooms = $value('number_of_rooms');
-                $isValidDate = function ($date) {
-                    $parsed = DateTime::createFromFormat('!Y-m-d', $date);
-                    return $parsed && $parsed->format('Y-m-d') === $date;
-                };
-
                 if ($checkinDate === '') {
                     $errors['checkin_date'] = 'Check-in date is required.';
                 } elseif (!$isValidDate($checkinDate)) {
@@ -3057,6 +3084,55 @@ class LeadController extends CI_Controller
             return;
         }
 
+        $dateValue = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+        $isValidDate = static function ($date) {
+            $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+            return $parsed && $parsed->format('Y-m-d') === $date;
+        };
+        $bookingDate = $dateValue('booking_date') ?: $dateValue('booking_enquiry_date');
+        $followupDate = $dateValue('followup_date');
+        $secondFollowupDate = $dateValue('second_followup_date');
+        $validBookingDate = $bookingDate !== '' && $isValidDate($bookingDate);
+        $validFollowupDate = $followupDate !== '' && $isValidDate($followupDate);
+        $validSecondFollowupDate = $secondFollowupDate !== '' && $isValidDate($secondFollowupDate);
+        $dateErrors = [];
+
+        if ($followupDate !== '' && !$validFollowupDate) {
+            $dateErrors['followup_date'] = 'Please enter a valid Follow-up Date.';
+        }
+        if ($secondFollowupDate !== '' && !$validSecondFollowupDate) {
+            $dateErrors['second_followup_date'] = 'Please enter a valid 2nd Follow-up Date.';
+        }
+        if (($followupDate !== '' || $secondFollowupDate !== '') && $bookingDate !== '' && !$validBookingDate) {
+            $dateErrors['booking_date'] = 'Please enter a valid Booking Date.';
+        }
+        if ($validBookingDate && $validFollowupDate && $followupDate >= $bookingDate) {
+            $dateErrors['followup_date'] = 'Follow-up Date must be before Booking Date.';
+        }
+        if ($validBookingDate && $validSecondFollowupDate && $secondFollowupDate >= $bookingDate) {
+            $dateErrors['second_followup_date'] = '2nd Follow-up Date must be before Booking Date.';
+        }
+        if ($secondFollowupDate !== '' && $followupDate === '') {
+            $dateErrors['followup_date'] = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        } elseif ($validFollowupDate && $validSecondFollowupDate && $secondFollowupDate <= $followupDate) {
+            $dateErrors['second_followup_date'] = '2nd Follow-up Date must be later than Follow-up Date.';
+        }
+
+        if (!empty($dateErrors)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted follow-up dates.',
+                    'error_message' => 'Please correct the highlighted follow-up dates.',
+                    'errors' => $dateErrors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
 
         $older_assignee_id = $lead->assigned_to;
         $order_assignee_user_role = $lead->assigned_person_user_role;
@@ -4070,6 +4146,64 @@ class LeadController extends CI_Controller
             ->set_output(json_encode($response, JSON_UNESCAPED_UNICODE));
 
         return;
+    }
+
+    public function permanentlyDeleteLead()
+    {
+        $isSuperAdmin = !empty($this->session->userdata('super_admin_session'))
+            && $this->session->userdata('role_as') === 'super_admin'
+            && (int) $this->session->userdata('user_role') === 1;
+
+        if (!$isSuperAdmin) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'You are not authorized to permanently delete leads.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        if ($this->input->method(true) !== 'POST') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Invalid request method.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $id = (int) $this->input->post('id');
+        if ($id <= 0) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Invalid lead ID.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $deleted = $this->db
+            ->where('id', $id)
+            ->where('is_deleted', 0)
+            ->delete('leads');
+        $deleted = $deleted && $this->db->affected_rows() === 1;
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_status_header($deleted ? 200 : 404)
+            ->set_output(json_encode([
+                'status' => (bool) $deleted,
+                'message' => $deleted
+                    ? 'Lead permanently deleted successfully.'
+                    : 'Lead was not found or could not be permanently deleted.',
+                'csrfHash' => $this->security->get_csrf_hash()
+            ], JSON_UNESCAPED_UNICODE));
     }
 
 

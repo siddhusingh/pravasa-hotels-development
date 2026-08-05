@@ -90,7 +90,15 @@
                     </button>
 
 
-                    <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
+                    <?php
+                    $canDelete = $logged_in_role === 'agent'
+                        && !(
+                            (int) $lead['is_assigned'] === 1
+                            && ($lead['assigned_person_user_role'] ?? '') === 'agent'
+                            && (int) $lead['assigned_to'] !== (int) $logged_in_user_id
+                        );
+                    ?>
+                    <?php if ($canDelete) { ?>
                         <button class="btn  btn-sm deleteLeadBtn"
                             data-id="<?php echo $lead['id']; ?>">
                             <i class="fa fa-trash"></i> Delete

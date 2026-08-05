@@ -2147,6 +2147,22 @@
             errors.reason = 'Please select a reason.';
         }
 
+        const bookingDate = value('booking_date') || value('booking_enquiry_date');
+        const followupDate = value('followup_date');
+        const secondFollowupDate = value('second_followup_date');
+
+        if (bookingDate && followupDate && followupDate >= bookingDate) {
+            errors.followup_date = 'Follow-up Date must be before Booking Date.';
+        }
+        if (bookingDate && secondFollowupDate && secondFollowupDate >= bookingDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be before Booking Date.';
+        }
+        if (secondFollowupDate && !followupDate) {
+            errors.followup_date = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        } else if (followupDate && secondFollowupDate && secondFollowupDate <= followupDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be later than Follow-up Date.';
+        }
+
         if (disposition === 'Quotation Sent') {
             if ($('#is_room_required').is(':checked')) {
                 const checkinDate = value('checkin_date');

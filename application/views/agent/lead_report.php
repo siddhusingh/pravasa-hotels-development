@@ -458,7 +458,6 @@
                                                 <option value="Open" <?= in_array('Open', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Open</option>
                                                 <option value="In Progress" <?= in_array('In Progress', $selectedStatusFilters, true) ? 'selected' : ''; ?>>In Progress</option>
                                                 <option value="Closed" <?= in_array('Closed', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Closed</option>
-                                                <option value="Not Assigned" <?= in_array('Not Assigned', $selectedStatusFilters, true) ? 'selected' : ''; ?>>Not-assigned</option>
                                             </select>
                                         </div>
                                         <!-- Lead Source -->
@@ -513,13 +512,12 @@
                             </div>
                             <div class="">
                                 <?php
-                                $statuses = ['Open', 'In Progress', 'Closed', 'Not Assigned'];
+                                $statuses = ['Open', 'In Progress', 'Closed'];
 
                                 $statusColors = [
                                     'Open' => 'text-dark border border-dark',
                                     'In Progress' => 'bg-info-subtle text-info',
-                                    'Closed' => 'bg-success-subtle text-success',
-                                    'Not Assigned' => 'bg-secondary-subtle text-secondary'
+                                    'Closed' => 'bg-success-subtle text-success'
                                 ];
 
                                 $current_status = $this->input->get('status') ?: $defaultStatusFilter; // get current status from URL or page default
@@ -535,8 +533,7 @@
                                         $statusMapping = [
                                             'Open' => 'open',
                                             'In Progress' => 'in_progress',
-                                            'Closed' => 'closed',
-                                            'Not Assigned' => 'not_assigned'
+                                            'Closed' => 'closed'
                                         ];
 
                                         foreach ($statuses as $status):
@@ -1875,6 +1872,22 @@ font-size:14px;
 
             if (disposition === 'Lead Lost' && !value('reason')) {
                 errors.reason = 'Please select a reason.';
+            }
+
+            var bookingDate = value('booking_date') || value('booking_enquiry_date');
+            var followupDate = value('followup_date');
+            var secondFollowupDate = value('second_followup_date');
+
+            if (bookingDate && followupDate && followupDate >= bookingDate) {
+                errors.followup_date = 'Follow-up Date must be before Booking Date.';
+            }
+            if (bookingDate && secondFollowupDate && secondFollowupDate >= bookingDate) {
+                errors.second_followup_date = '2nd Follow-up Date must be before Booking Date.';
+            }
+            if (secondFollowupDate && !followupDate) {
+                errors.followup_date = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+            } else if (followupDate && secondFollowupDate && secondFollowupDate <= followupDate) {
+                errors.second_followup_date = '2nd Follow-up Date must be later than Follow-up Date.';
             }
 
             if (disposition === 'Quotation Sent') {
@@ -3872,10 +3885,8 @@ ${disposition === "Contacted" ? `<div class="col-md-3 mb-3">
                     $('#status_count_in_progress').text('In Progress (' + (totalCounts.in_progress || 0) + ')');
                     $('#status_count_closed').text('Closed (' + (totalCounts.closed || 0) + ')');
 
-                    $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
-
-
-                    $('#total_leads_count').text(totalCounts.total || 0);
+                    const filteredTotal = parseInt(response.filteredTotal ?? totalCounts.total ?? 0, 10) || 0;
+                    $('#total_leads_count').text(filteredTotal);
 
 
                     if (reset) {
@@ -4316,7 +4327,7 @@ ${data.bill_attachment ? `
 
         Swal.fire({
             title: "Are you sure?",
-            text: "This lead will be removed from active leads.",
+            text: "This lead will be permanently deleted from the database.",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
@@ -4328,7 +4339,7 @@ ${data.bill_attachment ? `
             if (result.isConfirmed) {
 
                 csrfAjax({
-                    url: "<?= base_url('LeadController/deleteLead') ?>", // ✅ CHANGE to your actual controller method
+                    url: "<?= base_url('agent/Leads/permanently_delete_lead') ?>",
                     type: "POST",
                     data: {
                         id: leadId
@@ -4343,11 +4354,7 @@ ${data.bill_attachment ? `
 
                         if (res.status === true) {
                             toastr.success("Lead deleted successfully!");
-
-
-                            $("#lead_card-" + leadId).fadeOut();
-
-
+                            window.fetchAgentLeads(true);
                         } else {
                             toastr.error("Failed to delete lead!");
                         }

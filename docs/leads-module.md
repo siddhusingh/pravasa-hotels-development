@@ -1,6 +1,6 @@
 # Leads Module — Functional and Technical Guide
 
-Last reviewed: 4 August 2026
+Last reviewed: 5 August 2026
 
 ## Purpose
 
@@ -101,6 +101,45 @@ The report supports combinations of:
 
 `Not Assigned` is a calculated report bucket based on assignment fields; it is not simply a normal lead status value.
 
+The Super Admin report at `manage-leads`, Hotel Admin report at `view-leads`,
+and Agent report at `view-agents-leads` do not expose `Not Assigned` as a
+status indicator tab or Status filter option. Its backend calculation is
+retained for compatibility and for dashboards or other lead sections that
+still use it.
+
+The Delete action on Super Admin `manage-leads` permanently removes the active
+row from the `leads` table through
+`LeadController::permanentlyDeleteLead()`. The endpoint accepts POST only and
+requires the primary Super Admin session (`role_as = super_admin` and
+`user_role = 1`). The older `LeadController::deleteLead()` soft-delete path is
+intentionally retained for future use and for unchanged role-specific flows.
+The hard-delete implementation does not explicitly delete calls, status
+history, Sales Visits, feedback, or records from other modules. Database-level
+foreign-key behavior still applies; currently `lead_reserved_tables` cascades
+when its parent Lead is deleted. After a successful Super Admin deletion, the
+active filtered list is fetched again so its cards, status counts, total count,
+pagination offset, and Load More state stay synchronized.
+
+The Agent report uses the separate POST-only
+`agent/Leads/permanently_delete_lead` endpoint. It permanently deletes only an
+active Lead in the Agent's selected hotel and rejects a Lead assigned to a
+different Agent. Its Delete button uses the same scope rule, and a successful
+delete refetches the current Agent list so the card, counts, total, offset, and
+Load More state refresh automatically. The shared legacy soft-delete endpoint
+remains available and unchanged.
+
+The Hotel Admin report uses the POST-only
+`hotelAdmin/Leads/permanently_delete_lead` endpoint. It permanently deletes
+only an active Lead belonging to the hotel in `hotel_admin_session`; posted
+property values cannot widen that scope. After success, the active filtered
+Hotel Admin list and counts are fetched again. The shared legacy soft-delete
+endpoint remains unchanged.
+
+On Super Admin, Hotel Admin, and Agent reports, the Open, In Progress, and Closed badges
+show the overall counts under the non-status filters. `Total Leads` instead
+shows the filtered count for the currently selected status tab, matching the
+cards returned by that selection.
+
 Unless a report request contains a status, phone, search, or follow-up override, some report flows default to Open leads.
 
 ## Common lead fields
@@ -131,6 +170,12 @@ Current shared expectations are:
 - Email is optional, but must be valid when provided.
 - Hotel/property, department, source, stage, lead status, and query are required.
 - `Lead Lost` requires a reason.
+- On Super Admin Lead creation, an entered Follow-up Date and 2nd Follow-up
+  Date must each be strictly before the available Booking Date. An entered 2nd
+  Follow-up Date requires a Follow-up Date and must be strictly later than it.
+  The date fields remain optional, and the rules are enforced by both browser
+  and server validation. This includes the Banquet Booking Date field and the
+  Restaurant Booking Date committed from the table-reservation modal.
 - Stage-specific and department-specific validation applies when the stage is `Quotation Sent`.
 - Server responses use field-keyed errors so the browser can highlight the correct control.
 - CSRF hashes are returned/refreshed in JSON flows.
@@ -302,6 +347,12 @@ Assignment fields must be derived from a validated active user rather than trust
 6. The user edits and submits to the role-specific update endpoint.
 7. The controller revalidates every selection, performs a scoped update, and returns the refreshed joined lead.
 8. The report card/list refreshes without requiring a full-page reload where supported.
+
+Super Admin Manage Leads edit applies the same optional follow-up ordering as
+creation: `Follow-up Date < 2nd Follow-up Date < Booking Date`. A second
+follow-up requires the first. Browser and server validation both enforce the
+rule, including Banquet Booking Date and the Restaurant reservation Booking
+Date.
 
 For Super Admin Banquet edits at `Quotation Sent`, enabling `Is Room Required?` requires check-in, check-out, and a positive whole-number room count in both the Manage Leads modal and Sales Visit edit. Disabling it clears all three values. Existing stored values are preloaded before validation.
 
@@ -564,6 +615,14 @@ disabled, edit clears all three stored values.
 - Invalid phone, email, missing stage, missing source, and missing query show field errors.
 - `Not Contacted` allows an empty guest name.
 - `Lead Lost` requires a reason.
+- Super Admin, Hotel Admin, and Agent reject a Follow-up Date on or after Booking Date.
+- Super Admin, Hotel Admin, and Agent reject a 2nd Follow-up Date on or after Booking Date, without a
+  first Follow-up Date, or on/before the first Follow-up Date.
+- Valid ordering for all three roles satisfies `Follow-up Date < 2nd Follow-up Date < Booking Date`.
+  When the current stage exposes Booking Enquiry Date instead, that date is the
+  booking boundary used by the same validation.
+- Verify this ordering for both Banquets and Restaurants; Restaurant validation
+  must use the committed reservation Booking Date.
 - Correct creator role/user and property are stored.
 - Assignment only accepts an active permitted user.
 - Recent duplicate behavior matches the intended source.
@@ -602,14 +661,41 @@ disabled, edit clears all three stored values.
 - Full update persists the new selection.
 - Reopening after save proves database persistence.
 - A real conflicting reservation returns HTTP 409 and keeps the edit form usable.
+- Follow-up dates must remain strictly ordered before the committed Restaurant
+  Booking Date, and an invalid edit must not update the Lead.
 
 ### Reports and follow-ups
 
 - Status counts and cards agree under the same filters.
-- Not Assigned logic remains separate from normal status values.
+- Super Admin, Hotel Admin, and Agent `Total Leads` matches the currently selected status tab
+  while the three status badges retain their overall counts.
+- Super Admin Manage Leads shows only Open, In Progress, and Closed in both the
+  status indicators and the Status filter.
+- Agent Leads Management shows only Open, In Progress, and Closed in both the
+  status indicators and the Status filter.
+- Hotel Admin Leads Management shows only Open, In Progress, and Closed in both
+  the status indicators and the Status filter.
+- Not Assigned logic remains separate from normal status values, and its
+  backend compatibility does not expose it in any of the three report UIs.
+- Dashboards and other lead-section behavior remains unchanged by these
+  role-scoped report updates.
+- Super Admin Delete warns that the action is permanent, removes the selected
+  active row from `leads`, rejects non-Super Admin or non-POST requests, and
+  refreshes the filtered list and counts after success.
+- The retained soft-delete endpoint continues to set `is_deleted` and
+  `deleted_at`; it is not replaced by the Super Admin hard-delete endpoint.
+- Agent Delete permanently removes only an allowed Lead in the selected hotel,
+  rejects cross-hotel and other-Agent records, and refreshes the active list
+  and counts after success.
+- Hotel Admin Delete permanently removes only an active Lead belonging to its
+  session hotel and refreshes the selected list and counts after success.
+- A permanent Lead delete does not explicitly delete calls, status history,
+  Sales Visits, feedback, or other module records.
 - Search works by name and normalized phone.
 - Customer history stays role-scoped.
 - Due follow-ups include either due follow-up date.
+- Super Admin, Hotel Admin, and Agent Banquet and Restaurant create/edit flows reject invalid
+  follow-up ordering in both browser and server validation.
 - Edit access cannot cross hotel or Agent assignment scope.
 
 ### Static verification
