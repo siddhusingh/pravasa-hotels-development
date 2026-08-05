@@ -32,7 +32,8 @@ class AgencyLogin extends CI_Controller
         // Initialize response array
         $response = [
             'response_message' => '',
-            'redirect_url' => ''
+            'redirect_url' => '',
+            'csrfHash' => $this->security->get_csrf_hash()
         ];
 
         // Fetch user data based on email

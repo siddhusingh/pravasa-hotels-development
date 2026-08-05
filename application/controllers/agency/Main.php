@@ -71,7 +71,7 @@ class Main extends CI_Controller
             $this->load->view('agency/dashboard', $data);
             $this->load->view('agency/include/footer');
         } else {
-            $this->load->view('agency/login');
+            return redirect('agency-login');
         }
     }
 
@@ -253,14 +253,17 @@ class Main extends CI_Controller
     public function profile()
     {
         $agency_session = $this->session->userdata('agency_session');
-        $login_id = $agency_session['id'];
+        if (empty($agency_session['id']) || $this->session->userdata('role_as') !== 'agency') {
+            return redirect('agency-login');
+        }
 
-        // Fetch agent profile
+        $login_id = (int) $agency_session['id'];
+
         $data['profile_data'] = $this->Comman_model->get_single_record('agencies', ['id' => $login_id]);
-
-
-
-
+        if (empty($data['profile_data'])) {
+            show_404();
+            return;
+        }
 
         $this->load->view('agency/include/header');
         $this->load->view('agency/include/sidebar');
@@ -283,39 +286,97 @@ class Main extends CI_Controller
     /*load user profile detail*/
     public function update_profile()
     {
-
-        $id = $this->input->post('id');
-        $full_name = $this->input->post('name');
-        $phone = $this->input->post('phone');
-        $email = $this->input->post('email');
-
-        $password = md5($this->input->post('password'));
-
-        $this->session->set_userdata('logged_in_username', $full_name);
-
-        $table = 'agencies';
-        $data = array(
-            'contact_person' => $full_name,
-            'email' => $email,
-            'phone' => $phone,
-
-        );
-
-        if (!empty($this->input->post('password'))) {
-            $data['password'] = $password;
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_status_header(405)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Method not allowed.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
         }
 
+        $agency_session = $this->session->userdata('agency_session');
+        if (empty($agency_session['id']) || $this->session->userdata('role_as') !== 'agency') {
+            return $this->output
+                ->set_status_header(401)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Your session has expired.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
-        $result = $this->Comman_model->UpdateRecord($table, $data, array('id' => $id));
+        $id = (int) $agency_session['id'];
+        $full_name = trim((string) $this->input->post('name', true));
+        $phone = trim((string) $this->input->post('phone', true));
+        $email = trim((string) $this->input->post('email', true));
+        $password = (string) $this->input->post('password');
+        $errors = [];
 
-        $response_json['status'] = true;
-        $response_json['message'] = "senior_managers data has been updated successfully";
-        $response_json['record_id'] = $record_id;
+        if ($full_name === '') {
+            $errors['name'] = 'Please Enter Full Name';
+        }
+        if ($email === '') {
+            $errors['email'] = 'Please Enter Email';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please Enter a Valid Email Address';
+        }
+        if ($phone === '') {
+            $errors['phone'] = 'Please Enter Phone Number';
+        }
+        if ($password !== '' && !preg_match('/^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/', $password)) {
+            $errors['password'] = 'Password must be at least 6 characters long, contain at least one number and one special character';
+        }
 
-        $this->session->set_flashdata('profile_success', "Your profile has been updated successfully.");
+        if (!empty($errors)) {
+            return $this->output
+                ->set_status_header(422)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
+        $data = [
+            'contact_person' => $full_name,
+            'email' => $email,
+            'phone' => $phone
+        ];
 
-        echo json_encode($response_json);
+        // An empty password intentionally preserves the existing password.
+        if ($password !== '') {
+            $data['password'] = md5($password);
+        }
+
+        $result = $this->Comman_model->UpdateRecord('agencies', $data, ['id' => $id]);
+        if (!$result) {
+            return $this->output
+                ->set_status_header(500)
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Unable to update your profile. Please try again.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $this->session->set_userdata('logged_in_username', $full_name);
+        $this->session->set_flashdata('profile_success', 'Your profile has been updated successfully.');
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Your profile has been updated successfully.',
+                'record_id' => $id,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
     }
 
 
