@@ -19,6 +19,7 @@ application/logs/*
 
 !application/*/.htaccess
 
+AGENTS.md
 composer.lock
 tests/mocks/database/ci_test.sqlite
 
