@@ -164,8 +164,73 @@ class Main extends CI_Controller
             return;
         }
 
+        $default_selections = [
+            'property_id' => null,
+            'department_id' => null,
+            'restaurant_id' => null,
+            'banquet_id' => null,
+        ];
+
+        if ($this->input->method(TRUE) === 'POST') {
+            $property_id = (int) $this->input->post('property_id', true);
+            $department_id = (int) $this->input->post('department_id', true);
+
+            $property = $property_id > 0 ? $this->db
+                ->where('hotel_id', $property_id)
+                ->where('status', 'active')
+                ->where('is_deleted', 0)
+                ->get('hotel_admin')
+                ->row() : null;
+
+            $department = $department_id > 0 ? $this->db
+                ->where('department_id', $department_id)
+                ->where('is_deleted', 0)
+                ->get('departments')
+                ->row() : null;
+
+            if ($property) {
+                $default_selections['property_id'] = (int) $property->hotel_id;
+            }
+            if ($department) {
+                $default_selections['department_id'] = (int) $department->department_id;
+            }
+
+            if ($property && $department) {
+                $department_name = strtolower(trim((string) $department->department_name));
+
+                if ($department_name === 'restaurant' || $department_name === 'restaurants') {
+                    $restaurant_id = (int) $this->input->post('restaurant_id', true);
+                    $restaurant = $restaurant_id > 0 ? $this->db
+                        ->where('id', $restaurant_id)
+                        ->where('hotel_id', $property_id)
+                        ->where('status', 1)
+                        ->where('is_deleted', 0)
+                        ->get('hotel_restaurants')
+                        ->row() : null;
+
+                    if ($restaurant) {
+                        $default_selections['restaurant_id'] = (int) $restaurant->id;
+                    }
+                }
+
+                if ($department_name === 'banquet' || $department_name === 'banquets') {
+                    $banquet_id = (int) $this->input->post('banquet_id', true);
+                    $banquet = $banquet_id > 0 ? $this->db
+                        ->where('banquet_id', $banquet_id)
+                        ->where('hotel_id', $property_id)
+                        ->where('is_deleted', 0)
+                        ->get('banquet')
+                        ->row() : null;
+
+                    if ($banquet) {
+                        $default_selections['banquet_id'] = (int) $banquet->banquet_id;
+                    }
+                }
+            }
+        }
+
         $current_base_url = rtrim(base_url(), '/') . '/';
-        $replacement_count = 0;
+        $base_url_replacement_count = 0;
         $content = preg_replace_callback(
             '/const\s+BASE_URL\s*=\s*([\'\"])(.*?)\1\s*;/',
             static function () use ($current_base_url) {
@@ -173,10 +238,26 @@ class Main extends CI_Controller
             },
             $content,
             1,
-            $replacement_count
+            $base_url_replacement_count
         );
 
-        if ($content === null || $replacement_count !== 1) {
+        if ($content === null || $base_url_replacement_count !== 1) {
+            show_error('Unable to prepare the lead form download.', 500);
+            return;
+        }
+
+        $defaults_replacement_count = 0;
+        $content = preg_replace_callback(
+            '/const\s+DEFAULT_SELECTIONS\s*=\s*\{[^;]*\}\s*;/',
+            static function () use ($default_selections) {
+                return 'const DEFAULT_SELECTIONS = ' . json_encode($default_selections, JSON_UNESCAPED_SLASHES) . ';';
+            },
+            $content,
+            1,
+            $defaults_replacement_count
+        );
+
+        if ($content === null || $defaults_replacement_count !== 1) {
             show_error('Unable to prepare the lead form download.', 500);
             return;
         }

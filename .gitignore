@@ -1,7 +1,10 @@
 .DS_Store
 
 docs/*
+tmp/*
+output/*
 !docs/PROJECT_INSTRUCTIONS.md
+!docs/form-download-module.md
 .env
 *.zip
 .agents/

@@ -381,7 +381,7 @@
                </li>
 
                <li>
-                  <a href="<?= base_url('download-lead-form') ?>">
+                  <a href="#" data-toggle="modal" data-target="#downloadLeadFormModal">
                      <i class="fa fa-download"></i>
                      <span>Download Lead Form</span>
                   </a>
@@ -400,3 +400,5 @@
       </div>
    </section>
 </aside>
+
+<?php $this->load->view('super_admin/include/download_lead_form_modal'); ?>
