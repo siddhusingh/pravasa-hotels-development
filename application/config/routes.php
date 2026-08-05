@@ -142,6 +142,7 @@ $route['update-hotel'] = 'superAdmin/HotelManagment/update';
 $route['get-hotels-table'] = 'superAdmin/HotelManagment/get_hotels_table';
 $route['hotel/get-states-by-country'] = 'superAdmin/HotelManagment/get_states_by_country';
 $route['hotel/get-cities-by-state'] = 'superAdmin/HotelManagment/get_cities_by_state';
+$route['hotel/quick-add-city'] = 'superAdmin/HotelManagment/quick_add_city';
 
 
 // manage departments routes

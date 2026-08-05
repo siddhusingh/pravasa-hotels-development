@@ -2350,16 +2350,25 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
         LEFT JOIN super_admin sa 
             ON sa.id = l.created_by 
             AND l.creator_user_role = 'super_admin'
+            AND sa.is_deleted = 0
 
         LEFT JOIN hotel_admins ha 
             ON ha.id = l.created_by 
             AND l.creator_user_role = 'hotel_admin'
+            AND ha.is_deleted = 0
 
         LEFT JOIN staff_members sm 
             ON sm.id = l.created_by 
             AND l.creator_user_role = 'agent'
+            AND sm.is_deleted = 0
 
         WHERE l.created_by IS NOT NULL
+            AND l.is_deleted = 0
+            AND (
+                (l.creator_user_role = 'super_admin' AND sa.id IS NOT NULL)
+                OR (l.creator_user_role = 'hotel_admin' AND ha.id IS NOT NULL)
+                OR (l.creator_user_role = 'agent' AND sm.id IS NOT NULL)
+            )
 
         ORDER BY name ASC
     ";
@@ -2385,16 +2394,25 @@ COALESCE(SUM(CASE WHEN leads.is_assigned = 0 THEN 1 ELSE 0 END), 0) AS not_assig
         LEFT JOIN super_admin sa 
             ON sa.id = l.assigned_to 
             AND l.assigned_person_user_role = 'super_admin'
+            AND sa.is_deleted = 0
 
         LEFT JOIN hotel_admins ha 
             ON ha.id = l.assigned_to 
             AND l.assigned_person_user_role = 'admin'
+            AND ha.is_deleted = 0
 
         LEFT JOIN staff_members sm 
             ON sm.id = l.assigned_to 
             AND l.assigned_person_user_role = 'agent'
+            AND sm.is_deleted = 0
 
         WHERE l.assigned_to IS NOT NULL
+            AND l.is_deleted = 0
+            AND (
+                (l.assigned_person_user_role = 'super_admin' AND sa.id IS NOT NULL)
+                OR (l.assigned_person_user_role = 'admin' AND ha.id IS NOT NULL)
+                OR (l.assigned_person_user_role = 'agent' AND sm.id IS NOT NULL)
+            )
 
         ORDER BY name ASC
     ";

@@ -2557,7 +2557,7 @@ window.CSRF = {
 
     function validateLeadForm() {
         const errors = {};
-        const enforceRoleFollowupDateOrder = <?= json_encode(in_array(strtolower($lead_form_role_label), ['agent', 'hotel admin'], true)); ?>;
+        const enforceRoleFollowupDateOrder = <?= json_encode(in_array(strtolower($lead_form_role_label), ['agent', 'hotel admin', 'agency'], true)); ?>;
         const value = function(name) {
             return $.trim(String($('[name="' + name + '"]').first().val() || ''));
         };

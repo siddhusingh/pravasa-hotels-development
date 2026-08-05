@@ -124,7 +124,7 @@ class Main extends CI_Controller
 
 
 
-            $data['departments'] = $this->Common_model->getAllData('departments', '');
+            $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
             $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
             $data['cities'] = $this->Common_model->getAllData('city', '');
             $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
@@ -135,6 +135,10 @@ class Main extends CI_Controller
             $data['creators'] = $this->LeadModel->get_active_creators();
 
             $data['assigned_users'] = $this->LeadModel->get_active_assigned_users();
+
+            $super_admin_id = $this->session->userdata('super_admin_session')['id'];
+            $super_admin = $this->Comman_model->get_single_record('super_admin', ['id' => $super_admin_id]);
+            $data['super_admin_name'] = !empty($super_admin->full_name) ? $super_admin->full_name : 'User';
 
 
 

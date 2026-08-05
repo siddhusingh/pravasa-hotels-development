@@ -126,6 +126,48 @@ class SalesVisits extends CI_Controller
         return '';
     }
 
+    private function validateLeadFollowupDates()
+    {
+        $value = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+        $isValidDate = function ($date) {
+            $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+            return $parsed && $parsed->format('Y-m-d') === $date;
+        };
+
+        $bookingDate = $value('booking_date') ?: $value('booking_enquiry_date');
+        $followupDate = $value('followup_date');
+        $secondFollowupDate = $value('second_followup_date');
+        $validBookingDate = $bookingDate !== '' && $isValidDate($bookingDate);
+        $validFollowupDate = $followupDate !== '' && $isValidDate($followupDate);
+        $validSecondFollowupDate = $secondFollowupDate !== '' && $isValidDate($secondFollowupDate);
+
+        if ($followupDate !== '' && !$validFollowupDate) {
+            return 'Please enter a valid Follow-up Date.';
+        }
+        if ($secondFollowupDate !== '' && !$validSecondFollowupDate) {
+            return 'Please enter a valid 2nd Follow-up Date.';
+        }
+        if (($followupDate !== '' || $secondFollowupDate !== '') && $bookingDate !== '' && !$validBookingDate) {
+            return 'Please enter a valid Booking Date.';
+        }
+        if ($validBookingDate && $validFollowupDate && $followupDate >= $bookingDate) {
+            return 'Follow-up Date must be before Booking Date.';
+        }
+        if ($validBookingDate && $validSecondFollowupDate && $secondFollowupDate >= $bookingDate) {
+            return '2nd Follow-up Date must be before Booking Date.';
+        }
+        if ($secondFollowupDate !== '' && $followupDate === '') {
+            return 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        }
+        if ($validFollowupDate && $validSecondFollowupDate && $secondFollowupDate <= $followupDate) {
+            return '2nd Follow-up Date must be later than Follow-up Date.';
+        }
+
+        return '';
+    }
+
     private function validateSalesVisitLocation()
     {
         $latitude = trim((string) $this->input->post('visit_latitude'));
@@ -268,6 +310,9 @@ class SalesVisits extends CI_Controller
         $validationError = $this->validateSalesVisitFields();
         if ($validationError === '') {
             $validationError = $this->validateAddSalesVisitFields();
+        }
+        if ($validationError === '') {
+            $validationError = $this->validateLeadFollowupDates();
         }
         if ($validationError === '') {
             $validationError = $this->validateSalesVisitLocation();
@@ -1377,6 +1422,9 @@ class SalesVisits extends CI_Controller
         $validationError = $this->validateSalesVisitFields();
         if ($validationError === '') {
             $validationError = $this->validateAddSalesVisitFields();
+        }
+        if ($validationError === '') {
+            $validationError = $this->validateLeadFollowupDates();
         }
         if ($validationError === '') {
             $validationError = $this->validateSalesVisitLocation();

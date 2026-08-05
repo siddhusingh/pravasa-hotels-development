@@ -56,6 +56,51 @@
       text-overflow: ellipsis;
       white-space: nowrap;
    }
+
+   .hotel-city-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+   }
+
+   #quick-add-city-modal {
+      z-index: 1070;
+   }
+
+   #quick-add-city-modal .modal-dialog {
+      width: calc(100% - 30px);
+      max-width: 650px !important;
+      margin: 1.75rem auto;
+   }
+
+   #quick-add-city-modal .modal-header {
+      display: flex;
+      align-items: center;
+      min-height: 64px;
+      padding: 18px 28px !important;
+      overflow: visible;
+   }
+
+   #quick-add-city-modal .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      color: #17172f;
+      font-size: 24px;
+      line-height: 1.25;
+   }
+
+   #quick-add-city-modal .modal-title i {
+      position: static !important;
+      flex: 0 0 auto;
+      margin: 0 !important;
+      color: #7e5aef;
+      font-size: 21px;
+      line-height: 1;
+      transform: none !important;
+   }
 </style>
 
 <div class="content-wrapper">
@@ -164,7 +209,10 @@
                   <span id="state_id_error" class="validation text-danger"></span>
                </div>
                <div class="col-md-4 mb-3">
-                  <label class="form-label">Select City <span class="required-asterisk">*</span></label>
+                  <div class="hotel-city-label-row">
+                     <label class="form-label mb-0">Select City <span class="required-asterisk">*</span></label>
+                     <button type="button" class="btn btn-primary-light btn-sm" id="open-quick-add-city" disabled>Quick Add</button>
+                  </div>
                   <select class="form-control hotel-location-select" id="city_id" disabled>
                      <option value="">Select City</option>
                   </select>
@@ -205,6 +253,40 @@
             <button type="button" id="action-btn" class="btn btn-primary" data-key="">Save changes</button>
          </div>
       </div>
+   </div>
+</div>
+
+<div class="modal new_modal_design" id="quick-add-city-modal" tabindex="-1" role="dialog" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered" role="document">
+      <form id="quick-add-city-form" class="modal-content" novalidate>
+         <div class="modal-header">
+            <h4 class="modal-title"><i class="fa fa-map-marker me-2"></i>Quick Add City</h4>
+         </div>
+         <div class="modal-body">
+            <p class="text-muted mb-3">The city will be added under the Country and State selected in the Hotel form.</p>
+            <input type="hidden" id="quick_city_country_id">
+            <input type="hidden" id="quick_city_state_id">
+            <div class="row">
+               <div class="col-md-6 mb-3">
+                  <label class="form-label">Country</label>
+                  <input type="text" class="form-control" id="quick_city_country_name" readonly>
+               </div>
+               <div class="col-md-6 mb-3">
+                  <label class="form-label">State</label>
+                  <input type="text" class="form-control" id="quick_city_state_name" readonly>
+               </div>
+               <div class="col-12 mb-2">
+                  <label class="form-label" for="quick_city_name">City Name <span class="required-asterisk">*</span></label>
+                  <input type="text" class="form-control" id="quick_city_name" maxlength="100" placeholder="Enter city name" autocomplete="off">
+                  <span id="quick_city_name_error" class="quick-city-validation text-danger"></span>
+               </div>
+            </div>
+         </div>
+         <div class="modal-footer d-flex justify-content-start">
+            <button type="button" class="btn btn-primary-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="quick-add-city-save">Add City</button>
+         </div>
+      </form>
    </div>
 </div>
 
@@ -290,12 +372,21 @@
          .on('change.hotelLocation', '#country_id', function() {
             $('#country_id_error').text('');
             loadStatesByCountry($(this).val(), '');
+            updateQuickAddCityButton();
          })
          .off('change.hotelLocation', '#state_id')
          .on('change.hotelLocation', '#state_id', function() {
             $('#state_id_error').text('');
             loadCitiesByState($(this).val(), '');
+            updateQuickAddCityButton();
          });
+   }
+
+   function updateQuickAddCityButton() {
+      var hasLocation = Boolean($('#country_id').val() && $('#state_id').val());
+      $('#open-quick-add-city')
+         .removeClass('d-none')
+         .prop('disabled', !hasLocation);
    }
 
    function resetHotelForm() {
@@ -307,6 +398,7 @@
       $('#hotel_name, #hotel_code, #hotel_contact, #facebook_page_id, #hotel_address').val('');
       $('#hotel_image').val('');
       $('.validation').text('');
+      updateQuickAddCityButton();
    }
 
    function validateHotelForm() {
@@ -375,10 +467,12 @@
             });
             $('#state_id').prop('disabled', states.length === 0);
             refreshHotelSelect($('#state_id'), selectedStateId);
+            updateQuickAddCityButton();
          },
          error: function() {
             $('#state_id').prop('disabled', true).html('<option value="">Select State</option>');
             refreshHotelSelect($('#state_id'), '');
+            updateQuickAddCityButton();
             toastr.error('Unable to fetch states');
          }
       });
@@ -445,7 +539,91 @@
       resetHotelForm();
       $('#crud-modal-title').text('Add New Hotel');
       $('#action-btn').text('Create').attr('data-key', '');
+      updateQuickAddCityButton();
       $('#hotel-crud-modal').modal('show');
+   });
+
+   $(document).on('click', '#open-quick-add-city', function() {
+      var countryId = $('#country_id').val();
+      var stateId = $('#state_id').val();
+
+      if (!countryId || !stateId) {
+         toastr.error('Please select a country and state first');
+         return;
+      }
+
+      $('#quick_city_country_id').val(countryId);
+      $('#quick_city_state_id').val(stateId);
+      $('#quick_city_country_name').val($('#country_id option:selected').text());
+      $('#quick_city_state_name').val($('#state_id option:selected').text());
+      $('#quick_city_name').val('').removeClass('is-invalid');
+      $('#quick_city_name_error').text('');
+      $('#quick-add-city-modal').modal('show');
+      setTimeout(function() { $('#quick_city_name').trigger('focus'); }, 200);
+   });
+
+   $('#quick_city_name').on('input', function() {
+      $(this).removeClass('is-invalid');
+      $('#quick_city_name_error').text('');
+   });
+
+   $('#quick-add-city-modal').on('hidden.bs.modal', function() {
+      if ($('#hotel-crud-modal').hasClass('show')) {
+         $('body').addClass('modal-open');
+      }
+   });
+
+   $('#quick-add-city-form').on('submit', function(e) {
+      e.preventDefault();
+
+      var cityName = $.trim($('#quick_city_name').val());
+      if (!cityName) {
+         $('#quick_city_name').addClass('is-invalid');
+         $('#quick_city_name_error').text('Please enter city name');
+         return;
+      }
+
+      var $button = $('#quick-add-city-save');
+      $.ajax({
+         url: '<?php echo base_url('hotel/quick-add-city') ?>',
+         type: 'POST',
+         dataType: 'JSON',
+         data: {
+            country_id: $('#quick_city_country_id').val(),
+            state_id: $('#quick_city_state_id').val(),
+            city_name: cityName,
+            [window.CSRF.name]: window.CSRF.hash
+         },
+         beforeSend: function() {
+            $button.prop('disabled', true).text('Adding...');
+         },
+         success: function(response) {
+            if (response.csrfHash) {
+               window.CSRF.hash = response.csrfHash;
+            }
+            if (!response.status || !response.data) {
+               toastr.error(response.message || 'Unable to add city');
+               return;
+            }
+
+            ensureSelectedOption($('#city_id'), response.data.city_id, response.data.city_name);
+            $('#city_id').prop('disabled', false);
+            refreshHotelSelect($('#city_id'), response.data.city_id);
+            $('#city_id_error').text('');
+            $('#quick-add-city-modal').modal('hide');
+            toastr.success(response.message || 'City added successfully');
+         },
+         error: function(xhr) {
+            var response = xhr.responseJSON || {};
+            if (response.csrfHash) {
+               window.CSRF.hash = response.csrfHash;
+            }
+            toastr.error(response.message || 'Unable to add city');
+         },
+         complete: function() {
+            $button.prop('disabled', false).text('Add City');
+         }
+      });
    });
 
    $(document).on('click', '#action-btn', function(e) {
@@ -546,6 +724,7 @@
             }
 
             $('#action-btn').text('Update').attr('data-key', res.id);
+            updateQuickAddCityButton();
             $('#hotel-crud-modal').modal('show');
          },
          error: function() {

@@ -568,6 +568,7 @@ Super Admin Sales Visits create a Lead and a `sales_visits` record together thro
 
 For `Quotation Sent` Sales Visits:
 
+- Lead follow-up dates use the same ordering rules as normal Super Admin Lead create/edit: each entered follow-up date must be before the Booking Date, the 2nd Follow-up Date requires the first, and it must be later than the first. Browser and server validation enforce these rules on both Sales Visit creation and edit, including Banquet and Restaurant booking dates.
 - Banquets expose `Is Room Required?`. When enabled, check-in date, check-out date, and a positive whole-number room count are required. Check-in cannot be in the past, and check-out cannot precede check-in. This rule applies to normal Super Admin Lead creation/edit and Super Admin Sales Visit creation/edit; Sales Visits store the values on their generated Lead.
 - Restaurants expose the same reservation modal used by normal Lead creation. Modal confirmation only commits values into hidden Sales Visit form fields; the reservation is persisted when the complete Sales Visit form is submitted.
 - Restaurant lookup data is read from the shared Lead endpoints. Availability is checked before modal confirmation and rechecked after locking the selected tables during final save.
@@ -619,6 +620,7 @@ disabled, edit clears all three stored values.
 - Super Admin, Hotel Admin, and Agent reject a 2nd Follow-up Date on or after Booking Date, without a
   first Follow-up Date, or on/before the first Follow-up Date.
 - Valid ordering for all three roles satisfies `Follow-up Date < 2nd Follow-up Date < Booking Date`.
+- Agency Lead creation applies the same optional ordering whenever its Booking Date and follow-up fields are present, with both browser and server validation.
   When the current stage exposes Booking Enquiry Date instead, that date is the
   booking boundary used by the same validation.
 - Verify this ordering for both Banquets and Restaurants; Restaurant validation

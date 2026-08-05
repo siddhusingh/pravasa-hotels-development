@@ -402,6 +402,9 @@ class Visits extends Sales_Controller
         }
 
         $validationError = $this->validateBasicFields();
+        if ($validationError === '') {
+            $validationError = $this->validateLeadFollowupDates();
+        }
         if ($validationError !== '') {
             return $this->jsonResponse([
                 'status' => false,
@@ -770,6 +773,9 @@ class Visits extends Sales_Controller
         }
 
         $validationError = $this->validateBasicFields();
+        if ($validationError === '') {
+            $validationError = $this->validateLeadFollowupDates();
+        }
         if ($validationError !== '') {
             return $this->jsonResponse([
                 'status' => false,
@@ -1660,6 +1666,44 @@ class Visits extends Sales_Controller
             )
         ) {
             return 'Invalid visit longitude';
+        }
+
+        return '';
+    }
+
+    private function validateLeadFollowupDates()
+    {
+        $value = function ($field) {
+            return trim((string)$this->input->post($field, true));
+        };
+
+        $bookingDate = $value('booking_date') ?: $value('booking_enquiry_date');
+        $followupDate = $value('followup_date');
+        $secondFollowupDate = $value('second_followup_date');
+        $validBookingDate = $bookingDate !== '' && $this->isValidDate($bookingDate);
+        $validFollowupDate = $followupDate !== '' && $this->isValidDate($followupDate);
+        $validSecondFollowupDate = $secondFollowupDate !== '' && $this->isValidDate($secondFollowupDate);
+
+        if ($followupDate !== '' && !$validFollowupDate) {
+            return 'Please enter a valid Follow-up Date.';
+        }
+        if ($secondFollowupDate !== '' && !$validSecondFollowupDate) {
+            return 'Please enter a valid 2nd Follow-up Date.';
+        }
+        if (($followupDate !== '' || $secondFollowupDate !== '') && $bookingDate !== '' && !$validBookingDate) {
+            return 'Please enter a valid Booking Date.';
+        }
+        if ($validBookingDate && $validFollowupDate && $followupDate >= $bookingDate) {
+            return 'Follow-up Date must be before Booking Date.';
+        }
+        if ($validBookingDate && $validSecondFollowupDate && $secondFollowupDate >= $bookingDate) {
+            return '2nd Follow-up Date must be before Booking Date.';
+        }
+        if ($secondFollowupDate !== '' && $followupDate === '') {
+            return 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        }
+        if ($validFollowupDate && $validSecondFollowupDate && $secondFollowupDate <= $followupDate) {
+            return '2nd Follow-up Date must be later than Follow-up Date.';
         }
 
         return '';
