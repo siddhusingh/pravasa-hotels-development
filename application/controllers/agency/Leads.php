@@ -101,12 +101,28 @@ class Leads extends CI_Controller
 
     public function add_lead()
     {
+        $agencySession = $this->session->userdata('agency_session');
+        $agencyId = (int) ($agencySession['id'] ?? 0);
+        $properties = $this->Common_model->get_properties_by_agency($agencyId);
+        $selectedProperty = (int) $this->session->userdata('selected_hotel_id');
+
+        $allowedPropertyIds = array_map(static function ($property) {
+            return (int) $property->hotel_id;
+        }, $properties);
+
+        if (!in_array($selectedProperty, $allowedPropertyIds, true)) {
+            $selectedProperty = !empty($allowedPropertyIds) ? $allowedPropertyIds[0] : 0;
+        }
 
         $data['leads'] = $this->LeadModel->get_leads();
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
-        $agency_id = $this->session->userdata('agency_session')['id'];
-
-        $data['hotel_admin'] = $this->Common_model->get_properties_by_agency($agency_id);
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
+        $data['hotel_admin'] = $properties;
+        $data['selected_property'] = $selectedProperty;
+        $data['selected_department'] = null;
+        $data['all_assignable_users'] = [];
+        $data['lead_form_role_label'] = 'Agency';
+        $data['lead_form_submit_url'] = base_url('insert-lead-agency');
+        $data['lead_form_redirect_url'] = base_url('view-agency-leads');
 
         $this->load->view('agency/include/header');
         $this->load->view('agency/include/sidebar');
@@ -114,208 +130,231 @@ class Leads extends CI_Controller
         $this->load->view('agency/include/footer');
     }
 
-    public function insert_lead()
+    private function validateAgencyLeadInput()
     {
-        if ($this->input->method() === 'post') {
+        $errors = [];
+        $value = function ($field) {
+            return trim((string) $this->input->post($field, true));
+        };
+        $phone = substr(preg_replace('/\D+/', '', $value('phone_number')), -10);
+        $disposition = $value('disposition');
+        $allowedStages = [
+            'Not Contacted',
+            'General Information',
+            'Negotiations',
+            'Contract Done',
+            'Advance Received',
+            'Lead Won',
+            'Lead Lost'
+        ];
 
-
-            $agency_id = $this->session->userdata('agency_session')['id'];
-
-
-
-            // Collect each field from POST manually
-            $leadData = [
-                'user_name'       => $this->input->post('user_name', true),
-                'phone_number'   => $this->input->post('phone_number', true),
-                'email'          => $this->input->post('email', true),
-                'date'           => $this->input->post('date', true),
-                'time'           => $this->input->post('time', true),
-                'user_channel'   => 'Agency',
-                'property'       => $this->input->post('property', true),
-                'type'           => $this->input->post('type', true),
-                'status'    => $this->input->post('status', true),
-                'disposition'    => $this->input->post('disposition', true),
-                'created_at'   =>  date('Y-m-d H:i:s'),
-                'query'          => $this->input->post('query', true),
-                'remark'         => $this->input->post('remark', true),
-                'lead_type'          => $this->input->post('lead_type', true),
-                'created_by' => $agency_id,
-                'template_name' => 'Agency',
-                'city' => $result->city_id,
-                'creator_user_role' => 'Agency'
-            ];
-
-
-
-            $status = $this->input->post('status', true);
-            $disposition = $this->input->post('disposition', true);
-            $department = $this->input->post('leadDepartment', true);
-
-
-            // Time tracking
-            if ($status === 'Closed') {
-                $leadData['completed_time'] = date('Y-m-d H:i:s');
-            } else {
-                $leadData['responded_time'] = date('Y-m-d H:i:s');
-            }
-
-            // Additional fields for Reservation Closed
-            if ($disposition === 'Reservation' && strtolower($status) === 'closed') {
-                $department = strtolower($department); // convert everything to lowercase
-
-                if ($department === 'rooms') {
-                    $leadData['checkin_date'] = $this->input->post('checkin_date');
-                    $leadData['checkout_date'] = $this->input->post('checkout_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['reservation_number'] = $this->input->post('reservation_number');
-                    $leadData['reservation_email'] = $this->input->post('reservation_email');
-
-                    // Handle file upload
-                    if (!empty($_FILES['bill_attachment']['name'])) {
-                        $uploadPath = FCPATH . 'uploads/bills/';
-
-                        if (!is_dir($uploadPath)) {
-                            mkdir($uploadPath, 0755, true);
-                        }
-
-                        $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-                        $fileName = $_FILES['bill_attachment']['name'];
-                        $tmpName = $_FILES['bill_attachment']['tmp_name'];
-                        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-                        if (!in_array($extension, $allowedExtensions)) {
-                            echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, PDF allowed.']);
-                            return;
-                        }
-
-                        $newFileName = 'bill_' . time() . '.' . $extension;
-                        $targetPath = $uploadPath . $newFileName;
-
-                        if (move_uploaded_file($tmpName, $targetPath)) {
-                            $leadData['bill_attachment'] = $newFileName;
-                        } else {
-                            echo json_encode(['error' => 'Failed to move uploaded file.']);
-                            return;
-                        }
-                    }
-                }
-
-                if ($department === 'restaurants') {
-                    $leadData['booking_date'] = $this->input->post('booking_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['fnb_email'] = $this->input->post('fnb_email');
-                }
-
-                if ($department === 'banquets') {
-                    $leadData['booking_date'] = $this->input->post('booking_date');
-                    $leadData['pax'] = $this->input->post('pax');
-                    $leadData['amount'] = $this->input->post('amount');
-                    $leadData['banquet_email'] = $this->input->post('banquet_email');
-                }
-            }
-
-            // Shopping - Follow up - In Progress
-            if (strpos(strtolower($disposition), 'shopping - follow up') !== false && strtolower($status) === 'in progress') {
-                $leadData['booking_enquiry_date'] = $this->input->post('booking_enquiry_date');
-                $leadData['followup_date'] = $this->input->post('followup_date');
-                $leadData['second_followup_date'] = $this->input->post('second_followup_date');
-                $leadData['followup_remark'] = $this->input->post('followup_remark');
-
-                if ($department === 'banquets') {
-                    $leadData['transfer_to_manager'] = $this->input->post('transfer_to_manager');
-                }
-            }
-
-
-
-            $phone = $this->input->post('phone_number', true);
-            $twoHoursAgo = date('Y-m-d H:i:s', strtotime('-2 hours'));
-
-            // find last lead created in last 2 hours with same phone number
-            $existingLead = $this->db
-                ->where('phone_number', $phone)
-                ->where('created_at >=', $twoHoursAgo)
-                ->where('status !=', 'Closed')
-                ->where('is_deleted', 0)
-                ->order_by('id', 'DESC')
-                ->get('leads')
-                ->row();
-
-            if (!empty($existingLead)) {
-
-                // Do not change original creation timestamp
-                unset($leadData['created_at']);
-
-                // Update existing lead with fresh details
-                $this->db->where('id', $existingLead->id)
-                    ->update('leads', $leadData);
-
-                echo json_encode([
-                    'status' => true,
-                    'message' => 'Duplicate detected: Existing lead updated successfully.',
-                    'duplicate' => true
-                ]);
-                return; // stop here, no email, no new lead creation
-            }
-
-            // Insert data into DB
-            // Insert into DB
-            $insert_id = $this->LeadModel->insert_lead($leadData);
-
-            $leadData['created_at'] = date('Y-m-d H:i:s');
-
-
-            $phone = $leadData['phone_number'];
-
-            // Check if any previous lead has reservation with revenue > 0
-            $valuableGuest = $this->db
-                ->select('id, disposition, amount')  // revenue_amount = your amount column
-                ->from('leads')
-                ->where('is_deleted', 0)
-                ->where('phone_number', $phone)
-                ->where('LOWER(disposition)', 'reservation')   // case-insensitive match
-                ->where('amount >', 0)                // has revenue
-                ->order_by('id', 'DESC')
-                ->limit(1)
-                ->get()
-                ->row();
-
-            if ($valuableGuest) {
-                $IsvaluableGuest = true;
-            } else {
-                $IsvaluableGuest = false;
-            }
-
-
-
-
-
-
-            if ($insert_id) {
-
-                $url = base_url("EmailWorker/sendLeadEmail/$insert_id/$IsvaluableGuest");
-
-                // Fire & Forget HTTP Request
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POST, false); // GET request
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // We don't care about the response
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 100); // Fast timeout
-                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); // Don't wait for response
-                curl_setopt($ch, CURLOPT_NOSIGNAL, 1); // For timeout under 1s (only on Unix)
-                curl_exec($ch);
-                curl_close($ch);
-                echo json_encode(['status' => true, 'message' => 'Lead created successfully.']);
-            } else {
-                echo json_encode(['status' => false, 'message' => 'Failed to insert lead.']);
-            }
-        } else {
-            show_404();
+        if (!preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+            $errors['phone_number'] = 'Enter a valid 10-digit Indian mobile number.';
         }
+        if ($disposition !== 'Not Contacted' && $value('user_name') === '') {
+            $errors['username'] = 'Guest name is required.';
+        }
+        if ($value('email') !== '' && !filter_var($value('email'), FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Enter a valid email address.';
+        }
+
+        $required = [
+            'property' => 'Please select a hotel.',
+            'type' => 'Please select a department.',
+            'user_channel' => 'Please select a lead source.',
+            'disposition' => 'Please select a stage.',
+            'status' => 'Please select a lead status.',
+            'query' => 'Query is required.'
+        ];
+        foreach ($required as $field => $message) {
+            if ($value($field) === '') {
+                $errors[$field === 'status' ? 'lead_status' : $field] = $message;
+            }
+        }
+
+        if ($disposition === 'Quotation Sent') {
+            $errors['disposition'] = 'Quotation Sent is not available for agency users.';
+        } elseif ($disposition !== '' && !in_array($disposition, $allowedStages, true)) {
+            $errors['disposition'] = 'Please select a valid stage.';
+        }
+        if ($disposition === 'Lead Lost' && $value('reason') === '') {
+            $errors['reason'] = 'Please select a reason.';
+        }
+
+        return $errors;
     }
 
+    public function insert_lead()
+    {
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode(['status' => false, 'message' => 'Method not allowed.']));
+        }
+
+        $agencySession = $this->session->userdata('agency_session');
+        $agencyId = (int) ($agencySession['id'] ?? 0);
+        $property = (int) $this->input->post('property', true);
+        $type = (int) $this->input->post('type', true);
+        $hotel = $this->Common_model->getdata('hotel_admin', ['hotel_id' => $property]);
+        $department = $this->Common_model->getdata('departments', [
+            'department_id' => $type,
+            'is_deleted' => 0
+        ]);
+        $errors = $this->validateAgencyLeadInput();
+
+        $propertyMapping = $this->db
+            ->where('agency_id', $agencyId)
+            ->where('property_id', $property)
+            ->get('agency_property_mapping')
+            ->row_array();
+        if (!$hotel || !$propertyMapping) {
+            $errors['property'] = 'The selected hotel is not assigned to this agency.';
+        }
+        if (!$department) {
+            $errors['type'] = 'Please select a valid department.';
+        }
+
+        if (!empty($errors)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(422)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Please correct the highlighted fields.',
+                    'errors' => $errors,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ], JSON_UNESCAPED_UNICODE));
+        }
+
+        $phone = substr(preg_replace('/\D+/', '', (string) $this->input->post('phone_number', true)), -10);
+        $now = date('Y-m-d H:i:s');
+        $leadData = [
+            'user_name' => trim((string) $this->input->post('user_name', true)),
+            'phone_number' => $phone,
+            'email' => trim((string) $this->input->post('email', true)),
+            'user_channel' => $this->input->post('user_channel', true),
+            'property' => $property,
+            'type' => $type,
+            'status' => $this->input->post('status', true),
+            'disposition' => $this->input->post('disposition', true),
+            'created_at' => $now,
+            'query' => $this->input->post('query', true),
+            'remark' => $this->input->post('remark', true),
+            'lead_type' => $this->input->post('lead_type', true),
+            'purpose' => $this->input->post('purpose', true),
+            'reason' => $this->input->post('reason', true),
+            'template_name' => 'Agency',
+            'city' => $hotel->city_id,
+            'created_by' => $agencyId,
+            'creator_user_role' => 'Agency'
+        ];
+
+        foreach (['booking_date', 'followup_date', 'second_followup_date', 'amount'] as $field) {
+            $fieldValue = $this->input->post($field, true);
+            if ($fieldValue !== null && $fieldValue !== '') {
+                $leadData[$field] = $fieldValue;
+            }
+        }
+
+        $escalationHours = (float) ($department->escalation_level_1 ?? 0);
+        $leadData['esc_next_followup_at'] = date('Y-m-d H:i:s', strtotime('+' . ($escalationHours * 60) . ' minutes'));
+        $leadData['esc_follow_up_level'] = 1;
+
+        if ($leadData['status'] === 'Closed') {
+            $leadData['completed_time'] = $now;
+        } else {
+            $leadData['responded_time'] = $now;
+        }
+
+        $existingLead = $this->db
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('property', $property)
+            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-2 hours')))
+            ->where('status !=', 'Closed')
+            ->where('is_deleted', 0)
+            ->order_by('id', 'DESC')
+            ->get('leads')
+            ->row();
+
+        if ($existingLead) {
+            unset($leadData['created_at']);
+            $saved = $this->db
+                ->where('id', (int) $existingLead->id)
+                ->where('property', $property)
+                ->update('leads', $leadData);
+
+            if ($saved) {
+                $this->triggerAssignedLeadEmail((int) $existingLead->id, $phone, 'updated');
+            }
+
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'status' => (bool) $saved,
+                    'message' => $saved ? 'Existing lead updated successfully.' : 'Failed to update the existing lead.',
+                    'duplicate' => true,
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $insertId = $this->LeadModel->insert_lead($leadData);
+        if (!$insertId) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(500)
+                ->set_output(json_encode([
+                    'status' => false,
+                    'message' => 'Failed to insert lead.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
+
+        $this->triggerAssignedLeadEmail((int) $insertId, $phone, 'created');
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'status' => true,
+                'message' => 'Lead created successfully.',
+                'leadId' => (int) $insertId,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ]));
+    }
+
+    private function triggerAssignedLeadEmail($leadId, $phone, $notificationType)
+    {
+        $valuableGuest = $this->db
+            ->select('id')
+            ->from('leads')
+            ->where('is_deleted', 0)
+            ->where("RIGHT(phone_number, 10) =", $phone, false)
+            ->where('LOWER(disposition)', 'reservation')
+            ->where('amount >', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+
+        $emailUrl = base_url(
+            'EmailWorker/sendLeadEmailToassigned_person_email/' .
+            (int) $leadId . '/' .
+            ($valuableGuest ? '1' : '0') . '/' .
+            rawurlencode($notificationType)
+        );
+        $emailRequest = curl_init();
+        curl_setopt($emailRequest, CURLOPT_URL, $emailUrl);
+        curl_setopt($emailRequest, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($emailRequest, CURLOPT_CONNECTTIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($emailRequest, CURLOPT_NOSIGNAL, 1);
+        $requested = curl_exec($emailRequest);
+
+        if ($requested === false) {
+            log_message('error', 'Agency lead email worker could not be started for lead ID ' . (int) $leadId . ': ' . curl_error($emailRequest));
+        }
+        curl_close($emailRequest);
+    }
 
 
 

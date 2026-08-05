@@ -3915,7 +3915,8 @@ class LeadController extends CI_Controller
         $response = [
             'html'        => $html,
             'count'       => count($leads),
-            'totalCounts' => $totalCounts
+            'totalCounts' => $totalCounts,
+            'csrfHash'    => $this->security->get_csrf_hash()
         ];
 
         // Send JSON safely in CI3

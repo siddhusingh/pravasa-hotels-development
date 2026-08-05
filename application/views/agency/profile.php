@@ -1,284 +1,258 @@
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <div class="container-full">
-      <!-- Content Header (Page header) -->
-      <div class="content-header">
-        <div class="d-flex align-items-center">
-          <div class="me-auto">
-            <h4 class="page-title">My Profile</h4>
-            <div class="d-inline-block align-items-center">
-              <nav>
-                <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
-                  <li class="breadcrumb-item" aria-current="page">My</li>
-                  <li class="breadcrumb-item active" aria-current="page">Profile</li>
-                </ol>
-              </nav>
-            </div>
-          </div>
-
+<div class="content-wrapper">
+  <div class="container-full">
+    <div class="custom-page-header">
+      <div class="header-left">
+        <div class="header-icon-box"><i class="fa fa-user"></i></div>
+        <div class="header-content">
+          <h2 class="header-title">My Profile</h2>
+          <ol class="custom-breadcrumb">
+            <li><i class="fa fa-home"></i></li>
+            <li>Agency Admin</li>
+            <li><i class="fa fa-angle-right"></i></li>
+            <li class="active">My Profile</li>
+          </ol>
         </div>
       </div>
+      <div class="header-banner">
+        <img src="<?= base_url('assets/new_img/profile_img.png'); ?>" alt="Profile">
+      </div>
+    </div>
 
-      <!-- Main content -->
-      <section class="content">
-        <div class="row">
+    <section class="content">
+      <div class="row">
+        <div class="col-xl-12 col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="tab-content">
+                <div class="tab-pane show active" id="settings">
+                  <h5 class="mb-4 text-uppercase">
+                    <i class="fa fa-user"></i> Personal Info
+                  </h5>
 
-
-          <div class="col-xl-12 col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
-
-                  <li class="nav-item">
-                    <a href="#settings" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 active">
-                      Settings
-                    </a>
-                  </li>
-                </ul>
-                <div class="tab-content">
-
-
-                  <div class="tab-pane show active" id="settings">
-
-                    <h5 class="mb-4 text-uppercase"><i class="mdi mdi-account-circle me-1"></i> Personal Info</h5>
+                  <form id="agency-profile-form" novalidate>
                     <div class="row">
-
-
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label for="full_name" class="form-label">Agency Name</label>
-                          <input type="text" class="form-control" id="selected_hotel_name" value="<?php echo $profile_data->agency_name; ?>" readonly>
-
+                          <label for="agency_name" class="form-label">Agency Name</label>
+                          <input type="text" class="form-control" id="agency_name"
+                            value="<?= htmlspecialchars($profile_data->agency_name ?? '', ENT_QUOTES, 'UTF-8'); ?>" readonly>
                         </div>
                       </div>
+
                       <div class="col-md-4">
                         <div class="mb-3">
                           <label for="full_name" class="form-label">Full Name</label>
-                          <input type="text" class="form-control" id="full_name" value="<?php echo $profile_data->contact_person; ?>">
+                          <input type="text" class="form-control" id="full_name" name="name"
+                            value="<?= htmlspecialchars($profile_data->contact_person ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            autocomplete="name">
                           <span class="text-danger" id="full_name_error"></span>
-
-                          <input type="hidden" name="" value="<?php echo $profile_data->id; ?>" id="record_id">
                         </div>
                       </div>
+
                       <div class="col-md-4">
                         <div class="mb-3">
-                          <label for="useremail" class="form-label">Phone Number</label>
-                          <input type="Number" class="form-control" id="phone" value="<?php echo $profile_data->phone; ?>">
+                          <label for="phone" class="form-label">Phone Number</label>
+                          <input type="tel" class="form-control" id="phone" name="phone"
+                            value="<?= htmlspecialchars($profile_data->phone ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            autocomplete="tel">
                           <span class="text-danger" id="phone_error"></span>
-
                         </div>
                       </div>
+
                       <div class="col-md-6">
                         <div class="mb-3">
-                          <label for="useremail" class="form-label">Email Address</label>
-                          <input type="email" class="form-control" id="email" value="<?php echo $profile_data->email; ?>">
+                          <label for="email" class="form-label">Email Address</label>
+                          <input type="email" class="form-control" id="email" name="email"
+                            value="<?= htmlspecialchars($profile_data->email ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            autocomplete="email">
                           <span class="text-danger" id="email_error"></span>
-
-
                         </div>
                       </div>
 
                       <div class="col-md-6">
                         <div class="mb-3">
-                          <label for="userpassword" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="password">
-                          <span class="text-danger" id="password_error"></span>
+                          <label for="password" class="form-label">
+                            New Password <span class="text-muted">(Optional)</span>
+                          </label>
+                          <input type="password" class="form-control" id="password" name="password"
+                            autocomplete="new-password" placeholder="Leave blank to keep current password">
+                          <small class="text-muted">Enter a new password only if you want to change it.</small>
+                          <span class="text-danger d-block" id="password_error"></span>
                         </div>
-                      </div> <!-- end col -->
-
-                    </div> <!-- end row -->
-
-
-                    <div class="text-end">
-                      <button type="button" class="btn btn-primary mt-2 " id="updateBtn"><i class="mdi mdi-content-save"></i> Save Changes</button>
+                      </div>
                     </div>
 
-                  </div>
-                  <!-- end settings content-->
-
-                </div> <!-- end tab-content -->
-              </div> <!-- end card body -->
-            </div> <!-- end card -->
-          </div> <!-- end col -->
+                    <div class="text-end">
+                      <button type="submit" class="btn btn-primary mt-2" id="updateBtn">
+                        <i class="fa fa-save m-1"></i> Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <!-- end row-->
-
-      </section>
-      <!-- /.content -->
-    </div>
+      </div>
+    </section>
   </div>
-  <!-- /.content-wrapper -->
+</div>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-  <script>
-    // validation rules for comments
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+<script>
+  window.CSRF = window.CSRF || {
+    name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+    hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+  };
+
+  $(function() {
+    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    var passwordPattern = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/;
+    var isReloading = false;
+    var $form = $('#agency-profile-form');
+    var $fullName = $('#full_name');
+    var $email = $('#email');
+    var $phone = $('#phone');
+    var $password = $('#password');
+    var $submitButton = $('#updateBtn');
+
     toastr.options = {
-      'closeButton': true,
-      'debug': false,
-      'newestOnTop': false,
-      'progressBar': false,
-      'positionClass': 'toast-top-right',
-      'preventDuplicates': false,
-      'showDuration': '1000',
-      'hideDuration': '1000',
-      'timeOut': '5000',
-      'extendedTimeOut': '1000',
-      'showEasing': 'swing',
-      'hideEasing': 'linear',
-      'showMethod': 'fadeIn',
-      'hideMethod': 'fadeOut',
+      closeButton: true,
+      newestOnTop: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      timeOut: 5000
+    };
+
+    var profileSuccess = <?= json_encode((string) $this->session->flashdata('profile_success')); ?>;
+    if (profileSuccess) {
+      toastr.success(profileSuccess);
     }
 
+    function setFieldError(fieldName, message) {
+      $('#' + fieldName + '_error').text(message || '');
+    }
 
+    function validateFullName() {
+      var isValid = $.trim($fullName.val()) !== '';
+      setFieldError('full_name', isValid ? '' : 'Please Enter Full Name');
+      return isValid;
+    }
 
-    <?php if ($this->session->flashdata('profile_success') != "") { ?>
+    function validateEmail() {
+      var email = $.trim($email.val());
+      var message = '';
 
-
-
-      toastr.success('<?php echo $this->session->flashdata('profile_success'); ?>')
-
-    <?php $this->session->set_flashdata('profile_success', '');
-    } ?>
-  </script>
-  <script type="text/javascript">
-    // add Senior Managers code start from here
-
-
-
-
-
-    // validation rules
-
-    $('#full_name').focusout(function() {
-      var value = this.value;
-      if (value != "") {
-        $('#full_name_error').html('');
-      } else {
-        $('#full_name_error').html('Please Enter Full Name');
-        $('#full_name').val('');
+      if (email === '') {
+        message = 'Please Enter Email';
+      } else if (!emailPattern.test(email)) {
+        message = 'Please Enter a Valid Email Address';
       }
 
-    });
+      setFieldError('email', message);
+      return message === '';
+    }
 
+    function validatePhone() {
+      var isValid = $.trim($phone.val()) !== '';
+      setFieldError('phone', isValid ? '' : 'Please Enter Phone Number');
+      return isValid;
+    }
 
+    function validatePassword() {
+      var password = $password.val();
+      var isValid = password === '' || passwordPattern.test(password);
 
+      setFieldError('password', isValid
+        ? ''
+        : 'Password must be at least 6 characters long, contain at least one number and one special character'
+      );
+      return isValid;
+    }
 
-    $('#email').focusout(function() {
-      var value = this.value;
-      if (value != "") {
-        $('#email_error').html('');
-      } else {
-        $('#email_error').html('Please Enter Email ');
-        $('#email').val('');
+    function setProcessing(isProcessing) {
+      $submitButton.prop('disabled', isProcessing).html(isProcessing
+        ? '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...'
+        : '<i class="fa fa-save m-1"></i> Save Changes'
+      );
+    }
+
+    $fullName.on('blur input', validateFullName);
+    $email.on('blur input', validateEmail);
+    $phone.on('blur input', validatePhone);
+    $password.on('blur input', validatePassword);
+
+    $form.on('submit', function(event) {
+      event.preventDefault();
+
+      var isFullNameValid = validateFullName();
+      var isEmailValid = validateEmail();
+      var isPhoneValid = validatePhone();
+      var isPasswordValid = validatePassword();
+
+      if (!isFullNameValid || !isEmailValid || !isPhoneValid || !isPasswordValid) {
+        return;
       }
 
-    });
+      var formData = new FormData();
+      formData.append('name', $.trim($fullName.val()));
+      formData.append('email', $.trim($email.val()));
+      formData.append('phone', $.trim($phone.val()));
+      formData.append('password', $password.val());
+      formData.append(window.CSRF.name, window.CSRF.hash);
 
-    $('#phone').focusout(function() {
-      var value = this.value;
-      if (value != "") {
-        $('#phone_error').html('');
-      } else {
-        $('#phone_error').html('Please Enter Phone Number ');
-        $('#phone').val('');
-      }
-
-    });
-
-    $('#password').focusout(function() {
-      var value = this.value;
-      var passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/; // At least 6 characters, one number, and one special character
-
-      if (value != "") {
-        if (!passwordRegex.test(value)) {
-          $('#password_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
-          $('#password').val('');
-        } else {
-          $('#password_error').html('');
-        }
-      } else {
-        $('#password_error').html('Please Enter Password');
-        $('#password').val('');
-      }
-    });
-
-
-
-    $(document).on('click', '#updateBtn', function(e) {
-      e.preventDefault();
-
-      var isValid = true; // Flag to check if form is valid
-
-      var record_id = $("#record_id").val();
-      var full_name = $('#full_name').val().trim();
-      var email = $('#email').val().trim();
-      var password = $('#password').val();
-      var phone = $('#phone').val().trim();
-
-      var passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,}$/; // At least 6 characters, one number, one special character
-
-      // Validate full_name
-      if (full_name == '') {
-        $('#full_name_error').html('Please Enter Full Name');
-        isValid = false;
-      } else {
-        $('#full_name_error').html('');
-      }
-
-      // Validate email
-      if (email == '') {
-        $('#email_error').html('Please Enter Email');
-        isValid = false;
-      } else {
-        $('#email_error').html('');
-      }
-
-      // Validate phone
-      if (phone == '') {
-        $('#phone_error').html('Please Enter Phone Number');
-        isValid = false;
-      } else {
-        $('#phone_error').html('');
-      }
-
-      // Validate password
-      if (password == '') {
-        $('#password_error').html('Please Enter Password');
-        isValid = false;
-      } else if (!passwordRegex.test(password)) {
-        $('#password_error').html('Password must be at least 6 characters long, contain at least one number and one special character');
-        isValid = false;
-      } else {
-        $('#password_error').html('');
-      }
-
-      // If all validations passed, then submit via Ajax
-      if (isValid) {
-        var formData = new FormData();
-
-        formData.append('name', full_name);
-        formData.append('email', email);
-        formData.append('password', password);
-        formData.append('phone', phone);
-        formData.append('id', record_id);
-
-        $.ajax({
-          url: '<?php echo base_url("update-agency-profile") ?>',
-          type: 'POST',
-          data: formData,
-          processData: false,
-          contentType: false,
-          dataType: 'JSON',
-          beforeSend: function() {
-            $('#updateBtn').html('Updating...').attr('disabled', true);
-          },
-          success: function(response) {
-            window.location.reload();
+      $.ajax({
+        url: '<?= base_url('update-agency-profile'); ?>',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        beforeSend: function() {
+          setProcessing(true);
+        },
+        success: function(response) {
+          if (response.csrfHash) {
+            window.CSRF.hash = response.csrfHash;
           }
-        });
-      }
+
+          if (response.status) {
+            isReloading = true;
+            window.location.reload();
+            return;
+          }
+
+          toastr.error(response.message || 'Unable to update your profile.');
+        },
+        error: function(xhr) {
+          var response = xhr.responseJSON || {};
+
+          if (response.csrfHash) {
+            window.CSRF.hash = response.csrfHash;
+          }
+
+          if (response.errors) {
+            setFieldError('full_name', response.errors.name || '');
+            setFieldError('email', response.errors.email || '');
+            setFieldError('phone', response.errors.phone || '');
+            setFieldError('password', response.errors.password || '');
+            return;
+          }
+
+          toastr.error(response.message || (xhr.status === 403
+            ? 'Your session expired. Please refresh the page and try again.'
+            : 'Unable to update your profile.'
+          ));
+        },
+        complete: function() {
+          if (!isReloading) {
+            setProcessing(false);
+          }
+        }
+      });
     });
-  </script>
+  });
+</script>

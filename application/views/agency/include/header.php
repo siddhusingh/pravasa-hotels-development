@@ -15,11 +15,11 @@
 	<script src="https://use.fontawesome.com/76ecd250b9.js"></script>
 
 	<!-- Style-->
-	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/style.css">
-	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/skin_color.css">
-	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>/css/custom.css">
-	<!-- <link href="../../../../../cdn.jquery.app/jqueryscripttop.css" rel="stylesheet" type="text/css">
-	 -->
+	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>css/style.css">
+	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>css/skin_color.css">
+	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>css/custom.css">
+	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>css/lead.css">
+	<link rel="stylesheet" href="<?php echo base_url('assets/') ?>css/resposnive.css">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	<style type="text/css">
 		#loader {
@@ -44,7 +44,7 @@
 <body class="hold-transition light-skin sidebar-mini theme-primary fixed">
 
 	<div class="wrapper">
-		<div id="loader"></div>
+		<div id="loader d-none"></div>
 
 		<header class="main-header">
 			<div class="d-flex align-items-center logo-box justify-content-start">

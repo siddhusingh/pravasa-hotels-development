@@ -330,6 +330,12 @@ $route['facebook-form-add'] = 'superAdmin/FacebookformController/addForm';
 $route['facebook-form-details'] = 'superAdmin/FacebookformController/getFormDetails';
 $route['facebook-form-update'] = 'superAdmin/FacebookformController/updateForm';
 $route['facebook-form-delete'] = 'superAdmin/FacebookformController/deleteForm';
+
+
+
+// Agency Section Routes
+
+
 $route['agency-login'] = 'AgencyLogin/index';
 $route['agency-dashboard'] = 'agency/main/index';
 $route['agency-profile'] = 'agency/main/profile';

@@ -1269,6 +1269,56 @@
 <!-- 
    lead filters from start is here -->
 <script>
+    window.CSRF = window.CSRF || {
+        name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+        hash: <?= json_encode($this->security->get_csrf_hash()); ?>,
+        cookie: <?= json_encode($this->config->item('csrf_cookie_name')); ?>
+    };
+
+    function getAgencyCsrfCookie(cookieName) {
+        var encodedName = encodeURIComponent(cookieName) + '=';
+        var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+        for (var index = 0; index < cookies.length; index++) {
+            if (cookies[index].indexOf(encodedName) === 0) {
+                return decodeURIComponent(cookies[index].substring(encodedName.length));
+            }
+        }
+
+        return '';
+    }
+
+    function currentAgencyCsrfHash() {
+        return getAgencyCsrfCookie(window.CSRF.cookie) || window.CSRF.hash;
+    }
+
+    function refreshAgencyCsrf(response) {
+        if (response && response.csrfHash) {
+            window.CSRF.hash = response.csrfHash;
+        }
+    }
+
+    var agencyFilterRequestQueue = $.Deferred().resolve().promise();
+
+    function agencyFilterAjax(options) {
+        var requestOptions = $.extend({}, options);
+        requestOptions.data = $.extend({}, options.data || {});
+
+        var runRequest = function() {
+            requestOptions.data[window.CSRF.name] = currentAgencyCsrfHash();
+
+            return $.ajax(requestOptions).always(function(firstArgument, textStatus, thirdArgument) {
+                var xhr = thirdArgument && thirdArgument.responseJSON !== undefined
+                    ? thirdArgument
+                    : firstArgument;
+                refreshAgencyCsrf(xhr && xhr.responseJSON ? xhr.responseJSON : firstArgument);
+            });
+        };
+
+        agencyFilterRequestQueue = agencyFilterRequestQueue.then(runRequest, runRequest);
+        return agencyFilterRequestQueue;
+    }
+
     $(document).ready(function() {
 
         let offset = 0; // pagination offset
@@ -1336,7 +1386,7 @@
                 limit: limit
             };
 
-            $.ajax({
+            agencyFilterAjax({
                 url: "<?= base_url('LeadController/fetch_leads_ajax_agency') ?>",
                 method: "POST",
                 data: filters,
@@ -1360,8 +1410,8 @@
                         $('#lead_container').append(response.html);
                     }
 
-                    // Update offset
-                    offset += response.count;
+                    // A reset replaces the current result set; Load More advances it.
+                    offset = reset ? response.count : offset + response.count;
 
                     // Show/Hide Load More button
                     if (response.count < limit) {
