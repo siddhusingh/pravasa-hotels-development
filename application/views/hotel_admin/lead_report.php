@@ -139,7 +139,6 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                                     <option value="Open">Open</option>
                                     <option value="In Progress">In Progress</option>
                                     <option value="Closed">Closed</option>
-                                    <option value="Not Assigned">Not-assigned</option>
                                  </select>
                               </div>
                               <!-- Lead Source -->
@@ -196,13 +195,12 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                      </div>
                      <div class="">
                         <?php
-                        $statuses = ['Open', 'In Progress', 'Closed', 'Not Assigned'];
+                        $statuses = ['Open', 'In Progress', 'Closed'];
 
                         $statusColors = [
                            'Open' => 'text-dark border border-dark',
                            'In Progress' => 'bg-info-subtle text-info',
-                           'Closed' => 'bg-success-subtle text-success',
-                           'Not Assigned' => 'bg-secondary-subtle text-secondary'
+                           'Closed' => 'bg-success-subtle text-success'
                         ];
 
                         $current_status = $this->input->get('status'); // get current status from URL
@@ -227,8 +225,7 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                               $statusMapping = [
                                  'Open' => 'open',
                                  'In Progress' => 'in_progress',
-                                 'Closed' => 'closed',
-                                 'Not Assigned' => 'not_assigned'
+                                 'Closed' => 'closed'
                               ];
 
                               foreach ($statuses as $status):
@@ -1190,6 +1187,22 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
 
          if (disposition === 'Lead Lost' && !value('reason')) {
             errors.reason = 'Please select a reason.';
+         }
+
+         const bookingDate = value('booking_date') || value('booking_enquiry_date');
+         const followupDate = value('followup_date');
+         const secondFollowupDate = value('second_followup_date');
+
+         if (bookingDate && followupDate && followupDate >= bookingDate) {
+            errors.followup_date = 'Follow-up Date must be before Booking Date.';
+         }
+         if (bookingDate && secondFollowupDate && secondFollowupDate >= bookingDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be before Booking Date.';
+         }
+         if (secondFollowupDate && !followupDate) {
+            errors.followup_date = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+         } else if (followupDate && secondFollowupDate && secondFollowupDate <= followupDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be later than Follow-up Date.';
          }
 
          if (disposition === 'Quotation Sent') {
@@ -3495,9 +3508,6 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
                $('#status_count_in_progress').text('In Progress (' + (totalCounts.in_progress || 0) + ')');
                $('#status_count_closed').text('Closed (' + (totalCounts.closed || 0) + ')');
 
-               $('#status_count_not_assigned').text('Not Assigned (' + (totalCounts.not_assigned || 0) + ')');
-
-
                const filteredTotal = parseInt(response.filteredTotal ?? totalCounts.total ?? 0, 10) || 0;
                $('#total_leads_count').text(filteredTotal);
 
@@ -3529,6 +3539,8 @@ $hide_reserve_table_button = in_array($this->uri->segment(1), ['view-followups-a
             // }
          });
       }
+
+      window.fetchHotelAdminLeads = fetchLeads;
 
       // Initial load
       fetchLeads(true);
@@ -4017,7 +4029,7 @@ ${data.bill_attachment ? `
 
       Swal.fire({
          title: "Are you sure?",
-         text: "This lead will be removed from active leads.",
+         text: "This lead will be permanently deleted from the database.",
          icon: "warning",
          showCancelButton: true,
          confirmButtonColor: "#d33",
@@ -4029,7 +4041,7 @@ ${data.bill_attachment ? `
          if (result.isConfirmed) {
 
             csrfAjax({
-               url: "<?= base_url('LeadController/deleteLead') ?>", // ✅ CHANGE to your actual controller method
+               url: "<?= base_url('hotelAdmin/Leads/permanently_delete_lead') ?>",
                type: "POST",
                data: {
                   id: leadId
@@ -4044,11 +4056,7 @@ ${data.bill_attachment ? `
 
                   if (res.status === true) {
                      toastr.success("Lead deleted successfully!");
-
-
-                     $("#lead_card-" + leadId).fadeOut();
-
-
+                     window.fetchHotelAdminLeads(true);
                   } else {
                      toastr.error("Failed to delete lead!");
                   }

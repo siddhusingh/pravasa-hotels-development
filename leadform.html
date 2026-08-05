@@ -167,12 +167,13 @@
 <script>
 // Change only this value when the API is hosted on another domain or folder.
 const BASE_URL = 'http://localhost/pravasahotels/';
+const DEFAULT_SELECTIONS = {"property_id":null,"department_id":null,"restaurant_id":null,"banquet_id":null};
 
 function apiUrl(path) {
     return `${BASE_URL.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`;
 }
 
-async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, errorText }) {
+async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, errorText, selectedId = null }) {
     select.disabled = true;
     select.replaceChildren(new Option('Loading...', ''));
 
@@ -198,7 +199,8 @@ async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, err
 
             // Keep the current name-based submission working. The API ID is
             // retained for the save_lead integration in the next step.
-            const option = new Option(name, name);
+            const isSelected = selectedId !== null && String(id) === String(selectedId);
+            const option = new Option(name, name, false, isSelected);
             option.dataset.id = id;
             options.appendChild(option);
         });
@@ -211,7 +213,7 @@ async function loadSelectOptions({ url, select, placeholder, idKey, nameKey, err
     }
 }
 
-async function loadVenueOptions({ path, select, placeholder, idKey, nameKey, emptyText }) {
+async function loadVenueOptions({ path, select, placeholder, idKey, nameKey, emptyText, selectedId = null }) {
     const propertySelect = document.getElementById('property');
     const propertyId = propertySelect.selectedOptions[0]?.dataset.id || '';
 
@@ -242,7 +244,8 @@ async function loadVenueOptions({ path, select, placeholder, idKey, nameKey, emp
             const id = item[idKey];
             const name = String(item[nameKey] || '').trim();
             if (!id || !name) return;
-            options.appendChild(new Option(name, id));
+            const isSelected = selectedId !== null && String(id) === String(selectedId);
+            options.appendChild(new Option(name, id, false, isSelected));
         });
 
         select.replaceChildren(options);
@@ -270,7 +273,7 @@ function purposeField() {
         </div>`;
 }
 
-function renderDepartmentFields(departmentName) {
+function renderDepartmentFields(departmentName, defaultSelections = {}) {
     const container = document.getElementById('departmentFields');
     const department = String(departmentName || '').trim().toLowerCase();
 
@@ -331,7 +334,8 @@ function renderDepartmentFields(departmentName) {
             placeholder: 'Select Restaurant',
             idKey: 'restaurant_id',
             nameKey: 'restaurant_name',
-            emptyText: 'No restaurants found'
+            emptyText: 'No restaurants found',
+            selectedId: defaultSelections.restaurant_id ?? null
         });
         return;
     }
@@ -383,7 +387,8 @@ function renderDepartmentFields(departmentName) {
             placeholder: 'Select Banquet',
             idKey: 'banquet_id',
             nameKey: 'banquet_name',
-            emptyText: 'No banquets found'
+            emptyText: 'No banquets found',
+            selectedId: defaultSelections.banquet_id ?? null
         });
     }
 }
@@ -572,24 +577,31 @@ function validateLeadForm(form, errorMsg) {
     return true;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    loadSelectOptions({
-        url: apiUrl('api/property-list'),
-        select: document.getElementById('property'),
-        placeholder: 'Select Property',
-        idKey: 'property_id',
-        nameKey: 'property_name',
-        errorText: 'Unable to load properties'
-    });
+document.addEventListener('DOMContentLoaded', async function () {
+    await Promise.all([
+        loadSelectOptions({
+            url: apiUrl('api/property-list'),
+            select: document.getElementById('property'),
+            placeholder: 'Select Property',
+            idKey: 'property_id',
+            nameKey: 'property_name',
+            errorText: 'Unable to load properties',
+            selectedId: DEFAULT_SELECTIONS.property_id
+        }),
+        loadSelectOptions({
+            url: apiUrl('api/department-list'),
+            select: document.getElementById('department'),
+            placeholder: 'Select Department',
+            idKey: 'department_id',
+            nameKey: 'department_name',
+            errorText: 'Unable to load departments',
+            selectedId: DEFAULT_SELECTIONS.department_id
+        })
+    ]);
 
-    loadSelectOptions({
-        url: apiUrl('api/department-list'),
-        select: document.getElementById('department'),
-        placeholder: 'Select Department',
-        idKey: 'department_id',
-        nameKey: 'department_name',
-        errorText: 'Unable to load departments'
-    });
+    if (DEFAULT_SELECTIONS.department_id !== null) {
+        renderDepartmentFields(document.getElementById('department').value, DEFAULT_SELECTIONS);
+    }
 
     document.getElementById('department').addEventListener('change', function () {
         renderDepartmentFields(this.value);

@@ -21,13 +21,9 @@
 
 										<div class="admin_left">
 
-											<?php
-											$hotelAdminSession = $this->session->userdata('hotel_admin_session');
-											$hotelAdminName = $hotelAdminSession['user_name'] ?? 'User';
-											?>
 											<h2>
 												<?= htmlspecialchars(get_time_based_greeting(), ENT_QUOTES, 'UTF-8'); ?>,
-												<?= htmlspecialchars($hotelAdminName, ENT_QUOTES, 'UTF-8'); ?> 👋
+												<?= htmlspecialchars($hotel_admin_name, ENT_QUOTES, 'UTF-8'); ?> 👋
 											</h2>
 
 											<p>
@@ -279,7 +275,7 @@
 								</div>
 
 								<!-- Not Assigned -->
-								<div class="col-sm-3 col-12">
+								<div class="d-none col-sm-3 col-12">
 									<a href="<?= base_url('view-leads?status=Not-assigned') ?>">
 										<div class="premium-card">
                                             <div class="card-top">

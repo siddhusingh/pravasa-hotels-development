@@ -90,7 +90,10 @@
                     </button>
 
 
-                    <?php if ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1) { ?>
+                    <?php if (
+                        ($logged_in_role === 'super_admin' && $this->session->userdata('user_role') == 1)
+                        || in_array($logged_in_role, ['hotel_admin', 'admin'], true)
+                    ) { ?>
                         <button class="btn  btn-sm deleteLeadBtn"
                             data-id="<?php echo $lead['id']; ?>">
                             <i class="fa fa-trash"></i> Delete

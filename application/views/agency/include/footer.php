@@ -142,7 +142,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
          <div class="media-list media-list-hover mt-20">
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-success" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/1.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -154,7 +153,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-danger" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/2.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -166,7 +164,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-warning" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/3.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -178,7 +175,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-primary" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/4.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -190,7 +186,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-success" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/1.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -202,7 +197,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-danger" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/2.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -214,7 +208,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-warning" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/3.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -226,7 +219,6 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
             </div>
             <div class="media py-10 px-0">
                <a class="avatar avatar-lg status-primary" href="#">
-                  <img src="<?php echo base_url('images/') ?>/avatar/4.jpg" alt="...">
                </a>
                <div class="media-body">
                   <p class="fs-16">
@@ -390,8 +382,9 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
 <!-- ✅ Core Vendors -->
 <script src="<?php echo base_url('assets/') ?>/js/vendors.min.js"></script>
 
-<!-- ✅ Flot Charts (before dashboard.js to avoid $.plot error) -->
-<script src="<?php echo base_url('assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
+<?php if ($this->uri->uri_string() === 'agency-dashboard'): ?>
+<!-- ✅ Dashboard chart libraries -->
+<script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.resize.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.pie.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/Flot/jquery.flot.categories.js"></script>
@@ -401,30 +394,30 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/apexcharts-bundle/dist/apexcharts.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>vendor_components/zingchart_branded_version/zingchart.min.js"></script>
 
-<!-- ✅ Feather Icons -->
-<script src="<?php echo base_url('assets/assets/') ?>icons/feather-icons/feather.min.js"></script>
-
 <!-- ✅ AmCharts (optional if used in dashboard) -->
 <script src="<?php echo base_url('assets/') ?>/lib/4/core.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/maps.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/geodata/worldLow.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/themes/dataviz.js"></script>
 <script src="<?php echo base_url('assets/') ?>/lib/4/themes/animated.js"></script>
+<?php endif; ?>
+
+<!-- ✅ Feather Icons (required by template.js on every Agency page) -->
+<script src="<?php echo base_url('assets/assets/') ?>icons/feather-icons/feather.min.js"></script>
 
 <!-- ✅ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?php echo base_url('assets/assets/') ?>/vendor_components/sweetalert/sweetalert.min.js"></script>
 <script src="<?php echo base_url('assets/assets/') ?>/vendor_components/sweetalert/jquery.sweet-alert.custom.js"></script>
 
-<!-- ✅ Chat popup if used -->
-<script src="<?php echo base_url('assets/') ?>/js/pages/chat-popup.js"></script>
-
 <!-- ✅ Tresto Template Scripts -->
 <script src="<?php echo base_url('assets/') ?>/js/template.js"></script>
 <script src="<?php echo base_url('assets/') ?>/js/demo.js"></script>
 
 <!-- ✅ Dashboard JS should come at last -->
+<?php if ($this->uri->uri_string() === 'agency-dashboard'): ?>
 <script src="<?php echo base_url('assets/') ?>/js/pages/dashboard.js"></script>
+<?php endif; ?>
 
 
 <!-- ✅ DataTables CSS & Buttons CSS -->
@@ -463,5 +456,5 @@ $profile_data = $this->Comman_model->get_single_record('agencies', ['id' => $log
 
 <!-- ✅ Custom Inline Script -->
 <script type="text/javascript">
-   $(".switch").trigger('click'); <
-   />
+   $(".switch").trigger('click');
+</script>

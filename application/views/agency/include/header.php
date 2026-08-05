@@ -44,7 +44,7 @@
 <body class="hold-transition light-skin sidebar-mini theme-primary fixed">
 
 	<div class="wrapper">
-		<div id="loader d-none"></div>
+		<div id="loader" class="d-none"></div>
 
 		<header class="main-header">
 			<div class="d-flex align-items-center logo-box justify-content-start">

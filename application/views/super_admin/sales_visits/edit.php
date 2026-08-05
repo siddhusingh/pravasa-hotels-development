@@ -2089,7 +2089,8 @@
         if (['booking_date', 'restaurant_id', 'slot_type_id', 'time_slot_id', 'table_category_id', 'table_id', 'table_reservation_status'].includes(field) && $('#openSalesReserveTableModal').length) {
             return $('#openSalesReserveTableModal');
         }
-        return $('#' + field);
+        const $fieldById = $('#' + field);
+        return $fieldById.length ? $fieldById : $('#dynamicFields [name="' + field + '"]').last();
     }
 
     function showSalesVisitFieldError(field, message) {
@@ -2158,6 +2159,25 @@
         if (!value('company_id')) errors.company_id = 'Please select a company.';
         if (!value('person_met')) errors.person_met = 'Please select the person met.';
         if (!value('discussion_summary')) errors.discussion_summary = 'Discussion summary is required.';
+
+        const dynamicValue = function(field) {
+            return $.trim(String($('#dynamicFields [name="' + field + '"]').last().val() || ''));
+        };
+        const bookingDate = dynamicValue('booking_date') || dynamicValue('booking_enquiry_date');
+        const followupDate = dynamicValue('followup_date');
+        const secondFollowupDate = dynamicValue('second_followup_date');
+
+        if (bookingDate && followupDate && followupDate >= bookingDate) {
+            errors.followup_date = 'Follow-up Date must be before Booking Date.';
+        }
+        if (bookingDate && secondFollowupDate && secondFollowupDate >= bookingDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be before Booking Date.';
+        }
+        if (secondFollowupDate && !followupDate) {
+            errors.followup_date = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        } else if (followupDate && secondFollowupDate && secondFollowupDate <= followupDate) {
+            errors.second_followup_date = '2nd Follow-up Date must be later than Follow-up Date.';
+        }
 
         if ($('#restaurant_id').length && !value('restaurant_id')) {
             errors.restaurant_id = 'Please select a restaurant.';

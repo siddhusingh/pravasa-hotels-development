@@ -38,7 +38,7 @@
                            <a href="<?= base_url('manage-cities') ?>"><i class="fa fa-area-chart"></i> City Management</a>
                         </li>
 
-                        <li class="<?php if ($this->uri->segment(1) == 'manage-areas') echo 'active'; ?>">
+                        <li class="<?php if ($this->uri->segment(1) == 'manage-areas') echo 'active'; ?> d-none">
                            <a href="<?= base_url('manage-areas') ?>"><i class="fa fa-location-arrow"></i> Area Management</a>
                         </li>
                      </ul>
@@ -381,7 +381,7 @@
                </li>
 
                <li>
-                  <a href="<?= base_url('download-lead-form') ?>">
+                  <a href="#" data-toggle="modal" data-target="#downloadLeadFormModal">
                      <i class="fa fa-download"></i>
                      <span>Download Lead Form</span>
                   </a>
@@ -400,3 +400,5 @@
       </div>
    </section>
 </aside>
+
+<?php $this->load->view('super_admin/include/download_lead_form_modal'); ?>

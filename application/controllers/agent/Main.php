@@ -91,13 +91,19 @@ class Main extends CI_Controller
             $data['assigned_users'] = $this->LeadModel->get_active_assigned_users();
 
 
-            $data['departments'] = $this->Common_model->getAllData('departments', '');
+            $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
             $data['properties'] = $this->Common_model->getAllData('hotel_admin', '');
             $data['cities'] = $this->Common_model->getAllData('city', '');
             $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
                 'property' => $property,
                 'is_deleted' => 0
             ]);
+
+            $agent = $this->Comman_model->get_single_record('staff_members', [
+                'id' => $agent_session['id'],
+                'is_deleted' => 0
+            ]);
+            $data['agent_name'] = !empty($agent->name) ? $agent->name : 'User';
 
 
 

@@ -127,6 +127,142 @@
         font-style: italic !important;
     }
 </style>
+<style>
+    #filter-section .agency-filter-single + .select2-container {
+        height: 46px;
+        width: 100% !important;
+    }
+
+    #filter-section .agency-filter-single + .select2-container .select2-selection--single {
+        align-items: center;
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        box-sizing: border-box;
+        display: flex;
+        height: 46px !important;
+        padding: 0 14px !important;
+    }
+
+    #filter-section .agency-filter-single + .select2-container .select2-selection__rendered {
+        line-height: normal;
+        padding-left: 0;
+    }
+
+    #filter-section .agency-filter-single + .select2-container .select2-selection__arrow {
+        height: 100%;
+        right: 8px;
+        top: 0;
+    }
+
+    #filter-section .row > [class*="col-"] {
+        margin-bottom: 16px;
+    }
+
+    #filter-section .lead-filter-multiselect {
+        position: relative;
+        width: 100%;
+    }
+
+    #filter-section .lead-filter-multiselect-source {
+        display: none !important;
+    }
+
+    #filter-section .lead-filter-multiselect-toggle {
+        align-items: center;
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        color: #495057;
+        display: flex;
+        height: 46px;
+        justify-content: space-between;
+        padding: 0 14px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #filter-section .lead-filter-multiselect-toggle::after {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid #6c757d;
+        content: '';
+        flex: 0 0 auto;
+        margin-left: 10px;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle,
+    #filter-section .lead-filter-multiselect-toggle:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        outline: 0;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-toggle::after {
+        border-bottom: 6px solid #6c757d;
+        border-top: 0;
+    }
+
+    #filter-section .lead-filter-multiselect-menu {
+        background: #d2d2d2;
+        border: 1px solid #c5c5c5;
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1080;
+    }
+
+    #filter-section .lead-filter-multiselect.is-open .lead-filter-multiselect-menu {
+        display: block;
+    }
+
+    #filter-section .lead-filter-multiselect-option {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 9px;
+        margin: 0;
+        padding: 8px 12px;
+    }
+
+    #filter-section .lead-filter-multiselect-option:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    #filter-section .lead-filter-multiselect-option input[type="checkbox"] {
+        -webkit-appearance: checkbox !important;
+        appearance: checkbox !important;
+        accent-color: #1473d2;
+        clip: auto !important;
+        cursor: pointer;
+        display: inline-block !important;
+        flex: 0 0 18px;
+        height: 18px !important;
+        left: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: static !important;
+        visibility: visible !important;
+        width: 18px !important;
+    }
+
+    #filter-section .lead-filter-multiselect-select-all {
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+</style>
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
@@ -171,7 +307,8 @@
                                         <!-- Property -->
                                         <div class="col-md-4">
                                             <label>Property</label>
-                                            <select name="property" class="form-control" required id="edit_property">
+                                            <select name="property" class="form-control agency-filter-single" id="property">
+                                                <option value="">All Properties</option>
                                                 <?php foreach ($properties as $property) { ?>
                                                     <option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
                                                         <?= $property->hotel_name; ?>
@@ -182,11 +319,12 @@
                                         <!-- Department -->
                                         <div class="col-md-4">
                                             <label>Department</label>
-                                            <select name="type" class="form-control" required id="edit_type">
+                                            <select name="type" class="form-control agency-filter-single" id="department">
+                                                <option value="">All Departments</option>
                                                 <?php foreach ($departments as $each): ?>
                                                     <option value="<?= $each->department_id ?>"
                                                         data-name="<?= $each->department_name; ?>"
-                                                        <?= ($each->department_id == $lead->type) ? 'selected' : '' ?>>
+                                                        <?= ($this->input->get('department') == $each->department_id) ? 'selected' : '' ?>>
                                                         <?= $each->department_name ?>
                                                     </option>
                                                 <?php endforeach; ?>
@@ -196,7 +334,7 @@
                                         <!-- Status -->
                                         <div class="col-md-3">
                                             <label for="status" class="form-label">Status</label>
-                                            <select name="status[]" class="form-select filter-input" multiple id="status">
+                                            <select name="status[]" class="form-select filter-input lead-filter-multiselect-source" multiple id="status">
                                                 <option value="Open">Open</option>
                                                 <option value="In Progress">In Progress</option>
                                                 <option value="Closed">Closed</option>
@@ -205,7 +343,7 @@
                                         <!-- Lead Source -->
                                         <div class="col-md-3">
                                             <label for="channel" class="form-label">Lead Source</label>
-                                            <select name="channel[]" class="form-select filter-input" multiple id="channel">
+                                            <select name="channel[]" class="form-select filter-input lead-filter-multiselect-source" multiple id="channel">
                                                 <?php foreach ($user_channel as $channelObj): ?>
                                                     <?php $channel = $channelObj->user_channel; ?>
                                                     <option value="<?= $channel ?>"><?= strtoupper($channel) ?></option>
@@ -215,7 +353,7 @@
                                         <!-- Stage -->
                                         <div class="col-md-3">
                                             <label for="disposition" class="form-label">Stage</label>
-                                            <select class="form-select filter-input" name="disposition[]" multiple id="disposition">
+                                            <select class="form-select filter-input lead-filter-multiselect-source" name="disposition[]" multiple id="disposition">
                                                 <option value="" selected disabled>Select Stage</option>
 
                                                 <option value="Not Contacted">Not Contacted</option>
@@ -231,7 +369,7 @@
                                         <!-- Business / Non-Business -->
                                         <div class="col-md-3">
                                             <label for="business_type" class="form-label">Business Type</label>
-                                            <select name="business_type[]" class="form-select filter-input" id="business_type">
+                                            <select name="business_type" class="form-select filter-input agency-filter-single" id="business_type">
                                                 <option value="">Select Business</option>
                                                 <option value="business">Business</option>
                                                 <option value="non_business">Non-Business</option>
@@ -544,7 +682,7 @@
                             }
                         ],
                         "participants": [{
-                            "participantAddress": <?php echo $this->session->userdata('agent_session')['phone'] ?>,
+                            "participantAddress": <?= json_encode((string) ($this->session->userdata('agency_session')['phone'] ?? '')); ?>,
                             "callerId": airtelConfig.callerId,
                             "participantName": "A",
                             "maxRetries": 1,
@@ -655,7 +793,8 @@
             url: '<?= base_url("LeadController/get_status_history") ?>',
             type: 'POST',
             data: {
-                lead_id: leadId
+                lead_id: leadId,
+                [window.CSRF.name]: currentAgencyCsrfHash()
             },
             dataType: 'json',
             success: function(data) {
@@ -1324,6 +1463,137 @@
         let offset = 0; // pagination offset
         const limit = 100; // initial records to load
 
+        $('#property, #department, #business_type').select2({
+            width: '100%'
+        });
+
+        function syncLeadFilterMultiSelect($select, $widget) {
+            const selectedValues = ($select.val() || []).map(String);
+            const $items = $widget.find('.lead-filter-multiselect-item');
+            const total = $items.length;
+            const selectedCount = selectedValues.length;
+
+            $items.each(function() {
+                $(this).prop('checked', selectedValues.includes(String($(this).val())));
+            });
+
+            const $selectAll = $widget.find('.lead-filter-multiselect-all');
+            $selectAll.prop('checked', total > 0 && selectedCount === total);
+            $selectAll.prop('indeterminate', selectedCount > 0 && selectedCount < total);
+
+            let summary = 'Select Options';
+            if (selectedCount > 0 && selectedCount === total) {
+                summary = `All selected (${selectedCount})`;
+            } else if (selectedCount > 0) {
+                summary = `${selectedCount} selected`;
+            }
+
+            $widget.find('.lead-filter-multiselect-summary').text(summary);
+        }
+
+        function initializeLeadFilterMultiSelect(select) {
+            const $select = $(select);
+            if (!$select.length) return;
+
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+
+            $select.siblings('.lead-filter-multiselect').remove();
+
+            const $widget = $('<div>', { class: 'lead-filter-multiselect' });
+            const $toggle = $('<button>', {
+                type: 'button',
+                class: 'lead-filter-multiselect-toggle',
+                'aria-expanded': 'false'
+            }).append($('<span>', {
+                class: 'lead-filter-multiselect-summary',
+                text: 'Select Options'
+            }));
+            const $menu = $('<div>', { class: 'lead-filter-multiselect-menu' });
+            const $options = $select.find('option').filter(function() {
+                return String(this.value).trim() !== '' && !this.disabled;
+            });
+
+            if ($options.length) {
+                $menu.append(
+                    $('<label>', {
+                        class: 'lead-filter-multiselect-option lead-filter-multiselect-select-all'
+                    }).append(
+                        $('<input>', {
+                            type: 'checkbox',
+                            class: 'lead-filter-multiselect-all'
+                        }),
+                        $('<span>', { text: 'Select all' })
+                    )
+                );
+
+                $options.each(function() {
+                    $menu.append(
+                        $('<label>', { class: 'lead-filter-multiselect-option' }).append(
+                            $('<input>', {
+                                type: 'checkbox',
+                                class: 'lead-filter-multiselect-item',
+                                value: this.value
+                            }),
+                            $('<span>').text($(this).text().trim())
+                        )
+                    );
+                });
+            }
+
+            $widget.append($toggle, $menu);
+            $select.after($widget);
+
+            $toggle.on('click', function() {
+                const isOpen = !$widget.hasClass('is-open');
+                $('.lead-filter-multiselect').not($widget).removeClass('is-open')
+                    .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+                $widget.toggleClass('is-open', isOpen);
+                $toggle.attr('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-all', function() {
+                const values = this.checked
+                    ? $widget.find('.lead-filter-multiselect-item').map(function() {
+                        return this.value;
+                    }).get()
+                    : [];
+                $select.val(values).trigger('change');
+            });
+
+            $widget.on('change', '.lead-filter-multiselect-item', function() {
+                const values = $widget.find('.lead-filter-multiselect-item:checked')
+                    .map(function() {
+                        return this.value;
+                    }).get();
+                $select.val(values).trigger('change');
+            });
+
+            $select
+                .off('change.leadFilterMultiSelect')
+                .on('change.leadFilterMultiSelect', function() {
+                    syncLeadFilterMultiSelect($select, $widget);
+                });
+
+            syncLeadFilterMultiSelect($select, $widget);
+        }
+
+        setTimeout(function() {
+            $('#status, #channel, #disposition').each(function() {
+                initializeLeadFilterMultiSelect(this);
+            });
+        }, 0);
+
+        $(document)
+            .off('click.leadFilterMultiSelect')
+            .on('click.leadFilterMultiSelect', function(e) {
+                if (!$(e.target).closest('.lead-filter-multiselect').length) {
+                    $('.lead-filter-multiselect').removeClass('is-open')
+                        .find('.lead-filter-multiselect-toggle').attr('aria-expanded', 'false');
+                }
+            });
+
         // -------- GET PARAM READER (works for arrays too) --------
         function getUrlParamsArray(param) {
             const url = new URL(window.location.href);
@@ -1366,14 +1636,9 @@
 
 
 
-            var property = [<?php echo $property; ?>];
-
-            var department = [<?php echo $department; ?>];
-
-
             let filters = {
-                property: $('#property').val(),
-                department: $('#department').val(),
+                property: $('#property').val() ? [$('#property').val()] : [],
+                department: $('#department').val() ? [$('#department').val()] : [],
                 status: $('#status').val(),
                 channel: $('#channel').val(),
                 disposition: $('#disposition').val(),
@@ -1457,7 +1722,7 @@
 
         $(document).on('click', '.status-filter', function() {
             var status = $(this).data('status');
-            var select = $('#status'); // Select2 multi-select dropdown
+            var select = $('#status');
 
             // Ensure it's actually a multiple select
             if (!select.prop('multiple')) {
@@ -1468,13 +1733,8 @@
             $('.status-filter .badge').removeClass('border border-2 border-primary');
             $(this).find('.badge').addClass('border border-2 border-primary');
 
-            // ✅ Always set Select2 value as array (not string)
             var selectedArray = Array.isArray(status) ? status : [status];
-            select.val(selectedArray).trigger('change.select2'); // Works for Select2
-
-
-            // ✅ Trigger reload with updated filter
-            fetchLeads(true);
+            select.val(selectedArray).trigger('change');
         });
 
 
@@ -1499,10 +1759,12 @@
             url: '<?= base_url("LeadController/get_lead_details_new") ?>',
             type: 'POST',
             data: {
-                lead_id: leadId
+                lead_id: leadId,
+                [window.CSRF.name]: currentAgencyCsrfHash()
             },
             dataType: 'JSON',
             success: function(res) {
+                refreshAgencyCsrf(res);
                 if (res.status === 'success') {
                     var data = res.data;
 

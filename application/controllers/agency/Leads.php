@@ -36,7 +36,12 @@ class Leads extends CI_Controller
 
 
 
-        $data['departments'] = $this->Common_model->getAllData('departments', '');
+        $data['departments'] = $this->Common_model->getAllData('departments', ['is_deleted' => 0]);
+        $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', [
+            'is_deleted' => 0,
+            'created_by' => $agency_id,
+            'creator_user_role' => 'Agency'
+        ]);
 
 
         $data['airtel_config'] = $this->Airtel_config_model->get_runtime_config();
@@ -179,6 +184,38 @@ class Leads extends CI_Controller
         }
         if ($disposition === 'Lead Lost' && $value('reason') === '') {
             $errors['reason'] = 'Please select a reason.';
+        }
+
+        $isValidDate = function ($date) {
+            $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+            return $parsed && $parsed->format('Y-m-d') === $date;
+        };
+        $bookingDate = $value('booking_date') ?: $value('booking_enquiry_date');
+        $followupDate = $value('followup_date');
+        $secondFollowupDate = $value('second_followup_date');
+        $validBookingDate = $bookingDate !== '' && $isValidDate($bookingDate);
+        $validFollowupDate = $followupDate !== '' && $isValidDate($followupDate);
+        $validSecondFollowupDate = $secondFollowupDate !== '' && $isValidDate($secondFollowupDate);
+
+        if ($followupDate !== '' && !$validFollowupDate) {
+            $errors['followup_date'] = 'Please enter a valid Follow-up Date.';
+        }
+        if ($secondFollowupDate !== '' && !$validSecondFollowupDate) {
+            $errors['second_followup_date'] = 'Please enter a valid 2nd Follow-up Date.';
+        }
+        if (($followupDate !== '' || $secondFollowupDate !== '') && $bookingDate !== '' && !$validBookingDate) {
+            $errors['booking_date'] = 'Please enter a valid Booking Date.';
+        }
+        if ($validBookingDate && $validFollowupDate && $followupDate >= $bookingDate) {
+            $errors['followup_date'] = 'Follow-up Date must be before Booking Date.';
+        }
+        if ($validBookingDate && $validSecondFollowupDate && $secondFollowupDate >= $bookingDate) {
+            $errors['second_followup_date'] = '2nd Follow-up Date must be before Booking Date.';
+        }
+        if ($secondFollowupDate !== '' && $followupDate === '') {
+            $errors['followup_date'] = 'Follow-up Date is required before entering a 2nd Follow-up Date.';
+        } elseif ($validFollowupDate && $validSecondFollowupDate && $secondFollowupDate <= $followupDate) {
+            $errors['second_followup_date'] = '2nd Follow-up Date must be later than Follow-up Date.';
         }
 
         return $errors;

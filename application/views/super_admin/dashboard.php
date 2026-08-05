@@ -23,13 +23,9 @@
 
     <div class="admin_left">
 
-        <?php
-            $superAdminSession = $this->session->userdata('super_admin_session');
-            $superAdminName = $superAdminSession['user_name'] ?? 'User';
-        ?>
         <h2>
             <?= htmlspecialchars(get_time_based_greeting(), ENT_QUOTES, 'UTF-8'); ?>,
-            <?= htmlspecialchars($superAdminName, ENT_QUOTES, 'UTF-8'); ?> 👋
+            <?= htmlspecialchars($super_admin_name, ENT_QUOTES, 'UTF-8'); ?> 👋
         </h2>
 
         <p>
@@ -278,7 +274,7 @@
                                 </div>
 
                                 <!-- Not Assigned -->
-                                <div class="col-sm-3 col-12">
+                                <div class="d-none col-sm-3 col-12">
                                     <a href="<?= base_url('manage-leads?status=Not-assigned') ?>">
                                        <div class="premium-card">
                                             <div class="card-top">

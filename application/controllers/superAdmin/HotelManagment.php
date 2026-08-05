@@ -301,6 +301,114 @@ class HotelManagment extends MY_Controller
         ]);
     }
 
+    public function quick_add_city()
+    {
+        if ($this->input->method() !== 'post') {
+            show_404();
+            return;
+        }
+
+        $country_id = decrypt_id($this->input->post('country_id'));
+        $state_id = decrypt_id($this->input->post('state_id'));
+        $city_name = preg_replace('/\s+/', ' ', trim((string) $this->input->post('city_name', true)));
+
+        if (empty($country_id) || empty($state_id) || $city_name === '') {
+            $this->jsonResponse([
+                'status' => false,
+                'message' => 'Please select a country and state, then enter the city name'
+            ]);
+            return;
+        }
+
+        if (mb_strlen($city_name) > 100) {
+            $this->jsonResponse([
+                'status' => false,
+                'message' => 'City name cannot exceed 100 characters'
+            ]);
+            return;
+        }
+
+        $country = $this->Common_model->getdata('country', [
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ]);
+        $state = $this->Common_model->getdata('state', [
+            'state_id' => $state_id,
+            'country_id' => $country_id,
+            'is_deleted' => 0
+        ]);
+
+        if (empty($country) || empty($state)) {
+            $this->jsonResponse([
+                'status' => false,
+                'message' => 'Selected country or state is unavailable'
+            ]);
+            return;
+        }
+
+        $existing_city = $this->db
+            ->where('country_id', $country_id)
+            ->where('state_id', $state_id)
+            ->where('is_deleted', 0)
+            ->where('LOWER(city_name) = ' . $this->db->escape(strtolower($city_name)), null, false)
+            ->get('city')
+            ->row();
+
+        if (!empty($existing_city)) {
+            $this->jsonResponse([
+                'status' => true,
+                'message' => 'City already exists and has been selected',
+                'created' => false,
+                'data' => [
+                    'city_id' => encrypt_id($existing_city->city_id),
+                    'city_name' => $existing_city->city_name
+                ]
+            ]);
+            return;
+        }
+
+        $record_id = $this->Comman_model->insertData('city', [
+            'city_name' => $city_name,
+            'country_id' => $country_id,
+            'state_id' => $state_id,
+            'is_deleted' => 0,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if (!$record_id) {
+            $this->jsonResponse([
+                'status' => false,
+                'message' => 'Unable to add the city. Please try again.'
+            ]);
+            return;
+        }
+
+        $actor = $this->getCurrentActor();
+        $this->Common_model->insertActivityLog([
+            'module' => 'cities',
+            'record_id' => $record_id,
+            'action' => 'create',
+            'details' => "Quick-added city {$city_name} while managing a hotel",
+            'actor_id' => $actor['id'],
+            'actor_name' => $actor['name'],
+            'actor_email' => $actor['email'],
+            'actor_role' => $actor['role'],
+            'ip_address' => $this->input->ip_address(),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->jsonResponse([
+            'status' => true,
+            'message' => 'City added successfully',
+            'created' => true,
+            'data' => [
+                'city_id' => encrypt_id($record_id),
+                'city_name' => $city_name
+            ]
+        ]);
+    }
+
 
     public function insert()
     {
