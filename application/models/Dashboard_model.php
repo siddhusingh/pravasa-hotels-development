@@ -182,6 +182,71 @@ class Dashboard_model extends CI_Model
         return ['normal' => $normal, 'repeat' => $repeat];
     }
 
+    private function apply_agency_dashboard_filters($agencyId, $filters)
+    {
+        $this->db->where('leads.is_deleted', 0);
+        $this->db->where('leads.created_by', $agencyId);
+        $this->db->where('leads.creator_user_role', 'Agency');
+
+        if (!empty($filters['property'])) {
+            $this->db->where('leads.property', $filters['property']);
+        }
+        if (!empty($filters['type'])) {
+            $this->db->where('leads.type', $filters['type']);
+        }
+        if (!empty($filters['start_date'])) {
+            $this->db->where('DATE(leads.created_at) >=', $filters['start_date']);
+        }
+        if (!empty($filters['end_date'])) {
+            $this->db->where('DATE(leads.created_at) <=', $filters['end_date']);
+        }
+    }
+
+    public function get_agency_leads_by_department($agencyId, $filters)
+    {
+        $this->db->select('leads.type AS department_id, COUNT(*) AS total');
+        $this->db->from('leads');
+        $this->db->join('departments', 'departments.department_id = leads.type');
+        $this->apply_agency_dashboard_filters($agencyId, $filters);
+        $this->db->where('departments.is_deleted', 0);
+        $this->db->group_by('leads.type');
+        return $this->db->get()->result();
+    }
+
+    public function get_agency_leads_grouped_by($column, $agencyId, $filters)
+    {
+        $allowedColumns = ['disposition', 'template_name', 'user_channel', 'status'];
+        if (!in_array($column, $allowedColumns, true)) {
+            return [];
+        }
+
+        $this->db->select('leads.' . $column . ', COUNT(*) AS total');
+        $this->db->from('leads');
+        $this->apply_agency_dashboard_filters($agencyId, $filters);
+        $this->db->group_by('leads.' . $column);
+        return $this->db->get()->result();
+    }
+
+    public function get_agency_guest_type_data($agencyId, $filters)
+    {
+        $this->db->select('leads.phone_number, COUNT(*) AS lead_count');
+        $this->db->from('leads');
+        $this->apply_agency_dashboard_filters($agencyId, $filters);
+        $this->db->group_by('leads.phone_number');
+
+        $normal = 0;
+        $repeat = 0;
+        foreach ($this->db->get()->result() as $row) {
+            if ((int) $row->lead_count === 1) {
+                $normal++;
+            } else {
+                $repeat++;
+            }
+        }
+
+        return ['normal' => $normal, 'repeat' => $repeat];
+    }
+
     private function apply_dashboard_graph_filters($filters)
     {
         $this->db->where('is_deleted', 0);

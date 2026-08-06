@@ -7,6 +7,33 @@
 	text.highcharts-credits {
 		display: none;
 	}
+
+	#filter_lead_stats_count .select2-container {
+		width: 100% !important;
+	}
+
+	#filter_lead_stats_count .select2-container .select2-selection--single {
+		align-items: center;
+		background: #fff;
+		border: 1px solid transparent;
+		border-radius: 8px;
+		box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+			rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+		display: flex;
+		height: 46px;
+		padding: 0 14px;
+	}
+
+	#filter_lead_stats_count .select2-selection__rendered {
+		line-height: 44px !important;
+		padding-left: 0 !important;
+		padding-right: 24px !important;
+	}
+
+	#filter_lead_stats_count .select2-selection__arrow {
+		height: 44px !important;
+		right: 8px !important;
+	}
 </style>
 
 <div class="content-wrapper">
@@ -30,7 +57,10 @@
 							<div class="row">
 								<div id="">
 
-									<form id="filter_lead_stats_count">
+									<form id="filter_lead_stats_count" method="post">
+										<input type="hidden"
+											name="<?= htmlspecialchars($this->security->get_csrf_token_name(), ENT_QUOTES, 'UTF-8'); ?>"
+											value="<?= htmlspecialchars($this->security->get_csrf_hash(), ENT_QUOTES, 'UTF-8'); ?>">
 										<div class="row align-items-end">
 											<!-- Existing filters (City, Property, etc.) -->
 
@@ -39,11 +69,11 @@
 
 											<div class="col-md-3">
 												<label for="property" class="form-label">Property</label>
-												<select name="property" class="form-select">
+												<select id="property" name="property" class="form-select agency-dashboard-select">
 													<option value="">All Properties</option>
 													<?php foreach ($properties as $property) { ?>
-														<option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
-															<?= $property->hotel_name; ?>
+													<option value="<?= (int) $property->hotel_id; ?>">
+														<?= htmlspecialchars($property->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
 														</option>
 													<?php } ?>
 												</select>
@@ -51,11 +81,11 @@
 
 											<div class="col-md-2">
 												<label for="department" class="form-label">Department</label>
-												<select name="department" class="form-select">
+												<select id="department" name="department" class="form-select agency-dashboard-select">
 													<option value="">All Departments</option>
 													<?php foreach ($departments as $dept) { ?>
-														<option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
-															<?= $dept->department_name; ?>
+													<option value="<?= (int) $dept->department_id; ?>">
+														<?= htmlspecialchars($dept->department_name, ENT_QUOTES, 'UTF-8'); ?>
 														</option>
 													<?php } ?>
 												</select>
@@ -65,11 +95,11 @@
 											<!-- 🆕 Date Filters -->
 											<div class="col-md-2">
 												<label for="start_date" class="form-label">Start Date</label>
-												<input type="date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
+												<input type="date" name="start_date" class="form-control">
 											</div>
 											<div class="col-md-2">
 												<label for="end_date" class="form-label">End Date</label>
-												<input type="date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
+												<input type="date" name="end_date" class="form-control">
 											</div>
 
 											<div class="col-md-2 d-grid">
@@ -91,7 +121,7 @@
 
 
 								<div class="col-xxl-6 col-md-4 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?status=Open') ?>">
+									<a href="<?php echo base_url('view-agency-leads?status=Open') ?>">
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-danger-light rounded-circle"><span class="icon-Ticket"></span></span>
 											<div class="info-box-content pb-0">
@@ -103,7 +133,7 @@
 								</div>
 
 								<div class="col-xxl-6 col-md-4 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?status=In+Progress') ?>">
+									<a href="<?php echo base_url('view-agency-leads?status=In+Progress') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-info-light rounded-circle"><span class="fa fa-cogs"></span></span>
@@ -116,7 +146,7 @@
 								</div>
 
 								<div class="col-xxl-6 col-md-4 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?status=Closed') ?>">
+									<a href="<?php echo base_url('view-agency-leads?status=Closed') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-success-light rounded-circle"><span class=" fa fa-trophy"><span class="path1"></span><span class="path2"></span></span></span>
@@ -130,7 +160,7 @@
 
 
 								<div class="col-xxl-6 col-md-3 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?disposition=Information/Enquiry') ?>">
+									<a href="<?php echo base_url('view-agency-leads?disposition=Information/Enquiry') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-warning-light rounded-circle"><span class="fa fa-thumbs-up"></span></span>
@@ -142,7 +172,7 @@
 									</a>
 								</div>
 								<div class="col-xxl-6 col-md-3 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?disposition=Shopping - Follow up') ?>">
+									<a href="<?php echo base_url('view-agency-leads?disposition=Shopping - Follow up') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-info-light rounded-circle"><span class="fa fa-calendar-check"></span></span>
@@ -154,7 +184,7 @@
 									</a>
 								</div>
 								<div class="col-xxl-6 col-md-3 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?disposition=Reservation') ?>">
+									<a href="<?php echo base_url('view-agency-leads?disposition=Reservation') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-success-light rounded-circle"><span class="fa fa-calendar-alt"></span></span>
@@ -166,7 +196,7 @@
 									</a>
 								</div>
 								<div class="col-xxl-6 col-md-3 col-12">
-									<a href="<?php echo base_url('view-agencys-leads?disposition=Denied') ?>">
+									<a href="<?php echo base_url('view-agency-leads?disposition=Denied') ?>">
 
 										<div class="info-box bg-transparent no-shadow px-0 b-0">
 											<span class="info-box-icon bg-danger-light rounded-circle"><span class="fa fa-times-circle"></span></span>
@@ -198,7 +228,7 @@
 
 									<form>
 										<div class="row align-items-end">
-											<form method="GET" action="<?= base_url('view-agencys-leads'); ?>" class="mb-4 px-3">
+											<form method="GET" action="<?= base_url('view-agency-leads'); ?>" class="mb-4 px-3">
 												<div class="row align-items-end">
 													<!-- Existing filters (City, Property, etc.) -->
 
@@ -288,15 +318,6 @@
 			</div>
 		</section>
 
-		<!-- jQuery -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-		<!-- Highcharts and modules -->
-		<script src="https://code.highcharts.com/highcharts.js"></script>
-		<script src="https://code.highcharts.com/modules/exporting.js"></script>
-		<script src="https://code.highcharts.com/modules/export-data.js"></script>
-		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
 		<style>
 			.chart-container {
 				border: 1px solid #ccc;
@@ -333,6 +354,53 @@
 
 
 		<script>
+			window.AGENCY_DASHBOARD_CSRF = {
+				name: <?= json_encode($this->security->get_csrf_token_name()); ?>,
+				hash: <?= json_encode($this->security->get_csrf_hash()); ?>
+			};
+
+			var agencyDashboardRequestQueue = $.Deferred().resolve().promise();
+
+			function refreshAgencyDashboardCsrf(response) {
+				if (response && response.csrfHash) {
+					window.AGENCY_DASHBOARD_CSRF.hash = response.csrfHash;
+					$('input[name="' + window.AGENCY_DASHBOARD_CSRF.name + '"]').val(response.csrfHash);
+				}
+			}
+
+			function agencyDashboardAjax(options) {
+				function runRequest() {
+					var requestOptions = $.extend({}, options);
+					var successCallback = requestOptions.success;
+					var errorCallback = requestOptions.error;
+					delete requestOptions.success;
+					delete requestOptions.error;
+					if (typeof options.data === 'string') {
+						requestOptions.data = options.data;
+					} else {
+						requestOptions.data = $.extend({}, options.data || {});
+						requestOptions.data[window.AGENCY_DASHBOARD_CSRF.name] = window.AGENCY_DASHBOARD_CSRF.hash;
+					}
+
+					return $.ajax(requestOptions)
+						.done(function(response, textStatus, xhr) {
+							refreshAgencyDashboardCsrf(response);
+							if (typeof successCallback === 'function') {
+								successCallback(response, textStatus, xhr);
+							}
+						})
+						.fail(function(xhr, textStatus, errorThrown) {
+							refreshAgencyDashboardCsrf(xhr.responseJSON);
+							if (typeof errorCallback === 'function') {
+								errorCallback(xhr, textStatus, errorThrown);
+							}
+						});
+				}
+
+				agencyDashboardRequestQueue = agencyDashboardRequestQueue.then(runRequest, runRequest);
+				return agencyDashboardRequestQueue;
+			}
+
 			function renderHighchart(containerId, title, categories, series, type = 'column') {
 				const isPie = type === 'pie';
 
@@ -392,6 +460,10 @@
 			}
 
 			function fetchAndRenderChart(endpoint, containerId, title, type) {
+				if (!document.getElementById(containerId)) {
+					return;
+				}
+
 				const filters = {
 					property: $('input[name="property_bottom"]').val(),
 					type: $('input[name="department_bottom"]').val(),
@@ -399,12 +471,13 @@
 					end_date: $('input[name="end_date_bottom"]').val()
 				};
 
-				$.ajax({
+				agencyDashboardAjax({
 					url: endpoint,
-					type: 'GET',
+					type: 'POST',
 					data: filters,
 					dataType: 'json',
-					success: function(data) {
+					success: function(response) {
+						const data = response.data || [];
 						const categories = data.map(d => d.label);
 						const counts = data.map(d => parseInt(d.count));
 						renderHighchart(containerId, title, categories, counts, type);
@@ -416,6 +489,10 @@
 			}
 
 			$(document).ready(function() {
+				$('.agency-dashboard-select').select2({
+					width: '100%'
+				});
+
 				const chartConfigs = [{
 						id: 'chart_department',
 						endpoint: '<?= base_url("agency/Main/department_chart_data") ?>',
@@ -467,8 +544,6 @@
 				];
 
 				chartConfigs.forEach(config => {
-					fetchAndRenderChart(config.endpoint, config.id, config.title, config.type);
-
 					$('#' + config.startId + ', #' + config.endId).on('change', function() {
 						const start = $('#' + config.startId).val();
 						const end = $('#' + config.endId).val();
@@ -498,28 +573,32 @@
 		<script>
 			$(document).ready(function() {
 				$('#filter_top_button').on('click', function() {
-					let formData = $('#filter_lead_stats_count').serialize();
+					let formData = {};
+					$('#filter_lead_stats_count').serializeArray().forEach(function(field) {
+						formData[field.name] = field.value;
+					});
 
-					$.ajax({
+					agencyDashboardAjax({
 						type: "POST",
 						url: "<?= base_url('agency/Main/dashboard_top_filter') ?>",
 						data: formData,
 						dataType: "json",
 						success: function(response) {
-							if (response) {
-								$('[data-lead-status="Open"]').text(response.Open + ' Leads');
-								$('[data-lead-status="In Progress"]').text(response['In Progress'] + ' Leads');
-								$('[data-lead-status="On Hold"]').text(response['On Hold'] + ' Leads');
-								$('[data-lead-status="Closed"]').text(response.Closed + ' Leads');
-								$('[data-lead-status="Information"]').text(response.Information + ' Leads');
-								$('[data-lead-status="followup"]').text(response.followup + ' Leads');
-								$('[data-lead-status="Reservation"]').text(response.Reservation + ' Leads');
-								$('[data-lead-status="Denied"]').text(response.Denied + ' Leads');
-								$('[data-lead-status="total_calls"]').text(response.total_calls + ' Calls');
-								$('[data-lead-status="total_answered_calls"]').text(response.total_answered_calls + ' Calls');
-								$('[data-lead-status="total_missed_calls"]').text(response.total_missed_calls + ' Calls');
-								$('[data-lead-status="total_revenue"]').text(response.total_revenue);
-								$("#totalLeads").html(response.total_leads)
+							const data = response.data;
+							if (data) {
+								$('[data-lead-status="Open"]').text(data.Open + ' Leads');
+								$('[data-lead-status="In Progress"]').text(data['In Progress'] + ' Leads');
+								$('[data-lead-status="On Hold"]').text(data['On Hold'] + ' Leads');
+								$('[data-lead-status="Closed"]').text(data.Closed + ' Leads');
+								$('[data-lead-status="Information"]').text(data.Information + ' Leads');
+								$('[data-lead-status="followup"]').text(data.followup + ' Leads');
+								$('[data-lead-status="Reservation"]').text(data.Reservation + ' Leads');
+								$('[data-lead-status="Denied"]').text(data.Denied + ' Leads');
+								$('[data-lead-status="total_calls"]').text(data.total_calls + ' Calls');
+								$('[data-lead-status="total_answered_calls"]').text(data.total_answered_calls + ' Calls');
+								$('[data-lead-status="total_missed_calls"]').text(data.total_missed_calls + ' Calls');
+								$('[data-lead-status="total_revenue"]').text(data.total_revenue);
+								$("#totalLeads").html(data.total_leads);
 							}
 						},
 						error: function(xhr, status, error) {

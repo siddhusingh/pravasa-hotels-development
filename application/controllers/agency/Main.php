@@ -22,57 +22,38 @@ class Main extends CI_Controller
 
     public function index()
     {
-
-
-
         $agency_session = $this->session->userdata('agency_session');
-
-        if (!empty($agency_session)) {
-
-            $agency_id = $this->session->userdata('agency_session')['id'];
-
-
-
-            // Load all data to send to view
-            $data = [
-
-                'lead_status_counts'   => [
-                    'Open'        => $this->LeadModel->get_lead_count_by_status_agency('Open', "", "", "", "",  $agency_id),
-                    'In Progress' => $this->LeadModel->get_lead_count_by_status_agency('In Progress', "", "", "", "",  $agency_id),
-                    'On Hold'     => $this->LeadModel->get_lead_count_by_status_agency('On Hold', "", "", "", "",  $agency_id),
-                    'Closed'      => $this->LeadModel->get_lead_count_by_status_agency('Closed',  "", "", "", "", $agency_id),
-                    'Reservation'        => $this->LeadModel->get_lead_count_by_disposition_agency('Reservation', "", "", "", "",  $agency_id),
-                    'followup' => $this->LeadModel->get_lead_count_by_disposition_agency('Shopping - Follow up', "", "", "", "",  $agency_id),
-                    'Information'     => $this->LeadModel->get_lead_count_by_disposition_agency('Information/Enquiry', "", "", "", "",  $agency_id),
-                    'Denied'      => $this->LeadModel->get_lead_count_by_disposition_agency('Denied', "", "", "", "",  $agency_id),
-                ],
-            ];
-
-
-            $agency_id = $this->session->userdata('agency_session')['id'];
-
-
-            $data['total_leads'] = $this->Common_model->count_all('leads', ['created_by' => $agency_id]);
-
-
-
-
-            $data['properties'] = $this->Common_model->get_properties_by_agency($agency_id);
-
-
-
-            $data['departments'] = $this->Common_model->getAllData('departments', '');
-
-            $data['user_channel'] = $this->Common_model->getAlluser_channel('leads', '');
-
-
-            $this->load->view('agency/include/header');
-            $this->load->view('agency/include/sidebar');
-            $this->load->view('agency/dashboard', $data);
-            $this->load->view('agency/include/footer');
-        } else {
+        if (empty($agency_session['id']) || $this->session->userdata('role_as') !== 'agency') {
             return redirect('agency-login');
         }
+
+        $agencyId = (int) $agency_session['id'];
+        $filters = [];
+        $data = [
+            'lead_status_counts' => [
+                'Open' => $this->countAgencyLeads($agencyId, $filters, 'status', 'Open'),
+                'In Progress' => $this->countAgencyLeads($agencyId, $filters, 'status', 'In Progress'),
+                'On Hold' => $this->countAgencyLeads($agencyId, $filters, 'status', 'On Hold'),
+                'Closed' => $this->countAgencyLeads($agencyId, $filters, 'status', 'Closed'),
+                'Reservation' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Reservation'),
+                'followup' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Shopping - Follow up'),
+                'Information' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Information/Enquiry'),
+                'Denied' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Denied')
+            ],
+            'total_leads' => $this->countAgencyLeads($agencyId, $filters),
+            'properties' => $this->Common_model->get_properties_by_agency($agencyId),
+            'departments' => $this->Common_model->getAllData('departments', ['is_deleted' => 0]),
+            'user_channel' => $this->Common_model->getAlluser_channel('leads', [
+                'is_deleted' => 0,
+                'created_by' => $agencyId,
+                'creator_user_role' => 'Agency'
+            ])
+        ];
+
+        $this->load->view('agency/include/header');
+        $this->load->view('agency/include/sidebar');
+        $this->load->view('agency/dashboard', $data);
+        $this->load->view('agency/include/footer');
     }
 
 
@@ -80,57 +61,33 @@ class Main extends CI_Controller
 
     public function dashboard_top_filter()
     {
-        $start_date = $this->input->post('start_date');
-        $end_date = $this->input->post('end_date');
+        $agencyId = $this->requireAgencyJson();
+        if (!$agencyId) {
+            return;
+        }
 
-        $property = $this->session->userdata('selected_hotel_id');
-        $department = $this->session->userdata('selected_department_id');
+        $filters = $this->agencyDashboardFiltersFromPost($agencyId);
+        if ($filters === null) {
+            return;
+        }
 
-
-        // Use the filters in your model accordingly
-        // Load all data to send to view
         $data = [
-
-            'Open'        => $this->LeadModel->get_lead_count_by_status_agency('Open', $agency_id),
-            $start_date,
-            $end_date,
-            'In Progress' => $this->LeadModel->get_lead_count_by_status_agency('In Progress', $agency_id, $start_date, $end_date),
-            'On Hold'     => $this->LeadModel->get_lead_count_by_status_agency('On Hold', $agency_id, $start_date, $end_date),
-            'Closed'      => $this->LeadModel->get_lead_count_by_status_agency('Closed', $agency_id, $start_date, $end_date),
-            'Reservation'        => $this->LeadModel->get_lead_count_by_disposition_agency('Reservation', $agency_id, $start_date, $end_date),
-            'followup' => $this->LeadModel->get_lead_count_by_disposition_agency('Shopping - Follow up', $agency_id, $start_date, $end_date),
-            'Information'     => $this->LeadModel->get_lead_count_by_disposition_agency('Information/Enquiry', $agency_id, $start_date, $end_date),
-            'Denied'      => $this->LeadModel->get_lead_count_by_disposition_agency('Denied', $agency_id, $start_date, $end_date),
-            'total_calls' => $this->Common_model->count_all_lead_calls(
-                'calls',
-                array('property' => $property, 'type' => $department, 'overall_call_status' => ''),
-                $start_date,
-                $end_date
-            ),
-            'total_answered_calls' => $this->Common_model->count_all_lead_calls(
-                'calls',
-                array('overall_call_status' => 'Answered', 'property' => $property, 'type' => $department),
-                $start_date,
-                $end_date
-            ),
-            'total_missed_calls' => $this->Common_model->count_all_lead_calls(
-                'calls',
-                array('overall_call_status' => 'Missed', 'property' => $property, 'type' => $department),
-                $start_date,
-                $end_date
-            ),
-            'total_revenue' => $this->Common_model->get_total_revenue_from_leads(
-                'leads',
-                array('property' => $property, 'type' => $department),
-                $start_date,
-                $end_date
-            )
-
+            'Open' => $this->countAgencyLeads($agencyId, $filters, 'status', 'Open'),
+            'In Progress' => $this->countAgencyLeads($agencyId, $filters, 'status', 'In Progress'),
+            'On Hold' => $this->countAgencyLeads($agencyId, $filters, 'status', 'On Hold'),
+            'Closed' => $this->countAgencyLeads($agencyId, $filters, 'status', 'Closed'),
+            'Reservation' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Reservation'),
+            'followup' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Shopping - Follow up'),
+            'Information' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Information/Enquiry'),
+            'Denied' => $this->countAgencyLeads($agencyId, $filters, 'disposition', 'Denied'),
+            'total_calls' => $this->countAgencyCalls($agencyId, $filters),
+            'total_answered_calls' => $this->countAgencyCalls($agencyId, $filters, 'Answered'),
+            'total_missed_calls' => $this->countAgencyCalls($agencyId, $filters, 'Missed'),
+            'total_revenue' => $this->getAgencyRevenue($agencyId, $filters),
+            'total_leads' => $this->countAgencyLeads($agencyId, $filters)
         ];
 
-        $data['total_leads'] = $this->Common_model->count_all('leads', ['property' => $property, 'type' => $department], $start_date, $end_date);
-
-        echo json_encode($data);
+        $this->jsonResponse($data);
     }
 
 
@@ -138,12 +95,18 @@ class Main extends CI_Controller
     // Chart Data Endpoints
     public function department_chart_data()
     {
-        $filters = $this->input->get();
+        $agencyId = $this->requireAgencyJson();
+        if (!$agencyId) {
+            return;
+        }
 
+        $filters = $this->agencyDashboardFiltersFromPost($agencyId);
+        if ($filters === null) {
+            return;
+        }
 
-
-
-        $this->send_chart_data('get_leads_by_department', 'departments', 'department_id', 'department_id', 'department_name', $filters);
+        $data = $this->Dashboard_model->get_agency_leads_by_department($agencyId, $filters);
+        $this->send_chart_data($data, 'departments', 'department_id', 'department_id', 'department_name');
     }
 
 
@@ -151,41 +114,51 @@ class Main extends CI_Controller
 
     public function disposition_chart_data()
     {
-        $filters = $this->input->get();
-
-        $data = $this->Dashboard_model->get_leads_grouped_by('disposition', $filters);
+        [$agencyId, $filters] = $this->agencyChartRequest();
+        if (!$agencyId) {
+            return;
+        }
+        $data = $this->Dashboard_model->get_agency_leads_grouped_by('disposition', $agencyId, $filters);
         $this->send_static_chart_data($data, 'disposition');
     }
 
     public function template_chart_data()
     {
-        $filters = $this->input->get();
-
-        $data = $this->Dashboard_model->get_leads_grouped_by('template_name', $filters);
+        [$agencyId, $filters] = $this->agencyChartRequest();
+        if (!$agencyId) {
+            return;
+        }
+        $data = $this->Dashboard_model->get_agency_leads_grouped_by('template_name', $agencyId, $filters);
         $this->send_static_chart_data($data, 'template_name');
     }
 
     public function source_chart_data()
     {
-        $filters = $this->input->get();
-
-        $data = $this->Dashboard_model->get_leads_grouped_by('user_channel', $filters);
+        [$agencyId, $filters] = $this->agencyChartRequest();
+        if (!$agencyId) {
+            return;
+        }
+        $data = $this->Dashboard_model->get_agency_leads_grouped_by('user_channel', $agencyId, $filters);
         $this->send_static_chart_data($data, 'user_channel');
     }
 
     public function status_chart_data()
     {
-        $filters = $this->input->get();
-
-        $data = $this->Dashboard_model->get_leads_grouped_by('status', $filters);
+        [$agencyId, $filters] = $this->agencyChartRequest();
+        if (!$agencyId) {
+            return;
+        }
+        $data = $this->Dashboard_model->get_agency_leads_grouped_by('status', $agencyId, $filters);
         $this->send_static_chart_data($data, 'status');
     }
 
     public function guest_type_chart_data()
     {
-        $filters = $this->input->get();
-
-        $data = $this->Dashboard_model->get_guest_type_data($filters);
+        [$agencyId, $filters] = $this->agencyChartRequest();
+        if (!$agencyId) {
+            return;
+        }
+        $data = $this->Dashboard_model->get_agency_guest_type_data($agencyId, $filters);
 
         // Format it like [{ label: 'New Guest', count: 10 }, { label: 'Repeat Guest', count: 5 }]
         $response = [
@@ -193,7 +166,7 @@ class Main extends CI_Controller
             ['label' => 'Repeat Guest', 'count' => $data['repeat']]
         ];
 
-        echo json_encode($response);
+        $this->jsonResponse($response);
     }
 
 
@@ -207,9 +180,8 @@ class Main extends CI_Controller
 
 
     // Reusable method for grouped charts
-    private function send_chart_data($model_method, $table, $where_col, $group_col, $label_col, $filters)
+    private function send_chart_data($data, $table, $where_col, $group_col, $label_col)
     {
-        $data = $this->Dashboard_model->$model_method($filters);
         $formatted = [];
 
 
@@ -224,7 +196,7 @@ class Main extends CI_Controller
             ];
         }
 
-        echo json_encode($formatted);
+        $this->jsonResponse($formatted);
     }
 
     // For status which doesn't use reference tables
@@ -240,7 +212,155 @@ class Main extends CI_Controller
             ];
         }
 
-        echo json_encode($formatted);
+        $this->jsonResponse($formatted);
+    }
+
+    private function agencyChartRequest()
+    {
+        $agencyId = $this->requireAgencyJson();
+        if (!$agencyId) {
+            return [0, []];
+        }
+
+        $filters = $this->agencyDashboardFiltersFromPost($agencyId);
+        if ($filters === null) {
+            return [0, []];
+        }
+
+        return [$agencyId, $filters];
+    }
+
+    private function requireAgencyJson()
+    {
+        if ($this->input->method() !== 'post') {
+            $this->jsonResponse(['message' => 'Method not allowed.'], 405);
+            return 0;
+        }
+
+        $agencySession = $this->session->userdata('agency_session');
+        if (empty($agencySession['id']) || $this->session->userdata('role_as') !== 'agency') {
+            $this->jsonResponse(['message' => 'Your session has expired.'], 401);
+            return 0;
+        }
+
+        return (int) $agencySession['id'];
+    }
+
+    private function agencyDashboardFiltersFromPost($agencyId)
+    {
+        $property = (int) $this->input->post('property', true);
+        $departmentInput = $this->input->post('department', true);
+        if ($departmentInput === null) {
+            $departmentInput = $this->input->post('type', true);
+        }
+        $department = (int) $departmentInput;
+        $startDate = trim((string) $this->input->post('start_date', true));
+        $endDate = trim((string) $this->input->post('end_date', true));
+
+        $properties = $this->Common_model->get_properties_by_agency($agencyId);
+        $allowedPropertyIds = array_map(static function ($item) {
+            return (int) $item->hotel_id;
+        }, $properties);
+
+        if ($property && !in_array($property, $allowedPropertyIds, true)) {
+            $this->jsonResponse(['message' => 'The selected property is not assigned to this agency.'], 422);
+            return null;
+        }
+
+        if ($department) {
+            $activeDepartment = $this->Common_model->getdata('departments', [
+                'department_id' => $department,
+                'is_deleted' => 0
+            ]);
+            if (!$activeDepartment) {
+                $this->jsonResponse(['message' => 'Please select a valid department.'], 422);
+                return null;
+            }
+        }
+
+        foreach ([$startDate, $endDate] as $date) {
+            if ($date !== '') {
+                $parsedDate = DateTime::createFromFormat('!Y-m-d', $date);
+                if (!$parsedDate || $parsedDate->format('Y-m-d') !== $date) {
+                    $this->jsonResponse(['message' => 'Please enter a valid date range.'], 422);
+                    return null;
+                }
+            }
+        }
+
+        if ($startDate !== '' && $endDate !== '' && $startDate > $endDate) {
+            $this->jsonResponse(['message' => 'Start date cannot be later than end date.'], 422);
+            return null;
+        }
+
+        return [
+            'property' => $property,
+            'department' => $department,
+            'type' => $department,
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ];
+    }
+
+    private function applyAgencyLeadFilters($agencyId, $filters)
+    {
+        $this->db->where('leads.is_deleted', 0);
+        $this->db->where('leads.created_by', $agencyId);
+        $this->db->where('leads.creator_user_role', 'Agency');
+
+        if (!empty($filters['property'])) {
+            $this->db->where('leads.property', $filters['property']);
+        }
+        if (!empty($filters['department'])) {
+            $this->db->where('leads.type', $filters['department']);
+        }
+        if (!empty($filters['start_date'])) {
+            $this->db->where('DATE(leads.created_at) >=', $filters['start_date']);
+        }
+        if (!empty($filters['end_date'])) {
+            $this->db->where('DATE(leads.created_at) <=', $filters['end_date']);
+        }
+    }
+
+    private function countAgencyLeads($agencyId, $filters, $field = null, $value = null)
+    {
+        $this->db->from('leads');
+        $this->applyAgencyLeadFilters($agencyId, $filters);
+        if ($field !== null && $value !== null) {
+            $this->db->where('leads.' . $field, $value);
+        }
+        return $this->db->count_all_results();
+    }
+
+    private function countAgencyCalls($agencyId, $filters, $callStatus = '')
+    {
+        $this->db->from('calls');
+        $this->db->join('leads', 'leads.id = calls.leadid');
+        $this->applyAgencyLeadFilters($agencyId, $filters);
+        if ($callStatus !== '') {
+            $this->db->where('calls.overall_call_status', $callStatus);
+        }
+        return $this->db->count_all_results();
+    }
+
+    private function getAgencyRevenue($agencyId, $filters)
+    {
+        $this->db->select_sum('leads.amount');
+        $this->db->from('leads');
+        $this->applyAgencyLeadFilters($agencyId, $filters);
+        $result = $this->db->get()->row();
+        return (float) ($result->amount ?? 0);
+    }
+
+    private function jsonResponse($data, $status = 200)
+    {
+        return $this->output
+            ->set_status_header($status)
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'data' => $data,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ], JSON_UNESCAPED_UNICODE));
     }
 
 

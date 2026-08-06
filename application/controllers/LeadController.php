@@ -3955,53 +3955,103 @@ class LeadController extends CI_Controller
 
     public function fetch_leads_ajax_agency()
     {
-        $offset = $this->input->post('offset');
-        $limit = $this->input->post('limit');
+        if ($this->input->method() !== 'post') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(405)
+                ->set_output(json_encode([
+                    'message' => 'Method not allowed.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
-        $agency_id = $this->session->userdata('agency_session')['id'];
+        $agencySession = $this->session->userdata('agency_session');
+        if (empty($agencySession['id']) || $this->session->userdata('role_as') !== 'agency') {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(401)
+                ->set_output(json_encode([
+                    'message' => 'Your session has expired.',
+                    'csrfHash' => $this->security->get_csrf_hash()
+                ]));
+        }
 
+        $agencyId = (int) $agencySession['id'];
+        $offset = max(0, (int) $this->input->post('offset', true));
+        $limit = min(100, max(1, (int) $this->input->post('limit', true)));
+        $properties = (array) $this->input->post('property', true);
+        $departments = (array) $this->input->post('department', true);
 
+        $allowedPropertyIds = array_map(static function ($property) {
+            return (int) $property->hotel_id;
+        }, $this->Common_model->get_properties_by_agency($agencyId));
+        $propertyIds = array_values(array_unique(array_filter(array_map('intval', $properties))));
+        foreach ($propertyIds as $propertyId) {
+            if (!in_array($propertyId, $allowedPropertyIds, true)) {
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(422)
+                    ->set_output(json_encode([
+                        'message' => 'The selected property is not assigned to this agency.',
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ]));
+            }
+        }
 
+        $departmentIds = array_values(array_unique(array_filter(array_map('intval', $departments))));
+        if (!empty($departmentIds)) {
+            $activeDepartmentRows = $this->db
+                ->select('department_id')
+                ->where_in('department_id', $departmentIds)
+                ->where('is_deleted', 0)
+                ->get('departments')
+                ->result_array();
+            $activeDepartmentIds = array_map('intval', array_column($activeDepartmentRows, 'department_id'));
+            if (count(array_diff($departmentIds, $activeDepartmentIds)) > 0) {
+                return $this->output
+                    ->set_content_type('application/json')
+                    ->set_status_header(422)
+                    ->set_output(json_encode([
+                        'message' => 'Please select valid departments.',
+                        'csrfHash' => $this->security->get_csrf_hash()
+                    ]));
+            }
+        }
 
         $filters = [
-            'city' => $this->input->post('city'),
-            'property' => $this->input->post('property'),
-            'department' => $this->input->post('department'),
-            'status' => $this->input->post('status'),
-            'channel' => $this->input->post('channel'),
-            'disposition' => $this->input->post('disposition'),
-            'start_date' => $this->input->post('start_date'),
-            'end_date' => $this->input->post('end_date'),
-            'search' => $this->input->post('search'),
-            'created_by' => $agency_id,
-            'business_type' => $this->input->post('business_type') // single value: 'business' or 'non_business'
+            'city' => (array) $this->input->post('city', true),
+            'property' => $propertyIds,
+            'department' => $departmentIds,
+            'status' => (array) $this->input->post('status', true),
+            'channel' => (array) $this->input->post('channel', true),
+            'disposition' => (array) $this->input->post('disposition', true),
+            'start_date' => trim((string) $this->input->post('start_date', true)),
+            'end_date' => trim((string) $this->input->post('end_date', true)),
+            'search' => trim((string) $this->input->post('search', true)),
+            // Server-controlled scope; agency users cannot override these values.
+            'created_id' => $agencyId,
+            'created_role' => 'Agency',
+            'business_type' => trim((string) $this->input->post('business_type', true))
         ];
 
         $this->load->model('Leadmodel');
-
-        // Get leads with limit/offset
         $leads = $this->Leadmodel->get_filtered_leads($filters, $limit, $offset);
-
-        // Get overall counts based on applied filters
         $totalCounts = $this->Leadmodel->get_leads_status_counts($filters);
+        $filteredTotal = $this->Leadmodel->count_filtered_leads($filters);
 
         $data['leads'] = $leads;
         $html = $this->load->view('ajax_leads_cards_agency', $data, true);
 
-        $response = [
-            'html'        => $html,
-            'count'       => count($leads),
-            'totalCounts' => $totalCounts,
-            'csrfHash'    => $this->security->get_csrf_hash()
-        ];
-
-        // Send JSON safely in CI3
-        $this->output
+        return $this->output
             ->set_content_type('application/json')
             ->set_status_header(200)
-            ->set_output(json_encode($response, JSON_UNESCAPED_UNICODE));
-
-        return;
+            ->set_output(json_encode([
+                'html' => $html,
+                'count' => count($leads),
+                'filteredTotal' => $filteredTotal,
+                'totalCounts' => $totalCounts,
+                'csrfHash' => $this->security->get_csrf_hash()
+            ], JSON_UNESCAPED_UNICODE));
     }
 
 

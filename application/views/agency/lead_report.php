@@ -1666,7 +1666,8 @@
                     $('#status_count_in_progress').text('In Progress (' + response.totalCounts.in_progress + ')');
                     $('#status_count_closed').text('Closed (' + response.totalCounts.closed + ')');
 
-                    $('#total_leads_count').text(response.totalCounts.total);
+                    // Total follows the active status tab and all other current filters.
+                    $('#total_leads_count').text(response.filteredTotal);
 
 
                     if (reset) {

@@ -8,6 +8,33 @@
         border: 1px solid #23211d;
         background-color: #ffffff;
     }
+
+    .agency-report-filters .select2-container {
+        width: 100% !important;
+    }
+
+    .agency-report-filters .select2-container .select2-selection--single {
+        align-items: center;
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
+            rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+        display: flex;
+        height: 46px;
+        padding: 0 14px;
+    }
+
+    .agency-report-filters .select2-selection__rendered {
+        line-height: 44px !important;
+        padding-left: 0 !important;
+        padding-right: 24px !important;
+    }
+
+    .agency-report-filters .select2-selection__arrow {
+        height: 44px !important;
+        right: 8px !important;
+    }
 </style>
 <div class="content-wrapper">
     <div class="container-full">
@@ -36,29 +63,32 @@
 
                             <div>
 
-                                <form method="GET" action="<?= base_url('reports-agency'); ?>" class="mb-4 px-3">
+                                <form method="POST" action="<?= base_url('reports-agency'); ?>" class="mb-4 px-3 agency-report-filters">
+                                    <input type="hidden"
+                                        name="<?= htmlspecialchars($this->security->get_csrf_token_name(), ENT_QUOTES, 'UTF-8'); ?>"
+                                        value="<?= htmlspecialchars($this->security->get_csrf_hash(), ENT_QUOTES, 'UTF-8'); ?>">
                                     <div class="row align-items-end">
                                         <!-- Existing filters (City, Property, etc.) -->
 
 
                                         <div class="col-md-2">
                                             <label for="property" class="form-label">Property</label>
-                                            <select name="property" class="form-select">
+                                            <select id="property" name="property" class="form-select agency-report-select">
                                                 <option value="">All Properties</option>
                                                 <?php foreach ($hotel_admin as $property) { ?>
-                                                    <option value="<?= $property->hotel_id; ?>" <?= ($this->input->get('property') == $property->hotel_id) ? 'selected' : ''; ?>>
-                                                        <?= $property->hotel_name; ?>
+                                                    <option value="<?= (int) $property->hotel_id; ?>" <?= ((string) $filters['property'] === (string) $property->hotel_id) ? 'selected' : ''; ?>>
+                                                        <?= htmlspecialchars($property->hotel_name, ENT_QUOTES, 'UTF-8'); ?>
                                                     </option>
                                                 <?php } ?>
                                             </select>
                                         </div>
                                         <div class="col-md-2">
                                             <label for="department" class="form-label">Department</label>
-                                            <select name="department" class="form-select">
+                                            <select id="department" name="department" class="form-select agency-report-select">
                                                 <option value="">All Departments</option>
                                                 <?php foreach ($departments as $dept) { ?>
-                                                    <option value="<?= $dept->department_id; ?>" <?= ($this->input->get('department') == $dept->department_id) ? 'selected' : ''; ?>>
-                                                        <?= $dept->department_name; ?>
+                                                    <option value="<?= (int) $dept->department_id; ?>" <?= ((string) $filters['department'] === (string) $dept->department_id) ? 'selected' : ''; ?>>
+                                                        <?= htmlspecialchars($dept->department_name, ENT_QUOTES, 'UTF-8'); ?>
                                                     </option>
                                                 <?php } ?>
                                             </select>
@@ -68,22 +98,22 @@
 
                                         <div class="col-md-2">
                                             <label for="status" class="form-label">Status</label>
-                                            <select name="status" class="form-select">
+                                            <select id="status" name="status" class="form-select agency-report-select">
                                                 <option value="">All</option>
-                                                <option value="Open" <?= ($this->input->get('status') == 'Open') ? 'selected' : ''; ?>>Open</option>
-                                                <option value="In Progress" <?= ($this->input->get('status') == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                                                <option value="On Hold" <?= ($this->input->get('status') == 'On Hold') ? 'selected' : ''; ?>>On Hold</option>
-                                                <option value="Closed" <?= ($this->input->get('status') == 'Closed') ? 'selected' : ''; ?>>Closed</option>
+                                                <option value="Open" <?= ($filters['status'] === 'Open') ? 'selected' : ''; ?>>Open</option>
+                                                <option value="In Progress" <?= ($filters['status'] === 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
+                                                <option value="On Hold" <?= ($filters['status'] === 'On Hold') ? 'selected' : ''; ?>>On Hold</option>
+                                                <option value="Closed" <?= ($filters['status'] === 'Closed') ? 'selected' : ''; ?>>Closed</option>
                                             </select>
                                         </div>
                                         <div class="col-md-2">
                                             <label for="channel" class="form-label">Lead Source</label>
-                                            <select name="channel" class="form-select">
+                                            <select id="channel" name="channel" class="form-select agency-report-select">
                                                 <option value="">All</option>
                                                 <?php foreach ($user_channel as $channelObj): ?>
                                                     <?php $channel = $channelObj->user_channel; ?>
-                                                    <option value="<?= $channel ?>" <?= ($this->input->get('channel') == $channel) ? 'selected' : ''; ?>>
-                                                        <?= strtoupper($channel) ?>
+                                                    <option value="<?= htmlspecialchars($channel, ENT_QUOTES, 'UTF-8'); ?>" <?= ($filters['channel'] === $channel) ? 'selected' : ''; ?>>
+                                                        <?= htmlspecialchars(strtoupper($channel), ENT_QUOTES, 'UTF-8'); ?>
                                                     </option>
                                                 <?php endforeach; ?>
 
@@ -93,17 +123,17 @@
 
                                         <div class="col-md-2">
                                             <label for="disposition" class="form-label">Stage</label>
-                                            <select class="form-select" name="disposition">
+                                            <select id="disposition" class="form-select agency-report-select" name="disposition">
                                                 <option value="">Select Stage</option>
-                                                <option value="Information/Enquiry" <?= ($this->input->get('disposition') == 'Information/Enquiry') ? 'selected' : ''; ?>>Information/Enquiry</option>
-                                                <option value="Reservation" <?= ($this->input->get('disposition') == 'Reservation') ? 'selected' : ''; ?>>Reservation</option>
-                                                <option value="Shopping - Follow up" <?= ($this->input->get('disposition') == 'Shopping - Follow up') ? 'selected' : ''; ?>>Shopping - Follow up</option>
-                                                <option value="Shopping - No Follow up" <?= ($this->input->get('disposition') == 'Shopping - No Follow up') ? 'selected' : ''; ?>>Shopping - No Follow up</option>
-                                                <option value="Shopping - Follow up (Reservation)" <?= ($this->input->get('disposition') == 'Shopping - Follow up (Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (Reservation)</option>
-                                                <option value="Shopping - Follow up (No Reservation)" <?= ($this->input->get('disposition') == 'Shopping - Follow up (No Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (No Reservation)</option>
-                                                <option value="Trash" <?= ($this->input->get('disposition') == 'Trash') ? 'selected' : ''; ?>>Trash</option>
-                                                <option value="Enquiry not received" <?= ($this->input->get('disposition') == 'Enquiry not received') ? 'selected' : ''; ?>>Enquiry not received</option>
-                                                <option value="Denied" <?= ($this->input->get('disposition') == 'Denied') ? 'selected' : ''; ?>>Denied</option>
+                                                <option value="Information/Enquiry" <?= ($filters['disposition'] === 'Information/Enquiry') ? 'selected' : ''; ?>>Information/Enquiry</option>
+                                                <option value="Reservation" <?= ($filters['disposition'] === 'Reservation') ? 'selected' : ''; ?>>Reservation</option>
+                                                <option value="Shopping - Follow up" <?= ($filters['disposition'] === 'Shopping - Follow up') ? 'selected' : ''; ?>>Shopping - Follow up</option>
+                                                <option value="Shopping - No Follow up" <?= ($filters['disposition'] === 'Shopping - No Follow up') ? 'selected' : ''; ?>>Shopping - No Follow up</option>
+                                                <option value="Shopping - Follow up (Reservation)" <?= ($filters['disposition'] === 'Shopping - Follow up (Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (Reservation)</option>
+                                                <option value="Shopping - Follow up (No Reservation)" <?= ($filters['disposition'] === 'Shopping - Follow up (No Reservation)') ? 'selected' : ''; ?>>Shopping - Follow up (No Reservation)</option>
+                                                <option value="Trash" <?= ($filters['disposition'] === 'Trash') ? 'selected' : ''; ?>>Trash</option>
+                                                <option value="Enquiry not received" <?= ($filters['disposition'] === 'Enquiry not received') ? 'selected' : ''; ?>>Enquiry not received</option>
+                                                <option value="Denied" <?= ($filters['disposition'] === 'Denied') ? 'selected' : ''; ?>>Denied</option>
                                             </select>
                                         </div>
 
@@ -111,11 +141,11 @@
                                         <!-- 🆕 Date Filters -->
                                         <div class="col-md-3">
                                             <label for="start_date" class="form-label">Start Date</label>
-                                            <input type="date" id="start_date" name="start_date" class="form-control" value="<?= $this->input->get('start_date'); ?>">
+                                            <input type="date" id="start_date" name="start_date" class="form-control" value="<?= htmlspecialchars($filters['start_date'], ENT_QUOTES, 'UTF-8'); ?>">
                                         </div>
                                         <div class="col-md-3">
                                             <label for="end_date" class="form-label">End Date</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control" value="<?= $this->input->get('end_date'); ?>">
+                                            <input type="date" id="end_date" name="end_date" class="form-control" value="<?= htmlspecialchars($filters['end_date'], ENT_QUOTES, 'UTF-8'); ?>">
                                         </div>
                                         <div class="col-md-2 d-grid">
                                             <button type="submit" class="btn btn-primary">Filter</button>
@@ -266,7 +296,7 @@
 
 
 <script>
-    $(document).ready(function() {
+    window.addEventListener('load', function() {
         $('#toggle-filters').click(function() {
             $('#filter-section').slideToggle();
         });
@@ -285,6 +315,10 @@
 
 <script>
     $(document).ready(function() {
+
+        $('.agency-report-select').select2({
+            width: '100%'
+        });
 
 
         var today = new Date();

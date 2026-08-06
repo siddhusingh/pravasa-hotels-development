@@ -13,9 +13,9 @@ class Leads extends CI_Controller
         $this->load->model('Airtel_config_model');
         $this->load->helper('download');
 
-
-        if (empty($this->session->userdata('agency_session'))) {
-            return redirect('agent-login');
+        $agencySession = $this->session->userdata('agency_session');
+        if (empty($agencySession['id']) || $this->session->userdata('role_as') !== 'agency') {
+            return redirect('agency-login');
         }
     }
 
