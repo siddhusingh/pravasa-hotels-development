@@ -11,12 +11,41 @@ class WhatsappLeadApi extends CI_Controller
     }
 
     /**
+     * GET api/whatsapp/catalog/locations-with-properties
+     */
+    public function locations_with_properties()
+    {
+        if (!$this->prepare_catalog_request('GET')) {
+            return;
+        }
+
+        $data = $this->WhatsappLead_model->get_locations_with_properties();
+
+        return $this->json_response(true, 'OK', $data);
+    }
+
+    /**
+     * GET api/whatsapp/catalog/departments
+     * No property_id query — global WhatsJet department list.
+     */
+    public function departments()
+    {
+        if (!$this->prepare_catalog_request('GET')) {
+            return;
+        }
+
+        $departments = $this->WhatsappLead_model->get_catalog_departments();
+
+        return $this->json_response(true, 'OK', $departments);
+    }
+
+    /**
      * WhatsAppJet hotel-reservation confirmed webhook.
      * POST api/whatsapp/save-lead
      */
     public function save_lead()
     {
-        $this->apply_cors_headers();
+        $this->apply_cors_headers(['POST', 'OPTIONS']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             http_response_code(200);
@@ -158,12 +187,42 @@ class WhatsappLeadApi extends CI_Controller
         ]);
     }
 
-    private function apply_cors_headers()
+    /**
+     * Shared GET catalog guard: CORS, method, Bearer auth.
+     * Returns false when a response was already sent.
+     */
+    private function prepare_catalog_request($allowed_method)
     {
+        $this->apply_cors_headers(['GET', 'OPTIONS']);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== $allowed_method) {
+            $this->json_response(false, 'Only ' . $allowed_method . ' is allowed', [], 405);
+            return false;
+        }
+
+        if (!$this->is_bearer_authorized()) {
+            $this->json_response(false, 'Unauthorized', [], 401);
+            return false;
+        }
+
+        return true;
+    }
+
+    private function apply_cors_headers(array $methods = ['GET', 'POST', 'OPTIONS'])
+    {
+        $methods[] = 'OPTIONS';
+        $methods = array_values(array_unique($methods));
+
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        header('Access-Control-Allow-Methods: ' . implode(', ', $methods));
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, Accept, X-Requested-With');
         header('Content-Type: application/json');
+        header('Accept: application/json');
     }
 
     private function is_bearer_authorized()

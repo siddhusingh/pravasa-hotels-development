@@ -169,4 +169,117 @@ class WhatsappLead_model extends CI_Model
             'esc_follow_up_level' => 1,
         ];
     }
+
+    /**
+     * Active property/hotel by stable hotel_id.
+     */
+    public function find_property_by_id($property_id)
+    {
+        $property_id = (int) $property_id;
+        if ($property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('hotel_id, hotel_name, city_id, state_id, country_id, hotel_address, hotel_image')
+            ->from('hotel_admin')
+            ->where('hotel_id', $property_id)
+            ->where('status', 'active')
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Locations (cities) with nested active properties for WhatsJet catalog.
+     *
+     * @return array
+     */
+    public function get_locations_with_properties()
+    {
+        $rows = $this->db
+            ->select('
+                city.city_id,
+                city.city_name,
+                hotel_admin.hotel_id,
+                hotel_admin.hotel_name,
+                hotel_admin.hotel_address,
+                hotel_admin.hotel_image
+            ')
+            ->from('city')
+            ->join(
+                'hotel_admin',
+                'hotel_admin.city_id = city.city_id
+                 AND hotel_admin.status = "active"
+                 AND hotel_admin.is_deleted = 0',
+                'inner'
+            )
+            ->where('city.is_deleted', 0)
+            ->order_by('city.city_name', 'ASC')
+            ->order_by('hotel_admin.hotel_name', 'ASC')
+            ->get()
+            ->result();
+
+        $locations = [];
+
+        foreach ($rows as $row) {
+            $city_id = (string) $row->city_id;
+
+            if (!isset($locations[$city_id])) {
+                $locations[$city_id] = [
+                    'id' => $city_id,
+                    'name' => (string) $row->city_name,
+                    'properties' => [],
+                ];
+            }
+
+            $image_url = null;
+            $hotel_image = trim((string) ($row->hotel_image ?? ''));
+            if ($hotel_image !== '') {
+                $image_url = base_url('uploads/hotel_images/' . $hotel_image);
+            }
+
+            $locations[$city_id]['properties'][] = [
+                'id' => (string) $row->hotel_id,
+                'title' => (string) $row->hotel_name,
+                'description' => trim((string) ($row->hotel_address ?? '')),
+                'image_url' => $image_url,
+            ];
+        }
+
+        return array_values($locations);
+    }
+
+    /**
+     * Global WhatsJet departments (no property filter).
+     * Names must stay exactly Rooms / Restaurants / Banquets.
+     *
+     * @return array
+     */
+    public function get_catalog_departments()
+    {
+        $allowed_names = ['Rooms', 'Restaurants', 'Banquets'];
+
+        $rows = $this->db
+            ->select('department_id, department_name')
+            ->from('departments')
+            ->where_in('department_name', $allowed_names)
+            ->where('is_deleted', 0)
+            ->order_by('FIELD(department_name, "Rooms", "Restaurants", "Banquets")', '', false)
+            ->get()
+            ->result();
+
+        $departments = [];
+        foreach ($rows as $row) {
+            $name = (string) $row->department_name;
+            $departments[] = [
+                'id' => (string) $row->department_id,
+                'name' => $name,
+                'code' => strtolower($name),
+            ];
+        }
+
+        return $departments;
+    }
 }

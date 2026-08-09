@@ -4,28 +4,99 @@ Last reviewed: 9 August 2026
 
 ## Purpose
 
-Public webhook for WhatsAppJet’s hotel-reservation confirm push. Incoming JSON is
-validated with a Bearer token, mapped to a lead, and saved with the same core
-insert/update behavior as `LeadController::receive_lead()`, without changing
-that legacy endpoint.
+WhatsAppJet integration APIs for this LMS:
+
+1. Catalog GETs for locations/properties and departments (required before flow work)
+2. Lead save webhook for hotel-reservation confirm push
+
+Incoming lead JSON is validated with a Bearer token, mapped to a lead, and saved
+with the same core insert/update behavior as `LeadController::receive_lead()`,
+without changing that legacy endpoint.
 
 ## Files
 
 | File | Responsibility |
 | --- | --- |
-| `application/controllers/WhatsappLeadApi.php` | CORS, Bearer auth, payload mapping, responses, email trigger |
-| `application/models/WhatsappLead_model.php` | Soft-delete-aware lookups, duplicate check, insert/update |
-| `application/config/routes.php` | `api/whatsapp/save-lead` route |
+| `application/controllers/WhatsappLeadApi.php` | CORS, Bearer auth, catalog GETs, payload mapping, responses |
+| `application/models/WhatsappLead_model.php` | Soft-delete-aware lookups, catalog queries, duplicate check, insert/update |
+| `application/config/routes.php` | WhatsApp API routes |
 | `.env` / `env` | `WHATSAPP_LEAD_API_TOKEN` shared secret |
 
-## Endpoint
+## Common contract
+
+| Item | Value |
+| --- | --- |
+| Auth | `Authorization: Bearer <WHATSAPP_LEAD_API_TOKEN>` |
+| Accept | `application/json` |
+| Success | `{ "status": true, "message": "OK", "data": ... }` |
+| Fail | `{ "status": false, "message": "...", "data": [] }` |
+| Unauthorized | HTTP `401` |
+
+## Catalog API 1 — Locations with properties
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/locations-with-properties` |
+
+Response shape:
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    {
+      "id": "8",
+      "name": "Indore",
+      "properties": [
+        {
+          "id": "1",
+          "title": "Playotel Premier, Vijay Nagar, Indore",
+          "description": "Playotel Premier, Vijay Nagar, Indore",
+          "image_url": "http://localhost/pravasahotels/uploads/hotel_images/...."
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `name` is city name for `save-lead` `location`
+- `title` is exact hotel name for `save-lead` `property`
+
+## Catalog API 2 — Departments (global)
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/departments` |
+
+No `property_id` query. Returns the global WhatsJet department list.
+
+Response shape:
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    { "id": "1", "name": "Rooms", "code": "rooms" },
+    { "id": "2", "name": "Restaurants", "code": "restaurants" },
+    { "id": "3", "name": "Banquets", "code": "banquets" }
+  ]
+}
+```
+
+Important: `name` values stay exactly `Rooms`, `Restaurants`, `Banquets` for WhatsJet flow routing / `save-lead` `service`.
+
+## Lead save endpoint
 
 | Item | Value |
 | --- | --- |
 | Method | `POST` |
 | Route | `api/whatsapp/save-lead` |
 | Content-Type | `application/json` |
-| Auth | `Authorization: Bearer <WHATSAPP_LEAD_API_TOKEN>` |
 
 Example local URL:
 
