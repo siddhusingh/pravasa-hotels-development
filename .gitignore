@@ -5,6 +5,7 @@ tmp/*
 output/*
 !docs/PROJECT_INSTRUCTIONS.md
 !docs/form-download-module.md
+!docs/whatsapp-lead-api.md
 .env
 *.zip
 .agents/
@@ -42,3 +43,4 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 *.sublime-project
 /tests/tests/
 /tests/results/
+
