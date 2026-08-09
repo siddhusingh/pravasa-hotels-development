@@ -586,6 +586,7 @@ $route['api/save-lead'] = 'API/save_lead';
 $route['api/whatsapp/save-lead'] = 'WhatsappLeadApi/save_lead';
 $route['api/whatsapp/catalog/locations-with-properties'] = 'WhatsappLeadApi/locations_with_properties';
 $route['api/whatsapp/catalog/departments'] = 'WhatsappLeadApi/departments';
+$route['api/whatsapp/catalog/restaurants'] = 'WhatsappLeadApi/restaurants';
 
 
 $route['followups'] = 'LeadController/followups';

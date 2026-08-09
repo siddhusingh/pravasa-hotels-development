@@ -24,6 +24,72 @@ class WhatsappLead_model extends CI_Model
     }
 
     /**
+     * Resolve active city by stable city_id.
+     */
+    public function find_city_by_id($city_id)
+    {
+        $city_id = (int) $city_id;
+        if ($city_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('city_id, state_id, country_id, city_name')
+            ->from('city')
+            ->where('city_id', $city_id)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Active restaurant under a property (hotel).
+     */
+    public function find_restaurant_by_id_for_property($restaurant_id, $property_id)
+    {
+        $restaurant_id = (int) $restaurant_id;
+        $property_id = (int) $property_id;
+        if ($restaurant_id <= 0 || $property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, restaurant_name, hotel_id')
+            ->from('hotel_restaurants')
+            ->where('id', $restaurant_id)
+            ->where('hotel_id', $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Active restaurant by name under a property (fallback).
+     */
+    public function find_restaurant_by_name_for_property($restaurant_name, $property_id)
+    {
+        $restaurant_name = trim((string) $restaurant_name);
+        $property_id = (int) $property_id;
+        if ($restaurant_name === '' || $property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, restaurant_name, hotel_id')
+            ->from('hotel_restaurants')
+            ->where('restaurant_name', $restaurant_name)
+            ->where('hotel_id', $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
      * Resolve active property/hotel by exact hotel name.
      */
     public function find_property_by_name($property_name)
@@ -249,6 +315,39 @@ class WhatsappLead_model extends CI_Model
         }
 
         return array_values($locations);
+    }
+
+    /**
+     * Active restaurants for a property (hotel), WhatsJet catalog shape.
+     * Returns null when property_id is not an active hotel.
+     *
+     * @return array|null
+     */
+    public function get_catalog_restaurants_by_property($property_id)
+    {
+        if (empty($this->find_property_by_id($property_id))) {
+            return null;
+        }
+
+        $rows = $this->db
+            ->select('id, restaurant_name')
+            ->from('hotel_restaurants')
+            ->where('hotel_id', (int) $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->order_by('restaurant_name', 'ASC')
+            ->get()
+            ->result();
+
+        $restaurants = [];
+        foreach ($rows as $row) {
+            $restaurants[] = [
+                'id' => (string) $row->id,
+                'title' => (string) $row->restaurant_name,
+            ];
+        }
+
+        return $restaurants;
     }
 
     /**
