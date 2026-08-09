@@ -11,5 +11,6 @@ This directory contains implementation and maintenance notes for the Pravas Hote
 
 - [Leads module](leads-module.md) — complete lead lifecycle, role-specific flows, dynamic department fields, restaurant reservations, persistence, endpoints, and testing checklist.
 - [Form Download module](form-download-module.md) — Super Admin download flow, standalone enquiry form, public lookup/save APIs, validation, duplicate handling, review findings, and regression checklist.
+- [WhatsApp Lead API](whatsapp-lead-api.md) — WhatsAppJet reservation webhook, Bearer auth, location/property mapping, and lead save behavior.
 
 When changing a documented module, update its document in the same change.

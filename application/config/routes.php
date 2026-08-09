@@ -582,6 +582,9 @@ $route['api/time-slots'] = 'API/time_slots';
 
 $route['api/save-lead'] = 'API/save_lead';
 
+// WhatsAppJet lead intake API
+$route['api/whatsapp/save-lead'] = 'WhatsappLeadApi/save_lead';
+
 
 $route['followups'] = 'LeadController/followups';
 $route['view-followups-admin'] = 'hotelAdmin/Leads/followups';
