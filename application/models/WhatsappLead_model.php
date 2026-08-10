@@ -24,6 +24,72 @@ class WhatsappLead_model extends CI_Model
     }
 
     /**
+     * Resolve active city by stable city_id.
+     */
+    public function find_city_by_id($city_id)
+    {
+        $city_id = (int) $city_id;
+        if ($city_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('city_id, state_id, country_id, city_name')
+            ->from('city')
+            ->where('city_id', $city_id)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Active restaurant under a property (hotel).
+     */
+    public function find_restaurant_by_id_for_property($restaurant_id, $property_id)
+    {
+        $restaurant_id = (int) $restaurant_id;
+        $property_id = (int) $property_id;
+        if ($restaurant_id <= 0 || $property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, restaurant_name, hotel_id')
+            ->from('hotel_restaurants')
+            ->where('id', $restaurant_id)
+            ->where('hotel_id', $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Active restaurant by name under a property (fallback).
+     */
+    public function find_restaurant_by_name_for_property($restaurant_name, $property_id)
+    {
+        $restaurant_name = trim((string) $restaurant_name);
+        $property_id = (int) $property_id;
+        if ($restaurant_name === '' || $property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, restaurant_name, hotel_id')
+            ->from('hotel_restaurants')
+            ->where('restaurant_name', $restaurant_name)
+            ->where('hotel_id', $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
      * Resolve active property/hotel by exact hotel name.
      */
     public function find_property_by_name($property_name)
@@ -168,5 +234,151 @@ class WhatsappLead_model extends CI_Model
             'esc_next_followup_at' => $current_time->format('Y-m-d H:i:s'),
             'esc_follow_up_level' => 1,
         ];
+    }
+
+    /**
+     * Active property/hotel by stable hotel_id.
+     */
+    public function find_property_by_id($property_id)
+    {
+        $property_id = (int) $property_id;
+        if ($property_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('hotel_id, hotel_name, city_id, state_id, country_id, hotel_address, hotel_image')
+            ->from('hotel_admin')
+            ->where('hotel_id', $property_id)
+            ->where('status', 'active')
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Locations (cities) with nested active properties for WhatsJet catalog.
+     *
+     * @return array
+     */
+    public function get_locations_with_properties()
+    {
+        $rows = $this->db
+            ->select('
+                city.city_id,
+                city.city_name,
+                hotel_admin.hotel_id,
+                hotel_admin.hotel_name,
+                hotel_admin.hotel_address,
+                hotel_admin.hotel_image
+            ')
+            ->from('city')
+            ->join(
+                'hotel_admin',
+                'hotel_admin.city_id = city.city_id
+                 AND hotel_admin.status = "active"
+                 AND hotel_admin.is_deleted = 0',
+                'inner'
+            )
+            ->where('city.is_deleted', 0)
+            ->order_by('city.city_name', 'ASC')
+            ->order_by('hotel_admin.hotel_name', 'ASC')
+            ->get()
+            ->result();
+
+        $locations = [];
+
+        foreach ($rows as $row) {
+            $city_id = (string) $row->city_id;
+
+            if (!isset($locations[$city_id])) {
+                $locations[$city_id] = [
+                    'id' => $city_id,
+                    'name' => (string) $row->city_name,
+                    'properties' => [],
+                ];
+            }
+
+            $image_url = null;
+            $hotel_image = trim((string) ($row->hotel_image ?? ''));
+            if ($hotel_image !== '') {
+                $image_url = base_url('uploads/hotel_images/' . $hotel_image);
+            }
+
+            $locations[$city_id]['properties'][] = [
+                'id' => (string) $row->hotel_id,
+                'title' => (string) $row->hotel_name,
+                'description' => trim((string) ($row->hotel_address ?? '')),
+                'image_url' => $image_url,
+            ];
+        }
+
+        return array_values($locations);
+    }
+
+    /**
+     * Active restaurants for a property (hotel), WhatsJet catalog shape.
+     * Returns null when property_id is not an active hotel.
+     *
+     * @return array|null
+     */
+    public function get_catalog_restaurants_by_property($property_id)
+    {
+        if (empty($this->find_property_by_id($property_id))) {
+            return null;
+        }
+
+        $rows = $this->db
+            ->select('id, restaurant_name')
+            ->from('hotel_restaurants')
+            ->where('hotel_id', (int) $property_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->order_by('restaurant_name', 'ASC')
+            ->get()
+            ->result();
+
+        $restaurants = [];
+        foreach ($rows as $row) {
+            $restaurants[] = [
+                'id' => (string) $row->id,
+                'title' => (string) $row->restaurant_name,
+            ];
+        }
+
+        return $restaurants;
+    }
+
+    /**
+     * Global WhatsJet departments (no property filter).
+     * Names must stay exactly Rooms / Restaurants / Banquets.
+     *
+     * @return array
+     */
+    public function get_catalog_departments()
+    {
+        $allowed_names = ['Rooms', 'Restaurants', 'Banquets'];
+
+        $rows = $this->db
+            ->select('department_id, department_name')
+            ->from('departments')
+            ->where_in('department_name', $allowed_names)
+            ->where('is_deleted', 0)
+            ->order_by('FIELD(department_name, "Rooms", "Restaurants", "Banquets")', '', false)
+            ->get()
+            ->result();
+
+        $departments = [];
+        foreach ($rows as $row) {
+            $name = (string) $row->department_name;
+            $departments[] = [
+                'id' => (string) $row->department_id,
+                'name' => $name,
+                'code' => strtolower($name),
+            ];
+        }
+
+        return $departments;
     }
 }

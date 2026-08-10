@@ -4,28 +4,130 @@ Last reviewed: 9 August 2026
 
 ## Purpose
 
-Public webhook for WhatsAppJet’s hotel-reservation confirm push. Incoming JSON is
-validated with a Bearer token, mapped to a lead, and saved with the same core
-insert/update behavior as `LeadController::receive_lead()`, without changing
-that legacy endpoint.
+WhatsAppJet integration APIs for this LMS:
+
+1. Catalog GETs for locations/properties and departments (required before flow work)
+2. Lead save webhook for hotel-reservation confirm push
+
+Incoming lead JSON is validated with a Bearer token, mapped to a lead, and saved
+with the same core insert/update behavior as `LeadController::receive_lead()`,
+without changing that legacy endpoint.
 
 ## Files
 
 | File | Responsibility |
 | --- | --- |
-| `application/controllers/WhatsappLeadApi.php` | CORS, Bearer auth, payload mapping, responses, email trigger |
-| `application/models/WhatsappLead_model.php` | Soft-delete-aware lookups, duplicate check, insert/update |
-| `application/config/routes.php` | `api/whatsapp/save-lead` route |
+| `application/controllers/WhatsappLeadApi.php` | CORS, Bearer auth, catalog GETs, payload mapping, responses |
+| `application/models/WhatsappLead_model.php` | Soft-delete-aware lookups, catalog queries, duplicate check, insert/update |
+| `application/config/routes.php` | WhatsApp API routes |
 | `.env` / `env` | `WHATSAPP_LEAD_API_TOKEN` shared secret |
 
-## Endpoint
+## Common contract
+
+| Item | Value |
+| --- | --- |
+| Auth | `Authorization: Bearer <WHATSAPP_LEAD_API_TOKEN>` |
+| Accept | `application/json` |
+| Success | `{ "status": true, "message": "OK", "data": ... }` |
+| Fail | `{ "status": false, "message": "...", "data": [] }` |
+| Unauthorized | HTTP `401` |
+
+## Catalog API 1 — Locations with properties
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/locations-with-properties` |
+
+Response shape:
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    {
+      "id": "8",
+      "name": "Indore",
+      "properties": [
+        {
+          "id": "1",
+          "title": "Playotel Premier, Vijay Nagar, Indore",
+          "description": "Playotel Premier, Vijay Nagar, Indore",
+          "image_url": "http://localhost/pravasahotels/uploads/hotel_images/...."
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `name` is city name for `save-lead` `location`
+- `title` is exact hotel name for `save-lead` `property`
+
+## Catalog API 2 — Departments (global)
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/departments` |
+
+No `property_id` query. Returns the global WhatsJet department list.
+
+Response shape:
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    { "id": "1", "name": "Rooms", "code": "rooms" },
+    { "id": "2", "name": "Restaurants", "code": "restaurants" },
+    { "id": "3", "name": "Banquets", "code": "banquets" }
+  ]
+}
+```
+
+Important: `name` values stay exactly `Rooms`, `Restaurants`, `Banquets` for WhatsJet flow routing / `save-lead` `service`.
+
+## Catalog API 3 — Restaurants by property
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/restaurants?property_id={lms_property_id}` |
+| Auth | Bearer (same catalog token) |
+
+Required query: `property_id` (LMS hotel id from WhatsJet session).
+
+Response shape:
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    { "id": "17", "title": "PlayDine" },
+    { "id": "20", "title": "Divine Cafe" }
+  ]
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| query `property_id` | yes | LMS property id |
+| `data[].id` | yes | LMS restaurant id |
+| `data[].title` | yes | WhatsApp / Flow dropdown label |
+
+Inactive or unknown property → `422` with fail envelope.
+
+## Lead save endpoint
 
 | Item | Value |
 | --- | --- |
 | Method | `POST` |
 | Route | `api/whatsapp/save-lead` |
 | Content-Type | `application/json` |
-| Auth | `Authorization: Bearer <WHATSAPP_LEAD_API_TOKEN>` |
 
 Example local URL:
 
@@ -67,31 +169,39 @@ WHATSAPP_LEAD_API_TOKEN=your-long-random-secret
 
 ## Field mapping
 
+ID fields are preferred (environment DB ids from catalog). Names are fallback.
+
 | WhatsAppJet field | Lead behavior |
 | --- | --- |
 | `name` | `user_name` |
 | `phone` (fallback `contact_wa_id`) | `phone_number` |
-| `location` | Active city by `city_name`; stores city/state/country IDs from that row |
-| `property` | Active hotel by exact `hotel_name`; must belong to the resolved city |
-| `service` | Department name → `type`; blank defaults to `Restaurants`; unknown falls back to department id `2` |
-| `guests` | `pax`, and included in `query` as `Guests: 2` |
-| `date` | `booking_date`, and included in `query` as `Date: 2026-08-08` |
-| `time` | Stored in `time`, and included in `query` as `Time: Breakfast` |
+| `location_id` / `location` | Active city by id, else name; stores city/state/country |
+| `property_id` / `property` | Active hotel by id, else name; must belong to resolved city |
+| `department_id` / `service` | Active department by id, else name (`Restaurants` default / id `2` fallback for name path) |
+| `restaurant_id` / `restaurant` | Active restaurant under property → `restaurant_id` |
+| `guests` | `pax` + `query` |
+| `date` / `checkin_date` | `booking_date` (+ `checkin_date` when sent) |
+| `checkout_date` | `checkout_date` when sent |
+| `time` | `time` and `arrival_time` |
+| `meal` | Included in `query` |
+| `occasion` | `special_occasion` + `query` |
+| `special_requests` / `special_requirement` | `special_request` + `query` |
+| `queries` | Appended in `query` |
 | Bot `status` | Ignored; lead `status` is always `Open` |
 | — | `user_channel` = `WhatsApp` |
-| `reservation_uid` | Stored in `remark` and appended in `query` |
+| `reservation_uid` | `remark` + `query` |
 
 Example `query` string:
 
-`Date: 2026-08-08 | Time: Breakfast | Guests: 2 | Reservation UID: ...`
+`Date: 2026-08-10 | Time: 20:00 | Meal: Dinner | Guests: 4 | Restaurant: Rooftop Restaurant | Occasion: Birthday | Special request: Window seat | Reservation UID: ...`
 
-Required: `name`, phone (`phone` or `contact_wa_id`), `location`, `property`.
+Required: `name`, phone, and (`location_id` or `location`), and (`property_id` or `property`).
 
 ## Save behavior
 
 1. Validate Bearer token.
-2. Resolve location, property, and department against active (`is_deleted = 0`) records.
-3. Reject if property city does not match location city.
+2. Resolve location/property/department/restaurant by id first (active, `is_deleted = 0`), else by name.
+3. Reject if property city does not match location city, or restaurant is not under that property.
 4. Set escalation from department level-1 hours.
 5. Duplicate window: same last-10 phone digits, created within 2 hours, not Closed, not soft-deleted → update existing lead.
 6. Otherwise insert a new lead.
