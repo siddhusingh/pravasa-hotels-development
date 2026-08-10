@@ -62,6 +62,21 @@ class WhatsappLeadApi extends CI_Controller
     }
 
     /**
+     * GET api/whatsapp/catalog/dining-schedule
+     * Nested slot types with active time slots.
+     */
+    public function dining_schedule()
+    {
+        if (!$this->prepare_catalog_request('GET')) {
+            return;
+        }
+
+        $data = $this->WhatsappLead_model->get_catalog_dining_schedule();
+
+        return $this->json_response(true, 'OK', $data);
+    }
+
+    /**
      * WhatsAppJet hotel-reservation confirmed webhook.
      * POST api/whatsapp/save-lead
      */

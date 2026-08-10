@@ -121,6 +121,41 @@ Response shape:
 
 Inactive or unknown property → `422` with fail envelope.
 
+## Catalog API 4 — Dining schedule
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/dining-schedule` |
+| Auth | Bearer (same catalog token) |
+
+Builds nested slot types → time slots from active, non-deleted rows only.
+
+- Type `title` = `slot_types.slot_name`
+- Slot `title` = formatted `start_time - end_time` (e.g. `06:00 AM - 07:00 AM`)
+- No `code` field
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    {
+      "id": "1",
+      "title": "Break Fast",
+      "slots": [
+        {
+          "id": "6",
+          "title": "06:00 AM - 07:00 AM",
+          "start_time": "06:00:00",
+          "end_time": "07:00:00"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Lead save endpoint
 
 | Item | Value |

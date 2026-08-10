@@ -381,4 +381,115 @@ class WhatsappLead_model extends CI_Model
 
         return $departments;
     }
+
+    /**
+     * Nested dining schedule: active slot types with active time slots.
+     * No invented code field. Soft-deleted and inactive rows excluded.
+     *
+     * @return array
+     */
+    public function get_catalog_dining_schedule()
+    {
+        $types = $this->db
+            ->select('id, slot_name, start_time')
+            ->from('slot_types')
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->order_by('start_time', 'ASC')
+            ->order_by('id', 'ASC')
+            ->get()
+            ->result();
+
+        if (empty($types)) {
+            return [];
+        }
+
+        $type_ids = [];
+        foreach ($types as $type) {
+            $type_ids[] = (int) $type->id;
+        }
+
+        $slots_by_type = [];
+        if (!empty($type_ids)) {
+            $slots = $this->db
+                ->select('id, slot_type_id, start_time, end_time')
+                ->from('time_slots')
+                ->where_in('slot_type_id', $type_ids)
+                ->where('status', 'active')
+                ->where('is_deleted', 0)
+                ->order_by('start_time', 'ASC')
+                ->order_by('id', 'ASC')
+                ->get()
+                ->result();
+
+            foreach ($slots as $slot) {
+                $type_key = (string) $slot->slot_type_id;
+                if (!isset($slots_by_type[$type_key])) {
+                    $slots_by_type[$type_key] = [];
+                }
+
+                $start = $this->normalize_time_value($slot->start_time);
+                $end = $this->normalize_time_value($slot->end_time);
+
+                $slots_by_type[$type_key][] = [
+                    'id' => (string) $slot->id,
+                    'title' => $this->format_slot_title($start, $end),
+                    'start_time' => $start,
+                    'end_time' => $end,
+                ];
+            }
+        }
+
+        $schedule = [];
+        foreach ($types as $type) {
+            $type_id = (string) $type->id;
+            $schedule[] = [
+                'id' => $type_id,
+                'title' => (string) $type->slot_name,
+                'slots' => isset($slots_by_type[$type_id]) ? $slots_by_type[$type_id] : [],
+            ];
+        }
+
+        return $schedule;
+    }
+
+    /**
+     * Normalize DB time to HH:MM:SS.
+     */
+    private function normalize_time_value($time)
+    {
+        $time = trim((string) $time);
+        if ($time === '') {
+            return '00:00:00';
+        }
+
+        if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $time)) {
+            return $time;
+        }
+
+        if (preg_match('/^\d{2}:\d{2}$/', $time)) {
+            return $time . ':00';
+        }
+
+        $timestamp = strtotime($time);
+        if ($timestamp === false) {
+            return '00:00:00';
+        }
+
+        return date('H:i:s', $timestamp);
+    }
+
+    /**
+     * Slot display title: "06:00 AM - 07:00 AM"
+     */
+    private function format_slot_title($start_time, $end_time)
+    {
+        $start_ts = strtotime($start_time);
+        $end_ts = strtotime($end_time);
+
+        $start_label = $start_ts !== false ? date('h:i A', $start_ts) : $start_time;
+        $end_label = $end_ts !== false ? date('h:i A', $end_ts) : $end_time;
+
+        return $start_label . ' - ' . $end_label;
+    }
 }
