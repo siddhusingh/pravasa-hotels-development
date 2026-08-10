@@ -214,6 +214,8 @@ ID fields are preferred (environment DB ids from catalog). Names are fallback.
 | `property_id` / `property` | Active hotel by id, else name; must belong to resolved city |
 | `department_id` / `service` | Active department by id, else name (`Restaurants` default / id `2` fallback for name path) |
 | `restaurant_id` / `restaurant` | Active restaurant under property → `restaurant_id` |
+| `slot_type_id` | Active slot type → `slot_type_id` (Reserve Table field) |
+| `time_slot_id` | Active time slot under that slot type → `time_slot_id` |
 | `guests` | `pax` + `query` |
 | `date` / `checkin_date` | `booking_date` (+ `checkin_date` when sent) |
 | `checkout_date` | `checkout_date` when sent |

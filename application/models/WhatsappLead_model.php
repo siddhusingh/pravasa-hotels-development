@@ -90,6 +90,50 @@ class WhatsappLead_model extends CI_Model
     }
 
     /**
+     * Active slot type by id (soft-delete aware).
+     */
+    public function find_slot_type_by_id($slot_type_id)
+    {
+        $slot_type_id = (int) $slot_type_id;
+        if ($slot_type_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, slot_name')
+            ->from('slot_types')
+            ->where('id', $slot_type_id)
+            ->where('status', 1)
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
+     * Active time slot by id under a slot type (soft-delete aware).
+     */
+    public function find_time_slot_by_id_for_type($time_slot_id, $slot_type_id)
+    {
+        $time_slot_id = (int) $time_slot_id;
+        $slot_type_id = (int) $slot_type_id;
+        if ($time_slot_id <= 0 || $slot_type_id <= 0) {
+            return null;
+        }
+
+        return $this->db
+            ->select('id, slot_type_id, start_time, end_time')
+            ->from('time_slots')
+            ->where('id', $time_slot_id)
+            ->where('slot_type_id', $slot_type_id)
+            ->where('status', 'active')
+            ->where('is_deleted', 0)
+            ->limit(1)
+            ->get()
+            ->row();
+    }
+
+    /**
      * Resolve active property/hotel by exact hotel name.
      */
     public function find_property_by_name($property_name)
