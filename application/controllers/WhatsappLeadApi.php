@@ -62,6 +62,21 @@ class WhatsappLeadApi extends CI_Controller
     }
 
     /**
+     * GET api/whatsapp/catalog/dining-schedule
+     * Nested slot types with active time slots.
+     */
+    public function dining_schedule()
+    {
+        if (!$this->prepare_catalog_request('GET')) {
+            return;
+        }
+
+        $data = $this->WhatsappLead_model->get_catalog_dining_schedule();
+
+        return $this->json_response(true, 'OK', $data);
+    }
+
+    /**
      * WhatsAppJet hotel-reservation confirmed webhook.
      * POST api/whatsapp/save-lead
      */
@@ -198,6 +213,42 @@ class WhatsappLeadApi extends CI_Controller
             }
         }
 
+        $slot_type_id = (int) ($input['slot_type_id'] ?? 0);
+        $time_slot_id = (int) ($input['time_slot_id'] ?? 0);
+        $slot_type = null;
+        $time_slot = null;
+
+        if ($slot_type_id > 0) {
+            $slot_type = $this->WhatsappLead_model->find_slot_type_by_id($slot_type_id);
+            if (empty($slot_type)) {
+                return $this->json_response(false, 'Slot type not found or inactive', [], 422);
+            }
+        }
+
+        if ($time_slot_id > 0) {
+            if ($slot_type_id <= 0) {
+                return $this->json_response(
+                    false,
+                    'slot_type_id is required when time_slot_id is provided',
+                    [],
+                    422
+                );
+            }
+
+            $time_slot = $this->WhatsappLead_model->find_time_slot_by_id_for_type(
+                $time_slot_id,
+                $slot_type_id
+            );
+            if (empty($time_slot)) {
+                return $this->json_response(
+                    false,
+                    'Time slot not found for the selected slot type',
+                    [],
+                    422
+                );
+            }
+        }
+
         $guests = isset($input['guests']) ? (int) $input['guests'] : 0;
         $booking_date = trim((string) ($input['date'] ?? ''));
         $checkin_date = trim((string) ($input['checkin_date'] ?? ''));
@@ -269,6 +320,8 @@ class WhatsappLeadApi extends CI_Controller
             'time' => $time_label !== '' ? $time_label : null,
             'arrival_time' => $time_label !== '' ? $time_label : null,
             'restaurant_id' => $restaurant ? (int) $restaurant->id : null,
+            'slot_type_id' => $slot_type ? (int) $slot_type->id : null,
+            'time_slot_id' => $time_slot ? (int) $time_slot->id : null,
             'special_occasion' => $occasion !== '' ? $occasion : null,
             'special_request' => $special_request !== '' ? $special_request : null,
             'query' => $query !== '' ? $query : null,

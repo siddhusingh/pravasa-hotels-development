@@ -121,6 +121,41 @@ Response shape:
 
 Inactive or unknown property → `422` with fail envelope.
 
+## Catalog API 4 — Dining schedule
+
+| Item | Value |
+| --- | --- |
+| Method | `GET` |
+| Route | `api/whatsapp/catalog/dining-schedule` |
+| Auth | Bearer (same catalog token) |
+
+Builds nested slot types → time slots from active, non-deleted rows only.
+
+- Type `title` = `slot_types.slot_name`
+- Slot `title` = formatted `start_time - end_time` (e.g. `06:00 AM - 07:00 AM`)
+- No `code` field
+
+```json
+{
+  "status": true,
+  "message": "OK",
+  "data": [
+    {
+      "id": "1",
+      "title": "Break Fast",
+      "slots": [
+        {
+          "id": "6",
+          "title": "06:00 AM - 07:00 AM",
+          "start_time": "06:00:00",
+          "end_time": "07:00:00"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Lead save endpoint
 
 | Item | Value |
@@ -179,6 +214,8 @@ ID fields are preferred (environment DB ids from catalog). Names are fallback.
 | `property_id` / `property` | Active hotel by id, else name; must belong to resolved city |
 | `department_id` / `service` | Active department by id, else name (`Restaurants` default / id `2` fallback for name path) |
 | `restaurant_id` / `restaurant` | Active restaurant under property → `restaurant_id` |
+| `slot_type_id` | Active slot type → `slot_type_id` (Reserve Table field) |
+| `time_slot_id` | Active time slot under that slot type → `time_slot_id` |
 | `guests` | `pax` + `query` |
 | `date` / `checkin_date` | `booking_date` (+ `checkin_date` when sent) |
 | `checkout_date` | `checkout_date` when sent |
